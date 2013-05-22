@@ -2,6 +2,8 @@ from django.db import models
 from django.conf import settings
 from django.utils.translation import ugettext as _
 
+from .generators import generate_client_secret, generate_client_id
+
 
 class Application(models.Model):
     """
@@ -41,12 +43,17 @@ class Application(models.Model):
         (GRANT_CLIENT_CREDENTIAL, _('Client credentials')),
     )
 
-    client_id = models.CharField(max_length=100, unique=True)
+    client_id = models.CharField(max_length=100, unique=True,
+                                 default=generate_client_id)
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    default_redirect_uri = models.URLField(help_text=_("Your application's Redirection Endpoint"))
+
+    default_redirect_uri = models.URLField(
+        help_text=_("Your application's Redirection Endpoint"))
+
     client_type = models.IntegerField(choices=CLIENT_TYPES)
     grant_type = models.IntegerField(choices=GRANT_TYPES)
-    client_secret = models.CharField(max_length=255)  # TODO generate code
+    client_secret = models.CharField(max_length=255, blank=True,
+                                     default=generate_client_secret)
     name = models.CharField(max_length=255, blank=True)
 
     def __unicode__(self):
