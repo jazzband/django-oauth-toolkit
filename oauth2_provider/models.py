@@ -15,10 +15,24 @@ class Application(models.Model):
         (CLIENT_PUBLIC, _('Public')),
     )
 
+    GRANT_ALLINONE = 'all-in-one'
+    GRANT_AUTHORIZATION_CODE = 'authorization-code'
+    GRANT_IMPLICIT = 'implicit'
+    GRANT_PASSWORD = 'password'
+    GRANT_CLIENT_CREDENTIAL = 'client-credential'
+    GRANT_TYPES = (
+        (GRANT_ALLINONE, _('All-in-one generic')),
+        (GRANT_AUTHORIZATION_CODE, _('Authorization code')),
+        (GRANT_IMPLICIT, _('Implicit')),
+        (GRANT_PASSWORD, _('Resource owner password-based')),
+        (GRANT_CLIENT_CREDENTIAL, _('Client credentials')),
+    )
+
     client_id = models.CharField(max_length=100, unique=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     default_redirect_uri = models.URLField(help_text=_("Your application's Redirection Endpoint"))  # default value (if not provided during auth. request)
     client_type = models.IntegerField(choices=CLIENT_TYPES)
+    grant_type =models.IntegerField(choices=GRANT_TYPES)
     client_secret = models.CharField(max_length=255)  # TODO generate code
     name = models.CharField(max_length=255, blank=True)
 
