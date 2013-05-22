@@ -5,6 +5,10 @@ from django.utils.translation import ugettext as _
 
 class Application(models.Model):
     """
+    An Application instance represents a Client on the Authorization server. Usually an Application is created manually
+    by the Client developer after logging in on an Authorization Server.
+
+
 
 
     """

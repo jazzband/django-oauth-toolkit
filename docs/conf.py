@@ -13,10 +13,13 @@
 
 import sys, os
 
+os.environ['DJANGO_SETTINGS_MODULE'] = 'example.settings'
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('..'))
+import oauth2_provider
 
 # -- General configuration -----------------------------------------------------
 
@@ -48,7 +51,7 @@ copyright = u'2013, Evonove'
 # built documents.
 #
 # The short X.Y version.
-version = '0.1.0'
+version = '0.1.0'  # TODO get it from the source codes
 # The full version, including alpha/beta/rc tags.
 release = '0.1.0'
 
