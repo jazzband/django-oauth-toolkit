@@ -59,7 +59,7 @@ class Grant(models.Model):
     """
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     code = models.CharField(max_length=255)  # TODO generate code
-    client = models.ForeignKey(Application)
+    application = models.ForeignKey(Application)
     expires = models.DateTimeField()  # TODO generate short expire time
     redirect_uri = models.CharField(max_length=255, blank=True)  # TODO remove blank and use Application's value at the time of the save?
     scope = models.TextField(blank=True)
@@ -74,7 +74,7 @@ class AccessToken(models.Model):
     """
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     token = models.CharField(max_length=255)  # TODO generate code
-    client = models.ForeignKey(Application)
+    application = models.ForeignKey(Application)
     expires = models.DateTimeField()  # TODO provide a default value based on the settings
     scope = models.TextField(blank=True)
 
@@ -88,7 +88,7 @@ class RefreshToken(models.Model):
     """
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     token = models.CharField(max_length=255)  # TODO generate code
-    client = models.ForeignKey(Application)
+    application = models.ForeignKey(Application)
     access_token = models.OneToOneField(AccessToken, related_name='refresh_token')
 
     def __unicode__(self):
