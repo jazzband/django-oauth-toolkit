@@ -6,11 +6,20 @@ from django.utils.translation import ugettext as _
 class Application(models.Model):
     """
     An Application instance represents a Client on the Authorization server. Usually an Application is created manually
-    by the Client developer after logging in on an Authorization Server.
+    by client's developers after logging in on an Authorization Server.
 
+    Fields:
 
-
-
+    * :attr:`client_id` The client identifier issued to the client during the registration process as \
+    described in :rfc:`2.2`
+    * :attr:`default_redirect_uri` The URI used for redirection during *Authorization code* workflow when clients do \
+    not specify one for their own during the authorization request
+    * :attr:`client_type` Client type as described in :rfc:`2.1`
+    * :attr:`grant_type` Authorization flows available to the Application
+    * :attr:`client_secret` Confidential secret issued to the client during the registration process as \
+    described in :rfc:`2.2`
+    * :attr:`name` Friendly name for the Application
+    * :attr:`user` ref to a Django user
     """
     CLIENT_CONFIDENTIAL = 'confidential'
     CLIENT_PUBLIC = 'public'
@@ -34,7 +43,7 @@ class Application(models.Model):
 
     client_id = models.CharField(max_length=100, unique=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    default_redirect_uri = models.URLField(help_text=_("Your application's Redirection Endpoint"))  # default value (if not provided during auth. request)
+    default_redirect_uri = models.URLField(help_text=_("Your application's Redirection Endpoint"))
     client_type = models.IntegerField(choices=CLIENT_TYPES)
     grant_type = models.IntegerField(choices=GRANT_TYPES)
     client_secret = models.CharField(max_length=255)  # TODO generate code
