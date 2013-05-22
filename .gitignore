@@ -37,3 +37,6 @@ nosetests.xml
 
 # PyCharm stuff
 .idea
+
+# Sphinx build dir
+_build
