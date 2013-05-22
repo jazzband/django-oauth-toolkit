@@ -156,3 +156,8 @@ LOGGING = {
         },
     }
 }
+
+OAUTH2_PROVIDER = {
+    'CLIENT_ID_GENERATOR_CLASS':
+        'foo.generators.ClientIdGenerator',
+}
