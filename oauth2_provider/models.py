@@ -3,7 +3,7 @@ from django.conf import settings
 from django.utils.translation import ugettext as _
 
 
-class Client(models.Model):
+class Application(models.Model):
     """
 
 
@@ -32,7 +32,7 @@ class Grant(models.Model):
     """
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     code = models.CharField(max_length=255)  # TODO generate code
-    client = models.ForeignKey(Client)
+    client = models.ForeignKey(Application)
     expires = models.DateTimeField()  # TODO generate short expire time
     redirect_uri = models.CharField(max_length=255, blank=True)  # TODO remove blank and use Client's value at the time of the save?
     scope = models.TextField(blank=True)
