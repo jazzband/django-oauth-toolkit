@@ -2,3 +2,4 @@ Django>1.4,<1.6
 Sphinx==1.2b1
 South==0.7.6
 oauthlib==0.4.1
+six==1.3.0
