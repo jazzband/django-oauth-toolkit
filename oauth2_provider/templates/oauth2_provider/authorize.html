@@ -1,0 +1,18 @@
+{% load url from future %}
+{% block content %}
+    {% if not error %}
+        <p>{{ application.name }} would like to access your data with the following permissions:</p>
+        {# TODO: show current permission #}
+        <form method="post" action="">
+            {{ form.as_ul }}
+            {% csrf_token %}
+            {{ form.errors }}
+            {{ form.non_field_errors }}
+            <input type="submit" class="btn login large danger" value="Cancel" />
+            <input type="submit" class="btn login large primary" name="authorize" value="Authorize" />
+        </form>
+    {% else %}
+        {{ error }}
+        {{ error_description }}
+    {% endif %}
+{% endblock %}
