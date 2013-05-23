@@ -1,16 +1,25 @@
-"""
-This file demonstrates writing tests using the unittest module. These will pass
-when you run "manage.py test".
-
-Replace this with more appropriate tests for your application.
-"""
-
 from django.test import TestCase
 
+from .settings import oauth2_settings
+from .generators import BaseHashGenerator, generate_client_id, generate_client_secret
 
-class SimpleTest(TestCase):
-    def test_basic_addition(self):
-        """
-        Tests that 1 + 1 always equals 2.
-        """
-        self.assertEqual(1 + 1, 2)
+
+class MockHashGenerator(BaseHashGenerator):
+    def hash(self):
+        return 42
+
+
+class TestGenerators(TestCase):
+    def test_generate_client_id(self):
+        g = oauth2_settings.CLIENT_ID_GENERATOR_CLASS()
+        self.assertEqual(len(g.hash()), 40)
+
+        oauth2_settings.CLIENT_ID_GENERATOR_CLASS = MockHashGenerator
+        self.assertEqual(generate_client_id(), 42)
+
+    def test_generate_secret_id(self):
+        g = oauth2_settings.CLIENT_SECRET_GENERATOR_CLASS()
+        self.assertEqual(len(g.hash()), 128)
+
+        oauth2_settings.CLIENT_SECRET_GENERATOR_CLASS = MockHashGenerator
+        self.assertEqual(generate_client_secret(), 42)
