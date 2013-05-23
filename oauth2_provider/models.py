@@ -50,10 +50,9 @@ class Application(models.Model):
     default_redirect_uri = models.URLField(
         help_text=_("Your application's Redirection Endpoint"))
 
-    client_type = models.IntegerField(choices=CLIENT_TYPES)
-    grant_type = models.IntegerField(choices=GRANT_TYPES)
-    client_secret = models.CharField(max_length=255, blank=True,
-                                     default=generate_client_secret)
+    client_type = models.CharField(max_length=32, choices=CLIENT_TYPES)
+    grant_type = models.CharField(max_length=32, choices=GRANT_TYPES)
+    client_secret = models.CharField(max_length=255, blank=True, default=generate_client_secret)
     name = models.CharField(max_length=255, blank=True)
 
     def __unicode__(self):
