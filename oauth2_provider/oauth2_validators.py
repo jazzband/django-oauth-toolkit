@@ -30,3 +30,6 @@ class OAuth2Validator(RequestValidator):
 
     def get_default_scopes(self, client_id, request, *args, **kwargs):
         return ''
+
+    def validate_redirect_uri(self, client_id, redirect_uri, request, *args, **kwargs):
+        return request.client.redirect_uri_allowed(redirect_uri)

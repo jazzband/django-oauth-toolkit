@@ -45,13 +45,12 @@ class PreAuthorizationMixin(OAuth2Mixin):
         redirect_uri = request.GET.get('redirect_uri', None)
         try:
             scopes, credentials = server.validate_authorization_request(uri, http_method, body, headers)
-            log.debug('Saving credentials to session, %r.', credentials)
-            request.session['oauth2_credentials'] = credentials  # TODO: this is necessary?
             kwargs['scopes'] = scopes
             kwargs['redirect_uri'] = redirect_uri
             # at this point we know an Application instance with such client_id exists in the database
             kwargs['application'] = Application.objects.get(client_id=credentials['client_id'])  # TODO: this should be cached one day
             kwargs.update(credentials)
+            self.oauth2_data = kwargs
             return super(PreAuthorizationMixin, self).dispatch(request, *args, **kwargs)
 
         except errors.FatalClientError as e:
@@ -68,9 +67,7 @@ class AuthorizationCodeView(LoginRequiredMixin, PreAuthorizationMixin, FormView)
     success_url = '/fixme/'
 
     def get(self, request, *args, **kwargs):
-        # This code has been rewritten because of https://code.djangoproject.com/ticket/17795
-        form_class = self.get_form_class()
-        form = self.get_form(form_class)
+        form = self.get_form(self.get_form_class())
         kwargs['form'] = form
         return self.render_to_response(self.get_context_data(**kwargs))
 
@@ -78,3 +75,12 @@ class AuthorizationCodeView(LoginRequiredMixin, PreAuthorizationMixin, FormView)
         if form.cleaned_data['allow']:
             log.debug('Application allowed')
         return super(AuthorizationCodeView, self).form_valid(form)
+
+    def get_initial(self):
+        initial_data = {
+            'redirect_uri': self.oauth2_data.get('redirect_uri', None),
+            'scopes': self.oauth2_data.get('scopes', None),
+            'client_id': self.oauth2_data.get('client_id', None),
+            'state': self.oauth2_data.get('state', None),
+        }
+        return initial_data
