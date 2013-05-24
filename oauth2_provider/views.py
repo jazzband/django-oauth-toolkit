@@ -17,11 +17,10 @@ log = logging.getLogger('oauth2_provider')
 server = Server(OAuth2Validator())
 
 
-class AuthorizationCodeView(LoginRequiredMixin, FormView):
-    template_name = 'oauth2_provider/authorize.html'
-    form_class = AllowForm
-    success_url = '/fixme/'
+class OAuth2Mixin(object):
+    """
 
+    """
     def _extract_params(self, request):
         log.debug('Extracting parameters from request.')
         uri = request.build_absolute_uri()
@@ -36,30 +35,44 @@ class AuthorizationCodeView(LoginRequiredMixin, FormView):
         body = urlencode(request.POST.items())
         return uri, http_method, body, headers
 
-    def get_context_data(self, **kwargs):
-        context = super(AuthorizationCodeView, self).get_context_data(**kwargs)
-        return context
 
-    def get(self, request, *args, **kwargs):
+class PreAuthorizationMixin(OAuth2Mixin):
+    """
+
+    """
+    def dispatch(self, request, *args, **kwargs):
         uri, http_method, body, headers = self._extract_params(request)
         redirect_uri = request.GET.get('redirect_uri', None)
         try:
             scopes, credentials = server.validate_authorization_request(uri, http_method, body, headers)
             log.debug('Saving credentials to session, %r.', credentials)
-            request.session['oauth2_credentials'] = credentials
+            request.session['oauth2_credentials'] = credentials  # TODO: this is necessary?
             kwargs['scopes'] = scopes
             kwargs['redirect_uri'] = redirect_uri
             # at this point we know an Application instance with such client_id exists in the database
-            kwargs['application'] = Application.objects.get(client_id=credentials['client_id'])
+            kwargs['application'] = Application.objects.get(client_id=credentials['client_id'])  # TODO: this should be cached one day
             kwargs.update(credentials)
-            form_class = self.get_form_class()
-            form = self.get_form(form_class)
-            kwargs['form'] = form
-            return self.render_to_response(self.get_context_data(**kwargs))
+            return super(PreAuthorizationMixin, self).dispatch(request, *args, **kwargs)
 
         except errors.FatalClientError as e:
             log.debug('Fatal client error, should redirecting to error page.')
             return HttpResponseBadRequest()
+
+
+class AuthorizationCodeView(LoginRequiredMixin, PreAuthorizationMixin, FormView):
+    """
+
+    """
+    template_name = 'oauth2_provider/authorize.html'
+    form_class = AllowForm
+    success_url = '/fixme/'
+
+    def get(self, request, *args, **kwargs):
+        # This code has been rewritten because of https://code.djangoproject.com/ticket/17795
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        kwargs['form'] = form
+        return self.render_to_response(self.get_context_data(**kwargs))
 
     def form_valid(self, form):
         if form.cleaned_data['allow']:
