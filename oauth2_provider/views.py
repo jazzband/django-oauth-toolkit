@@ -6,6 +6,8 @@ from oauthlib.common import urlencode
 from oauthlib.oauth2 import Server
 from oauthlib.oauth2 import errors
 
+from braces.views import LoginRequiredMixin
+
 from .oauth2_validators import OAuth2Validator
 from .models import Application
 from .forms import AllowForm
@@ -15,7 +17,7 @@ log = logging.getLogger('oauth2_provider')
 server = Server(OAuth2Validator())
 
 
-class AuthorizationCodeView(FormView):
+class AuthorizationCodeView(LoginRequiredMixin, FormView):
     template_name = 'oauth2_provider/authorize.html'
     form_class = AllowForm
     success_url = '/fixme/'
