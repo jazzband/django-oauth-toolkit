@@ -3,6 +3,7 @@ from django.conf import settings
 from django.utils.translation import ugettext as _
 
 from .generators import generate_client_secret, generate_client_id
+from .validators import validate_uris
 
 
 class Application(models.Model):
@@ -47,13 +48,19 @@ class Application(models.Model):
                                  default=generate_client_id)
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
 
-    default_redirect_uri = models.URLField(
-        help_text=_("Your application's Redirection Endpoint"))
+    redirect_uris = models.TextField(help_text=_("Allowed URIs list space separated"), validators=[validate_uris])
 
     client_type = models.CharField(max_length=32, choices=CLIENT_TYPES)
     grant_type = models.CharField(max_length=32, choices=GRANT_TYPES)
     client_secret = models.CharField(max_length=255, blank=True, default=generate_client_secret)
     name = models.CharField(max_length=255, blank=True)
+
+    @property
+    def default_redirect_uri(self):
+        return self.redirect_uris.split().pop(0)
+
+    def redirect_uri_allowed(self, uri):
+        return uri in self.redirect_uris.split()
 
     def __unicode__(self):
         return self.client_id
