@@ -25,11 +25,11 @@ class OAuth2Validator(RequestValidator):
         return False
 
     def validate_scopes(self, client_id, scopes, client, request, *args, **kwargs):
-        log.debug('scopes: %s' % ''.join(scopes))
+        log.debug('scopes: {0}'.format(scopes))
         return True
 
     def get_default_scopes(self, client_id, request, *args, **kwargs):
-        return ''
+        return []
 
     def validate_redirect_uri(self, client_id, redirect_uri, request, *args, **kwargs):
         return request.client.redirect_uri_allowed(redirect_uri)
