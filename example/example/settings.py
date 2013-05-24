@@ -13,11 +13,6 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'example.sqlite',
-        # The following settings are not used with sqlite3:
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': '',
     }
 }
 
@@ -126,6 +121,7 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
 
     'oauth2_provider',
+    'django_coverage',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -173,8 +169,4 @@ LOGGING = {
             'propagate': True,
         },
     }
-}
-
-OAUTH2_PROVIDER = {
-    'CLIENT_ID_GENERATOR_CLASS': 'foo.generators.ClientIdGenerator',
 }
