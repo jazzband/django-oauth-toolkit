@@ -5,5 +5,5 @@ from . import views
 
 urlpatterns = patterns(
     '',
-    url(r'^authorize/$', views.AuthorizationCodeView.as_view()),
+    url(r'^authorize/$', views.AuthorizationCodeView.as_view(), name="authorize"),
 )
