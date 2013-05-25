@@ -74,8 +74,8 @@ class Grant(models.Model):
     code = models.CharField(max_length=255)  # TODO generate code
     application = models.ForeignKey(Application)
     expires = models.DateTimeField()  # TODO generate short expire time
-    redirect_uri = models.CharField(max_length=255, blank=True)  # TODO remove blank and use Application's value at the time of the save?
-    scopes = models.TextField(blank=True)
+    redirect_uri = models.CharField(max_length=255)
+    scope = models.TextField(blank=True)
 
     def __unicode__(self):
         return self.code
@@ -89,7 +89,7 @@ class AccessToken(models.Model):
     token = models.CharField(max_length=255)  # TODO generate code
     application = models.ForeignKey(Application)
     expires = models.DateTimeField()  # TODO provide a default value based on the settings
-    scopes = models.TextField(blank=True)
+    scope = models.TextField(blank=True)
 
     def __unicode__(self):
         return self.token
