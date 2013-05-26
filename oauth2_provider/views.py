@@ -14,7 +14,6 @@ from .forms import AllowForm
 
 
 log = logging.getLogger('oauth2_provider')
-server = Server(OAuth2Validator())
 
 
 class OAuth2Mixin(object):
@@ -41,16 +40,18 @@ class PreAuthorizationMixin(OAuth2Mixin):
 
     """
     def dispatch(self, request, *args, **kwargs):
+        self.server = Server(OAuth2Validator(request.user))
         uri, http_method, body, headers = self._extract_params(request)
         redirect_uri = request.GET.get('redirect_uri', None)
         try:
-            scopes, credentials = server.validate_authorization_request(uri, http_method, body, headers)
+            scopes, credentials = self.server.validate_authorization_request(uri, http_method, body, headers)
             kwargs['scopes'] = scopes
             kwargs['redirect_uri'] = redirect_uri
             # at this point we know an Application instance with such client_id exists in the database
-            kwargs['application'] = Application.objects.get(client_id=credentials['client_id'])  # TODO: this should be cached one day
+            #kwargs['application'] = Application.objects.get(client_id=credentials['client_id'])  # TODO: this should be cached one day
             kwargs.update(credentials)
             self.oauth2_data = kwargs
+            self.oauth2_data['user_id'] = request.user.id
             return super(PreAuthorizationMixin, self).dispatch(request, *args, **kwargs)
 
         except errors.FatalClientError as e:
@@ -64,7 +65,6 @@ class AuthorizationCodeView(LoginRequiredMixin, PreAuthorizationMixin, FormView)
     """
     template_name = 'oauth2_provider/authorize.html'
     form_class = AllowForm
-    success_url = '/fixme/'
 
     def get(self, request, *args, **kwargs):
         form = self.get_form(self.get_form_class())
@@ -72,8 +72,8 @@ class AuthorizationCodeView(LoginRequiredMixin, PreAuthorizationMixin, FormView)
         return self.render_to_response(self.get_context_data(**kwargs))
 
     def form_valid(self, form):
-        if form.cleaned_data['allow']:
-            log.debug('Application allowed')
+        log.debug('Application allowed')
+        # TODO save grant object
         return super(AuthorizationCodeView, self).form_valid(form)
 
     def get_initial(self):
@@ -82,5 +82,18 @@ class AuthorizationCodeView(LoginRequiredMixin, PreAuthorizationMixin, FormView)
             'scopes': self.oauth2_data.get('scopes', None),
             'client_id': self.oauth2_data.get('client_id', None),
             'state': self.oauth2_data.get('state', None),
+            'user_id': self.oauth2_data.get('user_id'),
         }
         return initial_data
+
+    def get_success_url(self):
+        credentials = {
+            'client_id': self.oauth2_data.get('client_id'),
+            'redirect_uri': self.oauth2_data.get('redirect_uri'),
+            'response_type': self.oauth2_data.get('response_type', None),
+            'state': self.oauth2_data.get('state', None),
+        }
+        url = self.server.create_authorization_response(uri=self.oauth2_data.get('redirect_uri'),
+                                                   scopes=self.oauth2_data.get('scopes'), credentials=credentials)
+        log.debug(url)
+        return url[0]

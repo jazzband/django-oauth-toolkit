@@ -71,9 +71,9 @@ class Grant(models.Model):
 
     """
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    code = models.CharField(max_length=255)  # TODO generate code
+    code = models.CharField(max_length=255)  # code comes from oauthlib
     application = models.ForeignKey(Application)
-    expires = models.DateTimeField()  # TODO generate short expire time
+    expires = models.DateTimeField(null=True)  # TODO generate short expire time
     redirect_uri = models.CharField(max_length=255)
     scope = models.TextField(blank=True)
 
