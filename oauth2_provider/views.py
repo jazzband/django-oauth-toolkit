@@ -85,7 +85,7 @@ class AuthorizationCodeView(LoginRequiredMixin, PreAuthorizationMixin, FormView)
     form_class = AllowForm
 
     def get(self, request, *args, **kwargs):
-        # TODO put comment with django issue (this method is here only for that reason)
+        # this method is here only because of https://code.djangoproject.com/ticket/17795
         form = self.get_form(self.get_form_class())
         kwargs['form'] = form
         return self.render_to_response(self.get_context_data(**kwargs))
