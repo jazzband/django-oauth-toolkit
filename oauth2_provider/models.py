@@ -54,6 +54,7 @@ class Application(models.Model):
     grant_type = models.CharField(max_length=32, choices=GRANT_TYPES)
     client_secret = models.CharField(max_length=255, blank=True, default=generate_client_secret)
     name = models.CharField(max_length=255, blank=True)
+    # TODO default scopes for this instance, chosen from AVAILABLE SCOPES (in the settings)
 
     @property
     def default_redirect_uri(self):

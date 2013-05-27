@@ -42,13 +42,11 @@ class PreAuthorizationMixin(OAuth2Mixin):
     def dispatch(self, request, *args, **kwargs):
         self.server = Server(OAuth2Validator(request.user))
         uri, http_method, body, headers = self._extract_params(request)
-        redirect_uri = request.GET.get('redirect_uri', None)
         try:
             scopes, credentials = self.server.validate_authorization_request(uri, http_method, body, headers)
             kwargs['scopes'] = scopes
-            kwargs['redirect_uri'] = redirect_uri
             # at this point we know an Application instance with such client_id exists in the database
-            #kwargs['application'] = Application.objects.get(client_id=credentials['client_id'])  # TODO: this should be cached one day
+            kwargs['application'] = Application.objects.get(client_id=credentials['client_id'])  # TODO: this should be cached one day
             kwargs.update(credentials)
             self.oauth2_data = kwargs
             self.oauth2_data['user_id'] = request.user.id
@@ -67,14 +65,10 @@ class AuthorizationCodeView(LoginRequiredMixin, PreAuthorizationMixin, FormView)
     form_class = AllowForm
 
     def get(self, request, *args, **kwargs):
+        # TODO put comment with django issue (this method is here only for that reason)
         form = self.get_form(self.get_form_class())
         kwargs['form'] = form
         return self.render_to_response(self.get_context_data(**kwargs))
-
-    def form_valid(self, form):
-        log.debug('Application allowed')
-        # TODO save grant object
-        return super(AuthorizationCodeView, self).form_valid(form)
 
     def get_initial(self):
         initial_data = {
@@ -94,6 +88,6 @@ class AuthorizationCodeView(LoginRequiredMixin, PreAuthorizationMixin, FormView)
             'state': self.oauth2_data.get('state', None),
         }
         url = self.server.create_authorization_response(uri=self.oauth2_data.get('redirect_uri'),
-                                                   scopes=self.oauth2_data.get('scopes'), credentials=credentials)
+                                                        scopes=self.oauth2_data.get('scopes'), credentials=credentials)
         log.debug(url)
         return url[0]
