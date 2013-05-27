@@ -12,7 +12,7 @@
             <input type="submit" class="btn login large primary" name="authorize" value="Authorize" />
         </form>
     {% else %}
-        {{ error }}
-        {{ error_description }}
+        {{ error.error }}
+        {{ error.description }}
     {% endif %}
 {% endblock %}

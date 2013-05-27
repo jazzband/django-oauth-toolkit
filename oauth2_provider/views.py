@@ -1,7 +1,7 @@
 import logging
 
 from django.views.generic import FormView
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponseRedirect
 from oauthlib.common import urlencode
 from oauthlib.oauth2 import Server
 from oauthlib.oauth2 import errors
@@ -34,6 +34,27 @@ class OAuth2Mixin(object):
         body = urlencode(request.POST.items())
         return uri, http_method, body, headers
 
+    def error_response(self, error, uri=None, **kwargs):
+        """
+        Return an error to be displayed to the resource owner if anything goes
+        awry. Errors can include invalid clients, authorization denials and
+        other edge cases such as a wrong ``redirect_uri`` in the authorization
+        request.
+
+        :param error: :attr:`oauthlib.errors.OAuth2Error`
+        :param uri: ``dict``
+            The different types of errors are outlined in :draft:`4.2.2.1`
+        """
+
+        # If we got a malicious redirect_uri or client_id, remove all the
+        # cached data and tell the resource owner. We will *not* redirect back
+        # to the URL.
+        if isinstance(error, errors.FatalClientError):
+            return self.render_to_response({'error': error}, status=error.status_code, **kwargs)
+
+        url = self.server.create_authorization_response(uri, scopes=[''])
+        return HttpResponseRedirect(url[0])
+
 
 class PreAuthorizationMixin(OAuth2Mixin):
     """
@@ -52,9 +73,8 @@ class PreAuthorizationMixin(OAuth2Mixin):
             self.oauth2_data['user_id'] = request.user.id
             return super(PreAuthorizationMixin, self).dispatch(request, *args, **kwargs)
 
-        except errors.FatalClientError as e:
-            log.debug('Fatal client error, should redirecting to error page.')
-            return HttpResponseBadRequest()
+        except errors.OAuth2Error as e:
+            return self.error_response(e, uri, **kwargs)
 
 
 class AuthorizationCodeView(LoginRequiredMixin, PreAuthorizationMixin, FormView):
@@ -69,6 +89,12 @@ class AuthorizationCodeView(LoginRequiredMixin, PreAuthorizationMixin, FormView)
         form = self.get_form(self.get_form_class())
         kwargs['form'] = form
         return self.render_to_response(self.get_context_data(**kwargs))
+
+    def post(self, request, *args, **kwargs):
+        try:
+            return super(AuthorizationCodeView, self).post(request, *args, **kwargs)
+        except errors.FatalClientError as e:
+            return self.error_response(e, **kwargs)
 
     def get_initial(self):
         initial_data = {
@@ -89,5 +115,5 @@ class AuthorizationCodeView(LoginRequiredMixin, PreAuthorizationMixin, FormView)
         }
         url = self.server.create_authorization_response(uri=self.oauth2_data.get('redirect_uri'),
                                                         scopes=self.oauth2_data.get('scopes'), credentials=credentials)
-        log.debug(url)
+        log.debug("Success url for the request: {0}".format(url))
         return url[0]
