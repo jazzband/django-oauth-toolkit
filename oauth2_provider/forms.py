@@ -6,4 +6,4 @@ class AllowForm(forms.Form):
     scopes = forms.CharField(required=False, widget=forms.HiddenInput())
     client_id = forms.CharField(widget=forms.HiddenInput())
     state = forms.CharField(required=False, widget=forms.HiddenInput())
-    user_id = forms.IntegerField(required=True, widget=forms.HiddenInput())
+    response_type = forms.CharField(widget=forms.HiddenInput())

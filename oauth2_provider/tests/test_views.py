@@ -103,7 +103,16 @@ class TestAuthorizationCodeView(TestCase):
     def test_post_auth_allow(self):
         self.client.login(username="test_user", password="123456")
 
-        # TODO: post the form and check for correct redirect with authorization code in query string
+        form_data = {
+            'client_id': self.application.client_id,
+            'state': 'random_state_string',
+            'scopes': 'read write',
+            'redirect_uri': 'http://example.it',
+            'response_type': 'code',
+        }
+
+        response = self.client.post(reverse('authorize'), data=form_data)
+        self.assertEqual(response.status_code, 302)
 
     def test_post_auth_deny(self):
         self.client.login(username="test_user", password="123456")

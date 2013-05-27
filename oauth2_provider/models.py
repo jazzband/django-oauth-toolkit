@@ -61,6 +61,7 @@ class Application(models.Model):
         return self.redirect_uris.split().pop(0)
 
     def redirect_uri_allowed(self, uri):
+        uri = uri.rstrip("/")
         return uri in self.redirect_uris.split()
 
     def __unicode__(self):
