@@ -1,12 +1,12 @@
 import logging
 
-from django.views.generic import FormView
-from django.http import HttpResponseRedirect
+from django.views.generic import View, FormView
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from oauthlib.common import urlencode
 from oauthlib.oauth2 import Server
 from oauthlib.oauth2 import errors
 
-from braces.views import LoginRequiredMixin
+from braces.views import LoginRequiredMixin, CsrfExemptMixin
 
 from .oauth2_validators import OAuth2Validator
 from .models import Application
@@ -67,7 +67,7 @@ class OAuth2Mixin(object):
         return self.render_to_response(self.get_context_data(**kwargs))
 
 
-class PreAuthorizationMixin(OAuth2Mixin):
+class PreAuthorizationMixin(LoginRequiredMixin, OAuth2Mixin):
     """
 
     """
@@ -86,7 +86,7 @@ class PreAuthorizationMixin(OAuth2Mixin):
             return self.error_response(e, uri, **kwargs)
 
 
-class AuthorizationCodeView(LoginRequiredMixin, PreAuthorizationMixin, FormView):
+class AuthorizationCodeView(PreAuthorizationMixin, FormView):
     """
 
     """
@@ -111,12 +111,46 @@ class AuthorizationCodeView(LoginRequiredMixin, PreAuthorizationMixin, FormView)
                 'response_type': form.cleaned_data.get('response_type', None),
                 'state': form.cleaned_data.get('state', None),
             }
-            self.success_url = self.server.create_authorization_response(
+            url = self.server.create_authorization_response(
                 uri=form.cleaned_data.get('redirect_uri'),
-                scopes=form.cleaned_data.get('scopes'),
+                scopes=form.cleaned_data.get('scopes').split(" "),
                 credentials=credentials)
+            self.success_url = url[0]
             log.debug("Success url for the request: {0}".format(self.success_url))
             return super(AuthorizationCodeView, self).form_valid(form)
 
         except errors.FatalClientError as e:
             return self.error_response(e)
+
+
+class TokenView(CsrfExemptMixin, OAuth2Mixin, View):
+    """
+    """
+    def post(self, request, *args, **kwargs):
+        uri, http_method, body, headers = self._extract_params(request)
+
+        # TODO: add error handling
+        url, headers, body, status = self.server.create_token_response(
+            uri, http_method, body, headers)
+        response = HttpResponse(content=body, status=status)
+
+        for k, v in headers.items():
+            response[k] = v
+        return response
+
+
+class ProtectedResourceMixin(OAuth2Mixin):
+    """
+
+    """
+    def dispatch(self, request, *args, **kwargs):
+        self.server = Server(OAuth2Validator(request.user))
+
+        uri, http_method, body, headers = self._extract_params(request)
+
+        # TODO: we need to pass a list of scopes requested by the protected resource
+        valid, r = self.server.verify_request(uri, http_method, body, headers, scopes=None)
+        if valid:
+            return super(ProtectedResourceMixin, self).dispatch(request, *args, **kwargs)
+        else:
+            return HttpResponseForbidden()

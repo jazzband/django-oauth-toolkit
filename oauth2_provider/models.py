@@ -83,6 +83,9 @@ class Grant(models.Model):
     def is_expired(self):
         return timezone.now() >= self.expires
 
+    def redirect_uri_allowed(self, uri):
+        return uri == self.redirect_uri.rstrip("/")
+
     def __unicode__(self):
         return self.code
 
@@ -96,6 +99,31 @@ class AccessToken(models.Model):
     application = models.ForeignKey(Application)
     expires = models.DateTimeField()  # TODO provide a default value based on the settings
     scope = models.TextField(blank=True)
+
+    def is_valid(self, scopes=None):
+        """
+        Checks if the access token is valid.
+        """
+        return not self.is_exired() and self.allow_scopes(scopes)
+
+    def is_exired(self):
+        return timezone.now() >= self.expires
+
+    def allow_scopes(self, scopes):
+        """
+        Check if the token allows the provided scopes
+
+        Fields:
+
+        * :attr:`scopes` A list of the scopes to check
+        """
+        if not scopes:
+            return True
+
+        provided_scopes = set(self.scope.split())
+        resource_scopes = set(scopes)
+
+        return resource_scopes.issubset(provided_scopes)
 
     def __unicode__(self):
         return self.token
