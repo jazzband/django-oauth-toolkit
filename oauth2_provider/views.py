@@ -138,7 +138,6 @@ class TokenView(CsrfExemptMixin, OAuth2Mixin, View):
     def post(self, request, *args, **kwargs):
         uri, http_method, body, headers = self._extract_params(request)
 
-        # TODO: add error handling
         url, headers, body, status = self.server.create_token_response(
             uri, http_method, body, headers)
         response = HttpResponse(content=body, status=status)
