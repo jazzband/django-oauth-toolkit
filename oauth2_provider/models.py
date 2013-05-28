@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 from django.utils.translation import ugettext as _
 
 from .generators import generate_client_secret, generate_client_id
@@ -18,7 +19,7 @@ class Application(models.Model):
     * :attr:`default_redirect_uri` The URI used for redirection during *Authorization code* workflow when clients do \
     not specify one for their own during the authorization request
     * :attr:`client_type` Client type as described in :rfc:`2.1`
-    * :attr:`grant_type` Authorization flows available to the Application
+    * :attr:`authorization_grant_type` Authorization flows available to the Application
     * :attr:`client_secret` Confidential secret issued to the client during the registration process as \
     described in :rfc:`2.2`
     * :attr:`name` Friendly name for the Application
@@ -51,7 +52,7 @@ class Application(models.Model):
     redirect_uris = models.TextField(help_text=_("Allowed URIs list space separated"), validators=[validate_uris])
 
     client_type = models.CharField(max_length=32, choices=CLIENT_TYPES)
-    grant_type = models.CharField(max_length=32, choices=GRANT_TYPES)
+    authorization_grant_type = models.CharField(max_length=32, choices=GRANT_TYPES)
     client_secret = models.CharField(max_length=255, blank=True, default=generate_client_secret)
     name = models.CharField(max_length=255, blank=True)
     # TODO default scopes for this instance, chosen from AVAILABLE SCOPES (in the settings)
@@ -78,6 +79,9 @@ class Grant(models.Model):
     expires = models.DateTimeField(null=True)  # TODO generate short expire time
     redirect_uri = models.CharField(max_length=255)
     scope = models.TextField(blank=True)
+
+    def is_expired(self):
+        return timezone.now() >= self.expires
 
     def __unicode__(self):
         return self.code
