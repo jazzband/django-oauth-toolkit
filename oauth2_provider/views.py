@@ -39,7 +39,7 @@ class OAuth2Mixin(object):
         self.oauth2_data = {}
         return super(OAuth2Mixin, self).dispatch(request, *args, **kwargs)
 
-    def error_response(self, error, uri=None, **kwargs):
+    def error_response(self, error, uri=None, redirect_uri=None, **kwargs):
         """
         Return an error to be displayed to the resource owner if anything goes
         awry. Errors can include invalid clients, authorization denials and
@@ -57,8 +57,11 @@ class OAuth2Mixin(object):
         if isinstance(error, errors.FatalClientError):
             return self.render_to_response({'error': error}, status=error.status_code, **kwargs)
 
-        url = self.server.create_authorization_response(uri, scopes=[''])
-        return HttpResponseRedirect(url[0])
+        if redirect_uri:
+            url = "{0}?{1}".format(redirect_uri, error.urlencoded)
+        else:
+            url = self.server.create_authorization_response(uri, scopes=['']).pop(0)
+        return HttpResponseRedirect(url)
 
     def get(self, request, *args, **kwargs):
         # this method is here only because of https://code.djangoproject.com/ticket/17795
@@ -104,7 +107,11 @@ class AuthorizationCodeView(PreAuthorizationMixin, FormView):
         return initial_data
 
     def form_valid(self, form):
+        redirect_uri = form.cleaned_data.get('redirect_uri')
         try:
+            if not form.cleaned_data.get('allow'):
+                raise errors.AccessDeniedError()
+
             credentials = {
                 'client_id': form.cleaned_data.get('client_id'),
                 'redirect_uri': form.cleaned_data.get('redirect_uri'),
@@ -121,6 +128,8 @@ class AuthorizationCodeView(PreAuthorizationMixin, FormView):
 
         except errors.FatalClientError as e:
             return self.error_response(e)
+        except errors.OAuth2Error as e:
+            return self.error_response(e, redirect_uri=redirect_uri)
 
 
 class TokenView(CsrfExemptMixin, OAuth2Mixin, View):

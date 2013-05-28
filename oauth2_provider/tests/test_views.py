@@ -116,6 +116,7 @@ class TestAuthorizationCodeView(BaseTest):
             'scopes': 'read write',
             'redirect_uri': 'http://example.it',
             'response_type': 'code',
+            'allow': True,
         }
 
         response = self.client.post(reverse('authorize'), data=form_data)
@@ -125,7 +126,18 @@ class TestAuthorizationCodeView(BaseTest):
     def test_post_auth_deny(self):
         self.client.login(username="test_user", password="123456")
 
-        # TODO: post the form and check for correct redirect with errors in query string
+        form_data = {
+            'client_id': self.application.client_id,
+            'state': 'random_state_string',
+            'scopes': 'read write',
+            'redirect_uri': 'http://example.it',
+            'response_type': 'code',
+            'allow': False,
+        }
+
+        response = self.client.post(reverse('authorize'), data=form_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("error=access_denied", response['Location'])
 
 
 class TestTokenView(BaseTest):
@@ -138,6 +150,7 @@ class TestTokenView(BaseTest):
             'scopes': 'read write',
             'redirect_uri': 'http://example.it',
             'response_type': 'code',
+            'allow': True,
         }
 
         response = self.client.post(reverse('authorize'), data=authcode_data)
@@ -173,6 +186,7 @@ class TestProtectedResourceMixin(BaseTest):
             'scopes': 'read write',
             'redirect_uri': 'http://example.it',
             'response_type': 'code',
+            'allow': True,
         }
         response = self.client.post(reverse('authorize'), data=authcode_data)
         query_dict = parse_qs(urlparse(response['Location']).query)
