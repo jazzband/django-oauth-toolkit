@@ -11,6 +11,7 @@ log = logging.getLogger('oauth2_provider')
 
 GRANT_TYPE_MAPPING = {
     'authorization_code': (Application.GRANT_ALLINONE, Application.GRANT_AUTHORIZATION_CODE),
+    #'authorization_code': (Application.GRANT_ALLINONE, Application.GRANT_AUTHORIZATION_CODE),
     'password': (Application.GRANT_ALLINONE, Application.GRANT_PASSWORD),
     'client_credential': (Application.GRANT_ALLINONE, Application.GRANT_CLIENT_CREDENTIAL)
 }
@@ -89,6 +90,8 @@ class OAuth2Validator(RequestValidator):
     def validate_response_type(self, client_id, response_type, client, request, *args, **kwargs):
         if response_type == 'code':
             return client.authorization_grant_type == Application.GRANT_AUTHORIZATION_CODE
+        elif response_type == 'token':
+            return client.authorization_grant_type == Application.GRANT_IMPLICIT
         # TODO: missing other validation
         return False
 
@@ -112,7 +115,7 @@ class OAuth2Validator(RequestValidator):
     def save_bearer_token(self, token, request, *args, **kwargs):
         expires = timezone.now() + timedelta(seconds=36000)  # TODO put delta in settings
         access_token = AccessToken(
-            user=request.user,
+            user=self.user,  # TODO check why if response_type==token request.user is None
             scope=token['scope'],
             expires=expires,
             token=token['access_token'],
