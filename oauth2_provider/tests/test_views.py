@@ -33,7 +33,7 @@ class BaseTest(TestCase):
 class TestAuthorizationCodeView(BaseTest):
     def test_pre_auth_invalid_client(self):
         """
-        Test error for an invalid
+        Test error for an invalid client_id
         """
         self.client.login(username="test_user", password="123456")
 
@@ -108,6 +108,9 @@ class TestAuthorizationCodeView(BaseTest):
         self.assertEqual(response.status_code, 400)
 
     def test_post_auth_allow(self):
+        """
+        Test authorization code is given for an allowed request
+        """
         self.client.login(username="test_user", password="123456")
 
         form_data = {
@@ -124,6 +127,9 @@ class TestAuthorizationCodeView(BaseTest):
         self.assertIn('http://example.it/?state=random_state_string&code=', response['Location'])
 
     def test_post_auth_deny(self):
+        """
+        Test error when resource owner deny access
+        """
         self.client.login(username="test_user", password="123456")
 
         form_data = {
@@ -141,9 +147,10 @@ class TestAuthorizationCodeView(BaseTest):
 
 
 class TestTokenView(BaseTest):
-    def test_token_request(self):
-        self.client.login(username="test_user", password="123456")
-
+    def get_auth(self):
+        """
+        Helper method to retrieve a valid authorization code
+        """
         authcode_data = {
             'client_id': self.application.client_id,
             'state': 'random_state_string',
@@ -155,7 +162,14 @@ class TestTokenView(BaseTest):
 
         response = self.client.post(reverse('authorize'), data=authcode_data)
         query_dict = parse_qs(urlparse(response['Location']).query)
-        authorization_code = query_dict['code'].pop()
+        return query_dict['code'].pop()
+
+    def test_token_request_basic_auth(self):
+        """
+        Request an access token using basic authentication for client authentication
+        """
+        self.client.login(username="test_user", password="123456")
+        authorization_code = self.get_auth()
 
         token_request_data = {
             'grant_type': 'authorization_code',
@@ -180,6 +194,7 @@ class TestProtectedResourceMixin(BaseTest):
     def test_resource_access_allowed(self):
         self.client.login(username="test_user", password="123456")
 
+        # retrieve a valid authorization code
         authcode_data = {
             'client_id': self.application.client_id,
             'state': 'random_state_string',
@@ -192,6 +207,7 @@ class TestProtectedResourceMixin(BaseTest):
         query_dict = parse_qs(urlparse(response['Location']).query)
         authorization_code = query_dict['code'].pop()
 
+        # exchange authorization code for a valid access token
         token_request_data = {
             'grant_type': 'authorization_code',
             'code': authorization_code,
@@ -205,10 +221,12 @@ class TestProtectedResourceMixin(BaseTest):
         content = json.loads(response.content)
         access_token = content['access_token']
 
+        # mocking a protected resource view
         class ResourceView(ProtectedResourceMixin, View):
             def get(self, request, *args, **kwargs):
                 return "This is a protected resource"
 
+        # use token to access the resource
         auth_headers = {
             'HTTP_AUTHORIZATION': 'Bearer ' + access_token,
         }
