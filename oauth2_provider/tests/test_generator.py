@@ -28,3 +28,7 @@ class TestGenerators(TestCase):
 
         oauth2_settings.CLIENT_SECRET_GENERATOR_CLASS = MockHashGenerator
         self.assertEqual(generate_client_secret(), 42)
+
+    def test_basegen_misuse(self):
+        g = BaseHashGenerator()
+        self.assertRaises(NotImplementedError, g.hash)
