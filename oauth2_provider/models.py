@@ -123,7 +123,7 @@ class AccessToken(models.Model):
         """
         Checks if the access token is valid.
         """
-        return not self.is_exired() and self.allow_scopes(scopes)
+        return not self.is_expired() and self.allow_scopes(scopes)
 
     def is_expired(self):
         return timezone.now() >= self.expires
