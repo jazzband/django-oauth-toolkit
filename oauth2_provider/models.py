@@ -140,7 +140,7 @@ class AccessToken(models.Model):
 
         Params:
 
-        * :attr:`scopes` A string containing the scopes to check
+        * :attr:`scopes` An iterable containing the scopes to check
         """
         if not scopes:
             return True
