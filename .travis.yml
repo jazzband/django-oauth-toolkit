@@ -7,7 +7,7 @@ install:
   - pip install coveralls
 
 script:
-  - python manage.py test_coverage oauth2_provider
+  - coverage run manage.py test oauth2_provider
 
 after_success:
   - coveralls
