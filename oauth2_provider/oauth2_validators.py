@@ -138,13 +138,13 @@ class OAuth2Validator(RequestValidator):
         return request.client.redirect_uri_allowed(redirect_uri)
 
     def save_authorization_code(self, client_id, code, request, *args, **kwargs):
-        expires = timezone.now() + timedelta(seconds=60)  # TODO put delta in settings
+        expires = timezone.now() + timedelta(seconds=oauth2_settings.AUTHORIZATION_CODE_EXPIRE_SECONDS)
         g = Grant(application=request.client, user=self.user, code=code['code'], expires=expires,
                   redirect_uri=request.redirect_uri, scope=' '.join(request.scopes))
         g.save()
 
     def save_bearer_token(self, token, request, *args, **kwargs):
-        expires = timezone.now() + timedelta(seconds=36000)  # TODO put delta in settings
+        expires = timezone.now() + timedelta(seconds=oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
         access_token = AccessToken(
             user=self.user,  # TODO check why if response_type==token request.user is None
             scope=token['scope'],
@@ -162,4 +162,5 @@ class OAuth2Validator(RequestValidator):
             )
             refresh_token.save()
 
-        token['expires_in'] = 36000  # TODO put delta in settings
+        # TODO check out a more reliable way to communicate expire time to oauthlib
+        token['expires_in'] = oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS
