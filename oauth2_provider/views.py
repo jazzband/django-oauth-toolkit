@@ -48,7 +48,7 @@ class OAuth2Mixin(object):
 
         :param error: :attr:`oauthlib.errors.OAuth2Error`
         :param uri: ``dict``
-            The different types of errors are outlined in :draft:`4.2.2.1`
+            The different types of errors are outlined in :rfc:`4.2.2.1`
         """
 
         # If we got a malicious redirect_uri or client_id, remove all the
