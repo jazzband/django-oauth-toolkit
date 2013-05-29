@@ -92,6 +92,9 @@ class Grant(models.Model):
     scope = models.TextField(blank=True)
 
     def is_expired(self):
+        """
+        Check token expiration with timezone awareness
+        """
         return timezone.now() >= self.expires
 
     def redirect_uri_allowed(self, uri):
@@ -114,9 +117,9 @@ class AccessToken(models.Model):
     * :attr:`scope` Allowed scopes
     """
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    token = models.CharField(max_length=255)  # TODO generate code
+    token = models.CharField(max_length=255)
     application = models.ForeignKey(Application)
-    expires = models.DateTimeField()  # TODO provide a default value based on the settings
+    expires = models.DateTimeField()
     scope = models.TextField(blank=True)
 
     def is_valid(self, scopes=None):
@@ -126,6 +129,9 @@ class AccessToken(models.Model):
         return not self.is_expired() and self.allow_scopes(scopes)
 
     def is_expired(self):
+        """
+        Check token expiration with timezone awareness
+        """
         return timezone.now() >= self.expires
 
     def allow_scopes(self, scopes):
@@ -160,7 +166,7 @@ class RefreshToken(models.Model):
     * :attr:`access_token` AccessToken instance this refresh token is bounded to
     """
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    token = models.CharField(max_length=255)  # TODO generate code
+    token = models.CharField(max_length=255)
     application = models.ForeignKey(Application)
     access_token = models.OneToOneField(AccessToken, related_name='refresh_token')
 
