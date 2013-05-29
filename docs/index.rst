@@ -6,7 +6,7 @@
 Welcome to Django OAuth Toolkit's documentation!
 ================================================
 
-Contents:
+Applications:
 
 .. toctree::
    :maxdepth: 2

@@ -1,14 +1,13 @@
 `oauth2_provider`
 =================
 
-`oauth2_provider.models`
+`Models`
 ------------------------
 .. automodule:: oauth2_provider.models
     :members:
 
 
-`oauth2_provider.views`
+`Views`
 -----------------------
 .. automodule:: oauth2_provider.views
     :members:
-    :no-undoc-members:
