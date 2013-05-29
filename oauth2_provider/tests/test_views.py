@@ -9,6 +9,7 @@ from django.test import TestCase, RequestFactory
 
 from ..models import Application
 from ..views import ProtectedResourceMixin
+from ..settings import oauth2_settings
 
 
 class BaseTest(TestCase):
@@ -33,6 +34,8 @@ class BaseTest(TestCase):
             authorization_grant_type=Application.GRANT_IMPLICIT,
         )
         self.token_application.save()
+
+        oauth2_settings.SCOPES = ['read', 'write']
 
     def tearDown(self):
         self.code_application.delete()
