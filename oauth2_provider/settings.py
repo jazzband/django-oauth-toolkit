@@ -28,6 +28,7 @@ USER_SETTINGS = getattr(settings, 'OAUTH2_PROVIDER', None)
 DEFAULTS = {
     'CLIENT_ID_GENERATOR_CLASS': 'oauth2_provider.generators.ClientIdGenerator',
     'CLIENT_SECRET_GENERATOR_CLASS': 'oauth2_provider.generators.ClientSecretGenerator',
+    'SCOPES': [],
 }
 
 # List of settings that cannot be empty
