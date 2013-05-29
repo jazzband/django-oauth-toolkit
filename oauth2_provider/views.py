@@ -60,7 +60,7 @@ class OAuth2Mixin(object):
         if redirect_uri:
             url = "{0}?{1}".format(redirect_uri, error.urlencoded)
         else:
-            url = self.server.create_authorization_response(uri, scopes=['']).pop(0)
+            url = self.server.create_authorization_response(uri, scopes=[''])[0]
         return HttpResponseRedirect(url)
 
     def get(self, request, *args, **kwargs):
