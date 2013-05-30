@@ -170,3 +170,7 @@ LOGGING = {
         },
     }
 }
+
+OAUTH2_PROVIDER = {
+    'SCOPES': ['example']
+}
