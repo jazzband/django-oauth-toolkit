@@ -37,6 +37,7 @@ DEFAULTS = {
 MANDATORY = (
     'CLIENT_ID_GENERATOR_CLASS',
     'CLIENT_SECRET_GENERATOR_CLASS',
+    'SCOPES',
 )
 
 # List of settings that may be in string import notation.
