@@ -97,7 +97,7 @@ class TestAuthorizationCodeView(BaseTest):
         form = response.context.get("form")
         self.assertEqual(form['redirect_uri'].value(), "http://example.it")
         self.assertEqual(form['state'].value(), "random_state_string")
-        self.assertEqual(form['scopes'].value(), ["read", "write"])
+        self.assertEqual(form['scopes'].value(), "read write")
         self.assertEqual(form['client_id'].value(), self.code_application.client_id)
 
     def test_implicit_pre_auth_valid_client(self):
@@ -124,7 +124,7 @@ class TestAuthorizationCodeView(BaseTest):
         form = response.context.get("form")
         self.assertEqual(form['redirect_uri'].value(), "http://example.it")
         self.assertEqual(form['state'].value(), "random_state_string")
-        self.assertEqual(form['scopes'].value(), ["read", "write"])
+        self.assertEqual(form['scopes'].value(), "read write")
         self.assertEqual(form['client_id'].value(), self.token_application.client_id)
 
     def test_code_pre_auth_default_redirect(self):

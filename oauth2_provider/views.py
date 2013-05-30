@@ -97,9 +97,11 @@ class AuthorizationCodeView(PreAuthorizationMixin, FormView):
     form_class = AllowForm
 
     def get_initial(self):
+        # TODO: move this scopes conversion from and to string into a utils function
+        scopes = self.oauth2_data.get('scopes', [])
         initial_data = {
             'redirect_uri': self.oauth2_data.get('redirect_uri', None),
-            'scopes': self.oauth2_data.get('scopes', None),
+            'scopes': ' '.join(scopes),
             'client_id': self.oauth2_data.get('client_id', None),
             'state': self.oauth2_data.get('state', None),
             'response_type': self.oauth2_data.get('response_type', None),
@@ -118,9 +120,15 @@ class AuthorizationCodeView(PreAuthorizationMixin, FormView):
                 'response_type': form.cleaned_data.get('response_type', None),
                 'state': form.cleaned_data.get('state', None),
             }
+
+            # TODO: move this scopes conversion from and to string into a utils function
+            scopes = form.cleaned_data.get('scopes')
+            if scopes:
+               scopes = scopes.split(" ")
+
             url = self.server.create_authorization_response(
                 uri=form.cleaned_data.get('redirect_uri'),
-                scopes=form.cleaned_data.get('scopes').split(" "),
+                scopes=scopes,
                 credentials=credentials)
             self.success_url = url[0]
             log.debug("Success url for the request: {0}".format(self.success_url))
