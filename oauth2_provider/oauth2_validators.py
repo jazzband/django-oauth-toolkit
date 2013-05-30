@@ -2,6 +2,7 @@ import logging
 from datetime import timedelta
 
 from django.utils import timezone
+from django.contrib.auth import authenticate
 from oauthlib.oauth2 import RequestValidator
 
 from .models import Application, Grant, AccessToken, RefreshToken
@@ -32,15 +33,17 @@ class OAuth2Validator(RequestValidator):
         """
         auth = request.headers.get('HTTP_AUTHORIZATION', None)
 
-        if not auth:
-            return False
-
-        basic, base64 = auth.split(' ')
-        client_id, client_secret = base64.decode('base64').split(':')
+        if auth:
+            basic, base64 = auth.split(' ')
+            client_id, client_secret = base64.decode('base64').split(':')
+        else:
+            client_id = request.client_id
+            client_secret = request.client_secret
 
         try:
             request.client = Application.objects.get(client_id=client_id, client_secret=client_secret)
-            return True
+            return request.client.client_type != Application.CLIENT_CONFIDENTIAL or auth
+
         except Application.DoesNotExist:
             return False
 
@@ -145,8 +148,9 @@ class OAuth2Validator(RequestValidator):
 
     def save_bearer_token(self, token, request, *args, **kwargs):
         expires = timezone.now() + timedelta(seconds=oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
+        user = request.user or self.user  # TODO check why if response_type==token request.user is None
         access_token = AccessToken(
-            user=self.user,  # TODO check why if response_type==token request.user is None
+            user=user,
             scope=token['scope'],
             expires=expires,
             token=token['access_token'],
@@ -164,3 +168,13 @@ class OAuth2Validator(RequestValidator):
 
         # TODO check out a more reliable way to communicate expire time to oauthlib
         token['expires_in'] = oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS
+
+    def validate_user(self, username, password, client, request, *args, **kwargs):
+        """
+        Check username and password correspond to a valid and active User
+        """
+        u = authenticate(username=username, password=password)
+        if u is not None and u.is_active:
+            request.user = u
+            return True
+        return False

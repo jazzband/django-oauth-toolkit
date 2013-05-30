@@ -12,6 +12,12 @@ from ..views import ProtectedResourceMixin
 from ..settings import oauth2_settings
 
 
+# mocking a protected resource view
+class ResourceView(ProtectedResourceMixin, View):
+    def get(self, request, *args, **kwargs):
+        return "This is a protected resource"
+
+
 class BaseTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
@@ -34,6 +40,14 @@ class BaseTest(TestCase):
             authorization_grant_type=Application.GRANT_IMPLICIT,
         )
         self.token_application.save()
+
+        self.password_application = Application(
+            name="test_password_app",
+            user=self.test_user,
+            client_type=Application.CLIENT_PUBLIC,
+            authorization_grant_type=Application.GRANT_PASSWORD,
+        )
+        self.password_application.save()
 
         oauth2_settings.SCOPES = ['read', 'write']
 
@@ -316,6 +330,26 @@ class TestTokenView(BaseTest):
         self.assertEqual(content['scope'], "read write")
         self.assertEqual(content['expires_in'], 36000)
 
+    def test_resource_owner_password(self):
+        """
+        Request an access token using Resource Owner Password Flow
+        """
+        token_request_data = {
+            'grant_type': 'password',
+            'client_id': self.password_application.client_id,
+            'client_secret': self.password_application.client_secret,
+            'username': 'test_user',
+            'password': '123456',
+        }
+
+        response = self.client.post(reverse('token'), data=token_request_data)
+        self.assertEqual(response.status_code, 200)
+
+        content = json.loads(response.content)
+        self.assertEqual(content['token_type'], "Bearer")
+        self.assertEqual(content['scope'], "read write")
+        self.assertEqual(content['expires_in'], 36000)
+
 
 class TestProtectedResourceMixin(BaseTest):
     def test_code_resource_access_allowed(self):
@@ -348,11 +382,6 @@ class TestProtectedResourceMixin(BaseTest):
         content = json.loads(response.content)
         access_token = content['access_token']
 
-        # mocking a protected resource view
-        class ResourceView(ProtectedResourceMixin, View):
-            def get(self, request, *args, **kwargs):
-                return "This is a protected resource"
-
         # use token to access the resource
         auth_headers = {
             'HTTP_AUTHORIZATION': 'Bearer ' + access_token,
@@ -381,10 +410,29 @@ class TestProtectedResourceMixin(BaseTest):
         frag_dict = parse_qs(urlparse(response['Location']).fragment)
         access_token = frag_dict['access_token'].pop()
 
-        # mocking a protected resource view
-        class ResourceView(ProtectedResourceMixin, View):
-            def get(self, request, *args, **kwargs):
-                return "This is a protected resource"
+        # use token to access the resource
+        auth_headers = {
+            'HTTP_AUTHORIZATION': 'Bearer ' + access_token,
+        }
+        request = self.factory.get("/fake-resource", **auth_headers)
+        request.user = self.test_user
+
+        view = ResourceView.as_view()
+        response = view(request)
+        self.assertEqual(response, "This is a protected resource")
+
+    def test_password_resource_access_allowed(self):
+        token_request_data = {
+            'grant_type': 'password',
+            'client_id': self.password_application.client_id,
+            'client_secret': self.password_application.client_secret,
+            'username': 'test_user',
+            'password': '123456',
+        }
+
+        response = self.client.post(reverse('token'), data=token_request_data)
+        content = json.loads(response.content)
+        access_token = content['access_token']
 
         # use token to access the resource
         auth_headers = {

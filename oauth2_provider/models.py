@@ -46,7 +46,8 @@ class Application(models.Model):
 
     client_id = models.CharField(max_length=100, unique=True, default=generate_client_id)
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    redirect_uris = models.TextField(help_text=_("Allowed URIs list space separated"), validators=[validate_uris])
+    redirect_uris = models.TextField(help_text=_("Allowed URIs list, space separated"),
+                                     validators=[validate_uris], blank=True)  # TODO validate this field depending on authorization_grant_type
     client_type = models.CharField(max_length=32, choices=CLIENT_TYPES)
     authorization_grant_type = models.CharField(max_length=32, choices=GRANT_TYPES)
     client_secret = models.CharField(max_length=255, blank=True, default=generate_client_secret)
