@@ -129,7 +129,7 @@ class OAuth2Validator(RequestValidator):
         """
         Ensure requested scopes are permitted (as specified in the settings file)
         """
-        return set(scopes).intersection(set(oauth2_settings.SCOPES))
+        return set(scopes).issubset(set(oauth2_settings.SCOPES))
 
     def get_default_scopes(self, client_id, request, *args, **kwargs):
         return oauth2_settings.SCOPES
