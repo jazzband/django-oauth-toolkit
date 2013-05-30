@@ -1,17 +1,17 @@
 import logging
 
 from django.views.generic import View, FormView
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse
 
 from oauthlib.oauth2 import Server
-from oauthlib.oauth2 import errors
+from oauthlib import oauth2
 
 from braces.views import LoginRequiredMixin, CsrfExemptMixin
 
 from .oauth2_validators import OAuth2Validator
 from .models import Application
 from .forms import AllowForm
-from .mixins import OAuthLibMixin
+from .mixins import OAuthLibMixin, ProtectedResourceMixin, ScopedResourceMixin
 
 
 log = logging.getLogger('oauth2_provider')
@@ -25,33 +25,8 @@ class OAuth2Mixin(OAuthLibMixin):
         self.oauth2_data = {}
         return super(OAuth2Mixin, self).dispatch(request, *args, **kwargs)
 
-    def get(self, request, *args, **kwargs):
-        # TODO: this method assumes we are using FormMixin. Move this code away
-        # this method is here only because of https://code.djangoproject.com/ticket/17795
-        form = self.get_form(self.get_form_class())
-        kwargs['form'] = form
-        return self.render_to_response(self.get_context_data(**kwargs))
 
-
-class PreAuthorizationMixin(LoginRequiredMixin, OAuth2Mixin):
-    """
-
-    """
-    def get(self, request, *args, **kwargs):
-        try:
-            scopes, credentials = self.validate_authorization_request(request)
-            kwargs['scopes'] = scopes
-            # at this point we know an Application instance with such client_id exists in the database
-            kwargs['application'] = Application.objects.get(client_id=credentials['client_id'])  # TODO: this should be cached one day
-            kwargs.update(credentials)
-            self.oauth2_data = kwargs
-            return super(PreAuthorizationMixin, self).get(request, *args, **kwargs)
-
-        except errors.OAuth2Error as e:
-            return self.error_response(e, **kwargs)
-
-
-class AuthorizationCodeView(PreAuthorizationMixin, FormView):
+class AuthorizationCodeView(LoginRequiredMixin, OAuth2Mixin, FormView):
     """
     """
     template_name = 'oauth2_provider/authorize.html'
@@ -76,7 +51,7 @@ class AuthorizationCodeView(PreAuthorizationMixin, FormView):
         redirect_uri = form.cleaned_data.get('redirect_uri')
         try:
             if not form.cleaned_data.get('allow'):
-                raise errors.AccessDeniedError()
+                raise oauth2.AccessDeniedError()
 
             credentials = {
                 'client_id': form.cleaned_data.get('client_id'),
@@ -92,8 +67,24 @@ class AuthorizationCodeView(PreAuthorizationMixin, FormView):
             log.debug("Success url for the request: {0}".format(self.success_url))
             return super(AuthorizationCodeView, self).form_valid(form)
 
-        except errors.OAuth2Error as e:
+        except oauth2.OAuth2Error as e:
             return self.error_response(e, redirect_uri=redirect_uri)
+
+    def get(self, request, *args, **kwargs):
+        try:
+            scopes, credentials = self.validate_authorization_request(request)
+            kwargs['scopes'] = scopes
+            # at this point we know an Application instance with such client_id exists in the database
+            kwargs['application'] = Application.objects.get(client_id=credentials['client_id'])  # TODO: this should be cached one day
+            kwargs.update(credentials)
+            self.oauth2_data = kwargs
+            # following code is here only because of https://code.djangoproject.com/ticket/17795
+            form = self.get_form(self.get_form_class())
+            kwargs['form'] = form
+            return self.render_to_response(self.get_context_data(**kwargs))
+
+        except oauth2.OAuth2Error as e:
+            return self.error_response(e, **kwargs)
 
 
 class TokenView(CsrfExemptMixin, OAuth2Mixin, View):
@@ -111,15 +102,13 @@ class TokenView(CsrfExemptMixin, OAuth2Mixin, View):
         return response
 
 
-class ProtectedResourceMixin(OAuth2Mixin):
+class ProtectedResourceView(ProtectedResourceMixin, View):
     """
     """
     server_class = Server
     validator_class = OAuth2Validator
 
-    def dispatch(self, request, *args, **kwargs):
-        valid, r = self.verify_request(request)
-        if valid:
-            return super(ProtectedResourceMixin, self).dispatch(request, *args, **kwargs)
-        else:
-            return HttpResponseForbidden()
+
+class ScopeProtectedResourceView(ScopedResourceMixin, ProtectedResourceView):
+    """
+    """

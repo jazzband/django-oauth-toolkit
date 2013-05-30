@@ -1,10 +1,10 @@
 import logging
 
 from django.core.exceptions import ImproperlyConfigured
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponseForbidden
 
 from oauthlib.common import urlencode
-from oauthlib.oauth2 import errors
+from oauthlib import oauth2
 
 
 log = logging.getLogger("oauth2_provider")
@@ -121,9 +121,12 @@ class OAuthLibMixin(object):
 
         server = self.get_server(request)
         # TODO: we need to pass a list of scopes requested by the protected resource
-        valid, r = server.verify_request(uri, http_method, body, headers, scopes=None)
+        valid, r = server.verify_request(uri, http_method, body, headers, scopes=self.get_scopes())
 
         return valid, r
+
+    def get_scopes(self):
+        return []
 
     def error_response(self, error, redirect_uri=None, **kwargs):
         """
@@ -138,7 +141,7 @@ class OAuthLibMixin(object):
         # cached data and tell the resource owner. We will *not* redirect back
         # to the URL.
         # TODO: this method assumes the class has a render_to_response error
-        if isinstance(error, errors.FatalClientError):
+        if isinstance(error, oauth2.FatalClientError):
             return self.render_to_response({'error': error}, status=error.status_code, **kwargs)
 
         if not redirect_uri:
@@ -146,3 +149,33 @@ class OAuthLibMixin(object):
 
         url = "{0}?{1}".format(redirect_uri, error.urlencoded)
         return HttpResponseRedirect(url)
+
+
+class ScopedResourceMixin(object):
+    """
+    """
+    requested_scopes = None
+
+    def get_scopes(self, *args, **kwargs):
+        """
+        Return the scopes needed to access the resource
+        """
+        if self.requested_scopes is None:
+            raise ImproperlyConfigured(
+                "ProtectedResourceMixin requires either a definition of 'requested_scopes'"
+                " or an implementation of 'get_scopes()'")
+        else:
+            return self.requested_scopes
+
+
+class ProtectedResourceMixin(OAuthLibMixin):
+    """
+    """
+    def dispatch(self, request, *args, **kwargs):
+        valid, r = self.verify_request(request)
+        if valid:
+            return super(ProtectedResourceMixin, self).dispatch(request, *args, **kwargs)
+        else:
+            return HttpResponseForbidden()
+
+

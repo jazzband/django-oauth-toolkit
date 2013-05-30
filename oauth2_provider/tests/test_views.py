@@ -8,12 +8,12 @@ from django.views.generic import View
 from django.test import TestCase, RequestFactory
 
 from ..models import Application
-from ..views import ProtectedResourceMixin
+from ..views import ProtectedResourceView
 from ..settings import oauth2_settings
 
 
 # mocking a protected resource view
-class ResourceView(ProtectedResourceMixin, View):
+class ResourceView(ProtectedResourceView):
     def get(self, request, *args, **kwargs):
         return "This is a protected resource"
 
@@ -446,10 +446,6 @@ class TestProtectedResourceMixin(BaseTest):
         self.assertEqual(response, "This is a protected resource")
 
     def test_resource_access_deny(self):
-        class ResourceView(ProtectedResourceMixin, View):
-            def get(self, request, *args, **kwargs):
-                return "This is a protected resource"
-
         auth_headers = {
             'HTTP_AUTHORIZATION': 'Bearer ' + "faketoken",
         }
