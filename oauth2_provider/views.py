@@ -38,8 +38,6 @@ class PreAuthorizationMixin(LoginRequiredMixin, OAuth2Mixin):
 
     """
     def get(self, request, *args, **kwargs):
-        # TODO: remove this line in next refactoring: https://github.com/idan/oauthlib/pull/166
-        uri, http_method, body, headers = self._extract_params(request)
         try:
             scopes, credentials = self.validate_authorization_request(request)
             kwargs['scopes'] = scopes
@@ -50,7 +48,7 @@ class PreAuthorizationMixin(LoginRequiredMixin, OAuth2Mixin):
             return super(PreAuthorizationMixin, self).get(request, *args, **kwargs)
 
         except errors.OAuth2Error as e:
-            return self.error_response(e, uri, **kwargs)
+            return self.error_response(e, **kwargs)
 
 
 class AuthorizationCodeView(PreAuthorizationMixin, FormView):
@@ -94,8 +92,6 @@ class AuthorizationCodeView(PreAuthorizationMixin, FormView):
             log.debug("Success url for the request: {0}".format(self.success_url))
             return super(AuthorizationCodeView, self).form_valid(form)
 
-        except errors.FatalClientError as e:
-            return self.error_response(e)
         except errors.OAuth2Error as e:
             return self.error_response(e, redirect_uri=redirect_uri)
 

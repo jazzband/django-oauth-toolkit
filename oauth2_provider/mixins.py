@@ -125,7 +125,7 @@ class OAuthLibMixin(object):
 
         return valid, r
 
-    def error_response(self, error, uri=None, redirect_uri=None, **kwargs):
+    def error_response(self, error, redirect_uri=None, **kwargs):
         """
         Return an error to be displayed to the resource owner if anything goes awry.
 
@@ -141,8 +141,8 @@ class OAuthLibMixin(object):
         if isinstance(error, errors.FatalClientError):
             return self.render_to_response({'error': error}, status=error.status_code, **kwargs)
 
-        if redirect_uri:
-            url = "{0}?{1}".format(redirect_uri, error.urlencoded)
-        else:
-            url = self.create_authorization_response(uri, scopes="")[0]
+        if not redirect_uri:
+            redirect_uri = error.redirect_uri
+
+        url = "{0}?{1}".format(redirect_uri, error.urlencoded)
         return HttpResponseRedirect(url)
