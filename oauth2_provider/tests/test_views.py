@@ -49,6 +49,14 @@ class BaseTest(TestCase):
         )
         self.password_application.save()
 
+        self.client_credentials_application = Application(
+            name="test_client_credentials_app",
+            user=self.test_user,
+            client_type=Application.CLIENT_PUBLIC,
+            authorization_grant_type=Application.GRANT_CLIENT_CREDENTIALS,
+        )
+        self.client_credentials_application.save()
+
         oauth2_settings.SCOPES = ['read', 'write']
 
     def tearDown(self):
@@ -349,6 +357,19 @@ class TestTokenView(BaseTest):
         self.assertEqual(content['token_type'], "Bearer")
         self.assertEqual(content['scope'], "read write")
         self.assertEqual(content['expires_in'], 36000)
+
+    def test_client_credential(self):
+        """
+        Request an access token using Client Credential Flow
+        """
+        token_request_data = {
+            'grant_type': 'client_credentials',
+            'client_id': self.client_credentials_application.client_id,
+            'client_secret': self.client_credentials_application.client_secret,
+        }
+
+        response = self.client.post(reverse('token'), data=token_request_data)
+        self.assertEqual(response.status_code, 200)
 
 
 class TestProtectedResourceMixin(BaseTest):
