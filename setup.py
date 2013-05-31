@@ -69,6 +69,7 @@ setup(
     install_requires=[
         'django>=1.5.0',
         'django-braces==1.0.0',
+        'six==1.3.0',
         'oauthlib==0.4.2',
     ],
     zip_safe=False,
