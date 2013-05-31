@@ -32,6 +32,15 @@ class BaseTest(TestCase):
         )
         self.code_application.save()
 
+        self.public_code_application = Application(
+            name="test_public_app",
+            redirect_uris="http://localhost http://example.com http://example.it",
+            user=self.dev_user,
+            client_type=Application.CLIENT_PUBLIC,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+        )
+        self.public_code_application.save()
+
         self.token_application = Application(
             name="test_implicit_app",
             redirect_uris="http://localhost http://example.com http://example.it",
@@ -296,12 +305,13 @@ class TestAuthorizationCodeView(BaseTest):
 
 
 class TestTokenView(BaseTest):
-    def get_auth(self):
+    def get_auth(self, application=None):
         """
         Helper method to retrieve a valid authorization code
         """
+        application = application or self.code_application
         authcode_data = {
-            'client_id': self.code_application.client_id,
+            'client_id': application.client_id,
             'state': 'random_state_string',
             'scopes': 'read write',
             'redirect_uri': 'http://example.it',
@@ -338,16 +348,39 @@ class TestTokenView(BaseTest):
         self.assertEqual(content['scope'], "read write")
         self.assertEqual(content['expires_in'], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
 
-    def test_resource_owner_password(self):
+    def test_token_request_basic_auth_bad_secret(self):
         """
-        Request an access token using Resource Owner Password Flow
+        Request an access token using basic authentication for client authentication
         """
+        self.client.login(username="test_user", password="123456")
+        authorization_code = self.get_auth()
+
         token_request_data = {
-            'grant_type': 'password',
-            'client_id': self.password_application.client_id,
-            'client_secret': self.password_application.client_secret,
-            'username': 'test_user',
-            'password': '123456',
+            'grant_type': 'authorization_code',
+            'code': authorization_code,
+            'redirect_uri': 'http://example.it'
+        }
+        user_pass = '{0}:{1}'.format(self.code_application.client_id, 'BOOM!')
+        auth_headers = {
+            'HTTP_AUTHORIZATION': 'Basic ' + user_pass.encode('base64'),
+        }
+
+        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 400)
+
+    def test_token_request_public(self):
+        """
+        Request an access token using client_type: public
+        """
+        self.client.login(username="test_user", password="123456")
+        authorization_code = self.get_auth(application=self.public_code_application)
+
+        token_request_data = {
+            'grant_type': 'authorization_code',
+            'code': authorization_code,
+            'redirect_uri': 'http://example.it',
+            'client_id': self.public_code_application.client_id,
+            'client_secret':  self.public_code_application.client_secret,
         }
 
         response = self.client.post(reverse('token'), data=token_request_data)
@@ -358,17 +391,75 @@ class TestTokenView(BaseTest):
         self.assertEqual(content['scope'], "read write")
         self.assertEqual(content['expires_in'], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
 
+    def test_resource_owner_password(self):
+        """
+        Request an access token using Resource Owner Password Flow
+        """
+        token_request_data = {
+            'grant_type': 'password',
+            'username': 'test_user',
+            'password': '123456',
+        }
+        user_pass = '{0}:{1}'.format(self.password_application.client_id,
+                                     self.password_application.client_secret)
+        auth_headers = {
+            'HTTP_AUTHORIZATION': 'Basic ' + user_pass.encode('base64'),
+        }
+
+        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 200)
+
+        content = json.loads(response.content)
+        self.assertEqual(content['token_type'], "Bearer")
+        self.assertEqual(content['scope'], "read write")
+        self.assertEqual(content['expires_in'], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
+
+    def test_resource_owner_password_bad_secret(self):
+        """
+        Request an access token using Resource Owner Password Flow
+        """
+        token_request_data = {
+            'grant_type': 'password',
+            'username': 'test_user',
+            'password': '123456',
+        }
+        user_pass = '{0}:{1}'.format(self.password_application.client_id, 'BOOM!')
+        auth_headers = {
+            'HTTP_AUTHORIZATION': 'Basic ' + user_pass.encode('base64'),
+        }
+
+        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 400)
+
+    def test_resource_owner_password_bad_credentials(self):
+        """
+        Request an access token using Resource Owner Password Flow
+        """
+        token_request_data = {
+            'grant_type': 'password',
+            'client_id': self.password_application.client_id,
+            'client_secret': self.password_application.client_secret,
+            'username': 'test_user',
+            'password': 'NOT_MY_PASS',
+        }
+
+        response = self.client.post(reverse('token'), data=token_request_data)
+        self.assertEqual(response.status_code, 400)
+
     def test_client_credential(self):
         """
         Request an access token using Client Credential Flow
         """
         token_request_data = {
             'grant_type': 'client_credentials',
-            'client_id': self.client_credentials_application.client_id,
-            'client_secret': self.client_credentials_application.client_secret,
+        }
+        user_pass = '{0}:{1}'.format(self.client_credentials_application.client_id,
+                                     self.client_credentials_application.client_secret)
+        auth_headers = {
+            'HTTP_AUTHORIZATION': 'Basic ' + user_pass.encode('base64'),
         }
 
-        response = self.client.post(reverse('token'), data=token_request_data)
+        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
 
 
@@ -445,13 +536,16 @@ class TestProtectedResourceMixin(BaseTest):
     def test_password_resource_access_allowed(self):
         token_request_data = {
             'grant_type': 'password',
-            'client_id': self.password_application.client_id,
-            'client_secret': self.password_application.client_secret,
             'username': 'test_user',
             'password': '123456',
         }
+        user_pass = '{0}:{1}'.format(self.password_application.client_id,
+                                     self.password_application.client_secret)
+        auth_headers = {
+            'HTTP_AUTHORIZATION': 'Basic ' + user_pass.encode('base64'),
+        }
 
-        response = self.client.post(reverse('token'), data=token_request_data)
+        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
         content = json.loads(response.content)
         access_token = content['access_token']
 
@@ -469,11 +563,14 @@ class TestProtectedResourceMixin(BaseTest):
     def test_client_credential_access_allowed(self):
         token_request_data = {
             'grant_type': 'client_credentials',
-            'client_id': self.client_credentials_application.client_id,
-            'client_secret': self.client_credentials_application.client_secret,
+        }
+        user_pass = '{0}:{1}'.format(self.client_credentials_application.client_id,
+                                     self.client_credentials_application.client_secret)
+        auth_headers = {
+            'HTTP_AUTHORIZATION': 'Basic ' + user_pass.encode('base64'),
         }
 
-        response = self.client.post(reverse('token'), data=token_request_data)
+        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
         content = json.loads(response.content)
         access_token = content['access_token']
 

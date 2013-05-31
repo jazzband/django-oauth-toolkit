@@ -33,16 +33,15 @@ class OAuth2Validator(RequestValidator):
         """
         auth = request.headers.get('HTTP_AUTHORIZATION', None)
 
-        if auth:
-            basic, base64 = auth.split(' ')
-            client_id, client_secret = base64.decode('base64').split(':')
-        else:
-            client_id = request.client_id
-            client_secret = request.client_secret
+        if not auth:
+            return False
+
+        basic, base64 = auth.split(' ')
+        client_id, client_secret = base64.decode('base64').split(':')
 
         try:
             request.client = Application.objects.get(client_id=client_id, client_secret=client_secret)
-            return request.client.client_type != Application.CLIENT_CONFIDENTIAL or auth
+            return True
 
         except Application.DoesNotExist:
             return False
@@ -52,8 +51,10 @@ class OAuth2Validator(RequestValidator):
         If we are here, the client did not authenticate itself as in rfc:`3.2.1` and we can proceed only if the client
         exists and it's not of type 'Confidential'. Also assign Application instance to request.client.
         """
+        client_secret = request.client_secret
+
         try:
-            request.client = request.client or Application.objects.get(client_id=client_id)
+            request.client = request.client or Application.objects.get(client_id=client_id, client_secret=client_secret)
             return request.client.client_type != Application.CLIENT_CONFIDENTIAL
 
         except Application.DoesNotExist:
