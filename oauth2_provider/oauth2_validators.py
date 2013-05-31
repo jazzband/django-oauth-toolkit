@@ -93,7 +93,6 @@ class OAuth2Validator(RequestValidator):
         """
         try:
             access_token = AccessToken.objects.get(token=token)
-            request.user = access_token.user
             return access_token.is_valid(scopes)
 
         except AccessToken.DoesNotExist:
@@ -103,7 +102,6 @@ class OAuth2Validator(RequestValidator):
         try:
             grant = Grant.objects.get(code=code, application=client)
             if not grant.is_expired():
-                request.user = grant.user
                 request.scopes = grant.scope.split(' ')
                 return True
 
@@ -151,12 +149,11 @@ class OAuth2Validator(RequestValidator):
 
     def save_bearer_token(self, token, request, *args, **kwargs):
         expires = timezone.now() + timedelta(seconds=oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
-        user = request.user or self.user  # TODO check why if response_type==[token|client_credentials] request.user is None
-        if user.is_anonymous():
-            user = request.client.user
+        if self.user.is_anonymous():
+            self.user = request.client.user
 
         access_token = AccessToken(
-            user=user,
+            user=self.user,
             scope=token['scope'],
             expires=expires,
             token=token['access_token'],
@@ -165,7 +162,7 @@ class OAuth2Validator(RequestValidator):
 
         if 'refresh_token' in token:
             refresh_token = RefreshToken(
-                user=request.user,
+                user=self.user,
                 token=token['refresh_token'],
                 application=request.client,
                 access_token=access_token
@@ -181,6 +178,6 @@ class OAuth2Validator(RequestValidator):
         """
         u = authenticate(username=username, password=password)
         if u is not None and u.is_active:
-            request.user = u
+            self.user = u
             return True
         return False
