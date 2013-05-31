@@ -466,6 +466,28 @@ class TestProtectedResourceMixin(BaseTest):
         response = view(request)
         self.assertEqual(response, "This is a protected resource")
 
+    def test_client_credential_access_allowed(self):
+        token_request_data = {
+            'grant_type': 'client_credentials',
+            'client_id': self.client_credentials_application.client_id,
+            'client_secret': self.client_credentials_application.client_secret,
+        }
+
+        response = self.client.post(reverse('token'), data=token_request_data)
+        content = json.loads(response.content)
+        access_token = content['access_token']
+
+        # use token to access the resource
+        auth_headers = {
+            'HTTP_AUTHORIZATION': 'Bearer ' + access_token,
+        }
+        request = self.factory.get("/fake-resource", **auth_headers)
+        request.user = self.test_user
+
+        view = ResourceView.as_view()
+        response = view(request)
+        self.assertEqual(response, "This is a protected resource")
+        
     def test_resource_access_deny(self):
         auth_headers = {
             'HTTP_AUTHORIZATION': 'Bearer ' + "faketoken",
