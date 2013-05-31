@@ -158,7 +158,7 @@ class TestAuthorizationCodeView(BaseTest):
 
     def test_code_post_auth_bad_responsetype(self):
         """
-        Test authorization code is given for an allowed request with response_type: code
+        Test authorization code is given for an allowed request with a response_type not supported
         """
         self.client.login(username="test_user", password="123456")
 
