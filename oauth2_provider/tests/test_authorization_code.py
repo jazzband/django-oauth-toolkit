@@ -156,6 +156,25 @@ class TestAuthorizationCodeView(BaseTest):
         self.assertEqual(response.status_code, 302)
         self.assertIn("error=access_denied", response['Location'])
 
+    def test_code_post_auth_bad_responsetype(self):
+        """
+        Test authorization code is given for an allowed request with response_type: code
+        """
+        self.client.login(username="test_user", password="123456")
+
+        form_data = {
+            'client_id': self.application.client_id,
+            'state': 'random_state_string',
+            'scopes': 'read write',
+            'redirect_uri': 'http://example.it',
+            'response_type': 'UNKNOWN',
+            'allow': True,
+        }
+
+        response = self.client.post(reverse('authorize'), data=form_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('http://example.it/?error', response['Location'])
+
 
 class TestAuthorizationCodeTokenView(BaseTest):
     def get_auth(self):
