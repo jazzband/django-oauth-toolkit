@@ -1,32 +1,43 @@
 import logging
 
 from django.views.generic import View, FormView
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 
 from oauthlib.oauth2 import Server
-from oauthlib import oauth2
 
 from braces.views import LoginRequiredMixin, CsrfExemptMixin
 
-from .oauth2_validators import OAuth2Validator
-from .models import Application
+from .exceptions import OAuthToolkitError
 from .forms import AllowForm
 from .mixins import OAuthLibMixin, ProtectedResourceMixin, ScopedResourceMixin
+from .models import Application
+from .oauth2_validators import OAuth2Validator
 
 
 log = logging.getLogger('oauth2_provider')
 
 
-class OAuth2Mixin(OAuthLibMixin):
+class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
     """
 
     """
     def dispatch(self, request, *args, **kwargs):
         self.oauth2_data = {}
-        return super(OAuth2Mixin, self).dispatch(request, *args, **kwargs)
+        return super(BaseAuthorizationView, self).dispatch(request, *args, **kwargs)
+
+    def error_response(self, error, **kwargs):
+        """
+        """
+        redirect, error_response = super(BaseAuthorizationView, self).error_response(error, **kwargs)
+
+        if redirect:
+            return HttpResponseRedirect(error_response['url'])
+
+        status = error_response['error'].status_code
+        return self.render_to_response(error_response, status=status)
 
 
-class AuthorizationCodeView(LoginRequiredMixin, OAuth2Mixin, FormView):
+class AuthorizationCodeView(BaseAuthorizationView, FormView):
     """
     """
     template_name = 'oauth2_provider/authorize.html'
@@ -48,11 +59,7 @@ class AuthorizationCodeView(LoginRequiredMixin, OAuth2Mixin, FormView):
         return initial_data
 
     def form_valid(self, form):
-        redirect_uri = form.cleaned_data.get('redirect_uri')
         try:
-            if not form.cleaned_data.get('allow'):
-                raise oauth2.AccessDeniedError()
-
             credentials = {
                 'client_id': form.cleaned_data.get('client_id'),
                 'redirect_uri': form.cleaned_data.get('redirect_uri'),
@@ -61,14 +68,15 @@ class AuthorizationCodeView(LoginRequiredMixin, OAuth2Mixin, FormView):
             }
 
             scopes = form.cleaned_data.get('scopes')
+            allow = form.cleaned_data.get('allow')
             uri, headers, body, status = self.create_authorization_response(
-                request=self.request, scopes=scopes, credentials=credentials)
+                request=self.request, scopes=scopes, credentials=credentials, allow=allow)
             self.success_url = uri
             log.debug("Success url for the request: {0}".format(self.success_url))
             return super(AuthorizationCodeView, self).form_valid(form)
 
-        except oauth2.OAuth2Error as e:
-            return self.error_response(e, redirect_uri=redirect_uri)
+        except OAuthToolkitError as error:
+            return self.error_response(error)
 
     def get(self, request, *args, **kwargs):
         try:
@@ -83,11 +91,11 @@ class AuthorizationCodeView(LoginRequiredMixin, OAuth2Mixin, FormView):
             kwargs['form'] = form
             return self.render_to_response(self.get_context_data(**kwargs))
 
-        except oauth2.OAuth2Error as e:
-            return self.error_response(e, **kwargs)
+        except OAuthToolkitError as error:
+            return self.error_response(error)
 
 
-class TokenView(CsrfExemptMixin, OAuth2Mixin, View):
+class TokenView(CsrfExemptMixin, OAuthLibMixin, View):
     """
     """
     server_class = Server

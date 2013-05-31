@@ -1,10 +1,12 @@
 import logging
 
 from django.core.exceptions import ImproperlyConfigured
-from django.http import HttpResponseRedirect, HttpResponseForbidden
+from django.http import HttpResponseForbidden
 
 from oauthlib.common import urlencode
 from oauthlib import oauth2
+
+from .exceptions import OAuthToolkitError
 
 
 log = logging.getLogger("oauth2_provider")
@@ -70,15 +72,18 @@ class OAuthLibMixin(object):
 
         :param request: The current django.http.HttpRequest object
         """
-        uri, http_method, body, headers = self._extract_params(request)
+        try:
+            uri, http_method, body, headers = self._extract_params(request)
 
-        server = self.get_server(request)
-        scopes, credentials = server.validate_authorization_request(
-            uri, http_method=http_method, body=body, headers=headers)
+            server = self.get_server(request)
+            scopes, credentials = server.validate_authorization_request(
+                uri, http_method=http_method, body=body, headers=headers)
 
-        return scopes, credentials
+            return scopes, credentials
+        except oauth2.OAuth2Error as error:
+            raise OAuthToolkitError(error=error)
 
-    def create_authorization_response(self, request, scopes, credentials):
+    def create_authorization_response(self, request, scopes, credentials, allow):
         """
         A wrapper methods that calls create_authorization_response on `server_class`
         instance.
@@ -87,15 +92,23 @@ class OAuthLibMixin(object):
         :param scopes: A space-separated string of provided scopes
         :param credentials: Authorization credentials dictionary containing
                            `client_id`, `state`, `redirect_uri`, `response_type`
+        :param allow: True if the user authorize the client, otherwise False
         """
-        # TODO: move this scopes conversion from and to string into a utils function
-        scopes = scopes.split(" ") if scopes else []
+        try:
+            if not allow:
+                raise oauth2.AccessDeniedError()
 
-        server = self.get_server(request)
-        uri, headers, body, status = server.create_authorization_response(
-            uri=credentials['redirect_uri'], scopes=scopes, credentials=credentials)
+            # TODO: move this scopes conversion from and to string into a utils function
+            scopes = scopes.split(" ") if scopes else []
 
-        return uri, headers, body, status
+            server = self.get_server(request)
+            uri, headers, body, status = server.create_authorization_response(
+                uri=credentials['redirect_uri'], scopes=scopes, credentials=credentials)
+
+            return uri, headers, body, status
+
+        except oauth2.OAuth2Error as error:
+            raise OAuthToolkitError(error=error, redirect_uri=credentials['redirect_uri'])
 
     def create_token_response(self, request):
         """
@@ -128,27 +141,26 @@ class OAuthLibMixin(object):
     def get_scopes(self):
         return []
 
-    def error_response(self, error, redirect_uri=None, **kwargs):
+    def error_response(self, error, **kwargs):
         """
         Return an error to be displayed to the resource owner if anything goes awry.
 
-        :param error: :attr:`oauthlib.errors.OAuth2Error`
-        :param uri: ``dict``
-            The different types of errors are outlined in :draft:`4.2.2.1`
+        :param error: :attr:`OAuthToolkitError`
         """
+        error = error.oauthlib_error
+        error_response = {
+            'error': error,
+            'url': "{0}?{1}".format(error.redirect_uri, error.urlencoded)
+        }
+        error_response.update(kwargs)
 
-        # If we got a malicious redirect_uri or client_id, remove all the
-        # cached data and tell the resource owner. We will *not* redirect back
-        # to the URL.
-        # TODO: this method assumes the class has a render_to_response error
+        # If we got a malicious redirect_uri or client_id, we will *not* redirect back to the URL.
         if isinstance(error, oauth2.FatalClientError):
-            return self.render_to_response({'error': error}, status=error.status_code, **kwargs)
+            redirect = False
+        else:
+            redirect = True
 
-        if not redirect_uri:
-            redirect_uri = error.redirect_uri
-
-        url = "{0}?{1}".format(redirect_uri, error.urlencoded)
-        return HttpResponseRedirect(url)
+        return redirect, error_response
 
 
 class ScopedResourceMixin(object):
