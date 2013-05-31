@@ -21,11 +21,12 @@ class BaseTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.test_user = get_user_model().objects.create_user("test_user", "test@user.com", "123456")
+        self.dev_user = get_user_model().objects.create_user("dev_user", "dev@user.com", "123456")
 
         self.code_application = Application(
             name="test_app",
             redirect_uris="http://localhost http://example.com http://example.it",
-            user=self.test_user,
+            user=self.dev_user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
         )
@@ -34,7 +35,7 @@ class BaseTest(TestCase):
         self.token_application = Application(
             name="test_implicit_app",
             redirect_uris="http://localhost http://example.com http://example.it",
-            user=self.test_user,
+            user=self.dev_user,
             client_type=Application.CLIENT_PUBLIC,
             authorization_grant_type=Application.GRANT_IMPLICIT,
         )
@@ -42,7 +43,7 @@ class BaseTest(TestCase):
 
         self.password_application = Application(
             name="test_password_app",
-            user=self.test_user,
+            user=self.dev_user,
             client_type=Application.CLIENT_PUBLIC,
             authorization_grant_type=Application.GRANT_PASSWORD,
         )
@@ -50,7 +51,7 @@ class BaseTest(TestCase):
 
         self.client_credentials_application = Application(
             name="test_client_credentials_app",
-            user=self.test_user,
+            user=self.dev_user,
             client_type=Application.CLIENT_PUBLIC,
             authorization_grant_type=Application.GRANT_CLIENT_CREDENTIALS,
         )
