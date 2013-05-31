@@ -5,8 +5,9 @@ from urlparse import urlparse, parse_qs
 from django.core.urlresolvers import reverse
 from django.contrib.auth import get_user_model
 from django.test import TestCase, RequestFactory
+from django.utils import timezone
 
-from ..models import Application
+from ..models import Application, Grant
 from ..views import ProtectedResourceView
 from ..settings import oauth2_settings
 
@@ -353,6 +354,28 @@ class TestTokenView(BaseTest):
         Request an access token using a bad authorization code
         """
         self.client.login(username="test_user", password="123456")
+
+        token_request_data = {
+            'grant_type': 'authorization_code',
+            'code': 'BLAH',
+            'redirect_uri': 'http://example.it'
+        }
+        user_pass = '{0}:{1}'.format(self.code_application.client_id, self.code_application.client_secret)
+        auth_headers = {
+            'HTTP_AUTHORIZATION': 'Basic ' + user_pass.encode('base64'),
+        }
+
+        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 400)
+
+    def test_token_request_basic_auth_grant_expired(self):
+        """
+        Request an access token using an expired grant token
+        """
+        self.client.login(username="test_user", password="123456")
+        g = Grant(application=self.code_application, user=self.test_user, code='BLAH', expires=timezone.now(),
+                  redirect_uri='', scope='')
+        g.save()
 
         token_request_data = {
             'grant_type': 'authorization_code',
