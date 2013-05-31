@@ -88,6 +88,9 @@ class OAuth2Validator(RequestValidator):
         return request.client.default_redirect_uri
 
     def validate_bearer_token(self, token, scopes, request):
+        """
+        When users try to access resources, check that provided token is valid
+        """
         try:
             access_token = AccessToken.objects.get(token=token)
             request.user = access_token.user
