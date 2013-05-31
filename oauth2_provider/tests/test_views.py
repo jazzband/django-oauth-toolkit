@@ -348,6 +348,25 @@ class TestTokenView(BaseTest):
         self.assertEqual(content['scope'], "read write")
         self.assertEqual(content['expires_in'], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
 
+    def test_token_request_basic_auth_bad_authcode(self):
+        """
+        Request an access token using a bad authorization code
+        """
+        self.client.login(username="test_user", password="123456")
+
+        token_request_data = {
+            'grant_type': 'authorization_code',
+            'code': 'BLAH',
+            'redirect_uri': 'http://example.it'
+        }
+        user_pass = '{0}:{1}'.format(self.code_application.client_id, self.code_application.client_secret)
+        auth_headers = {
+            'HTTP_AUTHORIZATION': 'Basic ' + user_pass.encode('base64'),
+        }
+
+        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 400)
+
     def test_token_request_basic_auth_bad_secret(self):
         """
         Request an access token using basic authentication for client authentication

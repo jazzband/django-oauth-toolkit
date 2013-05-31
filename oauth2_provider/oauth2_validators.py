@@ -105,6 +105,7 @@ class OAuth2Validator(RequestValidator):
             if not grant.is_expired():
                 request.scopes = grant.scope.split(' ')
                 return True
+            return False
 
         except Grant.DoesNotExist:
             return False
