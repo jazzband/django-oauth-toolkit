@@ -238,6 +238,25 @@ class TestAuthorizationCodeTokenView(BaseTest):
         response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 400)
 
+    def test_basic_auth_bad_granttype(self):
+        """
+        Request an access token using a bad grant_type string
+        """
+        self.client.login(username="test_user", password="123456")
+
+        token_request_data = {
+            'grant_type': 'UNKNOWN',
+            'code': 'BLAH',
+            'redirect_uri': 'http://example.it'
+        }
+        user_pass = '{0}:{1}'.format(self.application.client_id, self.application.client_secret)
+        auth_headers = {
+            'HTTP_AUTHORIZATION': 'Basic ' + user_pass.encode('base64'),
+        }
+
+        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 400)
+
     def test_basic_auth_grant_expired(self):
         """
         Request an access token using an expired grant token
