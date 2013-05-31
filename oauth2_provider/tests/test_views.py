@@ -336,7 +336,7 @@ class TestTokenView(BaseTest):
         content = json.loads(response.content)
         self.assertEqual(content['token_type'], "Bearer")
         self.assertEqual(content['scope'], "read write")
-        self.assertEqual(content['expires_in'], 36000)
+        self.assertEqual(content['expires_in'], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
 
     def test_resource_owner_password(self):
         """
@@ -356,7 +356,7 @@ class TestTokenView(BaseTest):
         content = json.loads(response.content)
         self.assertEqual(content['token_type'], "Bearer")
         self.assertEqual(content['scope'], "read write")
-        self.assertEqual(content['expires_in'], 36000)
+        self.assertEqual(content['expires_in'], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
 
     def test_client_credential(self):
         """
