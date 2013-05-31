@@ -133,12 +133,15 @@ class OAuthLibMixin(object):
         uri, http_method, body, headers = self._extract_params(request)
 
         server = self.get_server(request)
-        # TODO: we need to pass a list of scopes requested by the protected resource
         valid, r = server.verify_request(uri, http_method, body, headers, scopes=self.get_scopes())
 
         return valid, r
 
     def get_scopes(self):
+        """
+        This should return the list of scopes required to access the resources. By default
+        it returns an empty list
+        """
         return []
 
     def error_response(self, error, **kwargs):
@@ -165,6 +168,7 @@ class OAuthLibMixin(object):
 
 class ScopedResourceMixin(object):
     """
+    Helper mixin that handles scopes
     """
     requested_scopes = None
 
