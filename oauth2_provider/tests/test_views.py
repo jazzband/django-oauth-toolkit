@@ -479,13 +479,15 @@ class TestTokenView(BaseTest):
         """
         token_request_data = {
             'grant_type': 'password',
-            'client_id': self.password_application.client_id,
-            'client_secret': self.password_application.client_secret,
             'username': 'test_user',
             'password': 'NOT_MY_PASS',
         }
+        user_pass = '{0}:{1}'.format(self.password_application.client_id, self.password_application.client_secret)
+        auth_headers = {
+            'HTTP_AUTHORIZATION': 'Basic ' + user_pass.encode('base64'),
+        }
 
-        response = self.client.post(reverse('token'), data=token_request_data)
+        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 400)
 
     def test_client_credential(self):
