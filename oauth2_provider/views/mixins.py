@@ -6,7 +6,7 @@ from django.http import HttpResponseForbidden
 from oauthlib.common import urlencode
 from oauthlib import oauth2
 
-from .exceptions import OAuthToolkitError
+from ..exceptions import OAuthToolkitError
 
 
 log = logging.getLogger("oauth2_provider")

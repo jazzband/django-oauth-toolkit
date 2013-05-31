@@ -4,7 +4,7 @@ from django.test import TestCase, RequestFactory
 
 from oauthlib.oauth2 import Server
 
-from ..mixins import OAuthLibMixin, ScopedResourceMixin
+from ..views.mixins import OAuthLibMixin, ScopedResourceMixin
 from ..oauth2_validators import OAuth2Validator
 
 

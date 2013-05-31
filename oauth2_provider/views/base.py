@@ -7,11 +7,11 @@ from oauthlib.oauth2 import Server
 
 from braces.views import LoginRequiredMixin, CsrfExemptMixin
 
-from .exceptions import OAuthToolkitError
-from .forms import AllowForm
-from .mixins import OAuthLibMixin, ProtectedResourceMixin, ScopedResourceMixin
-from .models import Application
-from .oauth2_validators import OAuth2Validator
+from ..exceptions import OAuthToolkitError
+from ..forms import AllowForm
+from ..models import Application
+from ..oauth2_validators import OAuth2Validator
+from .mixins import OAuthLibMixin
 
 
 log = logging.getLogger('oauth2_provider')
@@ -108,15 +108,3 @@ class TokenView(CsrfExemptMixin, OAuthLibMixin, View):
         for k, v in headers.items():
             response[k] = v
         return response
-
-
-class ProtectedResourceView(ProtectedResourceMixin, View):
-    """
-    """
-    server_class = Server
-    validator_class = OAuth2Validator
-
-
-class ScopeProtectedResourceView(ScopedResourceMixin, ProtectedResourceView):
-    """
-    """
