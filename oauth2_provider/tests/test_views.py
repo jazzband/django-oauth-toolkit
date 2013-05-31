@@ -487,7 +487,7 @@ class TestProtectedResourceMixin(BaseTest):
         view = ResourceView.as_view()
         response = view(request)
         self.assertEqual(response, "This is a protected resource")
-        
+
     def test_resource_access_deny(self):
         auth_headers = {
             'HTTP_AUTHORIZATION': 'Bearer ' + "faketoken",

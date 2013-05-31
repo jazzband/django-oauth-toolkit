@@ -189,5 +189,3 @@ class ProtectedResourceMixin(OAuthLibMixin):
             return super(ProtectedResourceMixin, self).dispatch(request, *args, **kwargs)
         else:
             return HttpResponseForbidden()
-
-
