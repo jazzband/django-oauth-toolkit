@@ -37,7 +37,7 @@ class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
         return self.render_to_response(error_response, status=status)
 
 
-class AuthorizationCodeView(BaseAuthorizationView, FormView):
+class AuthorizationView(BaseAuthorizationView, FormView):
     """
     """
     template_name = 'oauth2_provider/authorize.html'
@@ -73,7 +73,7 @@ class AuthorizationCodeView(BaseAuthorizationView, FormView):
                 request=self.request, scopes=scopes, credentials=credentials, allow=allow)
             self.success_url = uri
             log.debug("Success url for the request: {0}".format(self.success_url))
-            return super(AuthorizationCodeView, self).form_valid(form)
+            return super(AuthorizationView, self).form_valid(form)
 
         except OAuthToolkitError as error:
             return self.error_response(error)
