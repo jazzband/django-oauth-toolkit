@@ -4,7 +4,6 @@ from urlparse import urlparse, parse_qs
 
 from django.core.urlresolvers import reverse
 from django.contrib.auth import get_user_model
-from django.views.generic import View
 from django.test import TestCase, RequestFactory
 
 from ..models import Application
