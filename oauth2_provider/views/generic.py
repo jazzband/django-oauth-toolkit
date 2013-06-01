@@ -8,6 +8,7 @@ from .mixins import ProtectedResourceMixin, ScopedResourceMixin
 
 class ProtectedResourceView(ProtectedResourceMixin, View):
     """
+    Generic view protecting resources by providing OAuth2 authentication out of the box
     """
     server_class = Server
     validator_class = OAuth2Validator
@@ -15,4 +16,5 @@ class ProtectedResourceView(ProtectedResourceMixin, View):
 
 class ScopeProtectedResourceView(ScopedResourceMixin, ProtectedResourceView):
     """
+    Generic view protecting resources by providing OAuth2 authentication and Scopes handling out of the box
     """
