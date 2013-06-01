@@ -11,7 +11,8 @@ API
 .. toctree::
    :maxdepth: 2
 
-   api
+   models
+   views
 
 
 Indices and tables
