@@ -63,6 +63,8 @@ class Application(models.Model):
     def redirect_uri_allowed(self, uri):
         """
         Checks if given url is one of the items in :attr:`redirect_uris` string
+
+        :param uri: Url to check
         """
         uri = uri.rstrip("/")
         return uri in self.redirect_uris.split()
@@ -126,6 +128,8 @@ class AccessToken(models.Model):
     def is_valid(self, scopes=None):
         """
         Checks if the access token is valid.
+
+        :param scopes: An iterable containing the scopes to check or None
         """
         return not self.is_expired() and self.allow_scopes(scopes)
 
@@ -139,9 +143,7 @@ class AccessToken(models.Model):
         """
         Check if the token allows the provided scopes
 
-        Params:
-
-        * :attr:`scopes` An iterable containing the scopes to check
+        :param scopes: An iterable containing the scopes to check
         """
         if not scopes:
             return True
