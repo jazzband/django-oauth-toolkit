@@ -14,7 +14,7 @@ class ProtectedResourceView(ProtectedResourceMixin, View):
     validator_class = OAuth2Validator
 
 
-class ScopeProtectedResourceView(ScopedResourceMixin, ProtectedResourceView):
+class ScopedProtectedResourceView(ScopedResourceMixin, ProtectedResourceView):
     """
     Generic view protecting resources by providing OAuth2 authentication and Scopes handling out of the box
     """
