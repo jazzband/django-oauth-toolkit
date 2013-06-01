@@ -14,6 +14,7 @@ log = logging.getLogger("oauth2_provider")
 
 class OAuthLibMixin(object):
     """
+    This mixin decouples Django OAuth Toolkit from OAuthLib.
     """
     server_class = None
     validator_class = None
@@ -51,7 +52,8 @@ class OAuthLibMixin(object):
 
     def _extract_params(self, request):
         """
-
+        Extract parameters from the Django request object. Such parameters will then be passed to OAuthLib to build its
+        own Request object
         """
         uri = request.build_absolute_uri()
         http_method = request.method
@@ -67,8 +69,7 @@ class OAuthLibMixin(object):
 
     def validate_authorization_request(self, request):
         """
-        A wrapper methods that calls validate_authorization_request on `server_class`
-        instance.
+        A wrapper method that calls validate_authorization_request on `server_class` instance.
 
         :param request: The current django.http.HttpRequest object
         """
@@ -85,7 +86,7 @@ class OAuthLibMixin(object):
 
     def create_authorization_response(self, request, scopes, credentials, allow):
         """
-        A wrapper methods that calls create_authorization_response on `server_class`
+        A wrapper method that calls create_authorization_response on `server_class`
         instance.
 
         :param request: The current django.http.HttpRequest object
@@ -112,7 +113,7 @@ class OAuthLibMixin(object):
 
     def create_token_response(self, request):
         """
-        A wrapper methods that calls create_token_response on `server_class` instance.
+        A wrapper method that calls create_token_response on `server_class` instance.
 
         :param request: The current django.http.HttpRequest object
         """
@@ -126,7 +127,7 @@ class OAuthLibMixin(object):
 
     def verify_request(self, request):
         """
-        A wrapper methods that calls verify_request on `server_class` instance.
+        A wrapper method that calls verify_request on `server_class` instance.
 
         :param request: The current django.http.HttpRequest object
         """
@@ -139,8 +140,7 @@ class OAuthLibMixin(object):
 
     def get_scopes(self):
         """
-        This should return the list of scopes required to access the resources. By default
-        it returns an empty list
+        This should return the list of scopes required to access the resources. By default it returns an empty list
         """
         return []
 
@@ -168,13 +168,15 @@ class OAuthLibMixin(object):
 
 class ScopedResourceMixin(object):
     """
-    Helper mixin that handles scopes
+    Helper mixin that implements "scopes handling" behaviour
     """
     requested_scopes = None
 
     def get_scopes(self, *args, **kwargs):
         """
         Return the scopes needed to access the resource
+
+        :param args: Support scopes injections from the outside (not yet implemented)
         """
         if self.requested_scopes is None:
             raise ImproperlyConfigured(
@@ -186,6 +188,7 @@ class ScopedResourceMixin(object):
 
 class ProtectedResourceMixin(OAuthLibMixin):
     """
+    Helper mixin that implements OAuth2 protection on request dispatch, specially useful for Django Generic Views
     """
     def dispatch(self, request, *args, **kwargs):
         valid, r = self.verify_request(request)
