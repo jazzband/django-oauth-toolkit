@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from django.test import TestCase
 
 from ..settings import oauth2_settings

@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from django.core.exceptions import ImproperlyConfigured
 from django.views.generic import View
 from django.test import TestCase, RequestFactory
