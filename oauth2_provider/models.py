@@ -3,6 +3,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.utils.translation import ugettext as _
 
+from .compat import User
 from .generators import generate_client_secret, generate_client_id
 from .validators import validate_uris
 
@@ -45,7 +46,7 @@ class Application(models.Model):
     )
 
     client_id = models.CharField(max_length=100, unique=True, default=generate_client_id)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    user = models.ForeignKey(User)
     redirect_uris = models.TextField(help_text=_("Allowed URIs list, space separated"),
                                      validators=[validate_uris], blank=True)  # TODO validate this field depending on authorization_grant_type
     client_type = models.CharField(max_length=32, choices=CLIENT_TYPES)
@@ -87,7 +88,7 @@ class Grant(models.Model):
     * :attr:`redirect_uri` Self explained
     * :attr:`scope` Requested scopes, optional
     """
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    user = models.ForeignKey(User)
     code = models.CharField(max_length=255)  # code comes from oauthlib
     application = models.ForeignKey(Application)
     expires = models.DateTimeField()
@@ -119,7 +120,7 @@ class AccessToken(models.Model):
     * :attr:`expires` Expire time in seconds, defaults to :data:`settings.ACCESS_TOKEN_EXPIRE_SECONDS`
     * :attr:`scope` Allowed scopes
     """
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    user = models.ForeignKey(User)
     token = models.CharField(max_length=255)
     application = models.ForeignKey(Application)
     expires = models.DateTimeField()
@@ -168,7 +169,7 @@ class RefreshToken(models.Model):
     * :attr:`application` Application instance
     * :attr:`access_token` AccessToken instance this refresh token is bounded to
     """
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    user = models.ForeignKey(User)
     token = models.CharField(max_length=255)
     application = models.ForeignKey(Application)
     access_token = models.OneToOneField(AccessToken, related_name='refresh_token')

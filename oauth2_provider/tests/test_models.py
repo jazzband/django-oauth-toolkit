@@ -1,14 +1,14 @@
 from __future__ import unicode_literals
 
 from django.test import TestCase
-from django.contrib.auth import get_user_model
 
+from ..compat import User
 from ..models import AccessToken, Application
 
 
 class TestModels(TestCase):
     def setUp(self):
-        self.user = get_user_model().objects.create_user("test_user", "test@user.com", "123456")
+        self.user = User.objects.create_user("test_user", "test@user.com", "123456")
 
     def test_allow_scopes(self):
         self.client.login(username="test_user", password="123456")
