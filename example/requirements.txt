@@ -8,5 +8,5 @@ django-coverage==1.2.2
 coverage==3.6
 gunicorn==0.17.4
 dj-database-url==0.2.1
-django-oauth-toolkit==0.1.0
+-e git://github.com/evonove/django-oauth-toolkit.git#egg=django-oauth-toolkit
 requests==1.2.3
