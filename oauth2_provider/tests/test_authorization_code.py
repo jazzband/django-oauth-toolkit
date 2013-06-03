@@ -12,6 +12,8 @@ from ..models import Application, Grant
 from ..settings import oauth2_settings
 from ..views import ProtectedResourceView
 
+from .test_utils import TestCaseUtils
+
 
 # mocking a protected resource view
 class ResourceView(ProtectedResourceView):
@@ -19,7 +21,7 @@ class ResourceView(ProtectedResourceView):
         return "This is a protected resource"
 
 
-class BaseTest(TestCase):
+class BaseTest(TestCaseUtils, TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.test_user = get_user_model().objects.create_user("test_user", "test@user.com", "123456")
@@ -207,10 +209,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             'code': authorization_code,
             'redirect_uri': 'http://example.it'
         }
-        user_pass = '{0}:{1}'.format(self.application.client_id, self.application.client_secret)
-        auth_headers = {
-            'HTTP_AUTHORIZATION': 'Basic ' + user_pass.encode('base64'),
-        }
+        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
         response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
@@ -231,10 +230,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             'code': 'BLAH',
             'redirect_uri': 'http://example.it'
         }
-        user_pass = '{0}:{1}'.format(self.application.client_id, self.application.client_secret)
-        auth_headers = {
-            'HTTP_AUTHORIZATION': 'Basic ' + user_pass.encode('base64'),
-        }
+        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
         response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 400)
@@ -250,10 +246,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             'code': 'BLAH',
             'redirect_uri': 'http://example.it'
         }
-        user_pass = '{0}:{1}'.format(self.application.client_id, self.application.client_secret)
-        auth_headers = {
-            'HTTP_AUTHORIZATION': 'Basic ' + user_pass.encode('base64'),
-        }
+        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
         response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 400)
@@ -272,10 +265,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             'code': 'BLAH',
             'redirect_uri': 'http://example.it'
         }
-        user_pass = '{0}:{1}'.format(self.application.client_id, self.application.client_secret)
-        auth_headers = {
-            'HTTP_AUTHORIZATION': 'Basic ' + user_pass.encode('base64'),
-        }
+        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
         response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 400)
@@ -292,10 +282,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             'code': authorization_code,
             'redirect_uri': 'http://example.it'
         }
-        user_pass = '{0}:{1}'.format(self.application.client_id, 'BOOM!')
-        auth_headers = {
-            'HTTP_AUTHORIZATION': 'Basic ' + user_pass.encode('base64'),
-        }
+        auth_headers = self.get_basic_auth_header(self.application.client_id, 'BOOM!')
 
         response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 400)
@@ -350,10 +337,8 @@ class TestAuthorizationCodeProtectedResource(BaseTest):
             'code': authorization_code,
             'redirect_uri': 'http://example.it'
         }
-        user_pass = '{0}:{1}'.format(self.application.client_id, self.application.client_secret)
-        auth_headers = {
-            'HTTP_AUTHORIZATION': 'Basic ' + user_pass.encode('base64'),
-        }
+        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
+
         response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
         content = json.loads(response.content)
         access_token = content['access_token']

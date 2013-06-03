@@ -1,3 +1,4 @@
+import base64
 import logging
 from datetime import timedelta
 
@@ -36,8 +37,11 @@ class OAuth2Validator(RequestValidator):
         if not auth:
             return False
 
-        basic, base64 = auth.split(' ')
-        client_id, client_secret = base64.decode('base64').split(':')
+        auth_type, auth_string = auth.split(' ')
+        encoding = request.encoding or 'utf-8'
+
+        auth_string_decoded = base64.b64decode(auth_string).decode(encoding)
+        client_id, client_secret = auth_string_decoded.split(':')
 
         try:
             request.client = Application.objects.get(client_id=client_id, client_secret=client_secret)
