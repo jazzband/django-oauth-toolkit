@@ -133,8 +133,9 @@ class TestImplicitAuthorizationCodeView(BaseTest):
 
         response = self.client.post(reverse('authorize'), data=form_data)
         self.assertEqual(response.status_code, 302)
-        self.assertIn('http://example.it/#access_token=', response['Location'])
-        self.assertIn('&state=random_state_string', response['Location'])
+        self.assertIn('http://example.it/#', response['Location'])
+        self.assertIn('access_token=', response['Location'])
+        self.assertIn('state=random_state_string', response['Location'])
 
     def test_token_post_auth_deny(self):
         """
