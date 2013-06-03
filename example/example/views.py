@@ -1,8 +1,5 @@
 import urllib
 
-import requests
-from requests.auth import HTTPBasicAuth
-
 from django.http import HttpResponse
 from django.core.urlresolvers import reverse
 from django.views.generic import FormView, TemplateView
@@ -32,6 +29,9 @@ def home(request):
 
 
 def exchange(request):
+    import requests
+    from requests.auth import HTTPBasicAuth
+
     auth_code = request.GET.get('code', None)
     if not auth_code:
         return HttpResponse()
