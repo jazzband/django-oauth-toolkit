@@ -214,7 +214,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
 
-        content = json.loads(response.content)
+        content = json.loads(response.content.decode("utf-8"))
         self.assertEqual(content['token_type'], "Bearer")
         self.assertEqual(content['scope'], "read write")
         self.assertEqual(content['expires_in'], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
@@ -308,7 +308,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         response = self.client.post(reverse('token'), data=token_request_data)
         self.assertEqual(response.status_code, 200)
 
-        content = json.loads(response.content)
+        content = json.loads(response.content.decode("utf-8"))
         self.assertEqual(content['token_type'], "Bearer")
         self.assertEqual(content['scope'], "read write")
         self.assertEqual(content['expires_in'], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
@@ -340,7 +340,7 @@ class TestAuthorizationCodeProtectedResource(BaseTest):
         auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
         response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
-        content = json.loads(response.content)
+        content = json.loads(response.content.decode("utf-8"))
         access_token = content['access_token']
 
         # use token to access the resource
