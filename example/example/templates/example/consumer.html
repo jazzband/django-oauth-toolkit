@@ -1,0 +1,25 @@
+{% extends "example/base.html" %}
+{% load url from future %}
+
+{% block content %}
+<h1>Test your OAuth2 provider, I'll be your consumer</h1>
+<p class="lead">(At this point, you should have created an Application instance on your side.)</p>
+    {% if not error %}
+        <form method="post" action="">
+            <fieldset>
+                <legend>Build an authorization link for your provider</legend>
+                <label>Cliend id</label>
+                {{ form.client_id }}
+                <span class="help-block">Your Application's client_id field.</span>
+                <label>Authorization url</label>
+                {{ form.authorization_url }}
+                <span class="help-block">
+                    The url to the authorization page, it's ok if it points to localhost
+                    (e.g. http://localhost:8000/o/authorize).
+                </span>
+                <button type="submit" class="btn">Submit</button>
+            </fieldset>
+        {% csrf_token %}
+        </form>
+    {% endif %}
+{% endblock %}

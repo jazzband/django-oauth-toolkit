@@ -1,0 +1,9 @@
+{% extends "example/base.html" %}
+
+
+{% block content %}
+    <p class="lead">Ok, here is the link you have to use to reach your authorization page to beg for an authorization
+        token</p>
+    <p>Now click, give your authorization and see you later, possibly with an access token</p>
+    <a href="{{ authorization_link }}">{{ authorization_link }}</a>
+{% endblock %}
