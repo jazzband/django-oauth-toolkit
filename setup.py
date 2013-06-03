@@ -25,12 +25,13 @@ setup(
     description="OAuth2 goodies for the Djangonauts",
     long_description=LONG_DESCRIPTION,
     classifiers=[
-        "Development Status :: 2 - Pre-Alpha",
+        "Development Status :: 3 - Alpha",
         "Environment :: Web Environment",
         "Framework :: Django",
         "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3.3",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     keywords='django oauth oauth2 oauthlib',
@@ -42,7 +43,7 @@ setup(
     include_package_data=True,
     test_suite='runtests',
     install_requires=[
-        'django>=1.5.0',
+        'django>=1.4.0',
         'django-braces==1.0.0',
         'six==1.3.0',
         'oauthlib==0.4.2',
