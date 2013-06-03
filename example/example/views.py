@@ -3,8 +3,7 @@ from django.core.urlresolvers import reverse
 from django.views.generic import FormView, TemplateView
 
 from oauth2_provider.compat import urlencode
-
-from .forms import ConsumerForm
+from .forms import ConsumerForm, ConsumerExchangeForm
 
 CLIENT_ID = '3b2b4de5b14e2c708a01b0a349b9eab5a7615daa'
 CLIENT_SECRET = '8e8bfeafdc7c16bdb80e5809afe994e5aec8b63adfa31cd127677318f872201880d38082af71320e36aec3e9847ff70c2b3d2555eb53ca12947c254add7d2c20'
@@ -44,6 +43,24 @@ def exchange(request):
     r = requests.post('http://localhost:8000' + reverse('token'), params=token_request_data,
                       auth=HTTPBasicAuth(CLIENT_ID, CLIENT_SECRET))
     return HttpResponse(r)
+
+
+class ConsumerExchangeView(FormView):
+    form_class = ConsumerExchangeForm
+    template_name = 'example/consumer-exchange.html'
+
+    def get(self, request, *args, **kwargs):
+        try:
+            self.initial = {
+                'code': request.GET['code'],
+                'state': request.GET['state'],
+            }
+        except KeyError:
+            kwargs['noparams'] = True
+
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        return self.render_to_response(self.get_context_data(form=form, **kwargs))
 
 
 class ConsumerView(FormView):

@@ -1,0 +1,73 @@
+{% extends "example/base.html" %}
+{% load url from future %}
+
+{% block content %}
+<p class="lead">Token Trading!</p>
+    {% if not error %}
+        {% if not noparams %}
+        <p>bla bla</p>
+        <form method="post">
+            <fieldset>
+                <legend>Trade your authorization token for a more powerful access token</legend>
+                <label>Code</label>
+                {{ form.code }}
+                <span class="help-block">The authorization token provided by your server</span>
+                <label>State</label>
+                {{ form.state }}
+                <span class="help-block">
+                    Sort of csrf.
+                </span>
+                <label>Token url</label>
+                {{ form.token_url }}
+                <span class="help-block">
+                    The url in your server where to retrieve the access token, it's ok if it points to localhost
+                    (e.g. http://localhost:8000/o/token).
+                </span>
+                <label>Redirect url</label>
+                {{ form.redirect_url }}
+                <span class="help-block">
+                    One more time, the url to the authorization page, it's ok if it points to localhost
+                    (e.g. http://localhost:8000/o/authorize).
+                </span>
+                <label>Client id</label>
+                {{ form.client_id }}
+                <span class="help-block">
+                    One more time.
+                </span>
+                <label>Client secret</label>
+                {{ form.client_secret }}
+                <span class="help-block">
+                </span>
+
+                <button type="submit" class="btn" id="submit_btn">Submit</button>
+            </fieldset>
+            {% csrf_token %}
+        </form>
+        {% else %}
+        <p>You're not supposed to be here!</p>
+        {% endif %}
+    {% endif %}
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script type="text/javascript">
+    $(document).ready(function(){
+        $("#submit_btn").click(function(event){
+            event.preventDefault();
+            var token_url = $("#id_token_url").val();
+            var code = $("#id_code").val();
+            var redirect_url = $("#id_redirect_url").val();
+            var client_id = $("#id_client_id").val();
+            var client_secret = $("#id_client_secret").val();
+
+            $.ajax({
+                url: token_url,
+                type: 'POST',
+                crossDomain: true,
+                data: { code: code, redirect_uri: redirect_url, grant_type: "authorization_code"},
+                beforeSend: function(request){
+                    request.setRequestHeader("Authorization", "Basic " + btoa(client_id + ":" + client_secret));
+                }
+            });
+        });
+    });
+    </script>
+{% endblock %}
