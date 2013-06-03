@@ -1,10 +1,8 @@
-import urllib
-
 from django.test import TestCase, RequestFactory
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 
-from ..compat import urlparse, parse_qs
+from ..compat import urlparse, parse_qs, urlencode
 from ..models import Application
 from ..settings import oauth2_settings
 from ..views import ProtectedResourceView
@@ -46,7 +44,7 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         """
         self.client.login(username="test_user", password="123456")
 
-        query_string = urllib.urlencode({
+        query_string = urlencode({
             'client_id': self.application.client_id,
             'response_type': 'token',
             'state': 'random_state_string',
@@ -73,7 +71,7 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         """
         self.client.login(username="test_user", password="123456")
 
-        query_string = urllib.urlencode({
+        query_string = urlencode({
             'client_id': 'fakeclientid',
             'response_type': 'token',
         })
@@ -88,7 +86,7 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         """
         self.client.login(username="test_user", password="123456")
 
-        query_string = urllib.urlencode({
+        query_string = urlencode({
             'client_id': self.application.client_id,
             'response_type': 'token',
         })
@@ -106,7 +104,7 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         """
         self.client.login(username="test_user", password="123456")
 
-        query_string = urllib.urlencode({
+        query_string = urlencode({
             'client_id': self.application.client_id,
             'response_type': 'token',
             'redirect_uri': 'http://forbidden.it',
