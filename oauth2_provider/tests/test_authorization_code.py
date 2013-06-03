@@ -118,6 +118,22 @@ class TestAuthorizationCodeView(BaseTest):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 400)
 
+    def test_pre_auth_wrong_response_type(self):
+        """
+        Test error when passing a wrong response_type in query string
+        """
+        self.client.login(username="test_user", password="123456")
+
+        query_string = urllib.urlencode({
+            'client_id': self.application.client_id,
+            'response_type': 'WRONG',
+        })
+        url = "{url}?{qs}".format(url=reverse('authorize'), qs=query_string)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("error=unauthorized_client", response['Location'])
+
     def test_code_post_auth_allow(self):
         """
         Test authorization code is given for an allowed request with response_type: code
@@ -174,6 +190,24 @@ class TestAuthorizationCodeView(BaseTest):
         response = self.client.post(reverse('authorize'), data=form_data)
         self.assertEqual(response.status_code, 302)
         self.assertIn('http://example.it/?error', response['Location'])
+
+    def test_code_post_auth_forbidden_redirect_uri(self):
+        """
+        Test authorization code is given for an allowed request with a forbidden redirect_uri
+        """
+        self.client.login(username="test_user", password="123456")
+
+        form_data = {
+            'client_id': self.application.client_id,
+            'state': 'random_state_string',
+            'scopes': 'read write',
+            'redirect_uri': 'http://forbidden.it',
+            'response_type': 'code',
+            'allow': True,
+        }
+
+        response = self.client.post(reverse('authorize'), data=form_data)
+        self.assertEqual(response.status_code, 400)
 
 
 class TestAuthorizationCodeTokenView(BaseTest):

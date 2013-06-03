@@ -68,7 +68,7 @@ class OAuthLibCore(object):
             return uri, headers, body, status
 
         except oauth2.FatalClientError as error:
-            raise FatalClientError(error=error)
+            raise FatalClientError(error=error, redirect_uri=credentials['redirect_uri'])
         except oauth2.OAuth2Error as error:
             raise OAuthToolkitError(error=error, redirect_uri=credentials['redirect_uri'])
 

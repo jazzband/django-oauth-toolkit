@@ -108,10 +108,10 @@ class OAuthLibMixin(object):
 
         :param error: :attr:`OAuthToolkitError`
         """
-        error = error.oauthlib_error
+        oauthlib_error = error.oauthlib_error
         error_response = {
-            'error': error,
-            'url': "{0}?{1}".format(error.redirect_uri, error.urlencoded)
+            'error': oauthlib_error,
+            'url': "{0}?{1}".format(oauthlib_error.redirect_uri, oauthlib_error.urlencoded)
         }
         error_response.update(kwargs)
 
