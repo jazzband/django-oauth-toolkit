@@ -1,7 +1,7 @@
 from oauthlib import oauth2
 from oauthlib.common import urlencode
 
-from .exceptions import OAuthToolkitError
+from .exceptions import OAuthToolkitError, FatalClientError
 
 
 class OAuthLibCore(object):
@@ -43,6 +43,8 @@ class OAuthLibCore(object):
                 uri, http_method=http_method, body=body, headers=headers)
 
             return scopes, credentials
+        except oauth2.FatalClientError as error:
+            raise FatalClientError(error=error)
         except oauth2.OAuth2Error as error:
             raise OAuthToolkitError(error=error)
 
@@ -65,6 +67,8 @@ class OAuthLibCore(object):
 
             return uri, headers, body, status
 
+        except oauth2.FatalClientError as error:
+            raise FatalClientError(error=error)
         except oauth2.OAuth2Error as error:
             raise OAuthToolkitError(error=error, redirect_uri=credentials['redirect_uri'])
 

@@ -3,9 +3,8 @@ import logging
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponseForbidden
 
-from oauthlib import oauth2
-
 from ..backends import OAuthLibCore
+from ..exceptions import FatalClientError
 
 
 log = logging.getLogger("oauth2_provider")
@@ -117,7 +116,7 @@ class OAuthLibMixin(object):
         error_response.update(kwargs)
 
         # If we got a malicious redirect_uri or client_id, we will *not* redirect back to the URL.
-        if isinstance(error, oauth2.FatalClientError):
+        if isinstance(error, FatalClientError):
             redirect = False
         else:
             redirect = True
