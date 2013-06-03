@@ -126,7 +126,7 @@ class TestAuthorizationCodeView(BaseTest):
         """
         self.client.login(username="test_user", password="123456")
 
-        query_string = urllib.urlencode({
+        query_string = urlencode({
             'client_id': self.application.client_id,
             'response_type': 'WRONG',
         })

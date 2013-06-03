@@ -1,8 +1,8 @@
-import urllib
-
 from django.http import HttpResponse
 from django.core.urlresolvers import reverse
 from django.views.generic import FormView, TemplateView
+
+from oauth2_provider.compat import urlencode
 
 from .forms import ConsumerForm
 
@@ -17,7 +17,7 @@ def home(request):
      * consumer page
      * provider page
     """
-    query_string = urllib.urlencode({
+    query_string = urlencode({
         'client_id': CLIENT_ID,
         'response_type': 'code',
         'redirect_uri': 'http://localhost:8000' + reverse('exchange'),
@@ -57,14 +57,14 @@ class ConsumerView(FormView):
 
     def get_success_url(self):
         url = super(ConsumerView, self).get_success_url()
-        return '{url}?{qs}'.format(url=url, qs=urllib.urlencode({'authorization_link': self.authorization_link}))
+        return '{url}?{qs}'.format(url=url, qs=urlencode({'authorization_link': self.authorization_link}))
 
     def post(self, request, *args, **kwargs):
         self.request = request
         return super(ConsumerView, self).post(request, *args, **kwargs)
 
     def form_valid(self, form):
-        qs = urllib.urlencode({
+        qs = urlencode({
             'client_id': form.cleaned_data['client_id'],
             'response_type': 'code',
             'state': 'random_state_string',
