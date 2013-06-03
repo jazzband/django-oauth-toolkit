@@ -3,10 +3,8 @@ import logging
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponseForbidden
 
-from oauthlib.common import urlencode
-from oauthlib import oauth2
-
-from ..exceptions import OAuthToolkitError
+from ..backends import OAuthLibCore
+from ..exceptions import FatalClientError
 
 
 log = logging.getLogger("oauth2_provider")
@@ -50,22 +48,9 @@ class OAuthLibMixin(object):
         validator_class = self.get_validator_class()
         return server_class(validator_class(request.user))
 
-    def _extract_params(self, request):
-        """
-        Extract parameters from the Django request object. Such parameters will then be passed to OAuthLib to build its
-        own Request object
-        """
-        uri = request.build_absolute_uri()
-        http_method = request.method
-        headers = request.META.copy()
-        if 'wsgi.input' in headers:
-            del headers['wsgi.input']
-        if 'wsgi.errors' in headers:
-            del headers['wsgi.errors']
-        if 'HTTP_AUTHORIZATION' in headers:
-            headers['Authorization'] = headers['HTTP_AUTHORIZATION']
-        body = urlencode(request.POST.items())
-        return uri, http_method, body, headers
+    def get_core(self, request):
+        server = self.get_server(request)
+        return OAuthLibCore(server)
 
     def validate_authorization_request(self, request):
         """
@@ -73,16 +58,8 @@ class OAuthLibMixin(object):
 
         :param request: The current django.http.HttpRequest object
         """
-        try:
-            uri, http_method, body, headers = self._extract_params(request)
-
-            server = self.get_server(request)
-            scopes, credentials = server.validate_authorization_request(
-                uri, http_method=http_method, body=body, headers=headers)
-
-            return scopes, credentials
-        except oauth2.OAuth2Error as error:
-            raise OAuthToolkitError(error=error)
+        core = self.get_core(request)
+        return core.validate_authorization_request(request)
 
     def create_authorization_response(self, request, scopes, credentials, allow):
         """
@@ -95,21 +72,11 @@ class OAuthLibMixin(object):
                            `client_id`, `state`, `redirect_uri`, `response_type`
         :param allow: True if the user authorize the client, otherwise False
         """
-        try:
-            if not allow:
-                raise oauth2.AccessDeniedError()
+        # TODO: move this scopes conversion from and to string into a utils function
+        scopes = scopes.split(" ") if scopes else []
 
-            # TODO: move this scopes conversion from and to string into a utils function
-            scopes = scopes.split(" ") if scopes else []
-
-            server = self.get_server(request)
-            uri, headers, body, status = server.create_authorization_response(
-                uri=credentials['redirect_uri'], scopes=scopes, credentials=credentials)
-
-            return uri, headers, body, status
-
-        except oauth2.OAuth2Error as error:
-            raise OAuthToolkitError(error=error, redirect_uri=credentials['redirect_uri'])
+        core = self.get_core(request)
+        return core.create_authorization_response(scopes, credentials, allow)
 
     def create_token_response(self, request):
         """
@@ -117,13 +84,8 @@ class OAuthLibMixin(object):
 
         :param request: The current django.http.HttpRequest object
         """
-        uri, http_method, body, headers = self._extract_params(request)
-
-        server = self.get_server(request)
-        url, headers, body, status = server.create_token_response(
-            uri, http_method, body, headers)
-
-        return url, headers, body, status
+        core = self.get_core(request)
+        return core.create_token_response(request)
 
     def verify_request(self, request):
         """
@@ -131,12 +93,8 @@ class OAuthLibMixin(object):
 
         :param request: The current django.http.HttpRequest object
         """
-        uri, http_method, body, headers = self._extract_params(request)
-
-        server = self.get_server(request)
-        valid, r = server.verify_request(uri, http_method, body, headers, scopes=self.get_scopes())
-
-        return valid, r
+        core = self.get_core(request)
+        return core.verify_request(request, scopes=self.get_scopes())
 
     def get_scopes(self):
         """
@@ -150,15 +108,15 @@ class OAuthLibMixin(object):
 
         :param error: :attr:`OAuthToolkitError`
         """
-        error = error.oauthlib_error
+        oauthlib_error = error.oauthlib_error
         error_response = {
-            'error': error,
-            'url': "{0}?{1}".format(error.redirect_uri, error.urlencoded)
+            'error': oauthlib_error,
+            'url': "{0}?{1}".format(oauthlib_error.redirect_uri, oauthlib_error.urlencoded)
         }
         error_response.update(kwargs)
 
         # If we got a malicious redirect_uri or client_id, we will *not* redirect back to the URL.
-        if isinstance(error, oauth2.FatalClientError):
+        if isinstance(error, FatalClientError):
             redirect = False
         else:
             redirect = True
