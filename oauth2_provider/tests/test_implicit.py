@@ -1,10 +1,10 @@
 import urllib
-from urlparse import urlparse, parse_qs
 
 from django.test import TestCase, RequestFactory
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 
+from ..compat import urlparse, parse_qs
 from ..models import Application
 from ..settings import oauth2_settings
 from ..views import ProtectedResourceView
