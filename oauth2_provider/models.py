@@ -66,7 +66,6 @@ class Application(models.Model):
 
         :param uri: Url to check
         """
-        uri = uri.rstrip("/")
         return uri in self.redirect_uris.split()
 
     def __unicode__(self):
@@ -101,7 +100,7 @@ class Grant(models.Model):
         return timezone.now() >= self.expires
 
     def redirect_uri_allowed(self, uri):
-        return uri == self.redirect_uri.rstrip("/")
+        return uri == self.redirect_uri
 
     def __unicode__(self):
         return self.code

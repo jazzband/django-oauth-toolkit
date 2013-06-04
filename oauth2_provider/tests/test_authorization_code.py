@@ -153,7 +153,7 @@ class TestAuthorizationCodeView(BaseTest):
 
         response = self.client.post(reverse('authorize'), data=form_data)
         self.assertEqual(response.status_code, 302)
-        self.assertIn('http://example.it/?', response['Location'])
+        self.assertIn('http://example.it?', response['Location'])
         self.assertIn('state=random_state_string', response['Location'])
         self.assertIn('code=', response['Location'])
 
@@ -193,7 +193,7 @@ class TestAuthorizationCodeView(BaseTest):
 
         response = self.client.post(reverse('authorize'), data=form_data)
         self.assertEqual(response.status_code, 302)
-        self.assertIn('http://example.it/?error', response['Location'])
+        self.assertIn('http://example.it?error', response['Location'])
 
     def test_code_post_auth_forbidden_redirect_uri(self):
         """
