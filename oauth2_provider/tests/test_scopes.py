@@ -3,11 +3,9 @@ from __future__ import unicode_literals
 import json
 
 from django.test import TestCase, RequestFactory
-from django.test.utils import override_settings
 from django.core.urlresolvers import reverse
-from django.utils import timezone
 
-from ..compat import urlparse, parse_qs, urlencode, get_user_model
+from ..compat import urlparse, parse_qs, get_user_model
 from ..models import Application, Grant, AccessToken
 from ..settings import oauth2_settings
 from ..views import ScopedProtectedResourceView
@@ -31,10 +29,6 @@ class MultiScopeResourceView(ScopedProtectedResourceView):
 
 
 class BaseTest(TestCaseUtils, TestCase):
-    pass
-
-
-class TestScopesProtection(BaseTest):
     def setUp(self):
         self.factory = RequestFactory()
         self.test_user = get_user_model().objects.create_user("test_user", "test@user.com", "123456")
@@ -56,8 +50,11 @@ class TestScopesProtection(BaseTest):
         self.test_user.delete()
         self.dev_user.delete()
 
-    def test_scopes_protection_valid(self):
+
+class TestScopesSave(BaseTest):
+    def test_scopes_saved_in_grant(self):
         """
+        Test scopes are properly saved in grant
         """
         self.client.login(username="test_user", password="123456")
 
@@ -77,6 +74,25 @@ class TestScopesProtection(BaseTest):
         grant = Grant.objects.get(code=authorization_code)
         self.assertEqual(grant.scope, "scope1 scope2")
 
+    def test_scopes_save_in_access_token(self):
+        """
+        Test scopes are properly saved in access token
+        """
+        self.client.login(username="test_user", password="123456")
+
+        # retrieve a valid authorization code
+        authcode_data = {
+            'client_id': self.application.client_id,
+            'state': 'random_state_string',
+            'scopes': 'scope1 scope2',
+            'redirect_uri': 'http://example.it',
+            'response_type': 'code',
+            'allow': True,
+        }
+        response = self.client.post(reverse('authorize'), data=authcode_data)
+        query_dict = parse_qs(urlparse(response['Location']).query)
+        authorization_code = query_dict['code'].pop()
+
         # exchange authorization code for a valid access token
         token_request_data = {
             'grant_type': 'authorization_code',
@@ -92,6 +108,39 @@ class TestScopesProtection(BaseTest):
         at = AccessToken.objects.get(token=access_token)
         self.assertEqual(at.scope, "scope1 scope2")
 
+
+class TestScopesProtection(BaseTest):
+    def test_scopes_protection_valid(self):
+        """
+        Test access to a scope protected resource with correct scopes provided
+        """
+        self.client.login(username="test_user", password="123456")
+
+        # retrieve a valid authorization code
+        authcode_data = {
+            'client_id': self.application.client_id,
+            'state': 'random_state_string',
+            'scopes': 'scope1 scope2',
+            'redirect_uri': 'http://example.it',
+            'response_type': 'code',
+            'allow': True,
+        }
+        response = self.client.post(reverse('authorize'), data=authcode_data)
+        query_dict = parse_qs(urlparse(response['Location']).query)
+        authorization_code = query_dict['code'].pop()
+
+        # exchange authorization code for a valid access token
+        token_request_data = {
+            'grant_type': 'authorization_code',
+            'code': authorization_code,
+            'redirect_uri': 'http://example.it'
+        }
+        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
+
+        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        content = json.loads(response.content.decode("utf-8"))
+        access_token = content['access_token']
+
         # use token to access the resource
         auth_headers = {
             'HTTP_AUTHORIZATION': 'Bearer ' + access_token,
@@ -105,6 +154,7 @@ class TestScopesProtection(BaseTest):
 
     def test_scopes_protection_fail(self):
         """
+        Test access to a scope protected resource with wrong scopes provided
         """
         self.client.login(username="test_user", password="123456")
 
@@ -145,6 +195,9 @@ class TestScopesProtection(BaseTest):
         self.assertEqual(response.status_code, 403)
 
     def test_multi_scope_fail(self):
+        """
+        Test access to a multi-scope protected resource with wrong scopes provided
+        """
         self.client.login(username="test_user", password="123456")
 
         # retrieve a valid authorization code
@@ -184,6 +237,9 @@ class TestScopesProtection(BaseTest):
         self.assertEqual(response.status_code, 403)
 
     def test_multi_scope_valid(self):
+        """
+        Test access to a multi-scope protected resource with correct scopes provided
+        """
         self.client.login(username="test_user", password="123456")
 
         # retrieve a valid authorization code
