@@ -5,45 +5,6 @@ from django.views.generic import FormView, TemplateView
 from oauth2_provider.compat import urlencode
 from .forms import ConsumerForm, ConsumerExchangeForm
 
-CLIENT_ID = '3b2b4de5b14e2c708a01b0a349b9eab5a7615daa'
-CLIENT_SECRET = '8e8bfeafdc7c16bdb80e5809afe994e5aec8b63adfa31cd127677318f872201880d38082af71320e36aec3e9847ff70c2b3d2555eb53ca12947c254add7d2c20'
-
-
-def home(request):
-    """
-    Project homepage, show links to:
-     * admin
-     * consumer page
-     * provider page
-    """
-    query_string = urlencode({
-        'client_id': CLIENT_ID,
-        'response_type': 'code',
-        'redirect_uri': 'http://localhost:8000' + reverse('exchange'),
-    })
-    auth_url = "{url}?{qs}".format(url=reverse('authorize'), qs=query_string)
-    html = '<a href="{}">Go and authorize</a>'.format(auth_url)
-
-    return HttpResponse(html)
-
-
-def exchange(request):
-    import requests
-    from requests.auth import HTTPBasicAuth
-
-    auth_code = request.GET.get('code', None)
-    if not auth_code:
-        return HttpResponse()
-
-    token_request_data = {
-        'grant_type': 'authorization_code',
-        'code': auth_code,
-        'redirect_uri': 'http://localhost:8000' + reverse('exchange')[:-1],
-    }
-    r = requests.post('http://localhost:8000' + reverse('token'), params=token_request_data,
-                      auth=HTTPBasicAuth(CLIENT_ID, CLIENT_SECRET))
-    return HttpResponse(r)
-
 
 class ConsumerExchangeView(FormView):
     form_class = ConsumerExchangeForm
@@ -54,6 +15,7 @@ class ConsumerExchangeView(FormView):
             self.initial = {
                 'code': request.GET['code'],
                 'state': request.GET['state'],
+                'redirect_url': request.build_absolute_uri(reverse('exchange'))
             }
         except KeyError:
             kwargs['noparams'] = True
@@ -64,8 +26,12 @@ class ConsumerExchangeView(FormView):
 
 
 class ConsumerView(FormView):
+    """
+    The homepage to access Consumer's functionalities in the case of Authorization Code flow.
+    It offers a form useful for building "authorization links"
+    """
     form_class = ConsumerForm
-    success_url = '/consumer/auth-link/'
+    success_url = '/consumer/'
     template_name = 'example/consumer.html'
 
     def __init__(self, **kwargs):
@@ -75,6 +41,13 @@ class ConsumerView(FormView):
     def get_success_url(self):
         url = super(ConsumerView, self).get_success_url()
         return '{url}?{qs}'.format(url=url, qs=urlencode({'authorization_link': self.authorization_link}))
+
+    def get(self, request, *args, **kwargs):
+        kwargs['authorization_link'] = request.GET.get('authorization_link', None)
+
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        return self.render_to_response(self.get_context_data(form=form, **kwargs))
 
     def post(self, request, *args, **kwargs):
         self.request = request
@@ -88,11 +61,3 @@ class ConsumerView(FormView):
         })
         self.authorization_link = "{url}?{qs}".format(url=form.cleaned_data['authorization_url'], qs=qs)
         return super(ConsumerView, self).form_valid(form)
-
-
-class ConsumerLinkView(TemplateView):
-    template_name = 'example/consumer-link.html'
-
-    def get(self, request, *args, **kwargs):
-        kwargs['authorization_link'] = request.GET['authorization_link']
-        return super(ConsumerLinkView, self).get(request, *args, **kwargs)

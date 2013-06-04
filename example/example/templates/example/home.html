@@ -1,0 +1,37 @@
+{% extends "example/base.html" %}
+{% load url from future %}
+
+{% block content %}
+      <!-- Main hero unit for a primary marketing message or call to action -->
+      <div class="hero-unit">
+        <h1>Hello, OAuth!</h1>
+        <p>Welcome to the OAuth Playground, an utility to show off and test <b>django-oauth-toolkit</b>'s capabilities.</p>
+        <p><a href="https://github.com/evonove/django-oauth-toolkit" class="btn btn-primary btn-large">Github Repo &raquo;</a></p>
+      </div>
+
+      <!-- Example row of columns -->
+      <div class="row">
+        <div class="span4">
+          <h3>Authorization Code Consumer</h3>
+          <p>Do you have an OAuth2 provider implementing the Authorization Code flow and want to test how it goes?</p>
+          <p><a class="btn" href="{% url 'consumer' %}">Use me as a Consumer! &raquo;</a></p>
+        </div>
+        <div class="span4">
+          <h2>OAuth2 Provider</h2>
+          <p></p>
+          <p><a class="btn" href="#">TODO! &raquo;</a></p>
+       </div>
+        <div class="span4">
+          <h2>Heading</h2>
+          <p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
+          <p><a class="btn" href="#">View details &raquo;</a></p>
+        </div>
+      </div>
+
+      <hr>
+
+      <footer>
+        <p>&copy; Company 2013</p>
+      </footer>
+
+{% endblock %}
