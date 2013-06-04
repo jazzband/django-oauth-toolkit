@@ -6,3 +6,4 @@ from .test_authorization_code import *
 from .test_implicit import *
 from .test_password import *
 from .test_client_credential import *
+from .test_scopes import *

@@ -65,6 +65,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.staticfiles',
+    'django.contrib.admin',
 
     'oauth2_provider',
     'django_coverage',
