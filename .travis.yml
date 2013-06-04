@@ -2,9 +2,6 @@ language: python
 python:
   - "2.7"
 
-env:
-  - DJANGO_SECRET_KEY=1234567890
-
 install:
   - pip install -r requirements.txt
   - pip install coveralls

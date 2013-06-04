@@ -15,9 +15,7 @@ if __name__ == "__main__":
 
     app_to_test = "oauth2_provider"
 
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "example.settings")
-    example_project_dir = os.path.join(os.path.dirname(__file__), 'example')
-    sys.path.insert(0, example_project_dir)
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "oauth2_provider.tests.settings")
 
     from django.core.management import execute_from_command_line
     execute_from_command_line([sys.argv[0], test_cmd, app_to_test])
