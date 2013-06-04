@@ -94,8 +94,9 @@
         <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
       </div>
     </div>
+{% endblock %}
 
-    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+{% block javascript %}
     <script type="text/javascript">
     $(document).ready(function(){
         $("#submit_btn").click(function(event){
@@ -133,4 +134,4 @@
         });
     });
     </script>
-{% endblock %}
+{% endblock javascript %}

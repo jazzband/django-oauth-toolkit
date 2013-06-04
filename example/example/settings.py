@@ -177,3 +177,7 @@ LOGGING = {
 OAUTH2_PROVIDER = {
     'SCOPES': ['example']
 }
+
+from django.core.urlresolvers import reverse_lazy
+
+LOGIN_REDIRECT_URL = reverse_lazy('home')

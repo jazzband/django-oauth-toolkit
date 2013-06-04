@@ -27,11 +27,24 @@
             <ul class="nav">
               <li class="active"><a href="{%  url 'home' %}">Home</a></li>
             </ul>
-            <form class="navbar-form pull-right">
-              <input class="span2" type="text" placeholder="Email">
-              <input class="span2" type="password" placeholder="Password">
-              <button type="submit" class="btn">Sign in</button>
-            </form>
+              {% if user.is_authenticated %}
+                  <ul class="nav pull-right">
+                      <li class="divider-vertical"></li>
+                      <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">{{ user.username }} <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                          <li><a href="{% url "django.contrib.auth.views.logout" %}">Logout</a></li>
+                        </ul>
+                      </li>
+                  </ul>
+              {% else %}
+                  <form class="navbar-form pull-right" method="post" action="{% url "django.contrib.auth.views.login" %}">
+                      {% csrf_token %}
+                      <input id="id_username" name="username" class="span2" type="text" placeholder="Username">
+                      <input id="id_password" name="password" class="span2" type="password" placeholder="Password">
+                      <button type="submit" class="btn">Sign in</button>
+                  </form>
+              {% endif %}
           </div><!--/.nav-collapse -->
         </div>
       </div>
@@ -40,6 +53,9 @@
     <div class="container">
     {% block content %}{% endblock %}
     </div>
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
     <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+
+    {% block javascript %}{% endblock javascript %}
 </body>
 </html>
