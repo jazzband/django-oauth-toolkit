@@ -5,7 +5,7 @@ from os.path import join, abspath, dirname
 # Root directory of our project
 PROJECT_ROOT = abspath(join(abspath(dirname(__file__)), "..",))
 
-DEBUG = os.environ.get('DJANGO_DEBUG', False)
+DEBUG = os.environ.get('DJANGO_DEBUG', True)
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -83,7 +83,7 @@ STATICFILES_FINDERS = (
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'do_not_use_this_key')
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
