@@ -85,7 +85,6 @@ class ConsumerView(FormView):
             'client_id': form.cleaned_data['client_id'],
             'response_type': 'code',
             'state': 'random_state_string',
-            'redirect_uri': self.request.build_absolute_uri(reverse('exchange')),
         })
         self.authorization_link = "{url}?{qs}".format(url=form.cleaned_data['authorization_url'], qs=qs)
         return super(ConsumerView, self).form_valid(form)

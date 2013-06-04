@@ -7,8 +7,8 @@ class ConsumerForm(forms.Form):
 
 
 class ConsumerExchangeForm(forms.Form):
-    code = forms.CharField(widget=forms.TextInput(attrs={'readonly':'readonly'}))
-    state = forms.CharField(widget=forms.TextInput(attrs={'readonly':'readonly'}))
+    code = forms.CharField(widget=forms.TextInput(attrs={'readonly': 'readonly'}))
+    state = forms.CharField(widget=forms.TextInput(attrs={'readonly': 'readonly'}))
     token_url = forms.URLField()
     grant_type = forms.CharField(widget=forms.HiddenInput(), initial='authorization_code')
     redirect_url = forms.CharField()
