@@ -28,7 +28,7 @@ USER_SETTINGS = getattr(settings, 'OAUTH2_PROVIDER', None)
 DEFAULTS = {
     'CLIENT_ID_GENERATOR_CLASS': 'oauth2_provider.generators.ClientIdGenerator',
     'CLIENT_SECRET_GENERATOR_CLASS': 'oauth2_provider.generators.ClientSecretGenerator',
-    'SCOPES': [],
+    'SCOPES': ["read", "write"],
     'AUTHORIZATION_CODE_EXPIRE_SECONDS': 60,
     'ACCESS_TOKEN_EXPIRE_SECONDS': 36000,
 }
