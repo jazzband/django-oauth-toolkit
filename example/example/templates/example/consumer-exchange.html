@@ -7,33 +7,40 @@
         {% if not noparams %}
         <p>bla bla</p>
         <form method="post">
+            {{ form.non_field_errors }}
             <fieldset>
                 <legend>Trade your authorization token for a more powerful access token</legend>
+                {{ form.code.errors }}
                 <label>Code</label>
                 {{ form.code }}
                 <span class="help-block">The authorization token provided by your server</span>
+                {{ form.state.errors }}
                 <label>State</label>
                 {{ form.state }}
                 <span class="help-block">
                     Sort of csrf.
                 </span>
+                {{ form.token_url.errors }}
                 <label>Token url</label>
                 {{ form.token_url }}
                 <span class="help-block">
                     The url in your server where to retrieve the access token, it's ok if it points to localhost
                     (e.g. http://localhost:8000/o/token).
                 </span>
+                {{ form.redirect_url.errors }}
                 <label>Redirect url</label>
                 {{ form.redirect_url }}
                 <span class="help-block">
                     One more time, the url to the authorization page, it's ok if it points to localhost
                     (e.g. http://localhost:8000/o/authorize).
                 </span>
+                {{ form.client_id.errors }}
                 <label>Client id</label>
                 {{ form.client_id }}
                 <span class="help-block">
                     One more time.
                 </span>
+                {{ form.client_secret.errors }}
                 <label>Client secret</label>
                 {{ form.client_secret }}
                 <span class="help-block">

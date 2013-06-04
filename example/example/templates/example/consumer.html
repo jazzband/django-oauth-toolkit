@@ -12,11 +12,14 @@
 {% else %}
     {% if not error %}
         <form method="post" action="">
+            {{ form.non_field_errors }}
             <fieldset>
                 <legend>Build an authorization link for your provider</legend>
+                {{ form.client_id.errors }}
                 <label>Cliend id</label>
                 {{ form.client_id }}
                 <span class="help-block">Your Application's client_id field.</span>
+                {{ form.authorization_url.errors }}
                 <label>Authorization url</label>
                 {{ form.authorization_url }}
                 <span class="help-block">

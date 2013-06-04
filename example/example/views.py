@@ -7,6 +7,9 @@ from .forms import ConsumerForm, ConsumerExchangeForm
 
 
 class ConsumerExchangeView(FormView):
+    """
+    The exchange view shows a form to manually perform the auth token swap
+    """
     form_class = ConsumerExchangeForm
     template_name = 'example/consumer-exchange.html'
 
