@@ -9,6 +9,8 @@ from ..exceptions import FatalClientError
 
 log = logging.getLogger("oauth2_provider")
 
+SAFE_HTTP_METHODS = ['GET', 'HEAD', 'OPTIONS']
+
 
 class OAuthLibMixin(object):
     """
@@ -154,3 +156,24 @@ class ProtectedResourceMixin(OAuthLibMixin):
             return super(ProtectedResourceMixin, self).dispatch(request, *args, **kwargs)
         else:
             return HttpResponseForbidden()
+
+
+class ReadWriteScopedResourceMixin(ScopedResourceMixin, OAuthLibMixin):
+    """
+    Helper mixin that implements "read and write scopes" behavior
+    """
+    requested_scopes = []
+    read_write_scope = None
+
+    def dispatch(self, request, *args, **kwargs):
+        # TODO: "read" and "write" default scopes values should be configured in settings
+        if request.method.upper() in SAFE_HTTP_METHODS:
+            self.read_write_scope = "read"
+        else:
+            self.read_write_scope = "write"
+
+        return super(ReadWriteScopedResourceMixin, self).dispatch(request, *args, **kwargs)
+
+    def get_scopes(self, *args, **kwargs):
+        scopes = super(ReadWriteScopedResourceMixin, self).get_scopes(*args, **kwargs)
+        return scopes + [self.read_write_scope]  # this returns a copy so that self.requested_scopes is not modified

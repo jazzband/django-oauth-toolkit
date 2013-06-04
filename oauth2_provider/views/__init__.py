@@ -1,2 +1,2 @@
 from .base import AuthorizationView, TokenView
-from .generic import ProtectedResourceView, ScopedProtectedResourceView
+from .generic import ProtectedResourceView, ScopedProtectedResourceView, ReadWriteScopedResourceView
