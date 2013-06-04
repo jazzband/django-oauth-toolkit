@@ -3,9 +3,15 @@
 
 {% block content %}
 <p class="lead">Token Trading!</p>
+<div class="alert alert-error hide fade in" id="id_alert">
+  <button type="button" class="close" id="id_alert_close">&times;</button>
+  <strong>Error retrieving access token!</strong> <span id="id_error_msg"></span>
+</div>
     {% if not error %}
         {% if not noparams %}
-        <p>bla bla</p>
+        <p>This step of the OAuth2 authentication process is usually performed automatically by the consumer.
+        For testing purposes, we simulate the POST request to the <i>token</i> endpoint provided by the Authorization
+        Server with a form.</p>
         <form method="post">
             {{ form.non_field_errors }}
             <fieldset>
@@ -25,14 +31,14 @@
                 {{ form.token_url }}
                 <span class="help-block">
                     The url in your server where to retrieve the access token, it's ok if it points to localhost
-                    (e.g. http://localhost:8000/o/token).
+                    (e.g. http://localhost:8000/o/token/).
                 </span>
                 {{ form.redirect_url.errors }}
                 <label>Redirect url</label>
                 {{ form.redirect_url }}
                 <span class="help-block">
-                    One more time, the url to the authorization page, it's ok if it points to localhost
-                    (e.g. http://localhost:8000/o/authorize).
+                    The url of the consumer redirect_uri, must match at least one of the uris provided by the
+                    Application instance in the Authorization server.
                 </span>
                 {{ form.client_id.errors }}
                 <label>Client id</label>
@@ -44,6 +50,7 @@
                 <label>Client secret</label>
                 {{ form.client_secret }}
                 <span class="help-block">
+                    Get it from Application instance in the Authorization server.
                 </span>
 
                 <button type="submit" class="btn" id="submit_btn">Submit</button>
@@ -55,11 +62,11 @@
         {% endif %}
     {% endif %}
 
-    <!-- Modal -->
-    <div id="myModal" class="modal  fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <!-- Success Modal -->
+    <div id="tokenModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3 id="myModalLabel">Access Token</h3>
+        <h3 id="myModalLabel">W00t, an Access Token!</h3>
       </div>
       <div class="modal-body">
         <table class="table table-hover">
@@ -106,8 +113,23 @@
                 data: { code: code, redirect_uri: redirect_url, grant_type: "authorization_code"},
                 beforeSend: function(request){
                     request.setRequestHeader("Authorization", "Basic " + btoa(client_id + ":" + client_secret));
+                },
+                success: function(data){
+                    console.log(data);
+                    $("#id_access_token").html(data.access_token);
+                    $("#id_token_type").html(data.token_type);
+                    $("#id_expires").html(data.expires_in);
+                    $("#id_refresh").html(data.refresh_token);
+                    $("#tokenModal").modal('show');
+                },
+                error: function(data) {
+                    $("#id_error_msg").html(data.responseText);
+                    $("#id_alert").show();
                 }
             });
+        });
+        $("#id_alert_close").click(function(event) {
+            $(this).parent().hide();
         });
     });
     </script>
