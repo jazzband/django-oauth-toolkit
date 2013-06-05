@@ -94,3 +94,15 @@ class OAuthLibCore(object):
 
         valid, r = self.server.verify_request(uri, http_method, body, headers, scopes=scopes)
         return valid, r
+
+
+def get_oauthlib_core(request):
+    """
+    Boilerplate utility function that take a request and returns an instance of `oauth2_provider.backends.OAuthLibCore`
+    This is going to die!
+    """
+    from oauth2_provider.oauth2_validators import OAuth2Validator
+    from oauthlib.oauth2 import Server
+
+    server = Server(OAuth2Validator(request.user))
+    return OAuthLibCore(server)
