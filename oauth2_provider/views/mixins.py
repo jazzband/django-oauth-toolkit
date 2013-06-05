@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import logging
 
 from django.core.exceptions import ImproperlyConfigured
@@ -5,6 +7,7 @@ from django.http import HttpResponseForbidden
 
 from ..backends import OAuthLibCore
 from ..exceptions import FatalClientError
+from ..settings import oauth2_settings
 
 
 log = logging.getLogger("oauth2_provider")
@@ -165,12 +168,23 @@ class ReadWriteScopedResourceMixin(ScopedResourceMixin, OAuthLibMixin):
     requested_scopes = []
     read_write_scope = None
 
+    def __new__(cls, *args, **kwargs):
+        provided_scopes = oauth2_settings.SCOPES
+        read_write_scopes = [oauth2_settings.READ_SCOPE, oauth2_settings.WRITE_SCOPE]
+
+        if not set(read_write_scopes).issubset(set(provided_scopes)):
+            raise ImproperlyConfigured(
+                "ReadWriteScopedResourceMixin requires following scopes {0}"
+                " to be in OAUTH2_PROVIDER['SCOPES'] list in settings".format(read_write_scopes)
+            )
+
+        return super(ReadWriteScopedResourceMixin, cls).__new__(cls, *args, **kwargs)
+
     def dispatch(self, request, *args, **kwargs):
-        # TODO: "read" and "write" default scopes values should be configured in settings
         if request.method.upper() in SAFE_HTTP_METHODS:
-            self.read_write_scope = "read"
+            self.read_write_scope = oauth2_settings.READ_SCOPE
         else:
-            self.read_write_scope = "write"
+            self.read_write_scope = oauth2_settings.WRITE_SCOPE
 
         return super(ReadWriteScopedResourceMixin, self).dispatch(request, *args, **kwargs)
 
