@@ -8,11 +8,15 @@ API, releasing the tokens and so on...
 
 Start your app
 --------------
-Create a virtualenv and install django-oauth-toolkit:
+During this tutorial you will make an XHR POST using `CORS <http://en.wikipedia.org/wiki/Cross-origin_resource_sharing>`_
+mechanism from an Heroku deployed app to your localhost instance. To achieve this operation you need a properly
+configured Django server and `django-cors-headers` app will help you with this.
 
-    pip install django-oauth-toolkit
+Create a virtualenv and install django-oauth-toolkit and django-cors-headers:
 
-start a Django project, add `oauth2_provider` to the installed apps, enable the admin.
+    pip install django-oauth-toolkit django-cors-headers
+
+start a Django project, add `oauth2_provider` and `corsheaders` to the installed apps, enable the admin.
 Include the Django OAuth Toolkit urls in your `urls.py`, choose the urlspace you prefer, for example:
 
 .. code-block:: python
@@ -24,7 +28,23 @@ Include the Django OAuth Toolkit urls in your `urls.py`, choose the urlspace you
         # ...
     )
 
-Make a syncdb, start the internal server and login into the admin with your credentials.
+Include this middleware in your `settings.py`:
+
+.. code-block:: python
+
+    MIDDLEWARE_CLASSES = (
+        # ...
+        'corsheaders.middleware.CorsMiddleware',
+        # ...
+    )
+
+Configure this setting to allow CORS requests from all domains (just for the scope of this tutorial):
+
+.. code-block:: python
+
+    CORS_ORIGIN_ALLOW_ALL = True
+
+As a final steps, make a syncdb, start the internal server and login into the admin with your credentials.
 
 Create an OAuth2 Client Application
 -----------------------------------
