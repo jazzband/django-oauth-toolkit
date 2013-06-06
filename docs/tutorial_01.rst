@@ -12,8 +12,19 @@ Create a virtualenv and install django-oauth-toolkit:
 
     pip install django-oauth-toolkit
 
-start a Django project, add `oauth2_provider` to the installed apps, enable the admin and make a syncdb.
-Start the internal server and login into the admin with your credentials.
+start a Django project, add `oauth2_provider` to the installed apps, enable the admin.
+Include the Django OAuth Toolkit urls in your `urls.py`, choose the urlspace you prefer, for example:
+
+.. code-block:: python
+
+    urlpatterns = patterns(
+        '',
+        url(r'^admin/', include(admin.site.urls)),
+        url(r'^o/', include('oauth2_provider.urls')),
+        # ...
+    )
+
+Make a syncdb, start the internal server and login into the admin with your credentials.
 
 Create an OAuth2 Client Application
 -----------------------------------
