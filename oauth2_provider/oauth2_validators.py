@@ -22,12 +22,6 @@ GRANT_TYPE_MAPPING = {
 
 
 class OAuth2Validator(RequestValidator):
-    def __init__(self, user):
-        """
-        Inject the user coming from the Django world into the OAuth validator
-        """
-        self.user = user
-
     def authenticate_client(self, request, *args, **kwargs):
         """
         Check if client exists and it's authenticating itself as in rfc:`3.2.1`
@@ -108,6 +102,7 @@ class OAuth2Validator(RequestValidator):
             grant = Grant.objects.get(code=code, application=client)
             if not grant.is_expired():
                 request.scopes = grant.scope.split(' ')
+                request.user = grant.user
                 return True
             return False
 
@@ -147,17 +142,17 @@ class OAuth2Validator(RequestValidator):
 
     def save_authorization_code(self, client_id, code, request, *args, **kwargs):
         expires = timezone.now() + timedelta(seconds=oauth2_settings.AUTHORIZATION_CODE_EXPIRE_SECONDS)
-        g = Grant(application=request.client, user=self.user, code=code['code'], expires=expires,
+        g = Grant(application=request.client, user=request.user, code=code['code'], expires=expires,
                   redirect_uri=request.redirect_uri, scope=' '.join(request.scopes))
         g.save()
 
     def save_bearer_token(self, token, request, *args, **kwargs):
         expires = timezone.now() + timedelta(seconds=oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
-        if self.user.is_anonymous():
-            self.user = request.client.user
+        if request.grant_type == 'client_credentials':
+            request.user = request.client.user
 
         access_token = AccessToken(
-            user=self.user,
+            user=request.user,
             scope=token['scope'],
             expires=expires,
             token=token['access_token'],
@@ -166,7 +161,7 @@ class OAuth2Validator(RequestValidator):
 
         if 'refresh_token' in token:
             refresh_token = RefreshToken(
-                user=self.user,
+                user=request.user,
                 token=token['refresh_token'],
                 application=request.client,
                 access_token=access_token
@@ -182,6 +177,6 @@ class OAuth2Validator(RequestValidator):
         """
         u = authenticate(username=username, password=password)
         if u is not None and u.is_active:
-            self.user = u
+            request.user = u
             return True
         return False

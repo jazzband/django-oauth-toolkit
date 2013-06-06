@@ -19,19 +19,17 @@ class TestOAuthLibMixin(TestCase):
         class TestView(OAuthLibMixin, View):
             validator_class = OAuth2Validator
 
-        request = self.request_factory.get("/fake-req")
         test_view = TestView()
 
-        self.assertRaises(ImproperlyConfigured, test_view.get_server, request)
+        self.assertRaises(ImproperlyConfigured, test_view.get_server)
 
     def test_missing_validator_class(self):
         class TestView(OAuthLibMixin, View):
             server_class = Server
 
-        request = self.request_factory.get("/fake-req")
         test_view = TestView()
 
-        self.assertRaises(ImproperlyConfigured, test_view.get_server, request)
+        self.assertRaises(ImproperlyConfigured, test_view.get_server)
 
     def test_correct_server(self):
         class TestView(OAuthLibMixin, View):
@@ -42,7 +40,7 @@ class TestOAuthLibMixin(TestCase):
         request.user = "fake"
         test_view = TestView()
 
-        self.assertIsInstance(test_view.get_server(request), Server)
+        self.assertIsInstance(test_view.get_server(), Server)
 
 
 class TestScopedResourceMixin(TestCase):
@@ -54,7 +52,6 @@ class TestScopedResourceMixin(TestCase):
         class TestView(ScopedResourceMixin, View):
             pass
 
-        request = self.request_factory.get("/fake-req")
         test_view = TestView()
 
         self.assertRaises(ImproperlyConfigured, test_view.get_scopes)
@@ -63,7 +60,6 @@ class TestScopedResourceMixin(TestCase):
         class TestView(ScopedResourceMixin, View):
             requested_scopes = ['scope1', 'scope2']
 
-        request = self.request_factory.get("/fake-req")
         test_view = TestView()
 
         self.assertEqual(test_view.get_scopes(), ['scope1', 'scope2'])

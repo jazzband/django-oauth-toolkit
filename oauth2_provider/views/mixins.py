@@ -44,17 +44,17 @@ class OAuthLibMixin(object):
         else:
             return self.validator_class
 
-    def get_server(self, request):
+    def get_server(self):
         """
         Return an instance of `server_class` initialized with a `validator_class`
         object
         """
         server_class = self.get_server_class()
         validator_class = self.get_validator_class()
-        return server_class(validator_class(request.user))
+        return server_class(validator_class())
 
-    def get_core(self, request):
-        server = self.get_server(request)
+    def get_core(self):
+        server = self.get_server()
         return OAuthLibCore(server)
 
     def validate_authorization_request(self, request):
@@ -63,7 +63,7 @@ class OAuthLibMixin(object):
 
         :param request: The current django.http.HttpRequest object
         """
-        core = self.get_core(request)
+        core = self.get_core()
         return core.validate_authorization_request(request)
 
     def create_authorization_response(self, request, scopes, credentials, allow):
@@ -80,8 +80,8 @@ class OAuthLibMixin(object):
         # TODO: move this scopes conversion from and to string into a utils function
         scopes = scopes.split(" ") if scopes else []
 
-        core = self.get_core(request)
-        return core.create_authorization_response(scopes, credentials, allow)
+        core = self.get_core()
+        return core.create_authorization_response(request, scopes, credentials, allow)
 
     def create_token_response(self, request):
         """
@@ -89,7 +89,7 @@ class OAuthLibMixin(object):
 
         :param request: The current django.http.HttpRequest object
         """
-        core = self.get_core(request)
+        core = self.get_core()
         return core.create_token_response(request)
 
     def verify_request(self, request):
@@ -98,7 +98,7 @@ class OAuthLibMixin(object):
 
         :param request: The current django.http.HttpRequest object
         """
-        core = self.get_core(request)
+        core = self.get_core()
         return core.verify_request(request, scopes=self.get_scopes())
 
     def get_scopes(self):

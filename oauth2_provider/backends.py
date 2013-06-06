@@ -2,16 +2,17 @@ from oauthlib import oauth2
 from oauthlib.common import urlencode
 
 from .exceptions import OAuthToolkitError, FatalClientError
+from .oauth2_validators import OAuth2Validator
 
 
 class OAuthLibCore(object):
     """
     """
-    def __init__(self, server):
+    def __init__(self, server=None):
         """
         :params server: An instance of oauthlib.oauth2.Server class
         """
-        self.server = server
+        self.server = server or oauth2.Server(OAuth2Validator())
 
     def _extract_params(self, request):
         """
@@ -48,11 +49,12 @@ class OAuthLibCore(object):
         except oauth2.OAuth2Error as error:
             raise OAuthToolkitError(error=error)
 
-    def create_authorization_response(self, scopes, credentials, allow):
+    def create_authorization_response(self, request, scopes, credentials, allow):
         """
         A wrapper method that calls create_authorization_response on `server_class`
         instance.
 
+        :param request: The current django.http.HttpRequest object
         :param scopes: A list of provided scopes
         :param credentials: Authorization credentials dictionary containing
                            `client_id`, `state`, `redirect_uri`, `response_type`
@@ -61,6 +63,9 @@ class OAuthLibCore(object):
         try:
             if not allow:
                 raise oauth2.AccessDeniedError()
+
+            # add current user to credentials. this will be used by OAuth2Validator
+            credentials['user'] = request.user
 
             uri, headers, body, status = self.server.create_authorization_response(
                 uri=credentials['redirect_uri'], scopes=scopes, credentials=credentials)
@@ -104,5 +109,5 @@ def get_oauthlib_core(request):
     from oauth2_provider.oauth2_validators import OAuth2Validator
     from oauthlib.oauth2 import Server
 
-    server = Server(OAuth2Validator(request.user))
+    server = Server(OAuth2Validator())
     return OAuthLibCore(server)
