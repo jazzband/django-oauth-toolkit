@@ -22,40 +22,49 @@ class OAuthLibMixin(object):
     server_class = None
     validator_class = None
 
-    def get_server_class(self):
+    @classmethod
+    def get_server_class(cls):
         """
         Return the OAuthlib server class to use
         """
-        if self.server_class is None:
+        if cls.server_class is None:
             raise ImproperlyConfigured(
                 "OAuthLibMixin requires either a definition of 'server_class'"
                 " or an implementation of 'get_server_class()'")
         else:
-            return self.server_class
+            return cls.server_class
 
-    def get_validator_class(self):
+    @classmethod
+    def get_validator_class(cls):
         """
         Return the RequestValidator implementation class to use
         """
-        if self.validator_class is None:
+        if cls.validator_class is None:
             raise ImproperlyConfigured(
                 "OAuthLibMixin requires either a definition of 'validator_class'"
                 " or an implementation of 'get_validator_class()'")
         else:
-            return self.validator_class
+            return cls.validator_class
 
-    def get_server(self):
+    @classmethod
+    def get_server(cls):
         """
         Return an instance of `server_class` initialized with a `validator_class`
         object
         """
-        server_class = self.get_server_class()
-        validator_class = self.get_validator_class()
+        server_class = cls.get_server_class()
+        validator_class = cls.get_validator_class()
         return server_class(validator_class())
 
-    def get_core(self):
-        server = self.get_server()
-        return OAuthLibCore(server)
+    @classmethod
+    def get_oauthlib_core(cls):
+        """
+        Cache and return `OAuthlibCore` instance so it will be created only on first request
+        """
+        if not hasattr(cls, '_oauthlib_core'):
+            server = cls.get_server()
+            cls._oauthlib_core = OAuthLibCore(server)
+        return cls._oauthlib_core
 
     def validate_authorization_request(self, request):
         """
@@ -63,7 +72,7 @@ class OAuthLibMixin(object):
 
         :param request: The current django.http.HttpRequest object
         """
-        core = self.get_core()
+        core = self.get_oauthlib_core()
         return core.validate_authorization_request(request)
 
     def create_authorization_response(self, request, scopes, credentials, allow):
@@ -80,7 +89,7 @@ class OAuthLibMixin(object):
         # TODO: move this scopes conversion from and to string into a utils function
         scopes = scopes.split(" ") if scopes else []
 
-        core = self.get_core()
+        core = self.get_oauthlib_core()
         return core.create_authorization_response(request, scopes, credentials, allow)
 
     def create_token_response(self, request):
@@ -89,7 +98,7 @@ class OAuthLibMixin(object):
 
         :param request: The current django.http.HttpRequest object
         """
-        core = self.get_core()
+        core = self.get_oauthlib_core()
         return core.create_token_response(request)
 
     def verify_request(self, request):
@@ -98,7 +107,7 @@ class OAuthLibMixin(object):
 
         :param request: The current django.http.HttpRequest object
         """
-        core = self.get_core()
+        core = self.get_oauthlib_core()
         return core.verify_request(request, scopes=self.get_scopes())
 
     def get_scopes(self):
