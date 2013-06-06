@@ -101,10 +101,9 @@ class OAuthLibCore(object):
         return valid, r
 
 
-def get_oauthlib_core(request):
+def get_oauthlib_core():
     """
-    Boilerplate utility function that take a request and returns an instance of `oauth2_provider.backends.OAuthLibCore`
-    This is going to die!
+    Utility function that take a request and returns an instance of `oauth2_provider.backends.OAuthLibCore`
     """
     from oauth2_provider.oauth2_validators import OAuth2Validator
     from oauthlib.oauth2 import Server
