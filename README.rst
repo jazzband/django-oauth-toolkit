@@ -42,6 +42,10 @@ Highest priority first
 
 Changelog
 ---------
+0.2.1 [2013-06-06]
+
+ * Core optimizations
+
 0.2.0 [2013-06-05]
 
  * Add support for Django1.4 and Django1.6
