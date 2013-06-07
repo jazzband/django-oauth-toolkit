@@ -29,29 +29,28 @@ Requirements
 Installation
 ------------
 
-Install using pip...
+Install with pip
 
-```
-pip install django-oauth-toolkit
-```
+    pip install django-oauth-toolkit
 
-Add 'django-oauth-toolkit' to your INSTALLED_APPS setting.
+Add `django-oauth-toolkit` to your `INSTALLED_APPS`
 
-```
-INSTALLED_APPS = (
-    ...
-    'django-oauth-toolkit',        
-)
-```
+.. code-block:: python
+    
+    INSTALLED_APPS = (
+        ...
+        'django-oauth-toolkit',        
+    )
+
 
 If you need an OAuth2 provider you'll want to add the following to your urls.py
 
-```
-urlpatterns = patterns(
-    ...
-    url(r'^o/', include('oauth2_provider.urls')),
-)
-```
+.. code-block:: python
+
+    urlpatterns = patterns(
+        ...
+        url(r'^o/', include('oauth2_provider.urls')),
+    )
 
 Documentation
 --------------
