@@ -20,6 +20,39 @@ capabilities to your Django projects. Django OAuth Toolkit makes extensive use o
 `OAuthLib <https://github.com/idan/oauthlib>`_, so that everything is
 `rfc-compliant <http://tools.ietf.org/html/rfc6749>`_.
 
+Requirements
+------------
+
+* Python 2.7, 3.3
+* Django 1.4, 1.5, 1.6a1
+
+Installation
+------------
+
+Install using pip...
+
+```
+pip install django-oauth-toolkit
+```
+
+Add 'django-oauth-toolkit' to your INSTALLED_APPS setting.
+
+```
+INSTALLED_APPS = (
+    ...
+    'django-oauth-toolkit',        
+)
+```
+
+If you need an OAuth2 provider you'll want to add the following to your urls.py
+
+```
+urlpatterns = patterns(
+    ...
+    url(r'^o/', include('oauth2_provider.urls')),
+)
+```
+
 Documentation
 --------------
 
