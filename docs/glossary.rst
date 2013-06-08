@@ -8,6 +8,9 @@
         Usually the same application offering resources through an OAuth2-protected API also behaves like an
         authorization server.
 
+    Resource Server
+        An application providing access to its own resources through an API protected with the OAuth2 protocol.
+
     Application
     Client
         A client is an application authorized to access OAuth2-protected resources on behalf and with the authorization

@@ -78,7 +78,8 @@ Test your authorization server
 ------------------------------
 Your authorization server is ready and can start releasing access tokens. To test the process you need an OAuth2
 consumer: if you know OAuth2 enough you can use curl, requests or anything can speak http. For the rest of us, we have
-a consumer service deployed on Heroku you can use to test your provider.
+a `consumer service <http://django-oauth-toolkit.herokuapp.com/consumer/>`_ deployed on Heroku you can use to test your
+provider.
 
 Build an authorization link for your users
 ++++++++++++++++++++++++++++++++++++++++++
