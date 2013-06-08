@@ -183,10 +183,14 @@ class OAuth2Validator(RequestValidator):
 
     def confirm_scopes(self, refresh_token, scopes, request, *args, **kwargs):
         """
-        Check if scopes passed in are valid
+        Check if scopes passed in are valid. Scope is optional, as in :rfc:`6` if omitted is treated as equal to the
+        scope originally granted by the resource owner.
         """
         try:
             rt = RefreshToken.objects.get(token=refresh_token)
+            if not scopes:
+                request.scopes = rt.access_token.scope
+                return True
             return rt.access_token.allow_scopes(scopes.split())
 
         except RefreshToken.DoesNotExist:
