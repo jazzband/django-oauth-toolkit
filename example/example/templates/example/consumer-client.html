@@ -1,0 +1,52 @@
+{% extends "example/base.html" %}
+{% load url from future %}
+
+{% block content %}
+<p class="lead">Hello, you know, I'm a supersimple API client...</p>
+
+<form class="form-inline">
+  <input type="text" class="input-small" placeholder="API URL" id="id_url">
+  <input type="password" class="input-small" placeholder="Access Token" id="id_token">
+  <button type="submit" class="btn" id="submit_btn">GET</button>
+</form>
+
+<pre id="id_response"></pre>
+{% endblock %}
+
+
+{% block javascript %}
+    <script type="text/javascript">
+    $(document).ready(function(){
+        $("#submit_btn").click(function(event){
+            event.preventDefault();
+            var url = $("#id_url").val();
+            var token = $("#id_token").val();
+
+            var show_response = function(data){
+                $("#id_response").html(data);
+            };
+
+            if (!url || !token) {
+                show_response('Please fill all the form fields');
+                return;
+            }
+
+            $.ajax({
+                url: url,
+                type: 'GET',
+                crossDomain: true,
+                beforeSend: function(request){
+                    request.setRequestHeader("Authorization", "Bearer " + token);
+                },
+                success: function(data, status, jqXHR){
+                    msg = 'HTTP ' + jqXHR.status + '\n';
+                    show_response(msg+data)
+                },
+                error: function(jqXHR) {
+                    show_response('HTTP ' + jqXHR.status)
+                }
+            });
+        });
+    });
+    </script>
+{% endblock javascript %}
