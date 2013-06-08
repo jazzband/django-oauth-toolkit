@@ -59,3 +59,6 @@ token from there is not considered cheating, so it's an option.
 
 Try performing a request and check that your :term:`Resource Server` aka :term:`Authorization Server` correctly responds with
 an HTTP 200.
+
+In the :doc:`part 3 of the tutorial <tutorial_03>` roles will be exchanged, developing a client application and
+interacting with an authorization server online.
