@@ -3,13 +3,13 @@
 
 {% block content %}
 <h1>Test your OAuth2 provider, I'll be your consumer</h1>
-<p class="lead">(At this point, you should have created an Application instance on your side.)</p>
 {% if authorization_link %}
-    <p class="lead">Ok, here is the link you have to use to reach your authorization page to beg for an authorization
+    <p class="lead">Ok, here is the link you have to use to reach your authorization page and beg for an authorization
         token</p>
     <p>Now click, give your authorization and see you later, possibly with an access token</p>
     <a href="{{ authorization_link }}">{{ authorization_link }}</a>
 {% else %}
+    <p class="lead">(At this point, you should have created an Application instance on your side.)</p>
     {% if not error %}
         <form method="post" action="">
             {{ form.non_field_errors }}

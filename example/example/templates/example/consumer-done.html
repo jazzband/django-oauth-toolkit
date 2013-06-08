@@ -1,0 +1,94 @@
+{% extends "example/base.html" %}
+{% load url from future %}
+
+{% block content %}
+<p class="lead">Show me your token!</p>
+<div class="alert alert-error hide fade in" id="id_alert">
+  <button type="button" class="close" id="id_alert_close">&times;</button>
+  <strong>Error!</strong> <span id="id_error_msg"></span>
+</div>
+{% if form %}
+    <form method="post">
+        {{ form.non_field_errors }}
+        <fieldset>
+            <legend>The Authorization server granted me the following:</legend>
+            <label>Access Token</label>
+            {{ form.access_token }}
+
+            <label>Token type</label>
+            {{ form.token_type }}
+
+            <label>Lifetime in seconds</label>
+            {{ form.expires_in }}
+
+            <label>Refresh Token</label>
+            {{ form.refresh_token }}
+
+            <p>Now you can try obtaining another access token using your refresh token and providing client
+            credentials</p>
+
+            <label>Client id</label>
+            {{ form.client_id }}
+
+            <label>Client secret</label>
+            {{ form.client_secret }}
+
+            <label>Token url</label>
+            {{ form.token_url }}
+            <span class="help-block">
+                The url in your server where to retrieve the access token, it's ok if it points to localhost
+                (e.g. http://localhost:8000/o/token/).
+            </span>
+
+            <button type="submit" class="btn" id="submit_btn">Click to refresh!</button>
+        </fieldset>
+    </form>
+{% endif %}
+{% endblock %}
+
+{% block javascript %}
+    <script type="text/javascript">
+    $(document).ready(function(){
+        $("#submit_btn").click(function(event){
+            event.preventDefault()
+            var token_url = $("#id_token_url").val();
+            var refresh_token = $("#id_refresh_token").val();
+            var client_id = $("#id_client_id").val();
+            var client_secret = $("#id_client_secret").val();
+
+            var show_error = function(msg){
+                $("#id_error_msg").html(msg);
+                $("#id_alert").show();
+            };
+
+            if (!token_url) {
+                show_error('Please specify Token url');
+                return;
+            }
+
+            $.ajax({
+                url: token_url,
+                type: 'POST',
+                crossDomain: true,
+                data: { refresh_token: refresh_token, grant_type: "refresh_token"},
+                beforeSend: function(request){
+                    request.setRequestHeader("Authorization", "Basic " + btoa(client_id + ":" + client_secret));
+                },
+                success: function(data){
+                    $("#id_access_token").val(data.access_token);
+                    $("#id_token_type").val(data.token_type);
+                    $("#id_expires").val(data.expires_in);
+                    $("#id_refresh_token").val(data.refresh_token);
+                },
+                error: function(data) {
+                    $("#id_error_msg").html(data.responseText);
+                    $("#id_alert").show();
+                }
+            });
+        });
+        $("#id_alert_close").click(function(event) {
+            $(this).parent().hide();
+        });
+    });
+    </script>
+{% endblock javascript %}

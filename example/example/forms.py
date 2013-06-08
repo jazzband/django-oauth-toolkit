@@ -14,3 +14,13 @@ class ConsumerExchangeForm(forms.Form):
     redirect_url = forms.CharField(widget=forms.TextInput(attrs={'readonly': 'readonly'}))
     client_id = forms.CharField()
     client_secret = forms.CharField()
+
+
+class AccessTokenDataForm(forms.Form):
+    access_token = forms.CharField(widget=forms.TextInput(attrs={'readonly': 'readonly'}))
+    token_type = forms.CharField(widget=forms.TextInput(attrs={'readonly': 'readonly'}))
+    expires_in = forms.CharField(widget=forms.TextInput(attrs={'readonly': 'readonly'}))
+    refresh_token = forms.CharField(widget=forms.TextInput(attrs={'readonly': 'readonly'}))
+    token_url = forms.URLField()
+    client_id = forms.CharField()
+    client_secret = forms.CharField()
