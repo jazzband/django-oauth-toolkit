@@ -70,7 +70,7 @@ class OAuth2Validator(RequestValidator):
         Remove the temporary grant used to swap the authorization token
         """
         grant = Grant.objects.get(code=code, application=request.client)
-        #grant.delete()
+        grant.delete()
 
     def validate_client_id(self, client_id, request, *args, **kwargs):
         """
@@ -147,6 +147,9 @@ class OAuth2Validator(RequestValidator):
         g.save()
 
     def save_bearer_token(self, token, request, *args, **kwargs):
+        """
+        Save access and refresh token, If refresh token is issued, remove old refresh tokens as in rfc:`6`
+        """
         expires = timezone.now() + timedelta(seconds=oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
         if request.grant_type == 'client_credentials':
             request.user = request.client.user
@@ -192,7 +195,7 @@ class OAuth2Validator(RequestValidator):
         try:
             rt = RefreshToken.objects.get(token=refresh_token)
             if not scopes:
-                request.scopes = rt.access_token.scope
+                request.scopes = rt.access_token.scope.split()
                 return True
             return rt.access_token.allow_scopes(scopes.split())
 
