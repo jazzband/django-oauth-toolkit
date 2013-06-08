@@ -198,7 +198,8 @@ class OAuth2Validator(RequestValidator):
 
     def validate_refresh_token(self, refresh_token, client, request, *args, **kwargs):
         """
-        Check refresh_token exists and refers to the right client.
+        Check refresh_token exists and refers to the right client. If the token is valid, as in :rfc:`6` the token
+        must be deleted to prevent further use.
         Also attach User instance to the request object
 
         TODO: since this method is invoked *after* confirm_scopes, could we avoid this second query for RefreshToken?
@@ -206,7 +207,10 @@ class OAuth2Validator(RequestValidator):
         try:
             rt = RefreshToken.objects.get(token=refresh_token)
             request.user = rt.user
-            return rt.application == client
+            if rt.application == client:
+                rt.delete()
+                return True
+            return False
 
         except RefreshToken.DoesNotExist:
             return False

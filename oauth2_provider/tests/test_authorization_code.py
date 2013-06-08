@@ -283,8 +283,28 @@ class TestAuthorizationCodeTokenView(BaseTest):
         content = json.loads(response.content.decode("utf-8"))
         self.assertTrue('access_token' in content)
 
-        # scopes are optional when refreshing access token
-        del token_request_data['scopes']
+    def test_refresh_no_scopes(self):
+        """
+        Request an access token using a refresh token without passing any scope
+        """
+        self.client.login(username="test_user", password="123456")
+        authorization_code = self.get_auth()
+
+        token_request_data = {
+            'grant_type': 'authorization_code',
+            'code': authorization_code,
+            'redirect_uri': 'http://example.it'
+        }
+        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
+
+        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        content = json.loads(response.content.decode("utf-8"))
+        self.assertTrue('refresh_token' in content)
+
+        token_request_data = {
+            'grant_type': 'refresh_token',
+            'refresh_token': content['refresh_token'],
+        }
         response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
 
@@ -314,6 +334,34 @@ class TestAuthorizationCodeTokenView(BaseTest):
             'refresh_token': content['refresh_token'],
             'scopes': 'read write nuke',
         }
+        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 400)
+
+    def test_refresh_fail_repeating_requests(self):
+        """
+        Try refreshing an access token with the same refresh token more than once
+        """
+        self.client.login(username="test_user", password="123456")
+        authorization_code = self.get_auth()
+
+        token_request_data = {
+            'grant_type': 'authorization_code',
+            'code': authorization_code,
+            'redirect_uri': 'http://example.it'
+        }
+        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
+
+        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        content = json.loads(response.content.decode("utf-8"))
+        self.assertTrue('refresh_token' in content)
+
+        token_request_data = {
+            'grant_type': 'refresh_token',
+            'refresh_token': content['refresh_token'],
+            'scopes': content['scope'],
+        }
+        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 200)
         response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 400)
 
