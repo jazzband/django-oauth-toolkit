@@ -73,11 +73,14 @@ class ConsumerDoneView(TemplateView):
     template_name = 'example/consumer-done.html'
 
     def get(self, request, *args, **kwargs):
-        form = AccessTokenDataForm(initial={
-            'access_token': request.GET.get('access_token', None),
-            'token_type': request.GET.get('token_type', None),
-            'expires_in': request.GET.get('expires_in', None),
-            'refresh_token': request.GET.get('refresh_token', None),
-        })
-        kwargs['form'] = form
+        # do not show form when url is accessed without paramters
+        if 'access_token' in request.GET:
+            form = AccessTokenDataForm(initial={
+                'access_token': request.GET.get('access_token', None),
+                'token_type': request.GET.get('token_type', None),
+                'expires_in': request.GET.get('expires_in', None),
+                'refresh_token': request.GET.get('refresh_token', None),
+            })
+            kwargs['form'] = form
+
         return super(ConsumerDoneView, self).get(request, *args, **kwargs)

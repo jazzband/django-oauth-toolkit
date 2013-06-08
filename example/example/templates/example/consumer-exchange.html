@@ -88,7 +88,6 @@
                     $("#id_token_type").html(data.token_type);
                     $("#id_expires").html(data.expires_in);
                     $("#id_refresh").html(data.refresh_token);
-                    //$("#tokenModal").modal('show');
                 },
                 error: function(data) {
                     $("#id_error_msg").html(data.responseText);
