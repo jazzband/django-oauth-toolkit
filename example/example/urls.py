@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.core.urlresolvers import reverse_lazy
 from django.views.generic import TemplateView
 
-from .views import ConsumerView, ConsumerExchangeView, ConsumerDoneView
+from .views import ConsumerView, ConsumerExchangeView, ConsumerDoneView, ApiEndpoint
 
 admin.autodiscover()
 
@@ -16,5 +16,7 @@ urlpatterns = patterns(
     url(r'^consumer/$', ConsumerView.as_view(), name="consumer"),
     url(r'^consumer/exchange/', ConsumerExchangeView.as_view(), name='consumer-exchange'),
     url(r'^consumer/done/', ConsumerDoneView.as_view(), name='consumer-done'),
+    url(r'^consumer/client/', TemplateView.as_view(template_name='example/consumer-client.html'), name='consumer-client'),
     url(r'^o/', include('oauth2_provider.urls')),
+    url(r'^api/hello', ApiEndpoint.as_view()),
 )

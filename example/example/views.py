@@ -3,6 +3,8 @@ from django.core.urlresolvers import reverse
 from django.views.generic import FormView, TemplateView
 
 from oauth2_provider.compat import urlencode
+from oauth2_provider.views.generic import ProtectedResourceView
+
 from .forms import ConsumerForm, ConsumerExchangeForm, AccessTokenDataForm
 
 
@@ -84,3 +86,8 @@ class ConsumerDoneView(TemplateView):
             kwargs['form'] = form
 
         return super(ConsumerDoneView, self).get(request, *args, **kwargs)
+
+
+class ApiEndpoint(ProtectedResourceView):
+    def get(self, request, *args, **kwargs):
+        return HttpResponse('Hello, OAuth2!')
