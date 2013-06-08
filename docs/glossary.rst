@@ -16,3 +16,15 @@
     Resource Owner
         The user of an application which exposes resources to third party applications through the OAuth2 protocol. The
         resource owner must give her authorization for third party applications to be able to access her data.
+
+    Access Token
+        A token needed to access resources protected by OAuth2 protocol. It has a lifetime which is usually quite short.
+
+    Authorization Code
+    Authorization Token
+        A token the authorization server issues to clients that can be swapped for an access token. It has a very short
+        lifetime since the swap has to be performed shortly after users provide their authorization.
+
+    Refresh Token
+        A token the authorization server may issue to clients and can be swapped for a brand new access token, without
+        repeating the authorization process. It has no expire time.
