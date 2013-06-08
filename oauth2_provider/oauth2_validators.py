@@ -70,7 +70,7 @@ class OAuth2Validator(RequestValidator):
         Remove the temporary grant used to swap the authorization token
         """
         grant = Grant.objects.get(code=code, application=request.client)
-        grant.delete()
+        #grant.delete()
 
     def validate_client_id(self, client_id, request, *args, **kwargs):
         """
@@ -180,3 +180,29 @@ class OAuth2Validator(RequestValidator):
             request.user = u
             return True
         return False
+
+    def confirm_scopes(self, refresh_token, scopes, request, *args, **kwargs):
+        """
+        Check if scopes passed in are valid
+        """
+        try:
+            rt = RefreshToken.objects.get(token=refresh_token)
+            return rt.access_token.allow_scopes(scopes.split())
+
+        except RefreshToken.DoesNotExist:
+            return False
+
+    def validate_refresh_token(self, refresh_token, client, request, *args, **kwargs):
+        """
+        Check refresh_token exists and refers to the right client.
+        Also attach User instance to the request object
+
+        TODO: since this method is invoked *after* confirm_scopes, could we avoid this second query for RefreshToken?
+        """
+        try:
+            rt = RefreshToken.objects.get(token=refresh_token)
+            request.user = rt.user
+            return rt.application == client
+
+        except RefreshToken.DoesNotExist:
+            return False

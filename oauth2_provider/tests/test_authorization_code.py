@@ -254,6 +254,36 @@ class TestAuthorizationCodeTokenView(BaseTest):
         self.assertEqual(content['scope'], "read write")
         self.assertEqual(content['expires_in'], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
 
+    def test_refresh(self):
+        """
+        Request an access token using a refresh token
+        """
+        self.client.login(username="test_user", password="123456")
+        authorization_code = self.get_auth()
+
+        token_request_data = {
+            'grant_type': 'authorization_code',
+            'code': authorization_code,
+            'redirect_uri': 'http://example.it'
+        }
+        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
+
+        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        content = json.loads(response.content.decode("utf-8"))
+        self.assertTrue('refresh_token' in content)
+
+        token_request_data = {
+            'grant_type': 'refresh_token',
+            'refresh_token': content['refresh_token'],
+            'scopes': content['scope'],
+        }
+        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 200)
+
+        content = json.loads(response.content.decode("utf-8"))
+        self.assertTrue('access_token' in content)
+
+
     def test_basic_auth_bad_authcode(self):
         """
         Request an access token using a bad authorization code
