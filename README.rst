@@ -33,13 +33,13 @@ Install with pip
 
     pip install django-oauth-toolkit
 
-Add `django-oauth-toolkit` to your `INSTALLED_APPS`
+Add `oauth2_provider` to your `INSTALLED_APPS`
 
 .. code-block:: python
     
     INSTALLED_APPS = (
         ...
-        'django-oauth-toolkit',        
+        'oauth2_provider',
     )
 
 
