@@ -11,14 +11,17 @@ Django OAuth Toolkit
    :target: https://coveralls.io/r/evonove/django-oauth-toolkit
 
 If you are facing one or more of the following:
- * Your Django app needs to interact with an OAuth2 authorization server to access 3rd party resources,
+ * Your Django app needs to interact with an OAuth2 authorization server to
+   access 3rd party resources,
  * Your Django app exposes a web API you want to protect with OAuth2 authentication,
- * You need to implement an OAuth2 authorization server to provide tokens management for your infrastructure,
+ * You need to implement an OAuth2 authorization server to provide tokens
+   management for your infrastructure,
 
-Django OAuth Toolkit can help you providing out of the box all the endpoints, data and logic needed to add OAuth2
-capabilities to your Django projects. Django OAuth Toolkit makes extensive use of the excellent
-`OAuthLib <https://github.com/idan/oauthlib>`_, so that everything is
-`rfc-compliant <http://tools.ietf.org/html/rfc6749>`_.
+Django OAuth Toolkit can help you providing out of the box all the endpoints,
+data and logic needed to add OAuth2 capabilities to your Django projects. Django
+OAuth Toolkit makes extensive use of the excellent `OAuthLib
+<https://github.com/idan/oauthlib>`_, so that everything is `rfc-compliant
+<http://tools.ietf.org/html/rfc6749>`_.
 
 Requirements
 ------------
@@ -36,10 +39,10 @@ Install with pip
 Add `django-oauth-toolkit` to your `INSTALLED_APPS`
 
 .. code-block:: python
-    
+
     INSTALLED_APPS = (
         ...
-        'django-oauth-toolkit',        
+        'oauth2_provider',
     )
 
 
@@ -55,12 +58,15 @@ If you need an OAuth2 provider you'll want to add the following to your urls.py
 Documentation
 --------------
 
-The `full documentation <https://django-oauth-toolkit.readthedocs.org/en/latest/>`_ is on *Read the Docs*.
+The `full documentation
+<https://django-oauth-toolkit.readthedocs.org/en/latest/>`_ is on *Read the
+Docs*.
 
 License
 -------
 
-django-oauth-toolkit is released under the terms of the **BSD license**. Full details in ``LICENSE`` file.
+django-oauth-toolkit is released under the terms of the **BSD license**. Full
+details in ``LICENSE`` file.
 
 Roadmap
 -------------------------------
