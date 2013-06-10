@@ -24,10 +24,20 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="brand" href="#">Django OAuth Toolkit</a>
+          <a class="brand" href="{% url 'home' %}">Django OAuth Toolkit</a>
           <div class="nav-collapse collapse">
             <ul class="nav">
-              <li class="active"><a href="{%  url 'home' %}">Home</a></li>
+              {% url 'home' as url %}
+              <li {% if request.path == url %} class="active"{% endif %}><a href="{{ url }}">Home</a></li>
+              {% url 'consumer' as url %}
+              {% url 'consumer-client' as url_client %}
+              <li class="dropdown {% if request.path == url or request.path == url_client %}active{% endif %}">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">OAuth2 Consumer <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  <li><a href="{{ url }}">Create authorization link</a></li>
+                  <li><a href="{{ url_client }}">Stupid API client</a></li>
+                </ul>
+              </li>
             </ul>
               {% if user.is_authenticated %}
                   <ul class="nav pull-right">
