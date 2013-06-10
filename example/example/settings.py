@@ -2,6 +2,8 @@
 import os
 from os.path import join, abspath, dirname
 
+import django.conf.global_settings as DEFAULT_SETTINGS
+
 # Root directory of our project
 PROJECT_ROOT = abspath(join(abspath(dirname(__file__)), "..",))
 
@@ -101,6 +103,10 @@ MIDDLEWARE_CLASSES = (
     'example.middleware.XsSharingMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
+)
+
+TEMPLATE_CONTEXT_PROCESSORS = DEFAULT_SETTINGS.TEMPLATE_CONTEXT_PROCESSORS + (
+    "django.core.context_processors.request",
 )
 
 ROOT_URLCONF = 'example.urls'
