@@ -6,9 +6,9 @@ For example your project's `settings.py` file might look like this:
 
 OAUTH2_PROVIDER = {
     'CLIENT_ID_GENERATOR_CLASS':
-        'oauth2_provide.generators.ClientIdGenerator',
+        'oauth2_provider.generators.ClientIdGenerator',
     'CLIENT_SECRET_GENERATOR_CLASS':
-        'oauth2_provide.generators.ClientSecretGenerator',
+        'oauth2_provider.generators.ClientSecretGenerator',
 }
 
 This module provides the `oauth2_settings` object, that is used to access
