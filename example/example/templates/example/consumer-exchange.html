@@ -83,7 +83,7 @@
                     request.setRequestHeader("Authorization", "Basic " + btoa(client_id + ":" + client_secret));
                 },
                 success: function(data){
-                    window.location = 'http://localhost:8000/consumer/done/?'+$.param(data)
+                    window.location = window.location.protocol + '//{{ request.META.HTTP_HOST }}{%  url 'consumer-done' %}?' + $.param(data);
                     $("#id_access_token").html(data.access_token);
                     $("#id_token_type").html(data.token_type);
                     $("#id_expires").html(data.expires_in);
