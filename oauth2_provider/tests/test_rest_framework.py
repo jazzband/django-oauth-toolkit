@@ -5,56 +5,49 @@ from django.http import HttpResponse
 from django.test import TestCase
 from django.utils import timezone, unittest
 
-try:
-    from rest_framework import permissions
-    from rest_framework.views import APIView
-
-    rest_framework_installed = True
-except ImportError:
-    rest_framework_installed = False
-
 
 from .test_utils import TestCaseUtils
 from ..compat import get_user_model
-from ..ext.rest_framework import OAuth2Authentication, TokenHasScope, TokenHasReadWriteScope
 from ..models import AccessToken, Application
 from ..views.mixins import ScopedResourceMixin
 from ..settings import oauth2_settings
 
 
-class MockView(APIView):
-    permission_classes = (permissions.IsAuthenticated,)
+try:
+    from rest_framework import permissions
+    from rest_framework.views import APIView
+    from ..ext.rest_framework import OAuth2Authentication, TokenHasScope, TokenHasReadWriteScope
 
-    def get(self, request):
-        return HttpResponse({'a': 1, 'b': 2, 'c': 3})
+    class MockView(APIView):
+        permission_classes = (permissions.IsAuthenticated,)
 
-    def post(self, request):
-        return HttpResponse({'a': 1, 'b': 2, 'c': 3})
+        def get(self, request):
+            return HttpResponse({'a': 1, 'b': 2, 'c': 3})
 
-    def put(self, request):
-        return HttpResponse({'a': 1, 'b': 2, 'c': 3})
+        def post(self, request):
+            return HttpResponse({'a': 1, 'b': 2, 'c': 3})
 
+    class OAuth2View(MockView):
+        authentication_classes = [OAuth2Authentication]
 
-class OAuth2View(MockView):
-    authentication_classes = [OAuth2Authentication]
+    class ScopedView(ScopedResourceMixin, OAuth2View):
+        permission_classes = [permissions.IsAuthenticated, TokenHasScope]
+        requested_scopes = ['scope1']
 
+    class ReadWriteScopedView(OAuth2View):
+        permission_classes = [permissions.IsAuthenticated, TokenHasReadWriteScope]
 
-class ScopedView(ScopedResourceMixin, OAuth2View):
-    permission_classes = [permissions.IsAuthenticated, TokenHasScope]
-    requested_scopes = ['scope1']
+    urlpatterns = patterns(
+        '',
+        url(r'^oauth2/', include('oauth2_provider.urls')),
+        url(r'^oauth2-test/$', OAuth2View.as_view()),
+        url(r'^oauth2-scoped-test/$', ScopedView.as_view()),
+        url(r'^oauth2-read-write-test/$', ReadWriteScopedView.as_view()),
+    )
 
-
-class ReadWriteScopedView(OAuth2View):
-    permission_classes = [permissions.IsAuthenticated, TokenHasReadWriteScope]
-
-
-urlpatterns = patterns(
-    '',
-    url(r'^oauth2/', include('oauth2_provider.urls')),
-    url(r'^oauth2-test/$', OAuth2View.as_view()),
-    url(r'^oauth2-scoped-test/$', ScopedView.as_view()),
-    url(r'^oauth2-read-write-test/$', ReadWriteScopedView.as_view()),
-)
+    rest_framework_installed = True
+except ImportError:
+    rest_framework_installed = False
 
 
 class BaseTest(TestCaseUtils, TestCase):
