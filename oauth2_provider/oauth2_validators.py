@@ -96,6 +96,9 @@ class OAuth2Validator(RequestValidator):
                 request.client = access_token.application
                 request.user = access_token.user
                 request.scopes = scopes
+
+                # this is needed by django rest framework
+                request.access_token = access_token
                 return True
             return False
         except AccessToken.DoesNotExist:
