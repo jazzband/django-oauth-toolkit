@@ -2,14 +2,18 @@ from __future__ import unicode_literals
 
 import json
 
-from django.test import TestCase, RequestFactory
 from django.core.urlresolvers import reverse
+from django.test import TestCase, RequestFactory
+from django.views.generic import View
+
+from oauthlib.oauth2 import BackendApplicationServer
 
 from ..compat import get_user_model
 from ..models import Application
+from ..oauth2_validators import OAuth2Validator
 from ..settings import oauth2_settings
 from ..views import ProtectedResourceView
-
+from ..views.mixins import OAuthLibMixin
 from .test_utils import TestCaseUtils
 
 
@@ -53,6 +57,7 @@ class TestClientCredential(BaseTest):
 
         response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
+
         content = json.loads(response.content.decode("utf-8"))
         access_token = content['access_token']
 
@@ -66,3 +71,44 @@ class TestClientCredential(BaseTest):
         view = ResourceView.as_view()
         response = view(request)
         self.assertEqual(response, "This is a protected resource")
+
+
+class TestExtendedRequest(BaseTest):
+    @classmethod
+    def setUpClass(cls):
+        cls.request_factory = RequestFactory()
+
+    def test_extended_request(self):
+        class TestView(OAuthLibMixin, View):
+            server_class = BackendApplicationServer
+            validator_class = OAuth2Validator
+
+            def get_scopes(self):
+                return ['read', 'write']
+
+        token_request_data = {
+            'grant_type': 'client_credentials',
+        }
+        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 200)
+
+        content = json.loads(response.content.decode("utf-8"))
+        access_token = content['access_token']
+
+        # use token to access the resource
+        auth_headers = {
+            'HTTP_AUTHORIZATION': 'Bearer ' + access_token,
+        }
+
+        request = self.request_factory.get("/fake-req", **auth_headers)
+        request.user = "fake"
+
+        test_view = TestView()
+        self.assertIsInstance(test_view.get_server(), BackendApplicationServer)
+
+        valid, r = test_view.verify_request(request)
+        self.assertTrue(valid)
+        self.assertEqual(r.user, self.dev_user)
+        self.assertEqual(r.client, self.application)
+        self.assertEqual(r.scopes, ['read', 'write'])
