@@ -92,8 +92,13 @@ class OAuth2Validator(RequestValidator):
         """
         try:
             access_token = AccessToken.objects.get(token=token)
-            return access_token.is_valid(scopes)
+            if not access_token.is_valid(scopes):
+                return False
 
+            request.client = access_token.application
+            request.user = access_token.user
+            request.scopes = scopes
+            return True
         except AccessToken.DoesNotExist:
             return False
 
