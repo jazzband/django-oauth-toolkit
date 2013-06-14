@@ -138,3 +138,45 @@ Grab your access_token and start using your new OAuth2 API:
 
     # Insert a new user
     curl -H "Authorization: Bearer <your_access_token>" -X POST -d"username=foo&password=bar" http://localhost:8000/users/
+
+Step 5: Testing Restricted Access
+---------------------------------
+
+Let's try to access resources usign a token with a restricted scope adding a `scope` parameter to the token request
+
+::
+
+    curl -X POST -d "grant_type=password&username=<user_name>&password=<password>&scope=read" http://<client_id>:<client_secret>@localhost:8000/o/token/
+
+As you can see the only scope provided is `read`:
+
+.. code-block:: javascript
+
+    {
+        "access_token": "<your_access_token>",
+        "token_type": "Bearer",
+        "expires_in": 36000,
+        "refresh_token": "<your_refresh_token>",
+        "scope": "read"
+    }
+
+We now try to access our resources:
+
+::
+
+    # Retrieve users
+    curl -H "Authorization: Bearer <your_access_token>" http://localhost:8000/users/
+    curl -H "Authorization: Bearer <your_access_token>" http://localhost:8000/users/1/
+
+Ok, this one works since users read only requires `read` scope.
+
+::
+
+    # 'groups' scope needed
+    curl -H "Authorization: Bearer <your_access_token>" http://localhost:8000/groups/
+
+    # 'write' scope needed
+    curl -H "Authorization: Bearer <your_access_token>" -X POST -d"username=foo&password=bar" http://localhost:8000/users/
+
+You'll get a `"You do not have permission to perform this action"` error because your access_token does not provide the
+required scopes `groups` and `write`.
