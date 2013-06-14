@@ -21,7 +21,7 @@ Start a new Django project and add `'rest_framework'` and `'oauth2_provider'` to
 
 Remember to also enable the `'admin'`.
 
-Step2: Set up a simple API
+Step 2: Set up a simple API
 --------------------------
 
 Now we set up a simple API for accessing users and groups.
@@ -93,11 +93,11 @@ Step 3: Register an application
 
 To obtain a valid access_token first we must register an application.
 
-From the admin got o oauth2_provider > applications > Add Application. Fill the form with the following data:
+From the admin go to *oauth2_provider* > *applications* > *Add Application*. Fill the form with the following data:
 
-User: *your current user*
-Client Type: *confidential*
-Authorization Grant Type: *Resource owner password-based*
+* User: *your current user*
+* Client Type: *confidential*
+* Authorization Grant Type: *Resource owner password-based*
 
 Save your app!
 
@@ -121,11 +121,15 @@ Response should be something like:
 Grab your access_token and start using your new OAuth2 API:
 
     # Retrieve users
+
     curl -H "Authorization: Bearer <your_access_token>" http://localhost:8000/users/
+
     curl -H "Authorization: Bearer <your_access_token>" http://localhost:8000/users/1/
 
     # Retrieve groups
+
     curl -H "Authorization: Bearer <your_access_token>" http://localhost:8000/groups/
 
     # Insert a new user
+
     curl -H "Authorization: Bearer <your_access_token>" -X POST -d"username=foo&password=bar" http://localhost:8000/users/
