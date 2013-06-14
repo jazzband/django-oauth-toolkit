@@ -13,6 +13,11 @@ capabilities to your Django projects. Django OAuth Toolkit makes extensive use o
 
 See our :doc:`Changelog <changelog>` for information on updates.
 
+Support
+-------
+
+If you need support please send a message to the `Django OAuth Toolkit Google Group <http://groups.google.com/group/django-oauth-toolkit>`_
+
 Requirements
 ------------
 
