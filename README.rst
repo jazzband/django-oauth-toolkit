@@ -72,8 +72,7 @@ Roadmap
 
 Highest priority first
 
- * ``django-rest-framework`` integration
- * Test server deployment
+ * Test server improvements
  * OAuth2 client wrapper
  * OAuth1 support
 
