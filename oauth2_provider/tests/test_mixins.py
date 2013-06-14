@@ -48,7 +48,7 @@ class TestScopedResourceMixin(TestCase):
     def setUpClass(cls):
         cls.request_factory = RequestFactory()
 
-    def test_missing_requested_scopes(self):
+    def test_missing_required_scopes(self):
         class TestView(ScopedResourceMixin, View):
             pass
 
@@ -56,9 +56,9 @@ class TestScopedResourceMixin(TestCase):
 
         self.assertRaises(ImproperlyConfigured, test_view.get_scopes)
 
-    def test_correct_requested_scopes(self):
+    def test_correct_required_scopes(self):
         class TestView(ScopedResourceMixin, View):
-            requested_scopes = ['scope1', 'scope2']
+            required_scopes = ['scope1', 'scope2']
 
         test_view = TestView()
 

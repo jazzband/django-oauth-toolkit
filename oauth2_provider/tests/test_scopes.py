@@ -16,14 +16,14 @@ from .test_utils import TestCaseUtils
 
 # mocking a protected resource view
 class ScopeResourceView(ScopedProtectedResourceView):
-    requested_scopes = ['scope1']
+    required_scopes = ['scope1']
 
     def get(self, request, *args, **kwargs):
         return "This is a protected resource"
 
 
 class MultiScopeResourceView(ScopedProtectedResourceView):
-    requested_scopes = ['scope1', 'scope2']
+    required_scopes = ['scope1', 'scope2']
 
     def get(self, request, *args, **kwargs):
         return "This is a protected resource"

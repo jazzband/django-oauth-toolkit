@@ -142,7 +142,7 @@ class ScopedResourceMixin(object):
     """
     Helper mixin that implements "scopes handling" behaviour
     """
-    requested_scopes = None
+    required_scopes = None
 
     def get_scopes(self, *args, **kwargs):
         """
@@ -150,12 +150,12 @@ class ScopedResourceMixin(object):
 
         :param args: Support scopes injections from the outside (not yet implemented)
         """
-        if self.requested_scopes is None:
+        if self.required_scopes is None:
             raise ImproperlyConfigured(
-                "ProtectedResourceMixin requires either a definition of 'requested_scopes'"
+                "ProtectedResourceMixin requires either a definition of 'required_scopes'"
                 " or an implementation of 'get_scopes()'")
         else:
-            return self.requested_scopes
+            return self.required_scopes
 
 
 class ProtectedResourceMixin(OAuthLibMixin):
@@ -174,7 +174,7 @@ class ReadWriteScopedResourceMixin(ScopedResourceMixin, OAuthLibMixin):
     """
     Helper mixin that implements "read and write scopes" behavior
     """
-    requested_scopes = []
+    required_scopes = []
     read_write_scope = None
 
     def __new__(cls, *args, **kwargs):
@@ -199,4 +199,4 @@ class ReadWriteScopedResourceMixin(ScopedResourceMixin, OAuthLibMixin):
 
     def get_scopes(self, *args, **kwargs):
         scopes = super(ReadWriteScopedResourceMixin, self).get_scopes(*args, **kwargs)
-        return scopes + [self.read_write_scope]  # this returns a copy so that self.requested_scopes is not modified
+        return scopes + [self.read_write_scope]  # this returns a copy so that self.required_scopes is not modified

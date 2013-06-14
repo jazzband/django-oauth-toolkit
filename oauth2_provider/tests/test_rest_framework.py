@@ -32,7 +32,7 @@ try:
 
     class ScopedView(ScopedResourceMixin, OAuth2View):
         permission_classes = [permissions.IsAuthenticated, TokenHasScope]
-        requested_scopes = ['scope1']
+        required_scopes = ['scope1']
 
     class ReadWriteScopedView(OAuth2View):
         permission_classes = [permissions.IsAuthenticated, TokenHasReadWriteScope]

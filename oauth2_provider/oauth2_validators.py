@@ -137,7 +137,7 @@ class OAuth2Validator(RequestValidator):
 
     def validate_scopes(self, client_id, scopes, client, request, *args, **kwargs):
         """
-        Ensure requested scopes are permitted (as specified in the settings file)
+        Ensure required scopes are permitted (as specified in the settings file)
         """
         return set(scopes).issubset(set(oauth2_settings.SCOPES))
 
