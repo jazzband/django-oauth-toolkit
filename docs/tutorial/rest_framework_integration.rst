@@ -9,17 +9,20 @@ Step 1: Install requirements
 
 Create a virtualenv and install following packages using `pip`...
 
+::
+
     pip install django-oauth-toolkit djangorestframework
 
 Start a new Django project and add `'rest_framework'` and `'oauth2_provider'` to your `INSTALLED_APPS` setting.
 
+.. code-block:: python
+
     INSTALLED_APPS = (
+        'django.contrib.admin',
         ...
         'oauth2_provider',
         'rest_framework',
     )
-
-Remember to also enable the `'admin'`.
 
 Step 2: Set up a simple API
 --------------------------
@@ -86,7 +89,7 @@ Add the following to your `settings.py` module:
         )
     }
 
-Run `python manage.py syncdb`, login to admin and create some users and groups.
+Now run `python manage.py syncdb`, login to admin and create some users and groups.
 
 Step 3: Register an application
 -------------------------------
@@ -106,9 +109,13 @@ Step 4: Get your token and use your API
 
 At this point we're ready to request an access_token. Open your shell
 
+::
+
     curl -X POST -d "grant_type=password&username=<user_name>&password=<password>" http://<client_id>:<client_secret>@localhost:8000/o/token/
 
 Response should be something like:
+
+.. code-block:: javascript
 
     {
         "access_token": "<your_access_token>",
@@ -120,16 +127,14 @@ Response should be something like:
 
 Grab your access_token and start using your new OAuth2 API:
 
+::
+
     # Retrieve users
-
     curl -H "Authorization: Bearer <your_access_token>" http://localhost:8000/users/
-
     curl -H "Authorization: Bearer <your_access_token>" http://localhost:8000/users/1/
 
     # Retrieve groups
-
     curl -H "Authorization: Bearer <your_access_token>" http://localhost:8000/groups/
 
     # Insert a new user
-
     curl -H "Authorization: Bearer <your_access_token>" -X POST -d"username=foo&password=bar" http://localhost:8000/users/
