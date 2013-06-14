@@ -6,6 +6,10 @@ Changelog
 
  * `Django REST Framework <http://django-rest-framework.org/>`_ integration layer
 
+**Backwards incompatible changes in 0.3.0**
+
+ * `requested_scopes` parameter in ScopedResourceMixin changed to `required_scopes`
+
 0.2.1 [2013-06-06]
 ------------------
 
