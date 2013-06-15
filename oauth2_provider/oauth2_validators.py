@@ -92,13 +92,15 @@ class OAuth2Validator(RequestValidator):
         """
         try:
             access_token = AccessToken.objects.get(token=token)
-            if not access_token.is_valid(scopes):
-                return False
+            if access_token.is_valid(scopes):
+                request.client = access_token.application
+                request.user = access_token.user
+                request.scopes = scopes
 
-            request.client = access_token.application
-            request.user = access_token.user
-            request.scopes = scopes
-            return True
+                # this is needed by django rest framework
+                request.access_token = access_token
+                return True
+            return False
         except AccessToken.DoesNotExist:
             return False
 
@@ -135,7 +137,7 @@ class OAuth2Validator(RequestValidator):
 
     def validate_scopes(self, client_id, scopes, client, request, *args, **kwargs):
         """
-        Ensure requested scopes are permitted (as specified in the settings file)
+        Ensure required scopes are permitted (as specified in the settings file)
         """
         return set(scopes).issubset(set(oauth2_settings.SCOPES))
 

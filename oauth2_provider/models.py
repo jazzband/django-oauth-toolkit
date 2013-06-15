@@ -84,7 +84,7 @@ class Grant(models.Model):
     * :attr:`application` Application instance this grant was asked for
     * :attr:`expires` Expire time in seconds, defaults to :data:`settings.AUTHORIZATION_CODE_EXPIRE_SECONDS`
     * :attr:`redirect_uri` Self explained
-    * :attr:`scope` Requested scopes, optional
+    * :attr:`scope` Required scopes, optional
     """
     user = models.ForeignKey(User)
     code = models.CharField(max_length=255)  # code comes from oauthlib

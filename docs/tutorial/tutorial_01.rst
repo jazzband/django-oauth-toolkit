@@ -12,11 +12,23 @@ During this tutorial you will make an XHR POST using `CORS <http://en.wikipedia.
 mechanism from an Heroku deployed app to your localhost instance. To achieve this operation you need a properly
 configured Django server and `django-cors-headers` app will help you with this.
 
-Create a virtualenv and install django-oauth-toolkit and django-cors-headers:
+Create a virtualenv and install `django-oauth-toolkit` and `django-cors-headers`:
+
+::
 
     pip install django-oauth-toolkit django-cors-headers
 
 start a Django project, add `oauth2_provider` and `corsheaders` to the installed apps, enable the admin.
+
+.. code-block:: python
+
+    INSTALLED_APPS = {
+        'django.contrib.admin',
+        # ...
+        'oauth2_provider',
+        'corsheaders',
+    }
+
 Include the Django OAuth Toolkit urls in your `urls.py`, choose the urlspace you prefer, for example:
 
 .. code-block:: python
