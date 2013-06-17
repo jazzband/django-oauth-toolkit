@@ -39,11 +39,21 @@
                     request.setRequestHeader("Authorization", "Bearer " + token);
                 },
                 success: function(data, status, jqXHR){
-                    msg = 'HTTP ' + jqXHR.status + '\n';
-                    show_response(msg+data)
+                    msg = 'HTTP ' + jqXHR.status;
+                    if (jqXHR.responseText  == "Hello, OAuth2!"){
+                        show_response(msg+data)
+                    } else {
+                        show_response("Please insert a valid OAuth2 API URL");
+                    }
                 },
                 error: function(jqXHR) {
-                    show_response('HTTP ' + jqXHR.status)
+                    var msg = "HTTP " + jqXHR.status;
+                    var br ="<\br>";
+                    if (jqXHR.status == 0){
+                        msg += br;
+                        msg += "You have to put protocol on your URL, i.e. '<b>http://</b>localhost:8000/api/hello'.";
+                    }
+                    show_response(msg);
                 }
             });
         });

@@ -113,6 +113,7 @@ At this point we're ready to request an access_token. Open your shell
 
     curl -X POST -d "grant_type=password&username=<user_name>&password=<password>" http://<client_id>:<client_secret>@localhost:8000/o/token/
 
+The *user_name* and *password* are the credential on any user registered in your :term:`Authorization Server`, like any user created in Step 2.
 Response should be something like:
 
 .. code-block:: javascript

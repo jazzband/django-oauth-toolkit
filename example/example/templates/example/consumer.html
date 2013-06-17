@@ -9,7 +9,7 @@
     <p>Now click, give your authorization and see you later, possibly with an access token</p>
     <a href="{{ authorization_link }}">{{ authorization_link }}</a>
 {% else %}
-    <p class="lead">(At this point, you should have created an Application instance on your side.)</p>
+    <p class="lead">(At this point, you should have created an Application instance on your side, up and running.)</p>
     {% if not error %}
         <form method="post" action="">
             {{ form.non_field_errors }}

@@ -12,6 +12,7 @@
         An application providing access to its own resources through an API protected with the OAuth2 protocol.
 
     Application
+
     Client
         A client is an application authorized to access OAuth2-protected resources on behalf and with the authorization
         of the resource owner.
@@ -24,6 +25,9 @@
         A token needed to access resources protected by OAuth2 protocol. It has a lifetime which is usually quite short.
 
     Authorization Code
+        The authorization code is obtained by using an authorization server as an intermediary between the client and
+        resource owner. It is used to authenticate the client and grant the transmission of the Access Token.
+
     Authorization Token
         A token the authorization server issues to clients that can be swapped for an access token. It has a very short
         lifetime since the swap has to be performed shortly after users provide their authorization.
