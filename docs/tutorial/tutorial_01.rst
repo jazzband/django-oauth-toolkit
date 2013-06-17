@@ -95,7 +95,7 @@ provider.
 
 Build an authorization link for your users
 ++++++++++++++++++++++++++++++++++++++++++
-The process of authorizing an application to access OAuth2 protected data in an *Authorization code* flow is always
+The process of authorizing an application to access OAuth2 protected data in an :term:`Authorization Code` flow is always
 started by the user. You have to prompt your users with a special link they click to start the process. Go to the
 `Consumer <http://django-oauth-toolkit.herokuapp.com/consumer/>`_ page and fill the form with the data of the
 application you created earlier on this tutorial. Submit the form, you'll get the link your users should follow to get
@@ -103,7 +103,7 @@ to the authorization page.
 
 Authorize the application
 +++++++++++++++++++++++++
-When the user clicks the link, she is redirected to your (possibly local) Authorization server. If you're not logged in
+When the user clicks the link, she is redirected to your (possibly local) :term:`Authorization Server`. If you're not logged in
 in your Django admin, at this point you should be prompted for username and password. This is because the authorization
 page is login protected by django-oauth-toolkit. Login, then you should see the not so cute form user can use to give
 her authorization to the client application. Flag the *Allow* checkbox and click *Authorize*, you will be redirected
@@ -121,7 +121,7 @@ the :term:`Refresh Token`.
 
 Refresh the token
 +++++++++++++++++
-The page showing the access token retrieved from the :term:`Authorization server` also let you make a POST request to
+The page showing the access token retrieved from the :term:`Authorization Server` also let you make a POST request to
 the server itself to swap the refresh token for another, brand new access token.
 Just fill in the missing form fields and click the Refresh button: if everything goes smooth you will se the access and
 refresh token change their values, otherwise you will likely see an error message.
