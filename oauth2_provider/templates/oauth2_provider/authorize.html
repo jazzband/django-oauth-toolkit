@@ -1,18 +1,50 @@
+{% extends "oauth2_provider/base.html" %}
+
+{% load i18n %}
 {% load url from future %}
 {% block content %}
-    {% if not error %}
-        <p>{{ application.name }} would like to access your data with the following permissions:</p>
-        {# TODO: show current permission #}
-        <form method="post" action="">
-            {{ form.as_ul }}
-            {% csrf_token %}
-            {{ form.errors }}
-            {{ form.non_field_errors }}
-            <input type="submit" class="btn login large danger" value="Cancel" />
-            <input type="submit" class="btn login large primary" name="authorize" value="Authorize" />
-        </form>
-    {% else %}
-        {{ error.error }}
-        {{ error.description }}
-    {% endif %}
+    <div class="form-authorize">
+        {% if not error %}
+            <script type="text/javascript">
+                function authorize_form(allow) {
+                    var form = document.forms["authorizationForm"];
+                    form["allow"].value = allow;
+                    return true;
+                }
+            </script>
+
+            <form id="authorizationForm" method="post">
+                <h3 class="form-authorize-heading">{% trans "Authorize" %} {{ application.name }}?</h3>
+                {% csrf_token %}
+
+                {% for field in form %}
+                    {% if field.is_hidden %}
+                        {{ field }}
+                    {% endif %}
+                {% endfor %}
+                <input type="hidden" id="{{ form.allow.id_for_label }}" name="{{ form.allow.html_name }}" value="false" />
+
+                <p>{% trans "Application requires following permissions" %}</p>
+                <ul>
+                    {% for scope in form.scopes.value.split %}
+                        <li>{{ scope }}</li>
+                    {% endfor %}
+                </ul>
+
+                {{ form.errors }}
+                {{ form.non_field_errors }}
+
+                <div class="control-group">
+                    <div class="controls">
+                        <input type="submit" class="btn btn-large" value="Cancel" onclick="authorize_form(false);"/>
+                        <input type="submit" class="btn btn-large btn-primary" name="authorize" value="Authorize" onclick="authorize_form(true);"/>
+                    </div>
+                </div>
+            </form>
+
+        {% else %}
+            <h2>Error: {{ error.error }}</h2>
+            <p>{{ error.description }}</p>
+        {% endif %}
+    </div>
 {% endblock %}

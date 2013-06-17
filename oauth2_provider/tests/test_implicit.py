@@ -60,7 +60,7 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         # check form is in context and form params are valid
         self.assertIn("form", response.context)
 
-        form = response.context.get("form")
+        form = response.context["form"]
         self.assertEqual(form['redirect_uri'].value(), "http://example.it")
         self.assertEqual(form['state'].value(), "random_state_string")
         self.assertEqual(form['scopes'].value(), "read write")
@@ -96,7 +96,7 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
-        form = response.context.get("form")
+        form = response.context["form"]
         self.assertEqual(form['redirect_uri'].value(), "http://localhost")
 
     def test_pre_auth_forbibben_redirect(self):
