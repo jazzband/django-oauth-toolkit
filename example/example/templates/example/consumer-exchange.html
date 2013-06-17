@@ -90,7 +90,15 @@
                     $("#id_refresh").html(data.refresh_token);
                 },
                 error: function(data) {
-                    $("#id_error_msg").html(data.responseText);
+                    var msg = data.responseText;
+                    var br ="<\br>";
+                    if (data.responseJSON && data.responseJSON['error'] == "invalid_grant"){
+                        msg += br;
+                        msg += "Authorization Code is expired. You have 60 seconds to complete this operation.";
+                        msg += br;
+                        msg += "If you are following the tutorial, you have to restart from \"Build an authorization link for your user\" step.";
+                    }
+                    $("#id_error_msg").html(msg);
                     $("#id_alert").show();
                 }
             });
