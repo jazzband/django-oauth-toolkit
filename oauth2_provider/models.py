@@ -58,7 +58,11 @@ class Application(models.Model):
         """
         Returns the default redirect_uri extracting the first item from the :attr:`redirect_uris` string
         """
-        return self.redirect_uris.split().pop(0)
+        if self.redirect_uris:
+            return self.redirect_uris.split().pop(0)
+
+        assert False, "If you are using implicit, authorization_code or all-in-one grant_type, you must define " \
+                      "redirect_uris field in your Application model"
 
     def redirect_uri_allowed(self, uri):
         """
