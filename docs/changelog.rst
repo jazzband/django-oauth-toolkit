@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.4.0 [in development]
+----------------------
+
+ * Bugfix #21: IndexError when trying to authorize an application
+ * Bugfix #9: Default_redirect_uri is mandatory when grant_type is implicit, authorization_code or all-in-one
+
 0.3.0 [2013-06-14]
 ----------------------
 
