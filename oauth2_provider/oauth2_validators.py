@@ -35,7 +35,7 @@ class OAuth2Validator(RequestValidator):
         encoding = request.encoding or 'utf-8'
 
         auth_string_decoded = base64.b64decode(auth_string).decode(encoding)
-        client_id, client_secret = auth_string_decoded.split(':')
+        client_id, client_secret = auth_string_decoded.split(':', 1)
 
         try:
             request.client = Application.objects.get(client_id=client_id, client_secret=client_secret)
