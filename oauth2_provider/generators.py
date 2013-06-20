@@ -1,5 +1,6 @@
+from oauthlib.common import CLIENT_ID_CHARACTER_SET, generate_client_id as oauthlib_generate_client_id
+
 from .settings import oauth2_settings
-from .utils import long_hash, short_hash
 
 
 class BaseHashGenerator(object):
@@ -12,12 +13,17 @@ class BaseHashGenerator(object):
 
 class ClientIdGenerator(BaseHashGenerator):
     def hash(self):
-        return short_hash()
+        """
+        Generate a client_id without colon char as in http://tools.ietf.org/html/rfc2617#section-2
+        for Basic Authentication scheme
+        """
+        client_id_charset = CLIENT_ID_CHARACTER_SET.replace(":", "")
+        return oauthlib_generate_client_id(length=40, chars=client_id_charset)
 
 
 class ClientSecretGenerator(BaseHashGenerator):
     def hash(self):
-        return long_hash()
+        return oauthlib_generate_client_id(length=128)
 
 
 def generate_client_id():
