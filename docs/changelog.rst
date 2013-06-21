@@ -4,6 +4,8 @@ Changelog
 0.4.0 [in development]
 ----------------------
 
+ * Bugfix #25: Bug in the Basic Auth parsing in Oauth2RequestValidator
+ * Bugfix #24: Avoid generation of client_id with ":" colon char when using HTTP Basic Auth
  * Bugfix #21: IndexError when trying to authorize an application
  * Bugfix #9: Default_redirect_uri is mandatory when grant_type is implicit, authorization_code or all-in-one
 
