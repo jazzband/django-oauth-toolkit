@@ -6,9 +6,10 @@ from django.utils import timezone
 from django.contrib.auth import authenticate
 from oauthlib.oauth2 import RequestValidator
 
-from .models import Application, Grant, AccessToken, RefreshToken
+from .models import Grant, AccessToken, RefreshToken, get_application_model
 from .settings import oauth2_settings
 
+Application = get_application_model()
 
 log = logging.getLogger('oauth2_provider')
 
