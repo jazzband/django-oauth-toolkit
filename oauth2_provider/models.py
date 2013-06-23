@@ -3,32 +3,19 @@ from __future__ import unicode_literals
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils import timezone
+from django.db.models import get_model
 from django.utils.translation import ugettext as _
 from django.utils.encoding import python_2_unicode_compatible
+from django.core.exceptions import ImproperlyConfigured
 
+from .settings import oauth2_settings
 from .compat import User
 from .generators import generate_client_secret, generate_client_id
 from .validators import validate_uris
 
 
 @python_2_unicode_compatible
-class Application(models.Model):
-    """
-    An Application instance represents a Client on the Authorization server. Usually an Application is created
-    manually by client's developers after logging in on an Authorization Server.
-
-    Fields:
-
-    * :attr:`client_id` The client identifier issued to the client during the registration process as \
-    described in :rfc:`2.2`
-    * :attr:`user` ref to a Django user
-    * :attr:`redirect_uris` The list of allowed redirect uri. The string consists of valid URLs separated by space
-    * :attr:`client_type` Client type as described in :rfc:`2.1`
-    * :attr:`authorization_grant_type` Authorization flows available to the Application
-    * :attr:`client_secret` Confidential secret issued to the client during the registration process as \
-    described in :rfc:`2.2`
-    * :attr:`name` Friendly name for the Application
-    """
+class AbstractApplication(models.Model):
     CLIENT_CONFIDENTIAL = 'confidential'
     CLIENT_PUBLIC = 'public'
     CLIENT_TYPES = (
@@ -49,24 +36,33 @@ class Application(models.Model):
         (GRANT_CLIENT_CREDENTIALS, _('Client credentials')),
     )
 
-    client_id = models.CharField(max_length=100, unique=True, default=generate_client_id)
+    client_id = models.CharField(max_length=100, unique=True,
+                                 default=generate_client_id)
     user = models.ForeignKey(User)
-    redirect_uris = models.TextField(help_text=_("Allowed URIs list, space separated"),
+    help_text = _("Allowed URIs list, space separated")
+    redirect_uris = models.TextField(help_text=help_text,
                                      validators=[validate_uris], blank=True)
     client_type = models.CharField(max_length=32, choices=CLIENT_TYPES)
-    authorization_grant_type = models.CharField(max_length=32, choices=GRANT_TYPES)
-    client_secret = models.CharField(max_length=255, blank=True, default=generate_client_secret)
+    authorization_grant_type = models.CharField(max_length=32,
+                                                choices=GRANT_TYPES)
+    client_secret = models.CharField(max_length=255, blank=True,
+                                     default=generate_client_secret)
     name = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        abstract = True
 
     @property
     def default_redirect_uri(self):
         """
-        Returns the default redirect_uri extracting the first item from the :attr:`redirect_uris` string
+        Returns the default redirect_uri extracting the first item from
+        the :attr:`redirect_uris` string
         """
         if self.redirect_uris:
             return self.redirect_uris.split().pop(0)
 
-        assert False, "If you are using implicit, authorization_code or all-in-one grant_type, you must define " \
+        assert False, "If you are using implicit, authorization_code" \
+                      "or all-in-one grant_type, you must define " \
                       "redirect_uris field in your Application model"
 
     def redirect_uri_allowed(self, uri):
@@ -79,11 +75,13 @@ class Application(models.Model):
 
     def clean(self):
         from django.core.exceptions import ValidationError
-        if not self.redirect_uris and self.authorization_grant_type in (Application.GRANT_ALLINONE,
-                                                                        Application.GRANT_AUTHORIZATION_CODE,
-                                                                        Application.GRANT_IMPLICIT):
-            raise ValidationError(
-                _('Redirect_uris could not be empty with {} grant_type'.format(self.authorization_grant_type)))
+        if not self.redirect_uris \
+            and self.authorization_grant_type \
+            in (Application.GRANT_ALLINONE,
+                Application.GRANT_AUTHORIZATION_CODE,
+                Application.GRANT_IMPLICIT):
+            error = _('Redirect_uris could not be empty with {} grant_type')
+            raise ValidationError(error.format(self.authorization_grant_type))
 
     def get_absolute_url(self):
         return reverse('oauth2_provider:detail', args=[str(self.id)])
@@ -92,18 +90,42 @@ class Application(models.Model):
         return self.client_id
 
 
+class Application(AbstractApplication):
+    """
+    An Application instance represents a Client on the Authorization server.
+    Usually an Application is created manually by client's developers after
+    logging in on an Authorization Server.
+
+    Fields:
+
+    * :attr:`client_id` The client identifier issued to the client during the
+                        registration process as described in :rfc:`2.2`
+    * :attr:`user` ref to a Django user
+    * :attr:`redirect_uris` The list of allowed redirect uri. The string
+                            consists of valid URLs separated by space
+    * :attr:`client_type` Client type as described in :rfc:`2.1`
+    * :attr:`authorization_grant_type` Authorization flows available to the
+                                       Application
+    * :attr:`client_secret` Confidential secret issued to the client during
+                            the registration process as described in :rfc:`2.2`
+    * :attr:`name` Friendly name for the Application
+    """
+    pass
+
+
 @python_2_unicode_compatible
 class Grant(models.Model):
     """
-    A Grant instance represents a token with a short lifetime that can be swapped for an access token, as described
-    in :rfc:`4.1.2`
+    A Grant instance represents a token with a short lifetime that can
+    be swapped for an access token, as described in :rfc:`4.1.2`
 
     Fields:
 
     * :attr:`user` The Django user who requested the grant
     * :attr:`code` The authorization code generated by the authorization server
     * :attr:`application` Application instance this grant was asked for
-    * :attr:`expires` Expire time in seconds, defaults to :data:`settings.AUTHORIZATION_CODE_EXPIRE_SECONDS`
+    * :attr:`expires` Expire time in seconds, defaults to
+                      :data:`settings.AUTHORIZATION_CODE_EXPIRE_SECONDS`
     * :attr:`redirect_uri` Self explained
     * :attr:`scope` Required scopes, optional
     """
@@ -130,14 +152,16 @@ class Grant(models.Model):
 @python_2_unicode_compatible
 class AccessToken(models.Model):
     """
-    An AccessToken instance represents the actual access token to access user's resources, as in :rfc:`5`.
+    An AccessToken instance represents the actual access token to
+    access user's resources, as in :rfc:`5`.
 
     Fields:
 
     * :attr:`user` The Django user representing resources' owner
     * :attr:`token` Access token
     * :attr:`application` Application instance
-    * :attr:`expires` Expire time in seconds, defaults to :data:`settings.ACCESS_TOKEN_EXPIRE_SECONDS`
+    * :attr:`expires` Expire time in seconds, defaults to
+                      :data:`settings.ACCESS_TOKEN_EXPIRE_SECONDS`
     * :attr:`scope` Allowed scopes
     """
     user = models.ForeignKey(User)
@@ -181,19 +205,36 @@ class AccessToken(models.Model):
 @python_2_unicode_compatible
 class RefreshToken(models.Model):
     """
-    A RefreshToken instance represents a token that can be swapped for a new access token when it expires.
+    A RefreshToken instance represents a token that can be swapped for a new
+    access token when it expires.
 
     Fields:
 
     * :attr:`user` The Django user representing resources' owner
     * :attr:`token` Token value
     * :attr:`application` Application instance
-    * :attr:`access_token` AccessToken instance this refresh token is bounded to
+    * :attr:`access_token` AccessToken instance this refresh token is
+                           bounded to
     """
     user = models.ForeignKey(User)
     token = models.CharField(max_length=255)
     application = models.ForeignKey(Application)
-    access_token = models.OneToOneField(AccessToken, related_name='refresh_token')
+    access_token = models.OneToOneField(AccessToken,
+                                        related_name='refresh_token')
 
     def __str__(self):
         return self.token
+
+
+def get_application_model():
+    """Return the User model that is active in this project"""
+    try:
+        app_label, model_name = oauth2_settings.APPLICATION_MODEL.split('.')
+    except ValueError:
+        e = "APPLICATION_MODEL must be of the form 'app_label.model_name'"
+        raise ImproperlyConfigured(e)
+    app_model = get_model(app_label, model_name)
+    if app_model is None:
+        e = "APPLICATION_MODEL refers to model {} that has not been installed"
+        raise ImproperlyConfigured(e.format(oauth2_settings.APPLICATION_MODEL))
+    return app_model
