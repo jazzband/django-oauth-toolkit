@@ -275,7 +275,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         token_request_data = {
             'grant_type': 'refresh_token',
             'refresh_token': content['refresh_token'],
-            'scopes': content['scope'],
+            'scope': content['scope'],
         }
         response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
@@ -332,10 +332,10 @@ class TestAuthorizationCodeTokenView(BaseTest):
         token_request_data = {
             'grant_type': 'refresh_token',
             'refresh_token': content['refresh_token'],
-            'scopes': 'read write nuke',
+            'scope': 'read write nuke',
         }
         response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 401)
 
     def test_refresh_fail_repeating_requests(self):
         """
@@ -358,7 +358,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         token_request_data = {
             'grant_type': 'refresh_token',
             'refresh_token': content['refresh_token'],
-            'scopes': content['scope'],
+            'scope': content['scope'],
         }
         response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)

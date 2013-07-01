@@ -194,27 +194,15 @@ class OAuth2Validator(RequestValidator):
             return True
         return False
 
-    def confirm_scopes(self, refresh_token, scopes, request, *args, **kwargs):
-        """
-        Check if scopes passed in are valid. Scope is optional, as in :rfc:`6` if omitted is treated as equal to the
-        scope originally granted by the resource owner.
-        """
-        try:
-            rt = RefreshToken.objects.get(token=refresh_token)
-            if not scopes:
-                request.scopes = rt.access_token.scope.split()
-                return True
-            return rt.access_token.allow_scopes(scopes.split())
-
-        except RefreshToken.DoesNotExist:
-            return False
+    def get_original_scopes(self, refresh_token, request, *args, **kwargs):
+        # TODO: since this method is invoked *after* validate_refresh_token, could we avoid this second query for RefreshToken?
+        rt = RefreshToken.objects.get(token=refresh_token)
+        return rt.access_token.scope
 
     def validate_refresh_token(self, refresh_token, client, request, *args, **kwargs):
         """
         Check refresh_token exists and refers to the right client.
         Also attach User instance to the request object
-
-        TODO: since this method is invoked *after* confirm_scopes, could we avoid this second query for RefreshToken?
         """
         try:
             rt = RefreshToken.objects.get(token=refresh_token)
