@@ -9,7 +9,6 @@ from django.utils import timezone, unittest
 from .test_utils import TestCaseUtils
 from ..compat import get_user_model
 from ..models import AccessToken, Application
-from ..views.mixins import ScopedResourceMixin
 from ..settings import oauth2_settings
 
 
@@ -30,7 +29,7 @@ try:
     class OAuth2View(MockView):
         authentication_classes = [OAuth2Authentication]
 
-    class ScopedView(ScopedResourceMixin, OAuth2View):
+    class ScopedView(OAuth2View):
         permission_classes = [permissions.IsAuthenticated, TokenHasScope]
         required_scopes = ['scope1']
 

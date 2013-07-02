@@ -34,12 +34,11 @@ class TokenHasScope(BasePermission):
                        'class to be used.')
 
     def get_scopes(self, request, view):
-        if not hasattr(view, 'get_scopes'):
+        try:
+            return getattr(view, 'required_scopes')
+        except AttributeError:
             raise ImproperlyConfigured(
-                'TokenHasScope requires either the view to inherit oauth2_provider.views.mixins.ScopedResourceMixin '
-                'or implement get_scopes method')
-
-        return view.get_scopes()
+                'TokenHasScope requires the view to define the required_scopes attribute')
 
 
 class TokenHasReadWriteScope(TokenHasScope):
