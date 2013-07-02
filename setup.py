@@ -22,7 +22,7 @@ LONG_DESCRIPTION = open('README.rst').read()
 setup(
     name="django-oauth-toolkit",
     version=version,
-    description="OAuth2 goodies for the Djangonauts",
+    description="OAuthlib for Django",
     long_description=LONG_DESCRIPTION,
     classifiers=[
         "Development Status :: 3 - Alpha",
