@@ -12,6 +12,7 @@ from ..views import ProtectedResourceView
 
 from .test_utils import TestCaseUtils
 
+
 # mocking a protected resource view
 class ResourceView(ProtectedResourceView):
     def get(self, request, *args, **kwargs):
