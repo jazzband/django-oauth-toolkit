@@ -33,6 +33,7 @@ DEFAULTS = {
     'WRITE_SCOPE': 'write',
     'AUTHORIZATION_CODE_EXPIRE_SECONDS': 60,
     'ACCESS_TOKEN_EXPIRE_SECONDS': 36000,
+    'APPLICATION_MODEL': 'oauth2_provider.Application',
 }
 
 # List of settings that cannot be empty
