@@ -1,6 +1,6 @@
 class OAuthToolkitError(Exception):
     """
-
+    TODO: add docs
     """
     def __init__(self, error=None, redirect_uri=None, *args, **kwargs):
         super(OAuthToolkitError, self).__init__(*args, **kwargs)
@@ -12,4 +12,6 @@ class OAuthToolkitError(Exception):
 
 class FatalClientError(OAuthToolkitError):
     """
+    TODO: add docs
     """
+    pass

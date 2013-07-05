@@ -18,6 +18,7 @@ class ScopedProtectedResourceView(ScopedResourceMixin, ProtectedResourceView):
     """
     Generic view protecting resources by providing OAuth2 authentication and Scopes handling out of the box
     """
+    pass
 
 
 class ReadWriteScopedResourceView(ReadWriteScopedResourceMixin, ProtectedResourceView):
@@ -25,3 +26,4 @@ class ReadWriteScopedResourceView(ReadWriteScopedResourceMixin, ProtectedResourc
     Generic view protecting resources with OAuth2 authentication and read/write scopes.
     GET, HEAD, OPTIONS http methods require "read" scope. Otherwise "write" scope is required.
     """
+    pass

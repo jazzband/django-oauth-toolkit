@@ -51,7 +51,9 @@ except ImportError:
 
 class BaseTest(TestCaseUtils, TestCase):
     """
+    TODO: add docs
     """
+    pass
 
 
 class TestOAuth2Authentication(BaseTest):
