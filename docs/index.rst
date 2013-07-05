@@ -33,10 +33,10 @@ Index
    install
    tutorial/tutorials
 
-
 .. toctree::
    :maxdepth: 1
 
+   contributing
    changelog
 
 API
