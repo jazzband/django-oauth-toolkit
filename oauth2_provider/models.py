@@ -16,6 +16,25 @@ from .validators import validate_uris
 
 @python_2_unicode_compatible
 class AbstractApplication(models.Model):
+    """
+    An Application instance represents a Client on the Authorization server.
+    Usually an Application is created manually by client's developers after
+    logging in on an Authorization Server.
+
+    Fields:
+
+    * :attr:`client_id` The client identifier issued to the client during the
+                        registration process as described in :rfc:`2.2`
+    * :attr:`user` ref to a Django user
+    * :attr:`redirect_uris` The list of allowed redirect uri. The string
+                            consists of valid URLs separated by space
+    * :attr:`client_type` Client type as described in :rfc:`2.1`
+    * :attr:`authorization_grant_type` Authorization flows available to the
+                                       Application
+    * :attr:`client_secret` Confidential secret issued to the client during
+                            the registration process as described in :rfc:`2.2`
+    * :attr:`name` Friendly name for the Application
+    """
     CLIENT_CONFIDENTIAL = 'confidential'
     CLIENT_PUBLIC = 'public'
     CLIENT_TYPES = (
@@ -91,25 +110,6 @@ class AbstractApplication(models.Model):
 
 
 class Application(AbstractApplication):
-    """
-    An Application instance represents a Client on the Authorization server.
-    Usually an Application is created manually by client's developers after
-    logging in on an Authorization Server.
-
-    Fields:
-
-    * :attr:`client_id` The client identifier issued to the client during the
-                        registration process as described in :rfc:`2.2`
-    * :attr:`user` ref to a Django user
-    * :attr:`redirect_uris` The list of allowed redirect uri. The string
-                            consists of valid URLs separated by space
-    * :attr:`client_type` Client type as described in :rfc:`2.1`
-    * :attr:`authorization_grant_type` Authorization flows available to the
-                                       Application
-    * :attr:`client_secret` Confidential secret issued to the client during
-                            the registration process as described in :rfc:`2.2`
-    * :attr:`name` Friendly name for the Application
-    """
     pass
 
 
@@ -227,7 +227,7 @@ class RefreshToken(models.Model):
 
 
 def get_application_model():
-    """Return the User model that is active in this project"""
+    """ Return the Application model that is active in this project. """
     try:
         app_label, model_name = oauth2_settings.APPLICATION_MODEL.split('.')
     except ValueError:
