@@ -25,6 +25,12 @@ Support
 
 If you need support please send a message to the `Django OAuth Toolkit Google Group <http://groups.google.com/group/django-oauth-toolkit>`_
 
+Contributing
+------------
+
+We love contributions, so please feel free to fix bugs, improve things, provide documentation. Just `follow the
+guidelines <https://django-oauth-toolkit.readthedocs.org/en/latest/changelog.html>`_ and submit a PR.
+
 Requirements
 ------------
 
