@@ -1,12 +1,16 @@
+from __future__ import unicode_literals
+
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext as _
+from django.utils.encoding import python_2_unicode_compatible
 
 from .compat import User
 from .generators import generate_client_secret, generate_client_id
 from .validators import validate_uris
 
 
+@python_2_unicode_compatible
 class Application(models.Model):
     """
     An Application instance represents a Client on the Authorization server. Usually an Application is created
@@ -80,10 +84,11 @@ class Application(models.Model):
             raise ValidationError(
                 _('Redirect_uris could not be empty with {} grant_type'.format(self.authorization_grant_type)))
 
-    def __unicode__(self):
+    def __str__(self):
         return self.client_id
 
 
+@python_2_unicode_compatible
 class Grant(models.Model):
     """
     A Grant instance represents a token with a short lifetime that can be swapped for an access token, as described
@@ -114,10 +119,11 @@ class Grant(models.Model):
     def redirect_uri_allowed(self, uri):
         return uri == self.redirect_uri
 
-    def __unicode__(self):
+    def __str__(self):
         return self.code
 
 
+@python_2_unicode_compatible
 class AccessToken(models.Model):
     """
     An AccessToken instance represents the actual access token to access user's resources, as in :rfc:`5`.
@@ -164,10 +170,11 @@ class AccessToken(models.Model):
 
         return resource_scopes.issubset(provided_scopes)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.token
 
 
+@python_2_unicode_compatible
 class RefreshToken(models.Model):
     """
     A RefreshToken instance represents a token that can be swapped for a new access token when it expires.
@@ -184,5 +191,5 @@ class RefreshToken(models.Model):
     application = models.ForeignKey(Application)
     access_token = models.OneToOneField(AccessToken, related_name='refresh_token')
 
-    def __unicode__(self):
+    def __str__(self):
         return self.token
