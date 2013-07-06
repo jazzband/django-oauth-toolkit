@@ -1,0 +1,33 @@
+{% extends "oauth2_provider/base.html" %}
+
+{% load i18n %}
+{% load url from future %}
+{% block content %}
+    <div class="form-authorize">
+        <form class="form-horizontal" method="post" action="{% url 'registration' %}">
+            <h3 class="form-authorize-heading">{% trans "Register a new application" %}</h3>
+            {% csrf_token %}
+
+            {% for field in form %}
+                <div class="control-group {% if field.errors %}error{% endif %}">
+                    <label class="control-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    <div class="controls">
+                        {{ field }}
+                        {% for error in field.errors %}
+                            <span class="help-inline">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+
+
+            {{ form.non_field_errors }}
+
+            <div class="control-group">
+                <div class="controls">
+                    <button type="submit" class="btn">Save</button>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}

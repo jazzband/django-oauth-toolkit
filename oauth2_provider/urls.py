@@ -7,4 +7,5 @@ urlpatterns = patterns(
     '',
     url(r'^authorize/$', views.AuthorizationView.as_view(), name="authorize"),
     url(r'^token/$', views.TokenView.as_view(), name="token"),
+    url(r'^registration/$', views.RegistrationView.as_view(), name="registration"),
 )

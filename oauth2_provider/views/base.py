@@ -1,6 +1,7 @@
 import logging
 
 from django.views.generic import View, FormView
+from django.views.generic.edit import CreateView
 from django.http import HttpResponse, HttpResponseRedirect
 
 from oauthlib.oauth2 import Server
@@ -136,3 +137,11 @@ class TokenView(CsrfExemptMixin, OAuthLibMixin, View):
         for k, v in headers.items():
             response[k] = v
         return response
+
+
+class RegistrationView(CreateView):
+    """
+    TODO: add docstring
+    """
+    model = Application
+    template_name = "oauth2_provider/registration.html"
