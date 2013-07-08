@@ -3,14 +3,16 @@
 {% load i18n %}
 {% load url from future %}
 {% block content %}
-    <h1>Your Applications</h1>
-    {% if applications %}
-        <ul>
-        {% for application in applications %}
-            <li><a href="{{ application.get_absolute_url }}">{{ application.name }}</a></li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p>No applications defined. <a href="{% url 'applications_register' %}">Click here</a> if you want to register a new one</p>
-    {% endif %}
+    <div class="block-center">
+        <h1>{% trans "Your applications" %}</h1>
+        {% if applications %}
+            <ul>
+                {% for application in applications %}
+                    <li><a href="{{ application.get_absolute_url }}">{{ application.name }}</a></li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>{% trans "No applications defined" %}. <a href="{% url 'applications_register' %}">{% trans "Click here" %}</a> {% trans "if you want to register a new one" %}</p>
+        {% endif %}
+    </div>
 {% endblock content %}

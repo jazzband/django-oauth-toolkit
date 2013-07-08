@@ -3,9 +3,9 @@
 {% load i18n %}
 {% load url from future %}
 {% block content %}
-    <div class="form-authorize">
+    <div class="block-center">
         <form class="form-horizontal" method="post" action="{% url 'applications_register' %}">
-            <h3 class="form-authorize-heading">{% trans "Register a new application" %}</h3>
+            <h3 class="block-center-heading">{% trans "Register a new application" %}</h3>
             {% csrf_token %}
 
             {% for field in form %}
