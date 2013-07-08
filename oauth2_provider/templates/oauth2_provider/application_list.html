@@ -1,0 +1,16 @@
+{% extends "oauth2_provider/base.html" %}
+
+{% load i18n %}
+{% load url from future %}
+{% block content %}
+    <h1>Your Applications</h1>
+    {% if applications %}
+        <ul>
+        {% for application in applications %}
+            <li><a href="{{ application.get_absolute_url }}">{{ application.name }}</a></li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No applications defined. <a href="{% url 'registration' %}">Click here</a> if you want to register a new one</p>
+    {% endif %}
+{% endblock content %}

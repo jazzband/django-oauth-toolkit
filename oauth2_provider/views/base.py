@@ -1,7 +1,6 @@
 import logging
 
-from django.views.generic import View, FormView
-from django.views.generic.edit import CreateView
+from django.views.generic import View, FormView, CreateView, DetailView, ListView
 from django.http import HttpResponse, HttpResponseRedirect
 
 from oauthlib.oauth2 import Server
@@ -9,7 +8,7 @@ from oauthlib.oauth2 import Server
 from braces.views import LoginRequiredMixin, CsrfExemptMixin
 
 from ..exceptions import OAuthToolkitError
-from ..forms import AllowForm
+from ..forms import AllowForm, RegistrationForm
 from ..models import Application
 from ..oauth2_validators import OAuth2Validator
 from .mixins import OAuthLibMixin
@@ -139,9 +138,36 @@ class TokenView(CsrfExemptMixin, OAuthLibMixin, View):
         return response
 
 
-class RegistrationView(CreateView):
+class RegistrationView(LoginRequiredMixin, CreateView):
     """
     TODO: add docstring
     """
-    model = Application
+    form_class = RegistrationForm
     template_name = "oauth2_provider/registration.html"
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super(RegistrationView, self).form_valid(form)
+
+
+class ApplicationDetail(LoginRequiredMixin, DetailView):
+    """
+    TODO: add docstring
+    """
+
+    context_object_name = 'application'
+
+    def get_queryset(self):
+        return Application.objects.filter(user=self.request.user)
+
+
+class ApplicationList(LoginRequiredMixin, ListView):
+    """
+    TODO: add docstring
+    """
+
+    context_object_name = 'applications'
+
+    def get_queryset(self):
+        """Only select applications related to the current user"""
+        return Application.objects.filter(user=self.request.user)

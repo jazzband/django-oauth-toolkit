@@ -1,0 +1,13 @@
+{% extends "oauth2_provider/base.html" %}
+
+{% load i18n %}
+{% load url from future %}
+{% block content %}
+    <h1>{{ application.name }}</h1>
+    <p>{{ application.client_id }}</p>
+    <p>{{ application.client_secret }}</p>
+
+    <p>{{ application.client_type }}</p>
+    <p>{{ application.authorization_grant_type }}</p>
+    <p>{{ application.redirect_uris }}</p>
+{% endblock content %}
