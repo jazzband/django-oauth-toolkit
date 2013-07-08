@@ -4,7 +4,7 @@
 {% load url from future %}
 {% block content %}
     <div class="form-authorize">
-        <form class="form-horizontal" method="post" action="{% url 'registration' %}">
+        <form class="form-horizontal" method="post" action="{% url 'applications_register' %}">
             <h3 class="form-authorize-heading">{% trans "Register a new application" %}</h3>
             {% csrf_token %}
 
