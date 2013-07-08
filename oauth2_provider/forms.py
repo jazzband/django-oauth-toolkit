@@ -18,3 +18,4 @@ class RegistrationForm(forms.ModelForm):
     """
     class Meta:
         model = Application
+        fields = ('name', 'client_id', 'client_secret', 'client_type', 'authorization_grant_type', 'redirect_uris')
