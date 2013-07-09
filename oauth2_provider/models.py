@@ -86,7 +86,7 @@ class Application(models.Model):
                 _('Redirect_uris could not be empty with {} grant_type'.format(self.authorization_grant_type)))
 
     def get_absolute_url(self):
-        return reverse('applications_detail', args=[str(self.id)])
+        return reverse('oauth2_provider:detail', args=[str(self.id)])
 
     def __str__(self):
         return self.client_id

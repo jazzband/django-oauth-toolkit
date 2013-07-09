@@ -12,7 +12,7 @@ urlpatterns = patterns(
 # Application management views
 urlpatterns += patterns(
     '',
-    url(r'^applications/$', views.ApplicationList.as_view(), name="applications_list"),
-    url(r'^applications/register/$', views.RegistrationView.as_view(), name="applications_register"),
-    url(r'^applications/(?P<pk>\d+)$', views.ApplicationDetail.as_view(), name="applications_detail"),
+    url(r'^applications/$', views.ApplicationList.as_view(), name="list"),
+    url(r'^applications/register/$', views.RegistrationView.as_view(), name="register"),
+    url(r'^applications/(?P<pk>\d+)$', views.ApplicationDetail.as_view(), name="detail"),
 )

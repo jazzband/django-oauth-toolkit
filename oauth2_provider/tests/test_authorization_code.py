@@ -54,7 +54,7 @@ class TestAuthorizationCodeView(BaseTest):
             'client_id': 'fakeclientid',
             'response_type': 'code',
         })
-        url = "{url}?{qs}".format(url=reverse('authorize'), qs=query_string)
+        url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 400)
@@ -72,7 +72,7 @@ class TestAuthorizationCodeView(BaseTest):
             'scope': 'read write',
             'redirect_uri': 'http://example.it',
         })
-        url = "{url}?{qs}".format(url=reverse('authorize'), qs=query_string)
+        url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -96,7 +96,7 @@ class TestAuthorizationCodeView(BaseTest):
             'client_id': self.application.client_id,
             'response_type': 'code',
         })
-        url = "{url}?{qs}".format(url=reverse('authorize'), qs=query_string)
+        url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -115,7 +115,7 @@ class TestAuthorizationCodeView(BaseTest):
             'response_type': 'code',
             'redirect_uri': 'http://forbidden.it',
         })
-        url = "{url}?{qs}".format(url=reverse('authorize'), qs=query_string)
+        url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 400)
@@ -130,7 +130,7 @@ class TestAuthorizationCodeView(BaseTest):
             'client_id': self.application.client_id,
             'response_type': 'WRONG',
         })
-        url = "{url}?{qs}".format(url=reverse('authorize'), qs=query_string)
+        url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
@@ -151,7 +151,7 @@ class TestAuthorizationCodeView(BaseTest):
             'allow': True,
         }
 
-        response = self.client.post(reverse('authorize'), data=form_data)
+        response = self.client.post(reverse('oauth2_provider:authorize'), data=form_data)
         self.assertEqual(response.status_code, 302)
         self.assertIn('http://example.it?', response['Location'])
         self.assertIn('state=random_state_string', response['Location'])
@@ -172,7 +172,7 @@ class TestAuthorizationCodeView(BaseTest):
             'allow': False,
         }
 
-        response = self.client.post(reverse('authorize'), data=form_data)
+        response = self.client.post(reverse('oauth2_provider:authorize'), data=form_data)
         self.assertEqual(response.status_code, 302)
         self.assertIn("error=access_denied", response['Location'])
 
@@ -191,7 +191,7 @@ class TestAuthorizationCodeView(BaseTest):
             'allow': True,
         }
 
-        response = self.client.post(reverse('authorize'), data=form_data)
+        response = self.client.post(reverse('oauth2_provider:authorize'), data=form_data)
         self.assertEqual(response.status_code, 302)
         self.assertIn('http://example.it?error', response['Location'])
 
@@ -210,7 +210,7 @@ class TestAuthorizationCodeView(BaseTest):
             'allow': True,
         }
 
-        response = self.client.post(reverse('authorize'), data=form_data)
+        response = self.client.post(reverse('oauth2_provider:authorize'), data=form_data)
         self.assertEqual(response.status_code, 400)
 
 
@@ -228,7 +228,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             'allow': True,
         }
 
-        response = self.client.post(reverse('authorize'), data=authcode_data)
+        response = self.client.post(reverse('oauth2_provider:authorize'), data=authcode_data)
         query_dict = parse_qs(urlparse(response['Location']).query)
         return query_dict['code'].pop()
 
@@ -246,7 +246,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         }
         auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
 
         content = json.loads(response.content.decode("utf-8"))
@@ -268,7 +268,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         }
         auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
         self.assertTrue('refresh_token' in content)
 
@@ -277,7 +277,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             'refresh_token': content['refresh_token'],
             'scopes': content['scope'],
         }
-        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
 
         content = json.loads(response.content.decode("utf-8"))
@@ -297,7 +297,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         }
         auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
         self.assertTrue('refresh_token' in content)
 
@@ -305,7 +305,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             'grant_type': 'refresh_token',
             'refresh_token': content['refresh_token'],
         }
-        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
 
         content = json.loads(response.content.decode("utf-8"))
@@ -325,7 +325,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         }
         auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
         self.assertTrue('refresh_token' in content)
 
@@ -334,7 +334,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             'refresh_token': content['refresh_token'],
             'scopes': 'read write nuke',
         }
-        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 400)
 
     def test_refresh_fail_repeating_requests(self):
@@ -351,7 +351,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         }
         auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
         self.assertTrue('refresh_token' in content)
 
@@ -360,9 +360,9 @@ class TestAuthorizationCodeTokenView(BaseTest):
             'refresh_token': content['refresh_token'],
             'scopes': content['scope'],
         }
-        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
-        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 400)
 
     def test_basic_auth_bad_authcode(self):
@@ -378,7 +378,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         }
         auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 400)
 
     def test_basic_auth_bad_granttype(self):
@@ -394,7 +394,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         }
         auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 400)
 
     def test_basic_auth_grant_expired(self):
@@ -413,7 +413,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         }
         auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 400)
 
     def test_basic_auth_bad_secret(self):
@@ -430,7 +430,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         }
         auth_headers = self.get_basic_auth_header(self.application.client_id, 'BOOM!')
 
-        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 400)
 
     def test_public(self):
@@ -451,7 +451,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             'client_secret':  self.application.client_secret,
         }
 
-        response = self.client.post(reverse('token'), data=token_request_data)
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data)
         self.assertEqual(response.status_code, 200)
 
         content = json.loads(response.content.decode("utf-8"))
@@ -473,7 +473,7 @@ class TestAuthorizationCodeProtectedResource(BaseTest):
             'response_type': 'code',
             'allow': True,
         }
-        response = self.client.post(reverse('authorize'), data=authcode_data)
+        response = self.client.post(reverse('oauth2_provider:authorize'), data=authcode_data)
         query_dict = parse_qs(urlparse(response['Location']).query)
         authorization_code = query_dict['code'].pop()
 
@@ -485,7 +485,7 @@ class TestAuthorizationCodeProtectedResource(BaseTest):
         }
         auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
         access_token = content['access_token']
 
