@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.3.1 [2013-07-10]
+------------------
+
+ * Bugfix #27: OAuthlib refresh token refactoring
+
 0.3.0 [2013-06-14]
 ----------------------
 
