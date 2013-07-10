@@ -46,7 +46,7 @@ setup(
         'django>=1.4',
         'django-braces==1.0.0',
         'six==1.3.0',
-        'oauthlib==0.4.2',
+        'oauthlib==0.5.0',
     ],
     zip_safe=False,
 )
