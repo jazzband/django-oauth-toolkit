@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.3.2 [2013-07-10]
+------------------
+
+ * Bugfix #37: Error in migrations with custom user on Django 1.5
+
+
 0.3.1 [2013-07-10]
 ------------------
 
