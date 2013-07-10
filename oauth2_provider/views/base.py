@@ -1,7 +1,8 @@
 import logging
 
-from django.views.generic import View, FormView, CreateView, DetailView, ListView
+from django.core.urlresolvers import reverse_lazy
 from django.http import HttpResponse, HttpResponseRedirect
+from django.views.generic import View, FormView, CreateView, DetailView, ListView, DeleteView
 
 from oauthlib.oauth2 import Server
 
@@ -170,4 +171,16 @@ class ApplicationList(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         """Only select applications related to the current user"""
+        return Application.objects.filter(user=self.request.user)
+
+
+class ApplicationDelete(LoginRequiredMixin, DeleteView):
+    """
+    TODO: add docstring
+    """
+
+    context_object_name = 'application'
+    success_url = reverse_lazy('oauth2_provider:list')
+
+    def get_queryset(self):
         return Application.objects.filter(user=self.request.user)

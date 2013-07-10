@@ -14,5 +14,6 @@ urlpatterns += patterns(
     '',
     url(r'^applications/$', views.ApplicationList.as_view(), name="list"),
     url(r'^applications/register/$', views.RegistrationView.as_view(), name="register"),
-    url(r'^applications/(?P<pk>\d+)$', views.ApplicationDetail.as_view(), name="detail"),
+    url(r'^applications/(?P<pk>\d+)/$', views.ApplicationDetail.as_view(), name="detail"),
+    url(r'^applications/(?P<pk>\d+)/delete/$', views.ApplicationDelete.as_view(), name="delete"),
 )
