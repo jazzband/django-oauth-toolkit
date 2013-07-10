@@ -9,6 +9,11 @@ Changelog
  * Bugfix #21: IndexError when trying to authorize an application
  * Bugfix #9: Default_redirect_uri is mandatory when grant_type is implicit, authorization_code or all-in-one
 
+0.3.1 [2013-07-10]
+------------------
+
+ * Bugfix #27: OAuthlib refresh token refactoring
+
 0.3.0 [2013-06-14]
 ----------------------
 
