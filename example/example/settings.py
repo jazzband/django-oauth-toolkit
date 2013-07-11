@@ -182,7 +182,7 @@ LOGGING = {
 }
 
 OAUTH2_PROVIDER = {
-    'SCOPES': ['example']
+    'SCOPES': {'example': 'This is an example scope'}
 }
 
 from django.core.urlresolvers import reverse_lazy
