@@ -1,15 +1,14 @@
 import logging
 
-from django.core.urlresolvers import reverse_lazy, reverse
 from django.http import HttpResponse, HttpResponseRedirect
-from django.views.generic import View, FormView, CreateView, DetailView, ListView, DeleteView, UpdateView
+from django.views.generic import View, FormView
 
 from oauthlib.oauth2 import Server
 
 from braces.views import LoginRequiredMixin, CsrfExemptMixin
 
 from ..exceptions import OAuthToolkitError
-from ..forms import AllowForm, RegistrationForm
+from ..forms import AllowForm
 from ..models import Application
 from ..oauth2_validators import OAuth2Validator
 from .mixins import OAuthLibMixin
@@ -137,61 +136,3 @@ class TokenView(CsrfExemptMixin, OAuthLibMixin, View):
         for k, v in headers.items():
             response[k] = v
         return response
-
-
-class RegistrationView(LoginRequiredMixin, CreateView):
-    """
-    TODO: add docstring
-    """
-    form_class = RegistrationForm
-    template_name = "oauth2_provider/application_registration_form.html"
-
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        return super(RegistrationView, self).form_valid(form)
-
-
-class ApplicationDetail(LoginRequiredMixin, DetailView):
-    """
-    TODO: add docstring
-    """
-
-    context_object_name = 'application'
-
-    def get_queryset(self):
-        return Application.objects.filter(user=self.request.user)
-
-
-class ApplicationList(LoginRequiredMixin, ListView):
-    """
-    TODO: add docstring
-    """
-
-    context_object_name = 'applications'
-
-    def get_queryset(self):
-        """Only select applications related to the current user"""
-        return Application.objects.filter(user=self.request.user)
-
-
-class ApplicationDelete(LoginRequiredMixin, DeleteView):
-    """
-    TODO: add docstring
-    """
-
-    context_object_name = 'application'
-    success_url = reverse_lazy('oauth2_provider:list')
-
-    def get_queryset(self):
-        return Application.objects.filter(user=self.request.user)
-
-
-class ApplicationUpdate(LoginRequiredMixin, UpdateView):
-    """
-    TODO: add docstring
-    """
-
-    context_object_name = 'application'
-
-    def get_queryset(self):
-        return Application.objects.filter(user=self.request.user)
