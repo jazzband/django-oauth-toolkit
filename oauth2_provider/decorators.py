@@ -15,6 +15,7 @@ def protected_resource(view_func, scopes=None, validator_cls=OAuth2Validator, se
     """
     if scopes is None:
         scopes = []
+    
     @wraps(view_func)
     def _validate(request, *args, **kwargs):
         validator = validator_cls()
