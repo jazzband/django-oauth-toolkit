@@ -37,7 +37,7 @@ class BaseTest(TestCaseUtils, TestCase):
         )
         self.application.save()
 
-        oauth2_settings.SCOPES = ['read', 'write']
+        oauth2_settings._SCOPES = ['read', 'write']
 
     def tearDown(self):
         self.application.delete()

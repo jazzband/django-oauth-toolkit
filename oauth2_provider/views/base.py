@@ -7,6 +7,7 @@ from oauthlib.oauth2 import Server
 
 from braces.views import LoginRequiredMixin, CsrfExemptMixin
 
+from ..settings import oauth2_settings
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
 from ..models import Application
@@ -102,6 +103,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
     def get(self, request, *args, **kwargs):
         try:
             scopes, credentials = self.validate_authorization_request(request)
+            kwargs['scopes_descriptions'] = [oauth2_settings.SCOPES[scope] for scope in scopes]
             kwargs['scopes'] = scopes
             # at this point we know an Application instance with such client_id exists in the database
             kwargs['application'] = Application.objects.get(client_id=credentials['client_id'])  # TODO: cache it!

@@ -118,5 +118,5 @@ LOGGING = {
 }
 
 OAUTH2_PROVIDER = {
-    'SCOPES': ['example']
+    '_SCOPES': ['example']
 }

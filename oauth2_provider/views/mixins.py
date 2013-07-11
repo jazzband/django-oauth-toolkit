@@ -178,7 +178,7 @@ class ReadWriteScopedResourceMixin(ScopedResourceMixin, OAuthLibMixin):
     read_write_scope = None
 
     def __new__(cls, *args, **kwargs):
-        provided_scopes = oauth2_settings.SCOPES
+        provided_scopes = oauth2_settings._SCOPES
         read_write_scopes = [oauth2_settings.READ_SCOPE, oauth2_settings.WRITE_SCOPE]
 
         if not set(read_write_scopes).issubset(set(provided_scopes)):

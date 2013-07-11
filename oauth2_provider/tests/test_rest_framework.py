@@ -60,7 +60,7 @@ class TestOAuth2Authentication(BaseTest):
     urls = 'oauth2_provider.tests.test_rest_framework'
 
     def setUp(self):
-        oauth2_settings.SCOPES = ['read', 'write', 'scope1', 'scope2']
+        oauth2_settings._SCOPES = ['read', 'write', 'scope1', 'scope2']
 
         self.test_user = get_user_model().objects.create_user("test_user", "test@user.com", "123456")
         self.dev_user = get_user_model().objects.create_user("dev_user", "dev@user.com", "123456")

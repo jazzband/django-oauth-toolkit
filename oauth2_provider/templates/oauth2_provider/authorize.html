@@ -17,7 +17,7 @@
 
                 <p>{% trans "Application requires following permissions" %}</p>
                 <ul>
-                    {% for scope in form.scopes.value.split %}
+                    {% for scope in scopes_descriptions %}
                         <li>{{ scope }}</li>
                     {% endfor %}
                 </ul>

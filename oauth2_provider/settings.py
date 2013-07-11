@@ -28,11 +28,14 @@ USER_SETTINGS = getattr(settings, 'OAUTH2_PROVIDER', None)
 DEFAULTS = {
     'CLIENT_ID_GENERATOR_CLASS': 'oauth2_provider.generators.ClientIdGenerator',
     'CLIENT_SECRET_GENERATOR_CLASS': 'oauth2_provider.generators.ClientSecretGenerator',
-    'SCOPES': ["read", "write"],
+    'SCOPES': {"read": "Reading scope", "write": "Writing scope"},
     'READ_SCOPE': 'read',
     'WRITE_SCOPE': 'write',
     'AUTHORIZATION_CODE_EXPIRE_SECONDS': 60,
     'ACCESS_TOKEN_EXPIRE_SECONDS': 36000,
+
+    # Special settings that will be evaluated at runtime
+    '_SCOPES': [],
 }
 
 # List of settings that cannot be empty
@@ -103,6 +106,10 @@ class OAuth2ProviderSettings(object):
         # Coerce import strings into classes
         if val and attr in self.import_strings:
             val = perform_import(val, attr)
+
+        # Overriding special settings
+        if attr == '_SCOPES':
+            val = list(six.iterkeys(self.SCOPES))
 
         self.validate_setting(attr, val)
 
