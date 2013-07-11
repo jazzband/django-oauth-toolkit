@@ -42,7 +42,7 @@ def rw_protected_resource(view_func, scopes=None, validator_cls=OAuth2Validator,
 
         if not set(read_write_scopes).issubset(set(provided_scopes)):
             raise ImproperlyConfigured(
-                "ReadWriteScopedResourceMixin requires following scopes {0}"
+                "rw_protected_resource decorator requires following scopes {0}"
                 " to be in OAUTH2_PROVIDER['SCOPES'] list in settings".format(read_write_scopes)
             )
 
