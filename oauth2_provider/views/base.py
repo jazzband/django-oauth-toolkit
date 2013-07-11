@@ -1,8 +1,8 @@
 import logging
 
-from django.core.urlresolvers import reverse_lazy
+from django.core.urlresolvers import reverse_lazy, reverse
 from django.http import HttpResponse, HttpResponseRedirect
-from django.views.generic import View, FormView, CreateView, DetailView, ListView, DeleteView
+from django.views.generic import View, FormView, CreateView, DetailView, ListView, DeleteView, UpdateView
 
 from oauthlib.oauth2 import Server
 
@@ -144,7 +144,7 @@ class RegistrationView(LoginRequiredMixin, CreateView):
     TODO: add docstring
     """
     form_class = RegistrationForm
-    template_name = "oauth2_provider/registration.html"
+    template_name = "oauth2_provider/application_registration_form.html"
 
     def form_valid(self, form):
         form.instance.user = self.request.user
@@ -181,6 +181,17 @@ class ApplicationDelete(LoginRequiredMixin, DeleteView):
 
     context_object_name = 'application'
     success_url = reverse_lazy('oauth2_provider:list')
+
+    def get_queryset(self):
+        return Application.objects.filter(user=self.request.user)
+
+
+class ApplicationUpdate(LoginRequiredMixin, UpdateView):
+    """
+    TODO: add docstring
+    """
+
+    context_object_name = 'application'
 
     def get_queryset(self):
         return Application.objects.filter(user=self.request.user)

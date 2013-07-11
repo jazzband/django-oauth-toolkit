@@ -4,8 +4,12 @@
 {% load url from future %}
 {% block content %}
     <div class="block-center">
-        <form class="form-horizontal" method="post" action="{% url 'oauth2_provider:register' %}">
-            <h3 class="block-center-heading">{% trans "Register a new application" %}</h3>
+        <form class="form-horizontal" method="post" action="{% block app-form-action-url %}{% url 'oauth2_provider:update' application.id %}{% endblock app-form-action-url %}">
+            <h3 class="block-center-heading">
+                {% block app-form-title %}
+                    {% trans "Edit application" %} {{ application.name }}
+                {% endblock app-form-title %}
+            </h3>
             {% csrf_token %}
 
             {% for field in form %}
@@ -28,7 +32,10 @@
 
             <div class="control-group">
                 <div class="controls">
-                    <button type="submit" class="btn">Save</button>
+                    <a class="btn" href="{% block app-form-back-url %}{% url "oauth2_provider:detail" application.id %}{% endblock app-form-back-url %}">
+                        {% trans "Go Back" %}
+                    </a>
+                    <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </div>
         </form>
