@@ -8,6 +8,11 @@ Changelog
  * Bugfix #24: Avoid generation of client_id with ":" colon char when using HTTP Basic Auth
  * Bugfix #21: IndexError when trying to authorize an application
  * Bugfix #9: Default_redirect_uri is mandatory when grant_type is implicit, authorization_code or all-in-one
+ * Bugfix #22: Scopes need a verbose description
+
+**Backwards incompatible changes in 0.4.0**
+
+ * `SCOPE` attribute in settings is now a dictionary to store `{'scope_name': 'scope_description'}`
 
 0.3.2 [2013-07-10]
 ------------------
