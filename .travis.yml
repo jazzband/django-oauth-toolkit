@@ -7,7 +7,7 @@ install:
   - pip install coveralls
 
 script:
-  - coverage run --source="oauth2_provider" runtests.py
+  - coverage run runtests.py
 
 after_success:
   - coveralls

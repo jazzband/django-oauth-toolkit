@@ -1,5 +1,7 @@
 from django import forms
 
+from .models import Application
+
 
 class AllowForm(forms.Form):
     allow = forms.BooleanField(required=False)
@@ -8,3 +10,12 @@ class AllowForm(forms.Form):
     client_id = forms.CharField(widget=forms.HiddenInput())
     state = forms.CharField(required=False, widget=forms.HiddenInput())
     response_type = forms.CharField(widget=forms.HiddenInput())
+
+
+class RegistrationForm(forms.ModelForm):
+    """
+    TODO: add docstring
+    """
+    class Meta:
+        model = Application
+        fields = ('name', 'client_id', 'client_secret', 'client_type', 'authorization_grant_type', 'redirect_uris')

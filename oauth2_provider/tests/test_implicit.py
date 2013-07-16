@@ -52,7 +52,7 @@ class TestImplicitAuthorizationCodeView(BaseTest):
             'scope': 'read write',
             'redirect_uri': 'http://example.it',
         })
-        url = "{url}?{qs}".format(url=reverse('authorize'), qs=query_string)
+        url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -76,7 +76,7 @@ class TestImplicitAuthorizationCodeView(BaseTest):
             'client_id': 'fakeclientid',
             'response_type': 'token',
         })
-        url = "{url}?{qs}".format(url=reverse('authorize'), qs=query_string)
+        url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 400)
@@ -91,7 +91,7 @@ class TestImplicitAuthorizationCodeView(BaseTest):
             'client_id': self.application.client_id,
             'response_type': 'token',
         })
-        url = "{url}?{qs}".format(url=reverse('authorize'), qs=query_string)
+        url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -110,7 +110,7 @@ class TestImplicitAuthorizationCodeView(BaseTest):
             'response_type': 'token',
             'redirect_uri': 'http://forbidden.it',
         })
-        url = "{url}?{qs}".format(url=reverse('authorize'), qs=query_string)
+        url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 400)
@@ -130,7 +130,7 @@ class TestImplicitAuthorizationCodeView(BaseTest):
             'allow': True,
         }
 
-        response = self.client.post(reverse('authorize'), data=form_data)
+        response = self.client.post(reverse('oauth2_provider:authorize'), data=form_data)
         self.assertEqual(response.status_code, 302)
         self.assertIn('http://example.it#', response['Location'])
         self.assertIn('access_token=', response['Location'])
@@ -151,7 +151,7 @@ class TestImplicitAuthorizationCodeView(BaseTest):
             'allow': False,
         }
 
-        response = self.client.post(reverse('authorize'), data=form_data)
+        response = self.client.post(reverse('oauth2_provider:authorize'), data=form_data)
         self.assertEqual(response.status_code, 302)
         self.assertIn("error=access_denied", response['Location'])
 
@@ -169,7 +169,7 @@ class TestImplicitTokenView(BaseTest):
             'response_type': 'token',
             'allow': True,
         }
-        response = self.client.post(reverse('authorize'), data=authcode_data)
+        response = self.client.post(reverse('oauth2_provider:authorize'), data=authcode_data)
         # within implicit grant, access token is in the url fragment
         frag_dict = parse_qs(urlparse(response['Location']).fragment)
         access_token = frag_dict['access_token'].pop()

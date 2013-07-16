@@ -36,7 +36,7 @@ Include the Django OAuth Toolkit urls in your `urls.py`, choose the urlspace you
     urlpatterns = patterns(
         '',
         url(r'^admin/', include(admin.site.urls)),
-        url(r'^o/', include('oauth2_provider.urls')),
+        url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
         # ...
     )
 

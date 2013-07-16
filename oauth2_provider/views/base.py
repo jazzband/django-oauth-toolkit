@@ -1,7 +1,7 @@
 import logging
 
-from django.views.generic import View, FormView
 from django.http import HttpResponse, HttpResponseRedirect
+from django.views.generic import View, FormView
 
 from oauthlib.oauth2 import Server
 

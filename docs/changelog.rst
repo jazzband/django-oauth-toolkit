@@ -4,6 +4,7 @@ Changelog
 0.4.0 [in development]
 ----------------------
 
+ * Add Application management views, you no more need the admin to register, update and delete your application. TODO: add docs reference 
  * Bugfix #25: Bug in the Basic Auth parsing in Oauth2RequestValidator
  * Bugfix #24: Avoid generation of client_id with ":" colon char when using HTTP Basic Auth
  * Bugfix #21: IndexError when trying to authorize an application
@@ -13,6 +14,7 @@ Changelog
 **Backwards incompatible changes in 0.4.0**
 
  * `SCOPE` attribute in settings is now a dictionary to store `{'scope_name': 'scope_description'}`
+ * Namespace 'oauth2_provider' is mandatory in urls. See issue #37
 
 0.3.2 [2013-07-10]
 ------------------

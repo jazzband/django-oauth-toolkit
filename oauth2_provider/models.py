@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext as _
@@ -83,6 +84,9 @@ class Application(models.Model):
                                                                         Application.GRANT_IMPLICIT):
             raise ValidationError(
                 _('Redirect_uris could not be empty with {} grant_type'.format(self.authorization_grant_type)))
+
+    def get_absolute_url(self):
+        return reverse('oauth2_provider:detail', args=[str(self.id)])
 
     def __str__(self):
         return self.client_id

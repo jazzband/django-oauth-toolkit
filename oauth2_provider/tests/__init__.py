@@ -8,3 +8,4 @@ from .test_password import *
 from .test_client_credential import *
 from .test_scopes import *
 from .test_rest_framework import *
+from .test_application_views import *

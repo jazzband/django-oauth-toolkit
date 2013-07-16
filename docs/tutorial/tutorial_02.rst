@@ -38,7 +38,7 @@ URL this view will respond to:
     urlpatterns = patterns(
         '',
         url(r'^admin/', include(admin.site.urls)),
-        url(r'^o/', include('oauth2_provider.urls')),  # look ma, I'm a provider!
+        url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),  # look ma, I'm a provider!
         url(r'^api/hello', ApiEndpoint.as_view()),  # and also a resource server!
     )
 

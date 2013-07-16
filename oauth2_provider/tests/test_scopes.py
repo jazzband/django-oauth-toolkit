@@ -78,7 +78,7 @@ class TestScopesSave(BaseTest):
             'response_type': 'code',
             'allow': True,
         }
-        response = self.client.post(reverse('authorize'), data=authcode_data)
+        response = self.client.post(reverse('oauth2_provider:authorize'), data=authcode_data)
         query_dict = parse_qs(urlparse(response['Location']).query)
         authorization_code = query_dict['code'].pop()
 
@@ -100,7 +100,7 @@ class TestScopesSave(BaseTest):
             'response_type': 'code',
             'allow': True,
         }
-        response = self.client.post(reverse('authorize'), data=authcode_data)
+        response = self.client.post(reverse('oauth2_provider:authorize'), data=authcode_data)
         query_dict = parse_qs(urlparse(response['Location']).query)
         authorization_code = query_dict['code'].pop()
 
@@ -112,7 +112,7 @@ class TestScopesSave(BaseTest):
         }
         auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
         access_token = content['access_token']
 
@@ -136,7 +136,7 @@ class TestScopesProtection(BaseTest):
             'response_type': 'code',
             'allow': True,
         }
-        response = self.client.post(reverse('authorize'), data=authcode_data)
+        response = self.client.post(reverse('oauth2_provider:authorize'), data=authcode_data)
         query_dict = parse_qs(urlparse(response['Location']).query)
         authorization_code = query_dict['code'].pop()
 
@@ -148,7 +148,7 @@ class TestScopesProtection(BaseTest):
         }
         auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
         access_token = content['access_token']
 
@@ -178,7 +178,7 @@ class TestScopesProtection(BaseTest):
             'response_type': 'code',
             'allow': True,
         }
-        response = self.client.post(reverse('authorize'), data=authcode_data)
+        response = self.client.post(reverse('oauth2_provider:authorize'), data=authcode_data)
         query_dict = parse_qs(urlparse(response['Location']).query)
         authorization_code = query_dict['code'].pop()
 
@@ -190,7 +190,7 @@ class TestScopesProtection(BaseTest):
         }
         auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
         access_token = content['access_token']
 
@@ -220,7 +220,7 @@ class TestScopesProtection(BaseTest):
             'response_type': 'code',
             'allow': True,
         }
-        response = self.client.post(reverse('authorize'), data=authcode_data)
+        response = self.client.post(reverse('oauth2_provider:authorize'), data=authcode_data)
         query_dict = parse_qs(urlparse(response['Location']).query)
         authorization_code = query_dict['code'].pop()
 
@@ -232,7 +232,7 @@ class TestScopesProtection(BaseTest):
         }
         auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
         access_token = content['access_token']
 
@@ -262,7 +262,7 @@ class TestScopesProtection(BaseTest):
             'response_type': 'code',
             'allow': True,
         }
-        response = self.client.post(reverse('authorize'), data=authcode_data)
+        response = self.client.post(reverse('oauth2_provider:authorize'), data=authcode_data)
         query_dict = parse_qs(urlparse(response['Location']).query)
         authorization_code = query_dict['code'].pop()
 
@@ -274,7 +274,7 @@ class TestScopesProtection(BaseTest):
         }
         auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
         access_token = content['access_token']
 
@@ -303,7 +303,7 @@ class TestReadWriteScope(BaseTest):
             'response_type': 'code',
             'allow': True,
         }
-        response = self.client.post(reverse('authorize'), data=authcode_data)
+        response = self.client.post(reverse('oauth2_provider:authorize'), data=authcode_data)
         query_dict = parse_qs(urlparse(response['Location']).query)
         authorization_code = query_dict['code'].pop()
 
@@ -315,7 +315,7 @@ class TestReadWriteScope(BaseTest):
         }
         auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
         return content['access_token']
 
