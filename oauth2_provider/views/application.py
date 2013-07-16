@@ -9,7 +9,7 @@ from ..models import Application
 
 class ApplicationOwnerIsUserMixin(LoginRequiredMixin):
     """
-    TODO: add docstring
+    This mixin is used to provide an Application queryset filtered by the current request.user.
     """
     model = Application
 
@@ -20,7 +20,7 @@ class ApplicationOwnerIsUserMixin(LoginRequiredMixin):
 
 class ApplicationRegistration(LoginRequiredMixin, CreateView):
     """
-    TODO: add docstring
+    View used to register a new Application for the request.user
     """
     form_class = RegistrationForm
     template_name = "oauth2_provider/application_registration_form.html"
@@ -32,21 +32,21 @@ class ApplicationRegistration(LoginRequiredMixin, CreateView):
 
 class ApplicationDetail(ApplicationOwnerIsUserMixin, DetailView):
     """
-    TODO: add docstring
+    Detail view for an application instance owned by the request.user
     """
     context_object_name = 'application'
 
 
 class ApplicationList(ApplicationOwnerIsUserMixin, ListView):
     """
-    TODO: add docstring
+    List view for all the applications owned by the request.user
     """
     context_object_name = 'applications'
 
 
 class ApplicationDelete(ApplicationOwnerIsUserMixin, DeleteView):
     """
-    TODO: add docstring
+    View used to delete an application owned by the request.user
     """
     context_object_name = 'application'
     success_url = reverse_lazy('oauth2_provider:list')
@@ -54,6 +54,6 @@ class ApplicationDelete(ApplicationOwnerIsUserMixin, DeleteView):
 
 class ApplicationUpdate(ApplicationOwnerIsUserMixin, UpdateView):
     """
-    TODO: add docstring
+    View used to update an application owned by the request.user
     """
     context_object_name = 'application'
