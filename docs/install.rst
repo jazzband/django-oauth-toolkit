@@ -21,7 +21,7 @@ If you need an OAuth2 provider you'll want to add the following to your urls.py
 
     urlpatterns = patterns(
         ...
-        url(r'^o/', include('oauth2_provider.urls')),
+        url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     )
 
 Next step is our :doc:`first tutorial <tutorial/tutorial_01>`.

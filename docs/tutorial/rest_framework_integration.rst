@@ -67,7 +67,7 @@ Here's our project's root `urls.py` module:
     # Additionally, we include login URLs for the browseable API.
     urlpatterns = patterns('',
         url(r'^', include(router.urls)),
-        url(r'^o/', include('oauth2_provider.urls')),
+        url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
         url(r'^admin/', include(admin.site.urls)),
     )
 

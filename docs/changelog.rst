@@ -10,9 +10,9 @@ Changelog
  * Bugfix #21: IndexError when trying to authorize an application
  * Bugfix #9: Default_redirect_uri is mandatory when grant_type is implicit, authorization_code or all-in-one
 
-**Backwards incompatible changes in 0.3.0**
+**Backwards incompatible changes in 0.4.0**
 
- * #37: Namespace 'oauth2_provider' is mandatory in urls. TODO: add docs reference
+ * #37: Namespace 'oauth2_provider' is mandatory in urls.
 
 
 0.3.0 [2013-06-14]
