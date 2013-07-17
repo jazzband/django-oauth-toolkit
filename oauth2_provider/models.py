@@ -96,9 +96,9 @@ class AbstractApplication(models.Model):
         from django.core.exceptions import ValidationError
         if not self.redirect_uris \
             and self.authorization_grant_type \
-            in (Application.GRANT_ALLINONE,
-                Application.GRANT_AUTHORIZATION_CODE,
-                Application.GRANT_IMPLICIT):
+            in (AbstractApplication.GRANT_ALLINONE,
+                AbstractApplication.GRANT_AUTHORIZATION_CODE,
+                AbstractApplication.GRANT_IMPLICIT):
             error = _('Redirect_uris could not be empty with {} grant_type')
             raise ValidationError(error.format(self.authorization_grant_type))
 
@@ -131,7 +131,7 @@ class Grant(models.Model):
     """
     user = models.ForeignKey(User)
     code = models.CharField(max_length=255)  # code comes from oauthlib
-    application = models.ForeignKey(Application)
+    application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL)
     expires = models.DateTimeField()
     redirect_uri = models.CharField(max_length=255)
     scope = models.TextField(blank=True)
@@ -166,7 +166,7 @@ class AccessToken(models.Model):
     """
     user = models.ForeignKey(User)
     token = models.CharField(max_length=255)
-    application = models.ForeignKey(Application)
+    application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL)
     expires = models.DateTimeField()
     scope = models.TextField(blank=True)
 
@@ -218,7 +218,7 @@ class RefreshToken(models.Model):
     """
     user = models.ForeignKey(User)
     token = models.CharField(max_length=255)
-    application = models.ForeignKey(Application)
+    application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL)
     access_token = models.OneToOneField(AccessToken,
                                         related_name='refresh_token')
 

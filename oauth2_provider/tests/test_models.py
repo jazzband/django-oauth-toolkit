@@ -4,7 +4,10 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError
 
 from ..compat import get_user_model
-from ..models import AccessToken, Application
+from ..models import AccessToken, get_application_model
+
+
+Application = get_application_model()
 
 
 class TestModels(TestCase):

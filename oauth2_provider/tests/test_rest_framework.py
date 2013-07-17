@@ -8,8 +8,11 @@ from django.utils import timezone, unittest
 
 from .test_utils import TestCaseUtils
 from ..compat import get_user_model
-from ..models import AccessToken, Application
+from ..models import AccessToken, get_application_model
 from ..settings import oauth2_settings
+
+
+Application = get_application_model()
 
 
 try:

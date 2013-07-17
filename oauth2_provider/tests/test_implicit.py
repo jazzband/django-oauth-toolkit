@@ -4,9 +4,12 @@ from django.test import TestCase, RequestFactory
 from django.core.urlresolvers import reverse
 
 from ..compat import urlparse, parse_qs, urlencode, get_user_model
-from ..models import Application
+from ..models import get_application_model
 from ..settings import oauth2_settings
 from ..views import ProtectedResourceView
+
+
+Application = get_application_model()
 
 
 # mocking a protected resource view

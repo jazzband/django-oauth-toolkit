@@ -7,11 +7,14 @@ from django.core.urlresolvers import reverse
 from django.utils import timezone
 
 from ..compat import urlparse, parse_qs, urlencode, get_user_model
-from ..models import Application, Grant
+from ..models import get_application_model, Grant
 from ..settings import oauth2_settings
 from ..views import ProtectedResourceView
 
 from .test_utils import TestCaseUtils
+
+
+Application = get_application_model()
 
 
 # mocking a protected resource view

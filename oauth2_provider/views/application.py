@@ -4,14 +4,14 @@ from django.views.generic import CreateView, DetailView, DeleteView, ListView, U
 from braces.views import LoginRequiredMixin
 
 from ..forms import RegistrationForm
-from ..models import Application
+from ..models import get_application_model
 
 
 class ApplicationOwnerIsUserMixin(LoginRequiredMixin):
     """
     This mixin is used to provide an Application queryset filtered by the current request.user.
     """
-    model = Application
+    model = get_application_model()
 
     def get_queryset(self):
         queryset = super(ApplicationOwnerIsUserMixin, self).get_queryset()

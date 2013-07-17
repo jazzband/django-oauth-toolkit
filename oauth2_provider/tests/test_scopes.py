@@ -7,11 +7,14 @@ from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
 
 from ..compat import urlparse, parse_qs, get_user_model
-from ..models import Application, Grant, AccessToken
+from ..models import get_application_model, Grant, AccessToken
 from ..settings import oauth2_settings
 from ..views import ScopedProtectedResourceView, ReadWriteScopedResourceView
 
 from .test_utils import TestCaseUtils
+
+
+Application = get_application_model()
 
 
 # mocking a protected resource view

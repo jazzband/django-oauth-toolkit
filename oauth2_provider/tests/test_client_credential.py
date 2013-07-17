@@ -9,12 +9,15 @@ from django.views.generic import View
 from oauthlib.oauth2 import BackendApplicationServer
 
 from ..compat import get_user_model
-from ..models import Application
+from ..models import get_application_model
 from ..oauth2_validators import OAuth2Validator
 from ..settings import oauth2_settings
 from ..views import ProtectedResourceView
 from ..views.mixins import OAuthLibMixin
 from .test_utils import TestCaseUtils
+
+
+Application = get_application_model()
 
 
 # mocking a protected resource view
