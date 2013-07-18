@@ -1,5 +1,6 @@
 class OAuthToolkitError(Exception):
-    """Base class for exceptions
+    """
+    Base class for exceptions
     """
     def __init__(self, error=None, redirect_uri=None, *args, **kwargs):
         super(OAuthToolkitError, self).__init__(*args, **kwargs)
@@ -10,6 +11,7 @@ class OAuthToolkitError(Exception):
 
 
 class FatalClientError(OAuthToolkitError):
-    """Class for critical errors
+    """
+    Class for critical errors
     """
     pass
