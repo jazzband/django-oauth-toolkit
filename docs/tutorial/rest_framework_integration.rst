@@ -42,7 +42,6 @@ Here's our project's root `urls.py` module:
     from rest_framework import permissions
 
     from oauth2_provider.ext.rest_framework import TokenHasReadWriteScope, TokenHasScope
-    from oauth2_provider.views.mixins import ScopedResourceMixin
 
 
     # ViewSets define the view behavior.
@@ -51,7 +50,7 @@ Here's our project's root `urls.py` module:
         model = User
 
 
-    class GroupViewSet(ScopedResourceMixin, viewsets.ModelViewSet):
+    class GroupViewSet(viewsets.ModelViewSet):
         permission_classes = [permissions.IsAuthenticated, TokenHasScope]
         required_scopes = ['groups']
         model = Group
