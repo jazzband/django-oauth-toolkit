@@ -165,6 +165,7 @@ class ProtectedResourceMixin(OAuthLibMixin):
     def dispatch(self, request, *args, **kwargs):
         valid, r = self.verify_request(request)
         if valid:
+            request.resource_owner = r.user
             return super(ProtectedResourceMixin, self).dispatch(request, *args, **kwargs)
         else:
             return HttpResponseForbidden()
