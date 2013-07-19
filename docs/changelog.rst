@@ -10,11 +10,14 @@ Changelog
  * Bugfix #21: IndexError when trying to authorize an application
  * Bugfix #9: Default_redirect_uri is mandatory when grant_type is implicit, authorization_code or all-in-one
  * Bugfix #22: Scopes need a verbose description
+ * Bugfix #33: Add django-oauth-toolkit version on example main page
+ * Bugfix #36: Add mandatory namespace to urls
+ * Bugfix #31: Add docstring to OAuthToolkitError and FatalClientError
 
 **Backwards incompatible changes in 0.4.0**
 
  * `SCOPE` attribute in settings is now a dictionary to store `{'scope_name': 'scope_description'}`
- * Namespace 'oauth2_provider' is mandatory in urls. See issue #37
+ * Namespace 'oauth2_provider' is mandatory in urls. See issue #36
 
 0.3.2 [2013-07-10]
 ------------------
