@@ -1,3 +1,13 @@
+"""
+The `compat` module provides support for backwards compatibility with older
+versions of django and python..
+"""
+
+from __future__ import unicode_literals
+
+import django
+from django.conf import settings
+
 # urlparse in python3 has been renamed to urllib.parse
 try:
     from urlparse import urlparse, parse_qs
@@ -10,22 +20,7 @@ except ImportError:
     from urllib.parse import urlencode
 
 # Django 1.5 add support for custom auth user model
-import django
 if django.VERSION >= (1, 5):
-    from django.conf import settings
-    if hasattr(settings, 'AUTH_USER_MODEL'):
-        User = settings.AUTH_USER_MODEL
-    else:
-        from django.contrib.auth.models import User
+    AUTH_USER_MODEL = settings.AUTH_USER_MODEL
 else:
-    try:
-        from django.contrib.auth.models import User
-    except ImportError:
-        raise ImportError("User model is not to be found.")
-
-if django.VERSION >= (1, 5):
-    from django.contrib.auth import get_user_model
-else:
-    def get_user_model():
-        from django.contrib.auth.models import User
-        return User
+    AUTH_USER_MODEL = 'auth.User'
