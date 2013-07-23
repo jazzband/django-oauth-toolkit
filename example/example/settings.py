@@ -130,7 +130,6 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admin',
     'oauth2_provider',
-    'django_coverage',
     'south',
 )
 
