@@ -2,13 +2,13 @@ from __future__ import unicode_literals
 
 import json
 
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.test import TestCase, RequestFactory
 from django.views.generic import View
 
 from oauthlib.oauth2 import BackendApplicationServer
 
-from ..compat import get_user_model
 from ..models import get_application_model
 from ..oauth2_validators import OAuth2Validator
 from ..settings import oauth2_settings
@@ -29,8 +29,8 @@ class ResourceView(ProtectedResourceView):
 class BaseTest(TestCaseUtils, TestCase):
     def setUp(self):
         self.factory = RequestFactory()
-        self.test_user = get_user_model().objects.create_user("test_user", "test@user.com", "123456")
-        self.dev_user = get_user_model().objects.create_user("dev_user", "dev@user.com", "123456")
+        self.test_user = User.objects.create_user("test_user", "test@user.com", "123456")
+        self.dev_user = User.objects.create_user("dev_user", "dev@user.com", "123456")
 
         self.application = Application(
             name="test_client_credentials_app",

@@ -1,9 +1,9 @@
 from __future__ import unicode_literals
 
 from django.test import TestCase
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
-from ..compat import get_user_model
 from ..models import AccessToken, get_application_model
 
 
@@ -12,7 +12,7 @@ Application = get_application_model()
 
 class TestModels(TestCase):
     def setUp(self):
-        self.user = get_user_model().objects.create_user("test_user", "test@user.com", "123456")
+        self.user = User.objects.create_user("test_user", "test@user.com", "123456")
 
     def test_allow_scopes(self):
         self.client.login(username="test_user", password="123456")
