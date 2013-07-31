@@ -23,7 +23,7 @@ class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
     """
     Implements a generic endpoint to handle *Authorization Requests* as in :rfc:`4.1.1`. The view does not implement
     any strategy to determine *authorize/do not authorize* logic.
-    The endpoint is used in the followin flows:
+    The endpoint is used in the following flows:
      * Authorization code
      * Implicit grant
     """
