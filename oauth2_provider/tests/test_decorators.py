@@ -74,13 +74,13 @@ class TestProtectedResourceDecorator(TestCase, TestCaseUtils):
         self.assertEqual(response, "moar protected contents")
 
     def test_rw_protected(self):
-        self.access_token.scope = 'write'
+        self.access_token.scope = 'exotic_scope write'
         self.access_token.save()
         auth_headers = {
             'HTTP_AUTHORIZATION': 'Bearer ' + self.access_token.token,
         }
 
-        @rw_protected_resource()
+        @rw_protected_resource(scopes=['exotic_scope'])
         def scoped_view(request, *args, **kwargs):
             return 'other protected contents'
 
