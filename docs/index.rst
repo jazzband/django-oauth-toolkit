@@ -31,7 +31,7 @@ Index
    :maxdepth: 2
 
    install
-   tutorial/tutorials
+   tutorial/tutorial
    rest-framework/rest-framework
 
 .. toctree::
