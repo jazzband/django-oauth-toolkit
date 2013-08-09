@@ -13,6 +13,13 @@ def protected_resource(scopes=None, validator_cls=OAuth2Validator, server_cls=Se
     """
     Decorator to protect views by providing OAuth2 authentication out of the box, optionally with
     scope handling.
+
+        @protected_resource()
+        def my_view(request):
+            # An access token is required to get here...
+            # ...
+            pass
+    
     """
     _scopes = scopes or []
 
@@ -34,6 +41,13 @@ def rw_protected_resource(scopes=None, validator_cls=OAuth2Validator, server_cls
     Decorator to protect views by providing OAuth2 authentication and read/write scopes out of the
     box.
     GET, HEAD, OPTIONS http methods require "read" scope. Otherwise "write" scope is required.
+
+        @rw_protected_resource()
+        def my_view(request):
+            # If this is a POST, you have to provide 'write' scope to get here...
+            # ...
+            pass
+
     """
     _scopes = scopes or []
 
