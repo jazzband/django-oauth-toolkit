@@ -32,6 +32,7 @@ Index
 
    install
    tutorial/tutorials
+   rest-framework/rest-framework
 
 .. toctree::
    :maxdepth: 1
@@ -39,18 +40,8 @@ Index
    contributing
    changelog
 
-API
-====
-
-.. toctree::
-   :maxdepth: 2
-
-   models
-   views
-
 Indices and tables
 ==================
 
 * :ref:`genindex`
 * :ref:`modindex`
-* :ref:`search`

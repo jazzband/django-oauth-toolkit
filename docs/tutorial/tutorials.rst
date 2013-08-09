@@ -6,4 +6,3 @@ Tutorials
 
    tutorial_01
    tutorial_02
-   rest_framework_integration
