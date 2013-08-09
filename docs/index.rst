@@ -33,6 +33,7 @@ Index
    install
    tutorial/tutorial
    rest-framework/rest-framework
+   views/views
 
 .. toctree::
    :maxdepth: 1
