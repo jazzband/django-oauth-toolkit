@@ -4,7 +4,7 @@ Getting started
 Django OAuth Toolkit provide a support layer for `Django REST Framework <http://django-rest-framework.org/>`_.
 This tutorial it's based on the Django REST Framework example and shows you how to easily integrate with it.
 
-Step 1: Install requirements
+Step 1: Minimal setup
 ----------------------------
 
 Create a virtualenv and install following packages using `pip`...
@@ -24,10 +24,21 @@ Start a new Django project and add `'rest_framework'` and `'oauth2_provider'` to
         'rest_framework',
     )
 
-Step 2: Set up a simple API
+Now we need to tell Django REST Framework to use the new authentication backend.
+To do so add the following lines add the end of your `settings.py` module:
+
+.. code-block:: python
+
+    REST_FRAMEWORK = {
+        'DEFAULT_AUTHENTICATION_CLASSES': (
+            'oauth2_provider.ext.rest_framework.OAuth2Authentication',
+        )
+    }
+
+Step 2: Create a simple API
 --------------------------
 
-Now we set up a simple API for accessing users and groups.
+Let's create a simple API for accessing users and groups.
 
 Here's our project's root `urls.py` module:
 
@@ -70,7 +81,7 @@ Here's our project's root `urls.py` module:
         url(r'^admin/', include(admin.site.urls)),
     )
 
-Add the following to your `settings.py` module:
+Also add the following to your `settings.py` module:
 
 .. code-block:: python
 
@@ -80,13 +91,15 @@ Add the following to your `settings.py` module:
     }
 
     REST_FRAMEWORK = {
-        'DEFAULT_AUTHENTICATION_CLASSES': (
-            'oauth2_provider.ext.rest_framework.OAuth2Authentication',
-        ),
+        # ...
+
         'DEFAULT_PERMISSION_CLASSES': (
             'rest_framework.permissions.IsAuthenticated',
         )
     }
+
+`OAUTH2_PROVIDER.SCOPES` parameter contains the scopes that the application will be aware of,
+so we can use them for permission check.
 
 Now run `python manage.py syncdb`, login to admin and create some users and groups.
 
