@@ -34,12 +34,14 @@ Index
    tutorial/tutorial
    rest-framework/rest-framework
    views/views
+   settings
 
 .. toctree::
    :maxdepth: 1
 
    contributing
    changelog
+
 
 Indices and tables
 ==================

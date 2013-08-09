@@ -5,3 +5,4 @@ Django Rest Framework
     :maxdepth: 2
 
     getting_started
+    permissions

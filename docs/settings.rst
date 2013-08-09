@@ -18,7 +18,4 @@ For example:
     }
 
 
-Reference
-=========
-
 TODO: add reference documentation for DOT settings
