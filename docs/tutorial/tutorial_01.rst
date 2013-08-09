@@ -8,9 +8,11 @@ certain API, releasing the tokens and so on...
 
 Start your app
 --------------
-During this tutorial you will make an XHR POST using `CORS <http://en.wikipedia.org/wiki/Cross-origin_resource_sharing>`_
-mechanism from an Heroku deployed app to your localhost instance. To achieve this operation you need a properly
-configured Django server and `django-cors-headers` app will help you with this.
+During this tutorial you will make and XHR POST from an Heroku deployed app to your localhost instance.
+To achieve this operation you need a properly configured Django server with `django-cors-headers` app installed, since
+the domain that originated the request (the app on Heroku) is different from the destination domain (your local instance).
+Such "cross-domain" requests are by default forbidden by web browsers unless you use CORS.
+You can read more about `CORS here <http://en.wikipedia.org/wiki/Cross-origin_resource_sharing>`_.
 
 Create a virtualenv and install `django-oauth-toolkit` and `django-cors-headers`:
 
