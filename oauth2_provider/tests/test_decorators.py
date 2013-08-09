@@ -36,10 +36,18 @@ class TestProtectedResourceDecorator(TestCase, TestCaseUtils):
             application=self.application
         )
 
+        self.another_access_token = AccessToken.objects.create(
+            user=self.user,
+            scope='can_touch_this',
+            expires=timezone.now() + timedelta(seconds=300),
+            token='secret-access-token-key2',
+            application=self.application
+        )
+
         oauth2_settings._SCOPES = ['read', 'write']
 
     def test_access_denied(self):
-        @protected_resource
+        @protected_resource()
         def view(request, *args, **kwargs):
             return 'protected contents'
 
@@ -48,9 +56,13 @@ class TestProtectedResourceDecorator(TestCase, TestCaseUtils):
         self.assertEqual(response.status_code, 403)
 
     def test_access_allowed(self):
-        @protected_resource
+        @protected_resource()
         def view(request, *args, **kwargs):
             return 'protected contents'
+
+        @protected_resource(scopes=['can_touch_this'])
+        def scoped_view(request, *args, **kwargs):
+            return 'moar protected contents'
 
         auth_headers = {
             'HTTP_AUTHORIZATION': 'Bearer ' + self.access_token.token,
@@ -59,6 +71,14 @@ class TestProtectedResourceDecorator(TestCase, TestCaseUtils):
         response = view(request)
         self.assertEqual(response, "protected contents")
 
+        # now with scopes
+        auth_headers = {
+            'HTTP_AUTHORIZATION': 'Bearer ' + self.another_access_token.token,
+        }
+        request = self.request_factory.get("/fake-resource", **auth_headers)
+        response = scoped_view(request)
+        self.assertEqual(response, "moar protected contents")
+
     def test_rw_protected(self):
         self.access_token.scope = 'read'
         self.access_token.save()
@@ -66,7 +86,7 @@ class TestProtectedResourceDecorator(TestCase, TestCaseUtils):
             'HTTP_AUTHORIZATION': 'Bearer ' + self.access_token.token,
         }
 
-        @rw_protected_resource
+        @rw_protected_resource()
         def scoped_view(request, *args, **kwargs):
             return 'other protected contents'
 
@@ -74,7 +94,7 @@ class TestProtectedResourceDecorator(TestCase, TestCaseUtils):
         response = scoped_view(request)
         self.assertEqual(response.status_code, 403)
 
-        @rw_protected_resource
+        @rw_protected_resource()
         def scoped_view(request, *args, **kwargs):
             return 'other protected contents'
 
