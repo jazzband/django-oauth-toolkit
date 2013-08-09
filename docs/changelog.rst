@@ -1,23 +1,35 @@
 Changelog
 =========
 
-0.4.0 [in development]
+0.4.0 [2013-08-09]
 ----------------------
 
- * Add Application management views, you no more need the admin to register, update and delete your application. TODO: add docs reference 
- * Bugfix #25: Bug in the Basic Auth parsing in Oauth2RequestValidator
- * Bugfix #24: Avoid generation of client_id with ":" colon char when using HTTP Basic Auth
- * Bugfix #21: IndexError when trying to authorize an application
- * Bugfix #9: Default_redirect_uri is mandatory when grant_type is implicit, authorization_code or all-in-one
- * Bugfix #22: Scopes need a verbose description
- * Bugfix #33: Add django-oauth-toolkit version on example main page
- * Bugfix #36: Add mandatory namespace to urls
- * Bugfix #31: Add docstring to OAuthToolkitError and FatalClientError
+**New Features**
+
+ * Add Application management views, you no more need the admin to register, update and delete your application.
+ * Add support to configurable application model
+ * Add support for function based views
 
 **Backwards incompatible changes in 0.4.0**
 
  * `SCOPE` attribute in settings is now a dictionary to store `{'scope_name': 'scope_description'}`
  * Namespace 'oauth2_provider' is mandatory in urls. See issue #36
+
+**Bugfixes**
+
+ * Issue #25: Bug in the Basic Auth parsing in Oauth2RequestValidator
+ * Issue #24: Avoid generation of client_id with ":" colon char when using HTTP Basic Auth
+ * Issue #21: IndexError when trying to authorize an application
+ * Issue #9: Default_redirect_uri is mandatory when grant_type is implicit, authorization_code or all-in-one
+ * Issue #22: Scopes need a verbose description
+ * Issue #33: Add django-oauth-toolkit version on example main page
+ * Issue #36: Add mandatory namespace to urls
+ * Issue #31: Add docstring to OAuthToolkitError and FatalClientError
+ * Issue #32: Add docstring to validate_uris
+ * Issue #34: Documentation tutorial part1 needs corsheaders explanation
+ * Issue #36: Add mandatory namespace to urls
+ * Issue #45: Add docs for AbstractApplication
+ * Issue #47: Add docs for views decorators
 
 0.3.2 [2013-07-10]
 ------------------
