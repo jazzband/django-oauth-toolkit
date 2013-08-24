@@ -2,22 +2,100 @@
 {% load url from future %}
 
 {% block content %}
-<p class="lead">I'll let you know, I'm a supersimple API client...</p>
+<h2 class="lead">Play with the API</h2>
 
-<form class="form-inline">
-  <input type="text" class="input-small" placeholder="API URL" id="id_url">
-  <input type="password" class="input-small" placeholder="Access Token" id="id_token">
-  <button type="submit" class="btn" id="submit_btn">GET</button>
-</form>
-
-<pre id="id_response"></pre>
+<div class="row">
+    <div class="span5">
+        <form class="form-horizontal" id="idForm">
+            <div class="control-group">
+                <label class="control-label" for="idEndpoint">API endpoint</label>
+                <div class="controls">
+                    <select id="idEndpoint" class="span3">
+                        {% for endpoint in endpoints %}
+                        <option>{{ endpoint.url }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="idLookup">pk (if needed)</label>
+                <div class="controls">
+                    <input type="text" id="idLookup" class="span3">
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="idToken">Access Token</label>
+                <div class="controls">
+                    <input type="text" id="idToken" class="span3">
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="idData">Payload</label>
+                <div class="controls">
+                    <textarea rows="3" id="idData" class="span3"></textarea>
+                </div>
+            </div>
+            <div class="control-group">
+                <button type="submit" class="btn btn-inverse" id="idGET">GET</button>
+                <button type="submit" class="btn btn-primary" id="idPOST">POST</button>
+                <button type="submit" class="btn btn-warning" id="idPUT">PUT</button>
+                <button type="submit" class="btn btn-danger" id="idDELETE">DELETE</button>
+            </div>
+        </form>
+    </div>
+    <div class="span7">
+        <p>Response:</p>
+        <pre id="idResponse"></pre>
+    </div>
+</div>
 {% endblock %}
 
 
 {% block javascript %}
+        <script type="text/javascript">
+        (function() {
+
+            $('#idForm').submit(function() {
+                return false;
+            });
+
+            var showMsg = function(msg) {
+                $('#idResponse').html(msg)
+            };
+
+            var getUrl = function() {
+                var url = $('#idEndpoint').val();
+                url = url.replace('pk', $('#idLookup').val());
+                return url;
+            };
+
+            $('#idGET').click(function() {
+                var token = $("#idToken").val();
+                var getting = $.ajax({
+                    url: getUrl(),
+                    type: 'GET',
+                    contentType: 'application/json',
+                    beforeSend: function(request){
+                        request.setRequestHeader("Authorization", "Bearer " + token);
+                    }
+                });
+
+                getting.done(function(data) {
+                    showMsg(JSON.stringify(data));
+                });
+
+                getting.error(function(data){
+                    showMsg("HTTP " + data.status);
+                });
+            });
+
+
+        })();
+    </script>
+
     <script type="text/javascript">
-    $(document).ready(function(){
-        $("#submit_btn").click(function(event){
+    /*$(document).ready(function(){
+        $("#idGET").click(function(event){
             event.preventDefault();
             var url = $("#id_url").val();
             var token = $("#id_token").val();
@@ -57,6 +135,6 @@
                 }
             });
         });
-    });
+    });*/
     </script>
 {% endblock javascript %}

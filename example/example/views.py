@@ -1,11 +1,17 @@
 from django.http import HttpResponse
 from django.core.urlresolvers import reverse
-from django.views.generic import FormView, TemplateView
+from django.views.generic import FormView, TemplateView, View
 
 from oauth2_provider.compat import urlencode
 from oauth2_provider.views.generic import ProtectedResourceView
 
 from .forms import ConsumerForm, ConsumerExchangeForm, AccessTokenDataForm
+
+import json
+from collections import namedtuple
+
+
+ApiUrl = namedtuple('ApiUrl', 'name, url')
 
 
 class ConsumerExchangeView(FormView):
@@ -88,6 +94,37 @@ class ConsumerDoneView(TemplateView):
         return super(ConsumerDoneView, self).get(request, *args, **kwargs)
 
 
+class ApiClientView(TemplateView):
+    """
+    TODO
+    """
+    template_name = 'example/api-client.html'
+
+    def get(self, request, *args, **kwargs):
+        from .urls import urlpatterns
+        endpoints = []
+        for u in urlpatterns:
+            if 'api/' in u.regex.pattern:
+                endpoints.append(ApiUrl(name=u.name, url=reverse(u.name,
+                                                                 args=u.regex.groupindex.keys())))
+        kwargs['endpoints'] = endpoints
+        return super(ApiClientView, self).get(request, *args, **kwargs)
+
+
 class ApiEndpoint(ProtectedResourceView):
     def get(self, request, *args, **kwargs):
         return HttpResponse('Hello, OAuth2!')
+
+
+class ApiResolve(View):
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        name = request.GET.get('name')
+        url_args = request.GET.get('args', None)
+        if args:
+            url_args = url_args.split(',')
+            url = reverse(name, args=url_args)
+        else:
+            url = reverse(name)
+        return HttpResponse(json.dumps(url), content_type='application/json', *args, **kwargs)
