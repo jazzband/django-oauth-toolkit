@@ -131,6 +131,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'oauth2_provider',
     'south',
+    'example',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -181,7 +182,8 @@ LOGGING = {
 }
 
 OAUTH2_PROVIDER = {
-    'SCOPES': {'example': 'This is an example scope'}
+    'SCOPES': {'example': 'This is an example scope'},
+    'APPLICATION_MODEL': 'example.MyApplication'
 }
 
 from django.core.urlresolvers import reverse_lazy
