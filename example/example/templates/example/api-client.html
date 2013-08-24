@@ -1,0 +1,62 @@
+{% extends "example/base.html" %}
+{% load url from future %}
+
+{% block content %}
+<p class="lead">I'll let you know, I'm a supersimple API client...</p>
+
+<form class="form-inline">
+  <input type="text" class="input-small" placeholder="API URL" id="id_url">
+  <input type="password" class="input-small" placeholder="Access Token" id="id_token">
+  <button type="submit" class="btn" id="submit_btn">GET</button>
+</form>
+
+<pre id="id_response"></pre>
+{% endblock %}
+
+
+{% block javascript %}
+    <script type="text/javascript">
+    $(document).ready(function(){
+        $("#submit_btn").click(function(event){
+            event.preventDefault();
+            var url = $("#id_url").val();
+            var token = $("#id_token").val();
+
+            var show_response = function(data){
+                $("#id_response").html(data);
+            };
+
+            if (!url || !token) {
+                show_response('Please fill all the form fields');
+                return;
+            }
+
+            $.ajax({
+                url: url,
+                type: 'GET',
+                crossDomain: true,
+                beforeSend: function(request){
+                    request.setRequestHeader("Authorization", "Bearer " + token);
+                },
+                success: function(data, status, jqXHR){
+                    msg = 'HTTP ' + jqXHR.status;
+                    if (jqXHR.responseText  == "Hello, OAuth2!"){
+                        show_response(msg+data)
+                    } else {
+                        show_response("Please insert a valid OAuth2 API URL");
+                    }
+                },
+                error: function(jqXHR) {
+                    var msg = "HTTP " + jqXHR.status;
+                    var br ="<\br>";
+                    if (jqXHR.status == 0){
+                        msg += br;
+                        msg += "You have to put protocol on your URL, i.e. '<b>http://</b>localhost:8000/api/hello'.";
+                    }
+                    show_response(msg);
+                }
+            });
+        });
+    });
+    </script>
+{% endblock javascript %}
