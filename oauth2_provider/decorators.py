@@ -30,6 +30,7 @@ def protected_resource(scopes=None, validator_cls=OAuth2Validator, server_cls=Se
             core = OAuthLibCore(server_cls(validator))
             valid, oauthlib_req = core.verify_request(request, scopes=_scopes)
             if valid:
+                request.resource_owner = oauthlib_req.user
                 return view_func(request, *args, **kwargs)
             return HttpResponseForbidden()
         return _validate
@@ -76,6 +77,7 @@ def rw_protected_resource(scopes=None, validator_cls=OAuth2Validator, server_cls
             core = OAuthLibCore(server_cls(validator))
             valid, oauthlib_req = core.verify_request(request, scopes=_scopes)
             if valid:
+                request.resource_owner = oauthlib_req.user
                 return view_func(request, *args, **kwargs)
             return HttpResponseForbidden()
         return _validate
