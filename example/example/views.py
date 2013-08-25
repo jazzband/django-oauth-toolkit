@@ -114,17 +114,3 @@ class ApiClientView(TemplateView):
 class ApiEndpoint(ProtectedResourceView):
     def get(self, request, *args, **kwargs):
         return HttpResponse('Hello, OAuth2!')
-
-
-class ApiResolve(View):
-    http_method_names = ['get']
-
-    def get(self, request, *args, **kwargs):
-        name = request.GET.get('name')
-        url_args = request.GET.get('args', None)
-        if args:
-            url_args = url_args.split(',')
-            url = reverse(name, args=url_args)
-        else:
-            url = reverse(name)
-        return HttpResponse(json.dumps(url), content_type='application/json', *args, **kwargs)

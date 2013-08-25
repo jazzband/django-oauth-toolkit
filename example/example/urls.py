@@ -5,9 +5,9 @@ from django.views.generic import TemplateView
 from oauth2_provider import VERSION
 
 from .views import (
-    ConsumerView, ConsumerExchangeView, ConsumerDoneView, ApiEndpoint, ApiClientView, ApiResolve
+    ConsumerView, ConsumerExchangeView, ConsumerDoneView, ApiEndpoint, ApiClientView
 )
-from .api_v1 import get_system_info, applications_list
+from .api_v1 import get_system_info, applications_list, applications_detail
 
 admin.autodiscover()
 
@@ -33,12 +33,10 @@ urlpatterns = patterns(
 
     # api stuff to test server functionalities
     url(r'^apiclient$', ApiClientView.as_view(), name='api-client'),
-    url(r'^resolve$', ApiResolve.as_view(), name='resolve'),
-
     url(r'^api/hello$', ApiEndpoint.as_view(), name='Hello'),
 
     # api v1
     url(r'^api/v1/system_info$', get_system_info, name="System Info"),
     url(r'^api/v1/applications$', applications_list, name="Application List"),
-    url(r'^api/v1/applications/(?P<pk>\w+)/$', get_system_info, name="Application Detail"),
+    url(r'^api/v1/applications/(?P<pk>\w+)/$', applications_detail, name="Application Detail"),
 )
