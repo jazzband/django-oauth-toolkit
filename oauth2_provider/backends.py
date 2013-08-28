@@ -102,6 +102,26 @@ class OAuthLibCore(object):
         return valid, r
 
 
+class RestFrameworkOAuthLibCore(OAuthLibCore):
+
+    def _extract_params(self, request):
+        """
+        Extract parameters from the Rest Framework request object. Such parameters will then be passed to OAuthLib to build its
+        own Request object
+        """
+        uri = request._request.build_absolute_uri()
+        http_method = request.method
+        headers = request._request.META.copy()
+        if 'wsgi.input' in headers:
+            del headers['wsgi.input']
+        if 'wsgi.errors' in headers:
+            del headers['wsgi.errors']
+        if 'HTTP_AUTHORIZATION' in headers:
+            headers['Authorization'] = headers['HTTP_AUTHORIZATION']
+        body = urlencode(request.DATA.items())
+        return uri, http_method, body, headers
+
+
 def get_oauthlib_core():
     """
     Utility function that take a request and returns an instance of `oauth2_provider.backends.OAuthLibCore`
