@@ -47,6 +47,16 @@ class OAuthLibMixin(object):
             return cls.validator_class
 
     @classmethod
+    def get_oauthlib_core_class(cls):
+        """
+        Return the OAuthLibCore implementation class to use
+        """
+        if cls.oauthlib_core_class is None:
+            return OAuthLibCore
+        else:
+            return cls.oauthlib_core_class
+
+    @classmethod
     def get_server(cls):
         """
         Return an instance of `server_class` initialized with a `validator_class`
@@ -63,7 +73,8 @@ class OAuthLibMixin(object):
         """
         if not hasattr(cls, '_oauthlib_core'):
             server = cls.get_server()
-            cls._oauthlib_core = OAuthLibCore(server)
+            core_class = cls.get_oauthlib_core_class()
+            cls._oauthlib_core = core_class(server)
         return cls._oauthlib_core
 
     def validate_authorization_request(self, request):
