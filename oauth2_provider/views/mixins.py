@@ -51,10 +51,9 @@ class OAuthLibMixin(object):
         """
         Return the OAuthLibCore implementation class to use
         """
-        if cls.oauthlib_core_class is None:
+        if not hasattr(cls, 'oauthlib_core_class'):
             return OAuthLibCore
-        else:
-            return cls.oauthlib_core_class
+        return cls.oauthlib_core_class
 
     @classmethod
     def get_server(cls):
