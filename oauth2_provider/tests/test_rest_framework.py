@@ -1,3 +1,5 @@
+import json
+
 from datetime import timedelta
 
 from django.contrib.auth.models import User
@@ -19,6 +21,7 @@ try:
     from rest_framework import permissions
     from rest_framework.views import APIView
     from ..ext.rest_framework import OAuth2Authentication, TokenHasScope, TokenHasReadWriteScope
+    from ..ext.rest.framework.views import TokenAPIView
 
     class MockView(APIView):
         permission_classes = (permissions.IsAuthenticated,)
@@ -45,6 +48,7 @@ try:
         url(r'^oauth2-test/$', OAuth2View.as_view()),
         url(r'^oauth2-scoped-test/$', ScopedView.as_view()),
         url(r'^oauth2-read-write-test/$', ReadWriteScopedView.as_view()),
+        url(r'^oauth2-rest-token/$', TokenAPIView.as_view()),
     )
 
     rest_framework_installed = True
@@ -57,6 +61,44 @@ class BaseTest(TestCaseUtils, TestCase):
     TODO: add docs
     """
     pass
+
+
+class TestOAuth2TokenAPIView(BaseTest):
+    urls = 'oauth2_provider.tests.test_rest_framework'
+
+    def setUp(self):
+        self.test_user = User.objects.create_user("test_user", "test@user.com", "123456")
+        self.dev_user = User.objects.create_user("dev_user", "dev@user.com", "123456")
+
+        self.application = Application(
+            name="Test Password Application",
+            user=self.dev_user,
+            client_type=Application.CLIENT_PUBLIC,
+            authorization_grant_type=Application.GRANT_PASSWORD,
+        )
+        self.application.save()
+
+        oauth2_settings._SCOPES = ['read', 'write']
+
+    @unittest.skipUnless(rest_framework_installed, 'djangorestframework not installed')
+    def test_get_token(self):
+        """
+        Request an access token using Resource Owner Password Flow
+        """
+        token_request_data = {
+            'grant_type': 'password',
+            'username': 'test_user',
+            'password': '123456',
+        }
+        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
+
+        response = self.client.post("/oauth2-rest-token/", data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 200)
+
+        content = json.loads(response.content.decode("utf-8"))
+        self.assertEqual(content['token_type'], "Bearer")
+        self.assertEqual(content['scope'], "read write")
+        self.assertEqual(content['expires_in'], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
 
 
 class TestOAuth2Authentication(BaseTest):
