@@ -44,7 +44,7 @@
         </form>
     </div>
     <div class="span7">
-        <p>Response:</p>
+        <p>Response: <span id="idStatus"></span></p>
         <pre id="idResponse"></pre>
     </div>
 </div>
@@ -59,8 +59,9 @@
                 return false;
             });
 
-            var showMsg = function(msg) {
-                $('#idResponse').html(msg)
+            var showMsg = function(status, msg) {
+                $('#idStatus').html(status);
+                $('#idResponse').text(msg);
             };
 
             var getUrl = function() {
@@ -69,26 +70,52 @@
                 return url;
             };
 
-            $('#idGET').click(function() {
-                var token = $("#idToken").val();
-                var getting = $.ajax({
-                    url: getUrl(),
-                    type: 'GET',
+            var callAPI = function(url, reqType, token, data) {
+                if(typeof(token)==='undefined') token = '';
+                if(typeof(data)==='undefined') data = '';
+
+                var req = $.ajax({
+                    url: url,
+                    type: reqType,
                     contentType: 'application/json',
+                    data: data,
                     beforeSend: function(request){
                         request.setRequestHeader("Authorization", "Bearer " + token);
                     }
                 });
 
-                getting.done(function(data) {
-                    showMsg(JSON.stringify(data));
+                req.done(function(data, textStatus, jqXHR) {
+                    var status = 'HTTP ' + jqXHR.status;
+                    showMsg(status, JSON.stringify(data));
                 });
 
-                getting.error(function(data){
-                    showMsg("HTTP " + data.status);
+                req.fail(function(jqXHR){
+                    var status = 'HTTP ' + jqXHR.status;
+                    showMsg(status, "Request failed: " + jqXHR.statusText);
                 });
+            };
+
+            $('#idGET').click(function() {
+                var token = $("#idToken").val();
+                callAPI(getUrl(), 'GET', token);
             });
 
+            $('#idPOST').click(function() {
+                var token = $("#idToken").val();
+                var data = $("#idData").val();
+                callAPI(getUrl(), 'POST', token, data);
+            });
+
+            $('#idPUT').click(function() {
+                var token = $("#idToken").val();
+                var data = $("#idData").val();
+                callAPI(getUrl(), 'PUT', token, data);
+            });
+
+            $('#idDELETE').click(function() {
+                var token = $("#idToken").val();
+                callAPI(getUrl(), 'DELETE', token);
+            });
 
         })();
     </script>
