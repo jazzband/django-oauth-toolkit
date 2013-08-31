@@ -35,6 +35,7 @@ class ApplicationDetail(ApplicationOwnerIsUserMixin, DetailView):
     Detail view for an application instance owned by the request.user
     """
     context_object_name = 'application'
+    template_name = "oauth2_provider/application_detail.html"
 
 
 class ApplicationList(ApplicationOwnerIsUserMixin, ListView):
@@ -42,6 +43,7 @@ class ApplicationList(ApplicationOwnerIsUserMixin, ListView):
     List view for all the applications owned by the request.user
     """
     context_object_name = 'applications'
+    template_name = "oauth2_provider/application_list.html"
 
 
 class ApplicationDelete(ApplicationOwnerIsUserMixin, DeleteView):
@@ -50,6 +52,7 @@ class ApplicationDelete(ApplicationOwnerIsUserMixin, DeleteView):
     """
     context_object_name = 'application'
     success_url = reverse_lazy('oauth2_provider:list')
+    template_name = "oauth2_provider/application_confirm_delete.html"
 
 
 class ApplicationUpdate(ApplicationOwnerIsUserMixin, UpdateView):
@@ -57,3 +60,4 @@ class ApplicationUpdate(ApplicationOwnerIsUserMixin, UpdateView):
     View used to update an application owned by the request.user
     """
     context_object_name = 'application'
+    template_name = "oauth2_provider/application_form.html"
