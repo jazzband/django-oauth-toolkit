@@ -35,9 +35,19 @@
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">OAuth2 Consumer <b class="caret"></b></a>
                 <ul class="dropdown-menu">
                   <li><a href="{{ url }}">Create authorization link</a></li>
-                  <li><a href="{{ url_client }}">Stupid API client</a></li>
+                  <li><a href="{{ url_client }}">Stupid API client (deprecated)</a></li>
                 </ul>
               </li>
+              {% url 'api-client' as url_api_client %}
+              {% url 'oauth2_provider:register' as url_register %}
+              <li class="dropdown {% if request.path == url_register or request.path == url_api_client %}active{% endif %}">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">OAuth2 Provider <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  <li><a href="{{ url_api_client }}">API client</a></li>
+                  <li><a href="{{ url_register }}">Register an Application</a></li>
+                </ul>
+              </li>
+
             </ul>
               {% if user.is_authenticated %}
                   <ul class="nav pull-right">

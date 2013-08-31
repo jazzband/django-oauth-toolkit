@@ -15,26 +15,23 @@
         </p>
       </div>
 
-      <!-- Example row of columns -->
       <div class="row">
-        <div class="span4">
+        <div class="span6">
           <h3>OAuth2 Consumer</h3>
           <h4>Authorization Code flow</h4>
           <p>Do you have an OAuth2 provider implementing the Authorization Code flow and want to test how it goes?</p>
           <p><a class="btn" href="{% url 'consumer' %}">Use me as a Consumer! &raquo;</a></p>
         </div>
-        <div class="span4">
+        <div class="span6">
           <h3>OAuth2 Provider</h3>
-          <h4>Authorization Code flow</h4>
-          <p>TODO!</p>
-          <p><a class="btn" href="#">Use me as a Provider! &raquo;</a></p>
+          <h4>Create your own app</h4>
+          <p>
+              <a href="{% url 'django.contrib.auth.views.login' %}">Login</a> with <em>test/test</em> username and password
+              and <a href="{% url 'oauth2_provider:register' %}">create your own app</a>,
+              then <a href="{% url 'api-client' %}">play with the test APIs</a> exposed by the playground.
+          </p>
+          <p><a class="btn" href="{% url 'api-client' %}">Use me as a Provider! &raquo;</a></p>
        </div>
-        <div class="span4">
-          <h3>OAuth2 Provider</h3>
-            <h4>Implicit Grant flow</h4>
-          <p>TODO!</p>
-          <p><a class="btn" href="#">Use me as a Provider! &raquo;</a></p>
-        </div>
       </div>
 
       <hr>

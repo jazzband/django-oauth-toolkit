@@ -13,20 +13,47 @@ admin.autodiscover()
 
 urlpatterns = patterns(
     '',
-    url(r'^$', TemplateView.as_view(template_name='example/home.html'),
-        {'version': VERSION}, name='home'),
-    url(r'^accounts/login/$', 'django.contrib.auth.views.login',
-        {'template_name': 'example/login.html'}),
-    url(r'^accounts/logout/$', 'django.contrib.auth.views.logout',
-        {'next_page': reverse_lazy('home')}),
+    url(
+        regex=r'^$',
+        view=TemplateView.as_view(template_name='example/home.html'),
+        kwargs={'version': VERSION},
+        name='home'
+    ),
+    url(
+        regex=r'^accounts/login/$',
+        view='django.contrib.auth.views.login',
+        kwargs={'template_name': 'example/login.html'}
+    ),
+    url(
+        regex='^accounts/logout/$',
+        view='django.contrib.auth.views.logout',
+        kwargs={'next_page': reverse_lazy('home')}
+    ),
+
+    # the Django admin
     url(r'^admin/', include(admin.site.urls)),
 
     # consumer logic
-    url(r'^consumer/$', ConsumerView.as_view(), name="consumer"),
-    url(r'^consumer/exchange/', ConsumerExchangeView.as_view(), name='consumer-exchange'),
-    url(r'^consumer/done/', ConsumerDoneView.as_view(), name='consumer-done'),
-    url(r'^consumer/client/', TemplateView.as_view(template_name='example/consumer-client.html'),
-        name='consumer-client'),
+    url(
+        regex=r'^consumer/$',
+        view=ConsumerView.as_view(),
+        name="consumer"
+    ),
+    url(
+        regex=r'^consumer/exchange/',
+        view=ConsumerExchangeView.as_view(),
+        name='consumer-exchange'
+    ),
+    url(
+        regex=r'^consumer/done/',
+        view=ConsumerDoneView.as_view(),
+        name='consumer-done'
+    ),
+    url(
+        regex=r'^consumer/client/',
+        view=TemplateView.as_view(template_name='example/consumer-client.html'),
+        name='consumer-client'
+    ),
 
     # oauth2 urls
     url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),

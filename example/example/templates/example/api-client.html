@@ -2,7 +2,7 @@
 {% load url from future %}
 
 {% block content %}
-<h2 class="lead">Play with the API</h2>
+<h2>Play with the API</h2>
 
 <div class="row">
     <div class="span5">
@@ -47,6 +47,12 @@
         <p>Response: <span id="idStatus"></span></p>
         <pre id="idResponse"></pre>
     </div>
+</div>
+
+<h2>API Cheat Sheet</h2>
+
+<div class="row">
+    <div class="span12"><p>TODO</p></div>
 </div>
 {% endblock %}
 
@@ -118,50 +124,5 @@
             });
 
         })();
-    </script>
-
-    <script type="text/javascript">
-    /*$(document).ready(function(){
-        $("#idGET").click(function(event){
-            event.preventDefault();
-            var url = $("#id_url").val();
-            var token = $("#id_token").val();
-
-            var show_response = function(data){
-                $("#id_response").html(data);
-            };
-
-            if (!url || !token) {
-                show_response('Please fill all the form fields');
-                return;
-            }
-
-            $.ajax({
-                url: url,
-                type: 'GET',
-                crossDomain: true,
-                beforeSend: function(request){
-                    request.setRequestHeader("Authorization", "Bearer " + token);
-                },
-                success: function(data, status, jqXHR){
-                    msg = 'HTTP ' + jqXHR.status;
-                    if (jqXHR.responseText  == "Hello, OAuth2!"){
-                        show_response(msg+data)
-                    } else {
-                        show_response("Please insert a valid OAuth2 API URL");
-                    }
-                },
-                error: function(jqXHR) {
-                    var msg = "HTTP " + jqXHR.status;
-                    var br ="<\br>";
-                    if (jqXHR.status == 0){
-                        msg += br;
-                        msg += "You have to put protocol on your URL, i.e. '<b>http://</b>localhost:8000/api/hello'.";
-                    }
-                    show_response(msg);
-                }
-            });
-        });
-    });*/
     </script>
 {% endblock javascript %}
