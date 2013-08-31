@@ -16,7 +16,7 @@ from .models import MyApplication
 
 class MyServer(Server):
     """
-    A custom server which bypasses OAuth controls for every GET request to show data on a web page
+    A custom server which bypasses OAuth controls for every GET request
     """
     def verify_request(self, uri, http_method='GET', body=None, headers=None, scopes=None):
         ok, request = super(MyServer, self).verify_request(uri, http_method, body, headers, scopes)
@@ -45,7 +45,6 @@ def get_system_info(request, *args, **kwargs):
 def applications_list(request, *args, **kwargs):
     """
     List resources with GET, create a new one with POST.
-    Everyone on the Internet can retrieve the list of applications (just for didactic purposes :-)
     """
     if request.method == 'GET':
         data = serializers.serialize("json", MyApplication.objects.all())

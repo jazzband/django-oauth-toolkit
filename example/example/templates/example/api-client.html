@@ -61,7 +61,7 @@
 
             var showMsg = function(status, msg) {
                 $('#idStatus').html(status);
-                $('#idResponse').text(msg);
+                $('#idResponse').text('').text(msg);
             };
 
             var getUrl = function() {
@@ -86,7 +86,7 @@
 
                 req.done(function(data, textStatus, jqXHR) {
                     var status = 'HTTP ' + jqXHR.status;
-                    showMsg(status, JSON.stringify(data));
+                    showMsg(status, JSON.stringify(data, null, 4));
                 });
 
                 req.fail(function(jqXHR){
