@@ -125,7 +125,6 @@ class TokenView(CsrfExemptMixin, OAuthLibMixin, View):
 
     The endpoint is used in the followin flows:
      * Authorization code
-     * Implicit grant
      * Password
      * Client credentials
     """
