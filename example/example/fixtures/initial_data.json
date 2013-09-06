@@ -15,5 +15,32 @@
             "email": "",
             "date_joined": "2013-08-31T14:16:25.509Z"
         }
+    },
+
+    {
+        "pk": 1,
+        "model": "example.myapplication",
+        "fields": {
+            "redirect_uris": "",
+            "name": "test_app",
+            "description": "",
+            "client_type": "public",
+            "user": 1,
+            "client_id": "client_id",
+            "client_secret": "client_secret",
+            "authorization_grant_type": "password"
+        }
+    },
+
+    {
+        "pk": 1,
+        "model": "oauth2_provider.accesstoken",
+        "fields": {
+            "application": 1,
+            "token": "test_access_token",
+            "expires": "2023-09-06T20:29:49Z",
+            "user": 2,
+            "scope": "can_create_application can_list_tokens"
+        }
     }
 ]
