@@ -1,19 +1,19 @@
 from __future__ import unicode_literals
 
-from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
 from ..models import get_application_model
-
+from ..compat import get_user_model
 
 Application = get_application_model()
+UserModel = get_user_model()
 
 
 class BaseTest(TestCase):
     def setUp(self):
-        self.foo_user = User.objects.create_user("foo_user", "test@user.com", "123456")
-        self.bar_user = User.objects.create_user("bar_user", "dev@user.com", "123456")
+        self.foo_user = UserModel.objects.create_user("foo_user", "test@user.com", "123456")
+        self.bar_user = UserModel.objects.create_user("bar_user", "dev@user.com", "123456")
 
     def tearDown(self):
         self.foo_user.delete()

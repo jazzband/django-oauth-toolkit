@@ -3,8 +3,8 @@ from __future__ import unicode_literals
 from django.test import TestCase
 
 from ..settings import oauth2_settings
-from ..generators import BaseHashGenerator, ClientIdGenerator, ClientSecretGenerator, generate_client_id, \
-    generate_client_secret
+from ..generators import (BaseHashGenerator, ClientIdGenerator, ClientSecretGenerator,
+                          generate_client_id, generate_client_secret)
 
 
 class MockHashGenerator(BaseHashGenerator):
