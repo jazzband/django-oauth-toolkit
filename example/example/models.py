@@ -7,4 +7,4 @@ class MyApplication(AbstractApplication):
     """
     Custom Application model which adds description field
     """
-    description = models.TextField()
+    description = models.TextField(blank=True)
