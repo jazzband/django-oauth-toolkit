@@ -25,6 +25,7 @@ class MyServer(Server):
         return ok, request
 
 
+@csrf_exempt  # so we can see 405 errors instead of 403
 @require_http_methods(["GET"])
 def get_system_info(request, *args, **kwargs):
     """
