@@ -32,7 +32,7 @@ def get_system_info(request, *args, **kwargs):
     """
     data = {
         'DOT version': VERSION,
-        'oauthlib version': '0.5.0',
+        'oauthlib version': '0.5.1',
         'Django version': get_version(),
     }
 
@@ -40,14 +40,16 @@ def get_system_info(request, *args, **kwargs):
 
 
 @csrf_exempt
-@protected_resource(server_cls=MyServer)
+@protected_resource(server_cls=MyServer, scopes=["can_create_application"])
 @require_http_methods(["GET", "POST"])
 def applications_list(request, *args, **kwargs):
     """
-    List resources with GET, create a new one with POST.
+    List resources with GET, create a new one with POST. With custom server_cls we bypass oauth2
+    controls and let everyone list applications.
     """
     if request.method == 'GET':
-        data = serializers.serialize("json", MyApplication.objects.all())
+        # hide default Application in the playground
+        data = serializers.serialize("json", MyApplication.objects.exclude(pk=1))
         return HttpResponse(data, content_type='application/json', *args, **kwargs)
     elif request.method == 'POST':
         if request.is_ajax():
@@ -71,6 +73,9 @@ def applications_detail(request, pk, *args, **kwargs):
     """
     try:
         resource = MyApplication.objects.filter(user=request.resource_owner).filter(pk=pk).get()
+        # hide default Application in the playground
+        if resource.pk == 1:
+            raise MyApplication.DoesNotExist
     except MyApplication.DoesNotExist:
         return HttpResponseNotFound()
 

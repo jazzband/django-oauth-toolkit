@@ -40,7 +40,7 @@
             "token": "test_access_token",
             "expires": "2023-09-06T20:29:49Z",
             "user": 2,
-            "scope": "can_create_application can_list_tokens"
+            "scope": "can_create_application"
         }
     }
 ]
