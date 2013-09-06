@@ -24,3 +24,9 @@ if django.VERSION >= (1, 5):
     AUTH_USER_MODEL = settings.AUTH_USER_MODEL
 else:
     AUTH_USER_MODEL = 'auth.User'
+
+try:
+    from django.contrib.auth import get_user_model
+except ImportError:
+    from django.contrib.auth.models import User
+    get_user_model = lambda: User
