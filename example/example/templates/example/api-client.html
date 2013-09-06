@@ -36,6 +36,9 @@
                 <label class="control-label" for="idData">Payload</label>
                 <div class="controls">
                     <textarea rows="3" id="idData" class="span3"></textarea>
+                    <span class="help-block">
+                        Use JSON format, e.g. <em>{"param":"value"}</em>
+                    </span>
                 </div>
             </div>
             <div class="control-group">
@@ -54,9 +57,42 @@
 
 <h2>API Cheat Sheet</h2>
 
-<div class="row">
-    <div class="span12"><p>TODO</p></div>
-</div>
+<div class="row"><div class="span12">
+
+    <h3>GET /system_info</h3>
+    <p>Show simple system informations, this resource is not protected in any way.</p>
+    <p><strong>Authentication:</strong> none</p>
+
+    <h3>GET /applications</h3>
+    <p>Retrieve the list of Applications present in the playground</p>
+    <p><strong>Authentication:</strong> none</p>
+
+    <h3>POST /applications</h3>
+    <p>Create a new Application</p>
+    <p><strong>Authentication:</strong> OAuth2, scopes required: can_create_application</p>
+    <p>Parameters:</p>
+    <ul>
+        <li>name (optional) - Friendly name for the Application</li>
+        <li>client_id (optional) - The client identifier issued to the client during the registration</li>
+        <li>client_secret (optional) - Confidential secret issued to the client duringthe registration</li>
+        <li>client_type (required, values: [public,private]) - Confidential secret issued to the client duringthe registration</li>
+        <li>authorization_grant_type (required, values: [authorization-code,implicit,passwordl,client-credentials,all-in-one]) - Authorization flow</li>
+    </ul>
+
+    <h3>GET /applications/:pk</h3>
+    <p>Retrieve Application detail</p>
+    <p><strong>Authentication:</strong> OAuth2</p>
+
+    <h3>PUT /applications/:pk</h3>
+    <p>Update Application details</p>
+    <p><strong>Authentication:</strong> OAuth2</p>
+    <p>Parameters: same as application creation</p>
+
+    <h3>DELETE /applications/:pk</h3>
+    <p>Delete application</p>
+    <p><strong>Authentication:</strong> OAuth2</p>
+
+</div></div>
 {% endblock %}
 
 
