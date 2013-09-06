@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.4.1 [2013-09-06]
+------------------
+
+ * Optimize queries on access token validation
+
 0.4.0 [2013-08-09]
 ----------------------
 
