@@ -91,8 +91,11 @@ class OAuth2Validator(RequestValidator):
         """
         When users try to access resources, check that provided token is valid
         """
+        if not token:
+            return False
+
         try:
-            access_token = AccessToken.objects.get(token=token)
+            access_token = AccessToken.objects.select_related("application", "user").get(token=token)
             if access_token.is_valid(scopes):
                 request.client = access_token.application
                 request.user = access_token.user
