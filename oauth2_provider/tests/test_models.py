@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 
-from ..models import AccessToken, get_application_model
+from ..models import AccessToken, get_application_model, ApplicationInstallation
 from ..compat import get_user_model
 
 
@@ -17,20 +17,11 @@ class TestModels(TestCase):
 
     def test_allow_scopes(self):
         self.client.login(username="test_user", password="123456")
-        app = Application(
-            name="test_app",
-            redirect_uris="http://localhost http://example.com http://example.it",
-            user=self.user,
-            client_type=Application.CLIENT_CONFIDENTIAL,
-            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
-        )
 
         access_token = AccessToken(
-            user=self.user,
             scope='read write',
             expires=0,
             token='',
-            application=app
         )
 
         self.assertTrue(access_token.allow_scopes(['read', 'write']))
@@ -43,7 +34,6 @@ class TestModels(TestCase):
         app = Application(
             name="test_app",
             redirect_uris="",
-            user=self.user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_ALLINONE,
         )
@@ -54,7 +44,6 @@ class TestModels(TestCase):
         app = Application(
             name="test_app",
             redirect_uris="",
-            user=self.user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
         )
@@ -65,7 +54,6 @@ class TestModels(TestCase):
         app = Application(
             name="test_app",
             redirect_uris="",
-            user=self.user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_IMPLICIT,
         )

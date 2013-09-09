@@ -4,7 +4,7 @@ from django.test import TestCase, RequestFactory
 from django.core.urlresolvers import reverse
 
 from ..compat import urlparse, parse_qs, urlencode, get_user_model
-from ..models import get_application_model
+from ..models import get_application_model, ApplicationInstallation
 from ..settings import oauth2_settings
 from ..views import ProtectedResourceView
 
@@ -28,15 +28,21 @@ class BaseTest(TestCase):
         self.application = Application(
             name="Test Implicit Application",
             redirect_uris="http://localhost http://example.com http://example.it",
-            user=self.dev_user,
             client_type=Application.CLIENT_PUBLIC,
             authorization_grant_type=Application.GRANT_IMPLICIT,
         )
         self.application.save()
 
+        self.application_installation = ApplicationInstallation(
+            application=self.application,
+            user=self.test_user
+        )
+        self.application_installation.save()
+
         oauth2_settings._SCOPES = ['read', 'write']
 
     def tearDown(self):
+        self.application_installation.delete()
         self.application.delete()
         self.test_user.delete()
         self.dev_user.delete()
@@ -50,7 +56,7 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         self.client.login(username="test_user", password="123456")
 
         query_string = urlencode({
-            'client_id': self.application.client_id,
+            'client_id': self.application_installation.client_id,
             'response_type': 'token',
             'state': 'random_state_string',
             'scope': 'read write',
@@ -68,7 +74,7 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         self.assertEqual(form['redirect_uri'].value(), "http://example.it")
         self.assertEqual(form['state'].value(), "random_state_string")
         self.assertEqual(form['scopes'].value(), "read write")
-        self.assertEqual(form['client_id'].value(), self.application.client_id)
+        self.assertEqual(form['client_id'].value(), self.application_installation.client_id)
 
     def test_pre_auth_invalid_client(self):
         """
@@ -92,7 +98,7 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         self.client.login(username="test_user", password="123456")
 
         query_string = urlencode({
-            'client_id': self.application.client_id,
+            'client_id': self.application_installation.client_id,
             'response_type': 'token',
         })
         url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
@@ -110,7 +116,7 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         self.client.login(username="test_user", password="123456")
 
         query_string = urlencode({
-            'client_id': self.application.client_id,
+            'client_id': self.application_installation.client_id,
             'response_type': 'token',
             'redirect_uri': 'http://forbidden.it',
         })
@@ -126,7 +132,7 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         self.client.login(username="test_user", password="123456")
 
         form_data = {
-            'client_id': self.application.client_id,
+            'client_id': self.application_installation.client_id,
             'state': 'random_state_string',
             'scopes': 'read write',
             'redirect_uri': 'http://example.it',
@@ -147,7 +153,7 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         self.client.login(username="test_user", password="123456")
 
         form_data = {
-            'client_id': self.application.client_id,
+            'client_id': self.application_installation.client_id,
             'state': 'random_state_string',
             'scopes': 'read write',
             'redirect_uri': 'http://example.it',
@@ -166,7 +172,7 @@ class TestImplicitTokenView(BaseTest):
 
         # retrieve a valid authorization code
         authcode_data = {
-            'client_id': self.application.client_id,
+            'client_id': self.application_installation.client_id,
             'state': 'random_state_string',
             'scopes': 'read write',
             'redirect_uri': 'http://example.it',
@@ -185,6 +191,6 @@ class TestImplicitTokenView(BaseTest):
         request = self.factory.get("/fake-resource", **auth_headers)
         request.user = self.test_user
 
-        view = ResourceView.as_view()
+        view = ResourceView.as_view()  # pylint: disable=E1120
         response = view(request)
         self.assertEqual(response, "This is a protected resource")

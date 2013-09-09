@@ -4,9 +4,10 @@ from datetime import timedelta
 
 from django.utils import timezone
 from django.contrib.auth import authenticate
+from django.contrib.auth.models import AnonymousUser
 from oauthlib.oauth2 import RequestValidator
 
-from .models import Grant, AccessToken, RefreshToken, get_application_model
+from .models import Grant, AccessToken, RefreshToken, get_application_model, ApplicationInstallation
 from .settings import oauth2_settings
 
 Application = get_application_model()
@@ -39,10 +40,12 @@ class OAuth2Validator(RequestValidator):
         client_id, client_secret = auth_string_decoded.split(':', 1)
 
         try:
-            request.client = Application.objects.get(client_id=client_id, client_secret=client_secret)
+            request.client = ApplicationInstallation.objects.get(
+                application__client_id=client_id,
+                application__client_secret=client_secret)
             return True
 
-        except Application.DoesNotExist:
+        except ApplicationInstallation.DoesNotExist:
             return False
 
     def authenticate_client_id(self, client_id, request, *args, **kwargs):
@@ -53,24 +56,26 @@ class OAuth2Validator(RequestValidator):
         client_secret = request.client_secret
 
         try:
-            request.client = request.client or Application.objects.get(client_id=client_id, client_secret=client_secret)
+            request.client = request.client or ApplicationInstallation.objects.get(
+                application__client_id=client_id,
+                application__client_secret=client_secret)
             return request.client.client_type != Application.CLIENT_CONFIDENTIAL
 
-        except Application.DoesNotExist:
+        except ApplicationInstallation.DoesNotExist:
             return False
 
     def confirm_redirect_uri(self, client_id, code, redirect_uri, client, *args, **kwargs):
         """
         Ensure the redirect_uri is listed in the Application instance redirect_uris field
         """
-        grant = Grant.objects.get(code=code, application=client)
+        grant = Grant.objects.get(code=code, application_installation=client)
         return grant.redirect_uri_allowed(redirect_uri)
 
     def invalidate_authorization_code(self, client_id, code, request, *args, **kwargs):
         """
         Remove the temporary grant used to swap the authorization token
         """
-        grant = Grant.objects.get(code=code, application=request.client)
+        grant = Grant.objects.get(code=code, application_installation=request.client)
         grant.delete()
 
     def validate_client_id(self, client_id, request, *args, **kwargs):
@@ -78,10 +83,10 @@ class OAuth2Validator(RequestValidator):
         Ensure an Application exists with given client_id. Also assign Application instance to request.client.
         """
         try:
-            request.client = request.client or Application.objects.get(client_id=client_id)
+            request.client = request.client or ApplicationInstallation.objects.get(application__client_id=client_id)
             return True
 
-        except Application.DoesNotExist:
+        except ApplicationInstallation.DoesNotExist:
             return False
 
     def get_default_redirect_uri(self, client_id, request, *args, **kwargs):
@@ -95,10 +100,15 @@ class OAuth2Validator(RequestValidator):
             return False
 
         try:
-            access_token = AccessToken.objects.select_related("application", "user").get(token=token)
+            access_token = AccessToken.objects.get(token=token)
             if access_token.is_valid(scopes):
-                request.client = access_token.application
-                request.user = access_token.user
+                request.client = access_token.application_installation
+
+                if not access_token.application_installation.user.is_active:
+                    request.user = AnonymousUser()
+                else:
+                    request.user = access_token.application_installation.user
+
                 request.scopes = scopes
 
                 # this is needed by django rest framework
@@ -110,10 +120,10 @@ class OAuth2Validator(RequestValidator):
 
     def validate_code(self, client_id, code, client, request, *args, **kwargs):
         try:
-            grant = Grant.objects.get(code=code, application=client)
+            grant = Grant.objects.get(code=code, application_installation=client)
             if not grant.is_expired():
                 request.scopes = grant.scope.split(' ')
-                request.user = grant.user
+                request.user = grant.application_installation.user
                 return True
             return False
 
@@ -153,9 +163,16 @@ class OAuth2Validator(RequestValidator):
 
     def save_authorization_code(self, client_id, code, request, *args, **kwargs):
         expires = timezone.now() + timedelta(seconds=oauth2_settings.AUTHORIZATION_CODE_EXPIRE_SECONDS)
-        g = Grant(application=request.client, user=request.user, code=code['code'], expires=expires,
-                  redirect_uri=request.redirect_uri, scope=' '.join(request.scopes))
+        g = Grant(
+            code=code['code'],
+            expires=expires,
+            redirect_uri=request.redirect_uri,
+            scope=' '.join(request.scopes),
+        )
         g.save()
+        request.client.grant = g
+        request.client.user = request.user
+        request.client.save()
 
     def save_bearer_token(self, token, request, *args, **kwargs):
         """
@@ -166,24 +183,28 @@ class OAuth2Validator(RequestValidator):
             request.user = request.client.user
 
         access_token = AccessToken(
-            user=request.user,
             scope=token['scope'],
             expires=expires,
             token=token['access_token'],
-            application=request.client)
+        )
         access_token.save()
+        request.client.access_token = access_token
+        request.client.user = request.user
+        request.client.save()
 
         if 'refresh_token' in token:
             # discard old refresh tokens
-            RefreshToken.objects.filter(user=request.user).filter(application=request.client).delete()
+            RefreshToken.objects.filter(application_installation__user=request.user,
+                application_installation=request.client).delete()
 
             refresh_token = RefreshToken(
-                user=request.user,
                 token=token['refresh_token'],
-                application=request.client,
-                access_token=access_token
+                access_token=access_token,
             )
             refresh_token.save()
+            request.client.refresh_token = refresh_token
+            request.client.user = request.user
+            request.client.save()
 
         # TODO check out a more reliable way to communicate expire time to oauthlib
         token['expires_in'] = oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS
@@ -210,8 +231,8 @@ class OAuth2Validator(RequestValidator):
         """
         try:
             rt = RefreshToken.objects.get(token=refresh_token)
-            request.user = rt.user
-            return rt.application == client
+            request.user = rt.application_installation.user
+            return rt.application_installation == client
 
         except RefreshToken.DoesNotExist:
             return False

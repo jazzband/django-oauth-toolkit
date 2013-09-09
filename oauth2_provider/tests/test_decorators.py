@@ -1,4 +1,3 @@
-import json
 from datetime import timedelta
 
 from django.test import TestCase, RequestFactory
@@ -6,7 +5,7 @@ from django.utils import timezone
 
 from ..decorators import protected_resource, rw_protected_resource
 from ..settings import oauth2_settings
-from ..models import get_application_model, AccessToken
+from ..models import get_application_model, AccessToken, ApplicationInstallation
 from ..compat import get_user_model
 from .test_utils import TestCaseUtils
 
@@ -24,17 +23,20 @@ class TestProtectedResourceDecorator(TestCase, TestCaseUtils):
         self.user = UserModel.objects.create_user("test_user", "test@user.com", "123456")
         self.application = Application.objects.create(
             name="test_client_credentials_app",
-            user=self.user,
             client_type=Application.CLIENT_PUBLIC,
             authorization_grant_type=Application.GRANT_CLIENT_CREDENTIALS,
         )
 
         self.access_token = AccessToken.objects.create(
-            user=self.user,
             scope='read write',
             expires=timezone.now() + timedelta(seconds=300),
             token='secret-access-token-key',
-            application=self.application
+        )
+
+        self.application_installation = ApplicationInstallation.objects.create(
+            application=self.application,
+            user=self.user,
+            access_token=self.access_token
         )
 
         oauth2_settings._SCOPES = ['read', 'write']

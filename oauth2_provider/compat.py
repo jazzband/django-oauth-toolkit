@@ -6,9 +6,9 @@ versions of django and python..
 from __future__ import unicode_literals
 
 from django.conf import settings
-from django.db.models import get_model
 from django.contrib.auth import models
 from django.core.exceptions import ImproperlyConfigured
+from django.db.models import get_model
 
 # urlparse in python3 has been renamed to urllib.parse
 try:

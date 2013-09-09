@@ -8,7 +8,7 @@ from django.views.generic import View
 
 from oauthlib.oauth2 import BackendApplicationServer
 
-from ..models import get_application_model
+from ..models import get_application_model, ApplicationInstallation
 from ..oauth2_validators import OAuth2Validator
 from ..settings import oauth2_settings
 from ..views import ProtectedResourceView
@@ -35,15 +35,21 @@ class BaseTest(TestCaseUtils, TestCase):
 
         self.application = Application(
             name="test_client_credentials_app",
-            user=self.dev_user,
             client_type=Application.CLIENT_PUBLIC,
             authorization_grant_type=Application.GRANT_CLIENT_CREDENTIALS,
         )
         self.application.save()
 
+        self.application_installation = ApplicationInstallation(
+            application=self.application,
+            user=self.test_user
+        )
+        self.application_installation.save()
+
         oauth2_settings._SCOPES = ['read', 'write']
 
     def tearDown(self):
+        self.application_installation.delete()
         self.application.delete()
         self.test_user.delete()
         self.dev_user.delete()
@@ -57,7 +63,10 @@ class TestClientCredential(BaseTest):
         token_request_data = {
             'grant_type': 'client_credentials',
         }
-        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = self.get_basic_auth_header(
+            self.application_installation.client_id,
+            self.application_installation.client_secret
+        )
 
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
@@ -72,7 +81,7 @@ class TestClientCredential(BaseTest):
         request = self.factory.get("/fake-resource", **auth_headers)
         request.user = self.test_user
 
-        view = ResourceView.as_view()
+        view = ResourceView.as_view()  # pylint: disable=E1120
         response = view(request)
         self.assertEqual(response, "This is a protected resource")
 
@@ -93,7 +102,10 @@ class TestExtendedRequest(BaseTest):
         token_request_data = {
             'grant_type': 'client_credentials',
         }
-        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = self.get_basic_auth_header(
+            self.application_installation.client_id,
+            self.application_installation.client_secret
+        )
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
 
@@ -113,6 +125,6 @@ class TestExtendedRequest(BaseTest):
 
         valid, r = test_view.verify_request(request)
         self.assertTrue(valid)
-        self.assertEqual(r.user, self.dev_user)
-        self.assertEqual(r.client, self.application)
+        self.assertEqual(r.user, self.test_user)
+        self.assertEqual(r.client, self.application_installation)
         self.assertEqual(r.scopes, ['read', 'write'])

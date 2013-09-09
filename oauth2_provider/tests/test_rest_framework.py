@@ -7,7 +7,7 @@ from django.utils import timezone, unittest
 
 
 from .test_utils import TestCaseUtils
-from ..models import AccessToken, get_application_model
+from ..models import AccessToken, get_application_model, ApplicationInstallation
 from ..settings import oauth2_settings
 from ..compat import get_user_model
 
@@ -72,17 +72,20 @@ class TestOAuth2Authentication(BaseTest):
         self.application = Application.objects.create(
             name="Test Application",
             redirect_uris="http://localhost http://example.com http://example.it",
-            user=self.dev_user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
         )
 
         self.access_token = AccessToken.objects.create(
-            user=self.test_user,
             scope='read write',
             expires=timezone.now() + timedelta(seconds=300),
             token='secret-access-token-key',
-            application=self.application
+        )
+
+        self.application_installation = ApplicationInstallation.objects.create(
+            user=self.test_user,
+            application=self.application,
+            access_token=self.access_token
         )
 
     def _create_authorization_header(self, token):

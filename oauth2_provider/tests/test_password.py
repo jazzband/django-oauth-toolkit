@@ -5,7 +5,7 @@ import json
 from django.test import TestCase, RequestFactory
 from django.core.urlresolvers import reverse
 
-from ..models import get_application_model
+from ..models import get_application_model, ApplicationInstallation
 from ..settings import oauth2_settings
 from ..views import ProtectedResourceView
 from ..compat import get_user_model
@@ -30,15 +30,21 @@ class BaseTest(TestCaseUtils, TestCase):
 
         self.application = Application(
             name="Test Password Application",
-            user=self.dev_user,
             client_type=Application.CLIENT_PUBLIC,
             authorization_grant_type=Application.GRANT_PASSWORD,
         )
         self.application.save()
 
+        self.application_installation = ApplicationInstallation(
+            application=self.application,
+            user=self.test_user
+        )
+        self.application_installation.save()
+
         oauth2_settings._SCOPES = ['read', 'write']
 
     def tearDown(self):
+        self.application_installation.delete()
         self.application.delete()
         self.test_user.delete()
         self.dev_user.delete()
@@ -54,7 +60,10 @@ class TestPasswordTokenView(BaseTest):
             'username': 'test_user',
             'password': '123456',
         }
-        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = self.get_basic_auth_header(
+            self.application_installation.client_id,
+            self.application_installation.client_secret
+        )
 
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
@@ -73,7 +82,10 @@ class TestPasswordTokenView(BaseTest):
             'username': 'test_user',
             'password': 'NOT_MY_PASS',
         }
-        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = self.get_basic_auth_header(
+            self.application_installation.client_id,
+            self.application_installation.client_secret
+        )
 
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 400)
@@ -86,7 +98,10 @@ class TestPasswordProtectedResource(BaseTest):
             'username': 'test_user',
             'password': '123456',
         }
-        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = self.get_basic_auth_header(
+            self.application_installation.client_id,
+            self.application_installation.client_secret
+        )
 
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
@@ -99,6 +114,6 @@ class TestPasswordProtectedResource(BaseTest):
         request = self.factory.get("/fake-resource", **auth_headers)
         request.user = self.test_user
 
-        view = ResourceView.as_view()
+        view = ResourceView.as_view()  # pylint: disable=E1120
         response = view(request)
         self.assertEqual(response, "This is a protected resource")

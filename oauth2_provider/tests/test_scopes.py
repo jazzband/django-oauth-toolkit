@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 
 from .test_utils import TestCaseUtils
 from ..compat import urlparse, parse_qs, get_user_model
-from ..models import get_application_model, Grant, AccessToken
+from ..models import get_application_model, Grant, AccessToken, ApplicationInstallation
 from ..settings import oauth2_settings
 from ..views import ScopedProtectedResourceView, ReadWriteScopedResourceView
 
@@ -48,17 +48,23 @@ class BaseTest(TestCaseUtils, TestCase):
         self.application = Application(
             name="Test Application",
             redirect_uris="http://localhost http://example.com http://example.it",
-            user=self.dev_user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
         )
         self.application.save()
+
+        self.application_installation = ApplicationInstallation(
+            application=self.application,
+            user=self.test_user
+        )
+        self.application_installation.save()
 
         oauth2_settings._SCOPES = ['read', 'write', 'scope1', 'scope2', 'scope3']
         oauth2_settings.READ_SCOPE = 'read'
         oauth2_settings.WRITE_SCOPE = 'write'
 
     def tearDown(self):
+        self.application_installation.delete()
         self.application.delete()
         self.test_user.delete()
         self.dev_user.delete()
@@ -73,7 +79,7 @@ class TestScopesSave(BaseTest):
 
         # retrieve a valid authorization code
         authcode_data = {
-            'client_id': self.application.client_id,
+            'client_id': self.application_installation.client_id,
             'state': 'random_state_string',
             'scopes': 'scope1 scope2',
             'redirect_uri': 'http://example.it',
@@ -95,7 +101,7 @@ class TestScopesSave(BaseTest):
 
         # retrieve a valid authorization code
         authcode_data = {
-            'client_id': self.application.client_id,
+            'client_id': self.application_installation.client_id,
             'state': 'random_state_string',
             'scopes': 'scope1 scope2',
             'redirect_uri': 'http://example.it',
@@ -112,7 +118,10 @@ class TestScopesSave(BaseTest):
             'code': authorization_code,
             'redirect_uri': 'http://example.it'
         }
-        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = self.get_basic_auth_header(
+            self.application_installation.client_id,
+            self.application_installation.client_secret
+        )
 
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
@@ -131,7 +140,7 @@ class TestScopesProtection(BaseTest):
 
         # retrieve a valid authorization code
         authcode_data = {
-            'client_id': self.application.client_id,
+            'client_id': self.application_installation.client_id,
             'state': 'random_state_string',
             'scopes': 'scope1 scope2',
             'redirect_uri': 'http://example.it',
@@ -148,7 +157,10 @@ class TestScopesProtection(BaseTest):
             'code': authorization_code,
             'redirect_uri': 'http://example.it'
         }
-        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = self.get_basic_auth_header(
+            self.application_installation.client_id,
+            self.application_installation.client_secret
+        )
 
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
@@ -161,7 +173,7 @@ class TestScopesProtection(BaseTest):
         request = self.factory.get("/fake-resource", **auth_headers)
         request.user = self.test_user
 
-        view = ScopeResourceView.as_view()
+        view = ScopeResourceView.as_view()  # pylint: disable=E1120
         response = view(request)
         self.assertEqual(response, "This is a protected resource")
 
@@ -173,7 +185,7 @@ class TestScopesProtection(BaseTest):
 
         # retrieve a valid authorization code
         authcode_data = {
-            'client_id': self.application.client_id,
+            'client_id': self.application_installation.client_id,
             'state': 'random_state_string',
             'scopes': 'scope2',
             'redirect_uri': 'http://example.it',
@@ -190,7 +202,10 @@ class TestScopesProtection(BaseTest):
             'code': authorization_code,
             'redirect_uri': 'http://example.it'
         }
-        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = self.get_basic_auth_header(
+            self.application_installation.client_id,
+            self.application_installation.client_secret
+        )
 
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
@@ -203,7 +218,7 @@ class TestScopesProtection(BaseTest):
         request = self.factory.get("/fake-resource", **auth_headers)
         request.user = self.test_user
 
-        view = ScopeResourceView.as_view()
+        view = ScopeResourceView.as_view()  # pylint: disable=E1120
         response = view(request)
         self.assertEqual(response.status_code, 403)
 
@@ -215,7 +230,7 @@ class TestScopesProtection(BaseTest):
 
         # retrieve a valid authorization code
         authcode_data = {
-            'client_id': self.application.client_id,
+            'client_id': self.application_installation.client_id,
             'state': 'random_state_string',
             'scopes': 'scope1 scope3',
             'redirect_uri': 'http://example.it',
@@ -232,7 +247,10 @@ class TestScopesProtection(BaseTest):
             'code': authorization_code,
             'redirect_uri': 'http://example.it'
         }
-        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = self.get_basic_auth_header(
+            self.application_installation.client_id,
+            self.application_installation.client_secret
+        )
 
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
@@ -245,7 +263,7 @@ class TestScopesProtection(BaseTest):
         request = self.factory.get("/fake-resource", **auth_headers)
         request.user = self.test_user
 
-        view = MultiScopeResourceView.as_view()
+        view = MultiScopeResourceView.as_view()  # pylint: disable=E1120
         response = view(request)
         self.assertEqual(response.status_code, 403)
 
@@ -257,7 +275,7 @@ class TestScopesProtection(BaseTest):
 
         # retrieve a valid authorization code
         authcode_data = {
-            'client_id': self.application.client_id,
+            'client_id': self.application_installation.client_id,
             'state': 'random_state_string',
             'scopes': 'scope1 scope2',
             'redirect_uri': 'http://example.it',
@@ -274,7 +292,10 @@ class TestScopesProtection(BaseTest):
             'code': authorization_code,
             'redirect_uri': 'http://example.it'
         }
-        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = self.get_basic_auth_header(
+            self.application_installation.client_id,
+            self.application_installation.client_secret
+        )
 
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
@@ -287,7 +308,7 @@ class TestScopesProtection(BaseTest):
         request = self.factory.get("/fake-resource", **auth_headers)
         request.user = self.test_user
 
-        view = MultiScopeResourceView.as_view()
+        view = MultiScopeResourceView.as_view()  # pylint: disable=E1120
         response = view(request)
         self.assertEqual(response, "This is a protected resource")
 
@@ -298,7 +319,7 @@ class TestReadWriteScope(BaseTest):
 
         # retrieve a valid authorization code
         authcode_data = {
-            'client_id': self.application.client_id,
+            'client_id': self.application_installation.client_id,
             'state': 'random_state_string',
             'scopes': scopes,
             'redirect_uri': 'http://example.it',
@@ -315,7 +336,10 @@ class TestReadWriteScope(BaseTest):
             'code': authorization_code,
             'redirect_uri': 'http://example.it'
         }
-        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = self.get_basic_auth_header(
+            self.application_installation.client_id,
+            self.application_installation.client_secret
+        )
 
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
@@ -325,26 +349,26 @@ class TestReadWriteScope(BaseTest):
         oauth2_settings._SCOPES = ['scope1']
 
         request = self.factory.get("/fake")
-        view = ReadWriteResourceView.as_view()
+        view = ReadWriteResourceView.as_view()  # pylint: disable=E1120
         self.assertRaises(ImproperlyConfigured, view, request)
 
         oauth2_settings._SCOPES = ['read', 'write']
         oauth2_settings.READ_SCOPE = 'ciccia'
 
-        view = ReadWriteResourceView.as_view()
+        view = ReadWriteResourceView.as_view()  # pylint: disable=E1120
         self.assertRaises(ImproperlyConfigured, view, request)
 
     def test_properly_configured(self):
         oauth2_settings._SCOPES = ['scope1']
 
         request = self.factory.get("/fake")
-        view = ReadWriteResourceView.as_view()
+        view = ReadWriteResourceView.as_view()  # pylint: disable=E1120
         self.assertRaises(ImproperlyConfigured, view, request)
 
         oauth2_settings._SCOPES = ['read', 'write']
         oauth2_settings.READ_SCOPE = 'ciccia'
 
-        view = ReadWriteResourceView.as_view()
+        view = ReadWriteResourceView.as_view()  # pylint: disable=E1120
         self.assertRaises(ImproperlyConfigured, view, request)
 
     def test_has_read_scope(self):
@@ -357,7 +381,7 @@ class TestReadWriteScope(BaseTest):
         request = self.factory.get("/fake-resource", **auth_headers)
         request.user = self.test_user
 
-        view = ReadWriteResourceView.as_view()
+        view = ReadWriteResourceView.as_view()  # pylint: disable=E1120
         response = view(request)
         self.assertEqual(response, "This is a read protected resource")
 
@@ -371,7 +395,7 @@ class TestReadWriteScope(BaseTest):
         request = self.factory.get("/fake-resource", **auth_headers)
         request.user = self.test_user
 
-        view = ReadWriteResourceView.as_view()
+        view = ReadWriteResourceView.as_view()  # pylint: disable=E1120
         response = view(request)
         self.assertEqual(response.status_code, 403)
 
@@ -385,7 +409,7 @@ class TestReadWriteScope(BaseTest):
         request = self.factory.post("/fake-resource", **auth_headers)
         request.user = self.test_user
 
-        view = ReadWriteResourceView.as_view()
+        view = ReadWriteResourceView.as_view()  # pylint: disable=E1120
         response = view(request)
         self.assertEqual(response, "This is a write protected resource")
 
@@ -399,6 +423,6 @@ class TestReadWriteScope(BaseTest):
         request = self.factory.post("/fake-resource", **auth_headers)
         request.user = self.test_user
 
-        view = ReadWriteResourceView.as_view()
+        view = ReadWriteResourceView.as_view()  # pylint: disable=E1120
         response = view(request)
         self.assertEqual(response.status_code, 403)
