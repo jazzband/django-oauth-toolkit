@@ -5,7 +5,7 @@ from django.http import HttpResponseForbidden
 from django.core.exceptions import ImproperlyConfigured
 
 from .oauth2_validators import OAuth2Validator
-from .backends import OAuthLibCore
+from .oauth2_backends import OAuthLibCore
 from .settings import oauth2_settings
 
 
