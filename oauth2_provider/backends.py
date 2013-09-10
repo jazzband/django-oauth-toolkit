@@ -4,6 +4,10 @@ from oauthlib.common import urlencode
 from .exceptions import OAuthToolkitError, FatalClientError
 from .oauth2_validators import OAuth2Validator
 
+import urlparse
+from django.utils.http import urlquote
+from django.utils.encoding import iri_to_uri
+
 
 class OAuthLibCore(object):
     """
@@ -15,12 +19,16 @@ class OAuthLibCore(object):
         """
         self.server = server or oauth2.Server(OAuth2Validator())
 
+    def _get_escaped_full_path(self, request):
+        uri = request.get_full_path()
+        return uri
+
     def _extract_params(self, request):
         """
         Extract parameters from the Django request object. Such parameters will then be passed to OAuthLib to build its
         own Request object
         """
-        uri = request.build_absolute_uri()
+        uri = self._get_escaped_full_path(request)
         http_method = request.method
         headers = request.META.copy()
         if 'wsgi.input' in headers:
