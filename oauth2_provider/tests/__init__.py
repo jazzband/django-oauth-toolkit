@@ -10,3 +10,4 @@ from .test_scopes import *
 from .test_rest_framework import *
 from .test_application_views import *
 from .test_decorators import *
+from .test_oauth2_backends import *
