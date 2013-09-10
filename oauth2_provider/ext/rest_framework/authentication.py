@@ -1,6 +1,6 @@
 from rest_framework.authentication import BaseAuthentication
 
-from ...backends import get_oauthlib_core
+from ...oauth2_backends import get_oauthlib_core
 
 
 class OAuth2Authentication(BaseAuthentication):
