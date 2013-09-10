@@ -1,12 +1,13 @@
 from oauthlib import oauth2
-from oauthlib.common import urlencode
+from oauthlib.common import urlencode, urlencoded, quote
 
 from .exceptions import OAuthToolkitError, FatalClientError
 from .oauth2_validators import OAuth2Validator
 
-import urlparse
-from django.utils.http import urlquote
-from django.utils.encoding import iri_to_uri
+try:
+    from urlparse import urlparse, urlunparse
+except ImportError:
+    from urllib.parse import urlparse, urlunparse
 
 
 class OAuthLibCore(object):
@@ -20,13 +21,21 @@ class OAuthLibCore(object):
         self.server = server or oauth2.Server(OAuth2Validator())
 
     def _get_escaped_full_path(self, request):
-        uri = request.get_full_path()
-        return uri
+        """
+        Django considers "safe" some characters that aren't so for oauthlib. We have to search for
+        them and properly escape.
+        """
+        parsed = list(urlparse(request.get_full_path()))
+        unsafe = set(c for c in parsed[4]).difference(urlencoded)
+        for c in unsafe:
+            parsed[4] = parsed[4].replace(c, quote(c, safe=''))
+
+        return urlunparse(parsed)
 
     def _extract_params(self, request):
         """
-        Extract parameters from the Django request object. Such parameters will then be passed to OAuthLib to build its
-        own Request object
+        Extract parameters from the Django request object. Such parameters will then be passed to
+        OAuthLib to build its own Request object
         """
         uri = self._get_escaped_full_path(request)
         http_method = request.method
@@ -94,7 +103,8 @@ class OAuthLibCore(object):
         """
         uri, http_method, body, headers = self._extract_params(request)
 
-        url, headers, body, status = self.server.create_token_response(uri, http_method, body, headers)
+        url, headers, body, status = self.server.create_token_response(uri, http_method, body,
+                                                                       headers)
         return url, headers, body, status
 
     def verify_request(self, request, scopes):
@@ -112,7 +122,8 @@ class OAuthLibCore(object):
 
 def get_oauthlib_core():
     """
-    Utility function that take a request and returns an instance of `oauth2_provider.backends.OAuthLibCore`
+    Utility function that take a request and returns an instance of
+    `oauth2_provider.backends.OAuthLibCore`
     """
     from oauth2_provider.oauth2_validators import OAuth2Validator
     from oauthlib.oauth2 import Server
