@@ -1,10 +1,10 @@
 from django.test import TestCase, RequestFactory
 from django.test.utils import override_settings
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.utils.timezone import now, timedelta
 from django.conf.global_settings import MIDDLEWARE_CLASSES
 
+from ..compat import get_user_model
 from ..models import get_application_model
 from ..models import AccessToken
 from ..backends import OAuth2Backend

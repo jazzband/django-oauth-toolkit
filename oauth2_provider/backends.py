@@ -1,5 +1,4 @@
-from django.contrib.auth import get_user_model
-
+from .compat import get_user_model
 from .oauth2_backends import get_oauthlib_core
 
 UserModel = get_user_model()
