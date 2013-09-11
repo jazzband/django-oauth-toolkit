@@ -23,9 +23,9 @@ GRANT_TYPE_MAPPING = {
 
 
 class OAuth2Validator(RequestValidator):
-    def authenticate_client(self, request, *args, **kwargs):
+    def _authenticate_basic_auth(self, request):
         """
-        Check if client exists and it's authenticating itself as in rfc:`3.2.1`
+        Authenticates with HTTP Basic Auth
         """
         auth = request.headers.get('HTTP_AUTHORIZATION', None)
 
@@ -33,6 +33,9 @@ class OAuth2Validator(RequestValidator):
             return False
 
         auth_type, auth_string = auth.split(' ')
+        if auth_type != "Basic":
+            return False
+
         encoding = request.encoding or 'utf-8'
 
         auth_string_decoded = base64.b64decode(auth_string).decode(encoding)
@@ -45,15 +48,51 @@ class OAuth2Validator(RequestValidator):
         except Application.DoesNotExist:
             return False
 
+    def _authenticate_request_body(self, request):
+        """
+        Try to authenticate the client using client_id and client_secret parameters
+        included in body.
+
+        Remember that this method is NOT RECOMMENDED and SHOULD be limited to clients unable to directly utilize
+        the HTTP Basic authentication scheme. See rfc:`2.3.1` for more details.
+        """
+        client_id = request.client_id
+        client_secret = request.client_secret
+
+        if not client_id:
+            return False
+
+        try:
+            request.client = Application.objects.get(client_id=client_id, client_secret=client_secret)
+            return True
+
+        except Application.DoesNotExist:
+            return False
+
+    def authenticate_client(self, request, *args, **kwargs):
+        """
+        Check if client exists and it's authenticating itself as in rfc:`3.2.1`
+
+        First we try to authenticate with HTTP Basic Auth, and that is the PREFERRED authentication method.
+        Whether this fails we support including the client credentials in the request-body, but
+        this method is NOT RECOMMENDED and SHOULD be limited to clients unable to directly utilize
+        the HTTP Basic authentication scheme. See rfc:`2.3.1` for more details
+        """
+        authenticated = self._authenticate_basic_auth(request)
+
+        if not authenticated:
+            authenticated = self._authenticate_request_body(request)
+
+        return authenticated
+
     def authenticate_client_id(self, client_id, request, *args, **kwargs):
         """
         If we are here, the client did not authenticate itself as in rfc:`3.2.1` and we can proceed only if the client
         exists and it's not of type 'Confidential'. Also assign Application instance to request.client.
         """
-        client_secret = request.client_secret
 
         try:
-            request.client = request.client or Application.objects.get(client_id=client_id, client_secret=client_secret)
+            request.client = Application.objects.get(client_id=client_id)
             return request.client.client_type != Application.CLIENT_CONFIDENTIAL
 
         except Application.DoesNotExist:

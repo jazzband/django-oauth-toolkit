@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+import base64
 import json
 
 from django.test import TestCase, RequestFactory
@@ -437,6 +438,51 @@ class TestAuthorizationCodeTokenView(BaseTest):
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 400)
 
+    def test_basic_auth_wrong_auth_type(self):
+        """
+        Request an access token using basic authentication for client authentication
+        """
+        self.client.login(username="test_user", password="123456")
+        authorization_code = self.get_auth()
+
+        token_request_data = {
+            'grant_type': 'authorization_code',
+            'code': authorization_code,
+            'redirect_uri': 'http://example.it'
+        }
+
+        user_pass = '{0}:{1}'.format(self.application.client_id, self.application.client_secret)
+        auth_string = base64.b64encode(user_pass.encode('utf-8'))
+        auth_headers = {
+            'HTTP_AUTHORIZATION': 'Wrong ' + auth_string.decode("utf-8"),
+        }
+
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 400)
+
+    def test_request_body_params(self):
+        """
+        Request an access token using client_type: public
+        """
+        self.client.login(username="test_user", password="123456")
+        authorization_code = self.get_auth()
+
+        token_request_data = {
+            'grant_type': 'authorization_code',
+            'code': authorization_code,
+            'redirect_uri': 'http://example.it',
+            'client_id': self.application.client_id,
+            'client_secret':  self.application.client_secret,
+        }
+
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data)
+        self.assertEqual(response.status_code, 200)
+
+        content = json.loads(response.content.decode("utf-8"))
+        self.assertEqual(content['token_type'], "Bearer")
+        self.assertEqual(content['scope'], "read write")
+        self.assertEqual(content['expires_in'], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
+
     def test_public(self):
         """
         Request an access token using client_type: public
@@ -451,8 +497,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             'grant_type': 'authorization_code',
             'code': authorization_code,
             'redirect_uri': 'http://example.it',
-            'client_id': self.application.client_id,
-            'client_secret':  self.application.client_secret,
+            'client_id': self.application.client_id
         }
 
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data)
