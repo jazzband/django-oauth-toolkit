@@ -3,11 +3,7 @@ from oauthlib.common import urlencode, urlencoded, quote
 
 from .exceptions import OAuthToolkitError, FatalClientError
 from .oauth2_validators import OAuth2Validator
-
-try:
-    from urlparse import urlparse, urlunparse
-except ImportError:
-    from urllib.parse import urlparse, urlunparse
+from .compat import urlparse, urlunparse
 
 
 class OAuthLibCore(object):
