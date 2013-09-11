@@ -1,6 +1,9 @@
-from oauthlib.common import CLIENT_ID_CHARACTER_SET, generate_client_id as oauthlib_generate_client_id
+from oauthlib.common import generate_client_id as oauthlib_generate_client_id
 
 from .settings import oauth2_settings
+
+
+CLIENT_ID_CHARACTER_SET = r'_-.:;=?!@0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
 
 
 class BaseHashGenerator(object):
@@ -23,7 +26,7 @@ class ClientIdGenerator(BaseHashGenerator):
 
 class ClientSecretGenerator(BaseHashGenerator):
     def hash(self):
-        return oauthlib_generate_client_id(length=128)
+        return oauthlib_generate_client_id(length=128, chars=CLIENT_ID_CHARACTER_SET)
 
 
 def generate_client_id():
