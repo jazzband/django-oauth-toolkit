@@ -22,7 +22,7 @@ Requirements
 ------------
 
 * Python 2.7, 3.3
-* Django 1.4, 1.5, 1.6a1
+* Django 1.4, 1.5, 1.6b3
 
 Index
 ========
