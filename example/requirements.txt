@@ -1,6 +1,6 @@
 Django>1.4,<1.6
 South==0.8.1
-django-oauth-toolkit==0.4.0
+django-oauth-toolkit==0.4.1
 six==1.3.0
 django-braces==1.0.0
 gunicorn==0.17.4
