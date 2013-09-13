@@ -14,6 +14,8 @@ ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
 
+DATABASES = {}
+
 MANAGERS = ADMINS
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
