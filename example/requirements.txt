@@ -6,3 +6,4 @@ django-braces==1.0.0
 gunicorn==0.17.4
 dj-database-url==0.2.1
 requests==1.2.3
+psycopg2==2.5.1
