@@ -1,2 +1,2 @@
 -r base.txt
-djangorestframework==2.3.6
+djangorestframework>=2.3
