@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import base64
 import logging
 from datetime import timedelta
@@ -93,9 +95,11 @@ class OAuth2Validator(RequestValidator):
 
         try:
             request.client = Application.objects.get(client_id=client_id)
+            log.debug("Application %s has type %s" % (client_id, request.client.client_type))
             return request.client.client_type != Application.CLIENT_CONFIDENTIAL
 
         except Application.DoesNotExist:
+            log.debug("Application %s do not exists" % client_id)
             return False
 
     def confirm_redirect_uri(self, client_id, code, redirect_uri, client, *args, **kwargs):
