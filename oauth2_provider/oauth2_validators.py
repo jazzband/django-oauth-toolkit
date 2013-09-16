@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 import base64
+import urlib
 import logging
 from datetime import timedelta
 
@@ -44,7 +45,7 @@ class OAuth2Validator(RequestValidator):
         client_id, client_secret = auth_string_decoded.split(':', 1)
 
         try:
-            request.client = Application.objects.get(client_id=client_id, client_secret=client_secret)
+            request.client = Application.objects.get(client_id=urllib.unquote_plus(client_id), client_secret=urllib.unquote_plus(client_secret))
             return True
 
         except Application.DoesNotExist:
