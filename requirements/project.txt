@@ -1,2 +1,2 @@
--r base.txt
+-r optional.txt
 Django>=1.4
