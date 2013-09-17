@@ -1,6 +1,11 @@
 from __future__ import unicode_literals
 
 import json
+import base64
+try:
+	import urllib.parse as urllib
+except ImportError:
+	import urllib
 
 from django.core.urlresolvers import reverse
 from django.test import TestCase, RequestFactory
@@ -58,7 +63,6 @@ class TestClientCredential(BaseTest):
             'grant_type': 'client_credentials',
         }
         auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
-
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
 
@@ -116,3 +120,44 @@ class TestExtendedRequest(BaseTest):
         self.assertEqual(r.user, self.dev_user)
         self.assertEqual(r.client, self.application)
         self.assertEqual(r.scopes, ['read', 'write'])
+
+
+class TestClientResourcePasswordBased(BaseTest):
+    def test_client_resource_password_based(self):
+        """
+        Request an access token using Resource Owner Password Based flow
+        """
+
+        self.application.delete()
+        self.application = Application(
+            name="test_client_credentials_app",
+            user=self.dev_user,
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_PASSWORD,
+        )
+        self.application.save()
+
+        token_request_data = {
+            'grant_type': 'password',
+            'username': 'test_user',
+            'password': '123456'
+        }
+        auth_headers = self.get_basic_auth_header(urllib.quote_plus(self.application.client_id), urllib.quote_plus(self.application.client_secret))
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 200)
+
+        content = json.loads(response.content.decode("utf-8"))
+        access_token = content['access_token']
+
+        # use token to access the resource
+        auth_headers = {
+            'HTTP_AUTHORIZATION': 'Bearer ' + access_token,
+        }
+        request = self.factory.get("/fake-resource", **auth_headers)
+        request.user = self.test_user
+
+        view = ResourceView.as_view()
+        response = view(request)
+        self.assertEqual(response, "This is a protected resource")
+
+
