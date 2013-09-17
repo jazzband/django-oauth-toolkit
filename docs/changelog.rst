@@ -1,6 +1,23 @@
 Changelog
 =========
 
+0.5.0 [2013-09-17]
+------------------
+
+ * oauthlib 0.6.0 support
+
+**Backwards incompatible changes in 0.5.0**
+
+ * backends.py module has been renamed to oauth2_backends.py so you should change your imports whether you're extending
+ this module
+
+**Bugfixes**
+
+ * Issue #54: Auth backend proposal to address #50
+ * Issue #61: Fix contributing page
+ * Issue #55: Add support for authenticating confidential client with request body params
+ * Issue #53: Quote characters in the url query that are safe for Django but not for oauthlib
+
 0.4.1 [2013-09-06]
 ------------------
 
