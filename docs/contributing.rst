@@ -62,7 +62,7 @@ Then merge the changes that you fetched::
 For more info, see http://help.github.com/fork-a-repo/
 
 .. note:: Please be sure to rebase your commits on the master when possible, so your commits can be fast-forwarded: we
-try to avoid *merge commits* when they are not necessary.
+    try to avoid *merge commits* when they are not necessary.
 
 How to get your pull request accepted
 =====================================
