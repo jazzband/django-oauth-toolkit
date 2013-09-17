@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from oauthlib import oauth2
 from oauthlib.common import urlencode, urlencoded, quote
 
@@ -81,8 +83,9 @@ class OAuthLibCore(object):
             # add current user to credentials. this will be used by OAuth2Validator
             credentials['user'] = request.user
 
-            uri, headers, body, status = self.server.create_authorization_response(
+            headers, body, status = self.server.create_authorization_response(
                 uri=credentials['redirect_uri'], scopes=scopes, credentials=credentials)
+            uri = headers.get("Location", None)
 
             return uri, headers, body, status
 
@@ -99,9 +102,11 @@ class OAuthLibCore(object):
         """
         uri, http_method, body, headers = self._extract_params(request)
 
-        url, headers, body, status = self.server.create_token_response(uri, http_method, body,
-                                                                       headers)
-        return url, headers, body, status
+        headers, body, status = self.server.create_token_response(uri, http_method, body,
+                                                                  headers)
+        uri = headers.get("Location", None)
+
+        return uri, headers, body, status
 
     def verify_request(self, request, scopes):
         """
