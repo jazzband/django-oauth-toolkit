@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.contrib.auth import authenticate
 from oauthlib.oauth2 import RequestValidator
 
+from .compat import unquote_plus
 from .models import Grant, AccessToken, RefreshToken, get_application_model
 from .settings import oauth2_settings
 
@@ -44,7 +45,7 @@ class OAuth2Validator(RequestValidator):
         client_id, client_secret = auth_string_decoded.split(':', 1)
 
         try:
-            request.client = Application.objects.get(client_id=client_id, client_secret=client_secret)
+            request.client = Application.objects.get(client_id=unquote_plus(client_id), client_secret=unquote_plus(client_secret))
             return True
 
         except Application.DoesNotExist:
