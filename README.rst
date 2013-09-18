@@ -74,7 +74,7 @@ Notice that `oauth2_provider` namespace is mandatory.
 Documentation
 --------------
 
-The `full documentation <https://django-oauth-toolkit.readthedocs.org/en/latest/>`_ is on *Read the Docs*.
+The `full documentation <https://django-oauth-toolkit.readthedocs.org/>`_ is on *Read the Docs*.
 
 License
 -------

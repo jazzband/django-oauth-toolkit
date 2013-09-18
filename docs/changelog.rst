@@ -1,6 +1,12 @@
 Changelog
 =========
 
+_development_
+-----------
+
+ * Issue #64: Fix urlencode clientid secret
+
+
 0.5.0 [2013-09-17]
 ------------------
 
@@ -8,8 +14,7 @@ Changelog
 
 **Backwards incompatible changes in 0.5.0**
 
- * backends.py module has been renamed to oauth2_backends.py so you should change your imports whether you're extending
- this module
+ * backends.py module has been renamed to oauth2_backends.py so you should change your imports whether you're extending this module
 
 **Bugfixes**
 
