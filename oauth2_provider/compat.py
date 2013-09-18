@@ -15,9 +15,9 @@ except ImportError:
     from urllib.parse import urlparse, parse_qs, urlunparse
 
 try:
-    from urllib import urlencode
+    from urllib import urlencode, unquote_plus
 except ImportError:
-    from urllib.parse import urlencode
+    from urllib.parse import urlencode, unquote_plus
 
 # Django 1.5 add support for custom auth user model
 if django.VERSION >= (1, 5):

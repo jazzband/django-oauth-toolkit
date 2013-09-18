@@ -1,10 +1,6 @@
 from __future__ import unicode_literals
 
 import base64
-try:
-	from urllib.parse import unquote_plus
-except ImportError:
-	from urllib import unquote_plus
 import logging
 from datetime import timedelta
 
@@ -12,6 +8,7 @@ from django.utils import timezone
 from django.contrib.auth import authenticate
 from oauthlib.oauth2 import RequestValidator
 
+from .compat import unquote_plus
 from .models import Grant, AccessToken, RefreshToken, get_application_model
 from .settings import oauth2_settings
 
