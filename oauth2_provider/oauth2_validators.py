@@ -205,6 +205,13 @@ class OAuth2Validator(RequestValidator):
         """
         Save access and refresh token, If refresh token is issued, remove old refresh tokens as in rfc:`6`
         """
+        if request.refresh_token:
+            # remove used refresh token
+            try:
+                RefreshToken.objects.get(token=request.refresh_token).delete()
+            except RefreshToken.DoesNotExist:
+                assert()  # TODO though being here would be very strange, at least log the error
+
         expires = timezone.now() + timedelta(seconds=oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
         if request.grant_type == 'client_credentials':
             request.user = request.client.user
@@ -218,9 +225,6 @@ class OAuth2Validator(RequestValidator):
         access_token.save()
 
         if 'refresh_token' in token:
-            # discard old refresh tokens
-            RefreshToken.objects.filter(user=request.user).filter(application=request.client).delete()
-
             refresh_token = RefreshToken(
                 user=request.user,
                 token=token['refresh_token'],
@@ -255,6 +259,7 @@ class OAuth2Validator(RequestValidator):
         try:
             rt = RefreshToken.objects.get(token=refresh_token)
             request.user = rt.user
+            request.refresh_token = rt
             return rt.application == client
 
         except RefreshToken.DoesNotExist:

@@ -277,6 +277,15 @@ class TestAuthorizationCodeTokenView(BaseTest):
         content = json.loads(response.content.decode("utf-8"))
         self.assertTrue('refresh_token' in content)
 
+        # make a second token request to be sure the previous refresh token remains valid, see #65
+        authorization_code = self.get_auth()
+        token_request_data = {
+            'grant_type': 'authorization_code',
+            'code': authorization_code,
+            'redirect_uri': 'http://example.it'
+        }
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+
         token_request_data = {
             'grant_type': 'refresh_token',
             'refresh_token': content['refresh_token'],
@@ -287,6 +296,12 @@ class TestAuthorizationCodeTokenView(BaseTest):
 
         content = json.loads(response.content.decode("utf-8"))
         self.assertTrue('access_token' in content)
+
+        # check refresh token cannot be used twice
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 400)
+        content = json.loads(response.content.decode("utf-8"))
+        self.assertTrue('invalid_grant' in content.values())
 
     def test_refresh_no_scopes(self):
         """
