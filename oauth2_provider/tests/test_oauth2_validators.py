@@ -1,10 +1,11 @@
 from django.test import TestCase
-from django.contrib.auth import get_user_model
 
 import mock
+from oauthlib.common import Request
 
 from ..oauth2_validators import OAuth2Validator
 from ..models import get_application_model
+from ..compat import get_user_model
 
 UserModel = get_user_model()
 AppModel = get_application_model()
@@ -13,7 +14,8 @@ AppModel = get_application_model()
 class TestOAuth2Validator(TestCase):
     def setUp(self):
         self.user = UserModel.objects.create_user("user", "test@user.com", "123456")
-        self.request = mock.MagicMock()
+        self.request = mock.MagicMock(wraps=Request)
+        self.request.client = None
         self.validator = OAuth2Validator()
         self.application = AppModel.objects.create(
             client_id='client_id', client_secret='client_secret', user=self.user,
@@ -43,6 +45,8 @@ class TestOAuth2Validator(TestCase):
 
     def test_authenticate_client_id(self):
         self.assertTrue(self.validator.authenticate_client_id('client_id', self.request))
+
+    def test_authenticate_client_id_fail(self):
         self.application.client_type = AppModel.CLIENT_CONFIDENTIAL
         self.application.save()
         self.assertFalse(self.validator.authenticate_client_id('client_id', self.request))

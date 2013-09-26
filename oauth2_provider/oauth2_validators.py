@@ -54,16 +54,16 @@ class OAuth2Validator(RequestValidator):
         encoding = request.encoding or 'utf-8'
 
         auth_string_decoded = base64.b64decode(auth_string).decode(encoding)
-        client_id, client_secret = auth_string_decoded.split(':', 1)
+        client_id, client_secret = map(unquote_plus, auth_string_decoded.split(':', 1))
 
-        try:
-            request.client = Application.objects.get(client_id=unquote_plus(client_id),
-                                                     client_secret=unquote_plus(client_secret))
-            return True
-
-        except Application.DoesNotExist:
-            log.debug("Failed basic auth: Application %s do not exists" % unquote_plus(client_id))
+        if self._load_application(client_id, request) is None:
+            log.debug("Failed basic auth: Application %s do not exists" % client_id)
             return False
+        elif request.client.client_secret != client_secret:
+            log.debug("Failed basic auth: wrong client secret %s" % client_secret)
+            return False
+        else:
+            return True
 
     def _authenticate_request_body(self, request):
         """
@@ -73,20 +73,21 @@ class OAuth2Validator(RequestValidator):
         Remember that this method is NOT RECOMMENDED and SHOULD be limited to clients unable to
         directly utilize the HTTP Basic authentication scheme. See rfc:`2.3.1` for more details.
         """
+        #TODO: check if oauthlib has already unquoted client_id and client_secret
         client_id = request.client_id
         client_secret = request.client_secret
 
         if not client_id or not client_secret:
             return False
 
-        try:
-            request.client = Application.objects.get(client_id=client_id,
-                                                     client_secret=client_secret)
-            return True
-
-        except Application.DoesNotExist:
-            log.debug("Failed body authentication: Application %s do not exists" % client_id)
+        if self._load_application(client_id, request) is None:
+            log.debug("Failed body auth: Application %s does not exists" % client_id)
             return False
+        elif request.client.client_secret != client_secret:
+            log.debug("Failed body auth: wrong client secret %s" % client_secret)
+            return False
+        else:
+            return True
 
     def _load_application(self, client_id, request):
         """
@@ -95,8 +96,10 @@ class OAuth2Validator(RequestValidator):
         """
         try:
             request.client = request.client or Application.objects.get(client_id=client_id)
+            return request.client
         except Application.DoesNotExist:
-            log.debug("Application %s do not exists" % client_id)
+            log.debug("Failed body authentication: Application %s do not exists" % client_id)
+            return None
 
     def client_authentication_required(self, request, *args, **kwargs):
         """
@@ -151,15 +154,10 @@ class OAuth2Validator(RequestValidator):
         proceed only if the client exists and it's not of type 'Confidential'.
         Also assign Application instance to request.client.
         """
-
-        try:
-            request.client = Application.objects.get(client_id=client_id)
+        if self._load_application(client_id, request) is not None:
             log.debug("Application %s has type %s" % (client_id, request.client.client_type))
             return request.client.client_type != Application.CLIENT_CONFIDENTIAL
-
-        except Application.DoesNotExist:
-            log.debug("Application %s do not exists" % client_id)
-            return False
+        return False
 
     def confirm_redirect_uri(self, client_id, code, redirect_uri, client, *args, **kwargs):
         """
@@ -180,8 +178,7 @@ class OAuth2Validator(RequestValidator):
         Ensure an Application exists with given client_id. If it exists, it's assigned to
         request.client.
         """
-        self._load_application(client_id, request)
-        return request.client is not None
+        return self._load_application(client_id, request) is not None
 
     def get_default_redirect_uri(self, client_id, request, *args, **kwargs):
         return request.client.default_redirect_uri
