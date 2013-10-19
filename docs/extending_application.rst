@@ -28,7 +28,7 @@ your Django app (provided that your app is in the list of the INSTALLED_APPS in 
 module)::
 
     from django.db import models
-    from oauth2_provider import AbstractApplication
+    from oauth2_provider.models import AbstractApplication
 
     class MyApplication(AbstractApplication):
         logo = models.ImageField()
