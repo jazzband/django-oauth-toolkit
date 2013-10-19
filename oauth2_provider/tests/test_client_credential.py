@@ -1,11 +1,11 @@
 from __future__ import unicode_literals
 
 import json
-import base64
+
 try:
-	import urllib.parse as urllib
+    import urllib.parse as urllib
 except ImportError:
-	import urllib
+    import urllib
 
 from django.core.urlresolvers import reverse
 from django.test import TestCase, RequestFactory

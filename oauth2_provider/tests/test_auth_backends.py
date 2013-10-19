@@ -67,6 +67,7 @@ class TestOAuth2Backend(BaseTest):
     def test_get_user(self):
         backend = OAuth2Backend()
         self.assertEqual(self.user, backend.get_user(self.user.pk))
+        self.assertIsNone(backend.get_user(123456))
 
 
 @override_settings(
