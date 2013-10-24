@@ -3,8 +3,8 @@ from __future__ import unicode_literals
 from oauthlib import oauth2
 from oauthlib.common import urlencode, urlencoded, quote
 
+from .settings import oauth2_settings
 from .exceptions import OAuthToolkitError, FatalClientError
-from .oauth2_validators import OAuth2Validator
 from .compat import urlparse, urlunparse
 
 
@@ -16,7 +16,7 @@ class OAuthLibCore(object):
         """
         :params server: An instance of oauthlib.oauth2.Server class
         """
-        self.server = server or oauth2.Server(OAuth2Validator())
+        self.server = server or oauth2.Server(oauth2_settings.OAUTH2_VALIDATOR_CLASS())
 
     def _get_escaped_full_path(self, request):
         """
@@ -126,8 +126,7 @@ def get_oauthlib_core():
     Utility function that take a request and returns an instance of
     `oauth2_provider.backends.OAuthLibCore`
     """
-    from oauth2_provider.oauth2_validators import OAuth2Validator
     from oauthlib.oauth2 import Server
 
-    server = Server(OAuth2Validator())
+    server = Server(oauth2_settings.OAUTH2_VALIDATOR_CLASS())
     return OAuthLibCore(server)
