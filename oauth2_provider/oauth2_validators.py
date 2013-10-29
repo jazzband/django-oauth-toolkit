@@ -57,7 +57,7 @@ class OAuth2Validator(RequestValidator):
         client_id, client_secret = map(unquote_plus, auth_string_decoded.split(':', 1))
 
         if self._load_application(client_id, request) is None:
-            log.debug("Failed basic auth: Application %s do not exists" % client_id)
+            log.debug("Failed basic auth: Application %s does not exist" % client_id)
             return False
         elif request.client.client_secret != client_secret:
             log.debug("Failed basic auth: wrong client secret %s" % client_secret)
@@ -98,7 +98,7 @@ class OAuth2Validator(RequestValidator):
             request.client = request.client or Application.objects.get(client_id=client_id)
             return request.client
         except Application.DoesNotExist:
-            log.debug("Failed body authentication: Application %s do not exists" % client_id)
+            log.debug("Failed body authentication: Application %s does not exist" % client_id)
             return None
 
     def client_authentication_required(self, request, *args, **kwargs):
