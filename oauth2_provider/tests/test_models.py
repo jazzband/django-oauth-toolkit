@@ -39,17 +39,6 @@ class TestModels(TestCase):
         self.assertTrue(access_token.allow_scopes([]))
         self.assertFalse(access_token.allow_scopes(['write', 'destroy']))
 
-    def test_grant_allinone_redirect_uris(self):
-        app = Application(
-            name="test_app",
-            redirect_uris="",
-            user=self.user,
-            client_type=Application.CLIENT_CONFIDENTIAL,
-            authorization_grant_type=Application.GRANT_ALLINONE,
-        )
-
-        self.assertRaises(ValidationError, app.full_clean)
-
     def test_grant_authorization_code_redirect_uris(self):
         app = Application(
             name="test_app",
