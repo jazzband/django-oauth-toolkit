@@ -79,16 +79,16 @@
         <li>authorization_grant_type (required, values: [authorization-code,implicit,passwordl,client-credentials,all-in-one]) - Authorization flow</li>
     </ul>
 
-    <h3>GET /applications/:pk</h3>
+    <h3>GET /applications/:lookup</h3>
     <p>Retrieve Application detail</p>
     <p><strong>Authentication:</strong> OAuth2</p>
 
-    <h3>PUT /applications/:pk</h3>
+    <h3>PUT /applications/:lookup</h3>
     <p>Update Application details</p>
     <p><strong>Authentication:</strong> OAuth2</p>
     <p>Parameters: same as application creation</p>
 
-    <h3>DELETE /applications/:pk</h3>
+    <h3>DELETE /applications/:lookup</h3>
     <p>Delete application</p>
     <p><strong>Authentication:</strong> OAuth2</p>
 
@@ -111,7 +111,7 @@
 
             var getUrl = function() {
                 var url = $('#idEndpoint').val();
-                url = url.replace('pk', $('#idLookup').val());
+                url = url.replace('lookup', $('#idLookup').val());
                 return url;
             };
 

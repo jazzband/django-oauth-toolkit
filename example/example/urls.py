@@ -65,5 +65,5 @@ urlpatterns = patterns(
     # api v1
     url(r'^api/v1/system_info$', get_system_info, name="System Info"),
     url(r'^api/v1/applications$', applications_list, name="Application List"),
-    url(r'^api/v1/applications/(?P<pk>\w+)/$', applications_detail, name="Application Detail"),
+    url(r'^api/v1/applications/(?P<lookup>\w+)/$', applications_detail, name="Application Detail"),
 )

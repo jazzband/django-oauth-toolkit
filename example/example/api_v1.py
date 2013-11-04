@@ -68,12 +68,13 @@ def applications_list(request, *args, **kwargs):
 @csrf_exempt
 @protected_resource()
 @require_http_methods(["GET", "PUT", "DELETE"])
-def applications_detail(request, pk, *args, **kwargs):
+def applications_detail(request, lookup, *args, **kwargs):
     """
     Show resource with GET, update it with PUT, destroy with DELETE
     """
     try:
-        resource = MyApplication.objects.filter(user=request.resource_owner).filter(pk=pk).get()
+        resource = MyApplication.objects.filter(user=request.resource_owner)\
+            .filter(client_id=lookup).get()
         # hide default Application in the playground
         if resource.pk == 1:
             raise MyApplication.DoesNotExist
