@@ -1,15 +1,18 @@
+Glossary
+========
+
 .. Put definition of specific terms here, and reference them inside docs with :term:`My term` syntax
 
 .. glossary::
 
     Authorization Server
         The authorization server asks resource owners for their consensus to let client applications access their data.
-        It also manages and issues the tokens needed for all the authorization flows supported by OAuth2 protocol.
+        It also manages and issues the tokens needed for all the authorization flows supported by OAuth2 spec.
         Usually the same application offering resources through an OAuth2-protected API also behaves like an
         authorization server.
 
     Resource Server
-        An application providing access to its own resources through an API protected with the OAuth2 protocol.
+        An application providing access to its own resources through an API protected following the OAuth2 spec.
 
     Application
         TODO
@@ -19,11 +22,11 @@
         of the resource owner.
 
     Resource Owner
-        The user of an application which exposes resources to third party applications through the OAuth2 protocol. The
+        The user of an application which exposes resources to third party applications through OAuth2. The
         resource owner must give her authorization for third party applications to be able to access her data.
 
     Access Token
-        A token needed to access resources protected by OAuth2 protocol. It has a lifetime which is usually quite short.
+        A token needed to access resources protected by OAuth2. It has a lifetime which is usually quite short.
 
     Authorization Code
         The authorization code is obtained by using an authorization server as an intermediary between the client and
