@@ -36,6 +36,7 @@ Index
    views/views
    extending_application
    settings
+   glossary
 
 .. toctree::
    :maxdepth: 1
