@@ -152,7 +152,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         kwargs['application'] = Application.objects.get(client_id=credentials['client_id'])
         kwargs['require_login'] = self.builtin_login and not self.request.user.is_authenticated()
         kwargs.update(credentials)
-        if kwargs['login'] and VERSION[1]<6:
+        if kwargs['require_login'] and VERSION[1]<6:
             self.request.session.set_test_cookie()
         return kwargs
 
