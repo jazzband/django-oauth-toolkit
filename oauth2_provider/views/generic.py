@@ -2,7 +2,7 @@ from django.views.generic import View
 
 from oauthlib.oauth2 import Server
 
-from ..oauth2_validators import OAuth2Validator
+from ..settings import oauth2_settings
 from .mixins import ProtectedResourceMixin, ScopedResourceMixin, ReadWriteScopedResourceMixin
 
 
@@ -11,7 +11,7 @@ class ProtectedResourceView(ProtectedResourceMixin, View):
     Generic view protecting resources by providing OAuth2 authentication out of the box
     """
     server_class = Server
-    validator_class = OAuth2Validator
+    validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
 
 
 class ScopedProtectedResourceView(ScopedResourceMixin, ProtectedResourceView):
