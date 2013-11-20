@@ -11,7 +11,6 @@ from ..settings import oauth2_settings
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
 from ..models import get_application_model
-from ..oauth2_validators import OAuth2Validator
 from .mixins import OAuthLibMixin
 
 Application = get_application_model()
@@ -67,7 +66,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
     form_class = AllowForm
 
     server_class = Server
-    validator_class = OAuth2Validator
+    validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
 
     def get_initial(self):
         # TODO: move this scopes conversion from and to string into a utils function
@@ -129,7 +128,7 @@ class TokenView(CsrfExemptMixin, OAuthLibMixin, View):
      * Client credentials
     """
     server_class = Server
-    validator_class = OAuth2Validator
+    validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
 
     def post(self, request, *args, **kwargs):
         url, headers, body, status = self.create_token_response(request)
