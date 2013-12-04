@@ -17,6 +17,8 @@ which takes care of token verification. In your settings.py:
 
     AUTHENTICATION_BACKENDS = (
         'oauth2_provider.backends.OAuth2Backend',
+        # Uncomment following if you want to access the admin
+        #'django.contrib.auth.backends.ModelBackend'
         '...',
     )
 
@@ -26,8 +28,9 @@ which takes care of token verification. In your settings.py:
         '...',
     )
 
-You can use `django.contrib.auth.backends.ModelBackend` along with the OAuth2 backend, but pay
-attention to the order in which Django processes authentication backends.
+You will likely use the `django.contrib.auth.backends.ModelBackend` along with the OAuth2 backend
+(or you might not be able to log in into the admin), only pay attention to the order in which
+Django processes authentication backends.
 
 If you put the OAuth2 backend *after* the AuthenticationMiddleware and `request.user` is valid,
 the backend will do nothing; if `request.user` is the Anonymous user it will try to authenticate
