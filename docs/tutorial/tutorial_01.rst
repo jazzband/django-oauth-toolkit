@@ -58,7 +58,18 @@ Configure this setting to allow CORS requests from all domains (just for the sco
 
     CORS_ORIGIN_ALLOW_ALL = True
 
-As a final steps, make a syncdb, start the internal server and login into the admin with your credentials.
+.. _loginTemplate:
+
+Include the required hidden input in your login template, `registration/login.html`.
+The ``{{ next }}`` template context variable will be populated with the correct
+redirect value. Django provides more information on `login templates here
+<https://docs.djangoproject.com/en/dev/topics/auth/default/#django.contrib.auth.views.login>`_.
+
+.. code-block:: html
+
+    <input type="hidden" name="next" value="{{ next }}" />
+
+As a final step, make a syncdb, start the internal server and login into the admin with your credentials.
 
 Create an OAuth2 Client Application
 -----------------------------------
@@ -111,6 +122,11 @@ page is login protected by django-oauth-toolkit. Login, then you should see the 
 her authorization to the client application. Flag the *Allow* checkbox and click *Authorize*, you will be redirected
 again on the consumer service.
 
+__ loginTemplate_
+
+If you are not redirected to the correct page after logging in successfully,
+you probably need to `setup your login template correctly`__.
+
 Exchange the token
 ++++++++++++++++++
 At this point your autorization server redirected the user to a special page on the consumer passing in an
@@ -131,3 +147,4 @@ When finished playing with your authorization server, take note of both the acce
 for the next part of the tutorial.
 
 So let's make an API and protect it with your OAuth2 tokens in the :doc:`part 2 of the tutorial <tutorial_02>`.
+

@@ -4,6 +4,7 @@ Changelog
 _development_
 -----------
 
+ * Issue #84: Add information about login template to tutorial.
  * Issue #64: Fix urlencode clientid secret
 
 
