@@ -104,7 +104,8 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         try:
             scopes, credentials = self.validate_authorization_request(request)
 
-            if request.GET['redirect_uri'] in ['http://test.local:8001/callback']:
+            # If the callback URI does not require authorization; immediately return a response
+            if request.GET['redirect_uri'] in oauth2_settings.uris_without_auth:
                 uri, headers, body, status = self.create_authorization_response(
                         request=self.request, scopes=" ".join(scopes),
                         credentials=credentials, allow=True)

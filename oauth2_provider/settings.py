@@ -95,6 +95,7 @@ class OAuth2ProviderSettings(object):
         self.defaults = defaults or {}
         self.import_strings = import_strings or ()
         self.mandatory = mandatory or ()
+        self.uris_without_auth = ['http://test.local:8001/callback']
 
     def __getattr__(self, attr):
         if attr not in self.defaults.keys():
