@@ -56,7 +56,7 @@ IMPORT_STRINGS = (
 )
 
 # List of callback urls that don't need to be authenticated
-URLS_WITHOUT_AUTH = (
+URIS_WITHOUT_AUTH = (
 )
 
 
@@ -94,12 +94,12 @@ class OAuth2ProviderSettings(object):
     and return the class, rather than the string literal.
     """
 
-    def __init__(self, user_settings=None, defaults=None, import_strings=None, mandatory=None, urls_without_auth=None):
+    def __init__(self, user_settings=None, defaults=None, import_strings=None, mandatory=None, uris_without_auth=None):
         self.user_settings = user_settings or {}
         self.defaults = defaults or {}
         self.import_strings = import_strings or ()
         self.mandatory = mandatory or ()
-        self.uris_without_auth = urls_without_auth or ()
+        self.uris_without_auth = uris_without_auth or ()
 
     def __getattr__(self, attr):
         if attr not in self.defaults.keys():
@@ -131,4 +131,4 @@ class OAuth2ProviderSettings(object):
             raise AttributeError("OAuth2Provider setting: '%s' is mandatory" % attr)
 
 
-oauth2_settings = OAuth2ProviderSettings(USER_SETTINGS, DEFAULTS, IMPORT_STRINGS, MANDATORY, URLS_WITHOUT_AUTH)
+oauth2_settings = OAuth2ProviderSettings(USER_SETTINGS, DEFAULTS, IMPORT_STRINGS, MANDATORY, URIS_WITHOUT_AUTH)
