@@ -1,8 +1,8 @@
 import logging
-import datetime
 
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic import View, FormView
+from django.utils import timezone
 
 from oauthlib.oauth2 import Server
 
@@ -119,7 +119,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             require_approval = request.GET.get('approval_prompt', 'auto')
             if require_approval == 'auto' and request.user.accesstoken_set.filter(
                     application=kwargs['application'],
-                    expires__gt=datetime.datetime.now()).count():
+                    expires__gt=timezone.now()).count():
                 uri, headers, body, status = self.create_authorization_response(
                     request=self.request, scopes=" ".join(scopes),
                     credentials=credentials, allow=True)
