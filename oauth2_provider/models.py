@@ -96,7 +96,7 @@ class AbstractApplication(models.Model):
             and self.authorization_grant_type \
             in (AbstractApplication.GRANT_AUTHORIZATION_CODE,
                 AbstractApplication.GRANT_IMPLICIT):
-            error = _('Redirect_uris could not be empty with {} grant_type')
+            error = _('Redirect_uris could not be empty with {0} grant_type')
             raise ValidationError(error.format(self.authorization_grant_type))
 
     def get_absolute_url(self):
@@ -232,6 +232,6 @@ def get_application_model():
         raise ImproperlyConfigured(e)
     app_model = get_model(app_label, model_name)
     if app_model is None:
-        e = "APPLICATION_MODEL refers to model {} that has not been installed"
+        e = "APPLICATION_MODEL refers to model {0} that has not been installed"
         raise ImproperlyConfigured(e.format(oauth2_settings.APPLICATION_MODEL))
     return app_model
