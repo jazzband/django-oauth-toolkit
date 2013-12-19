@@ -1,4 +1,5 @@
 import logging
+import datetime
 
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic import View, FormView
@@ -112,6 +113,18 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             # following code is here only because of https://code.djangoproject.com/ticket/17795
             form = self.get_form(self.get_form_class())
             kwargs['form'] = form
+
+            # Check to see if the user has already granted access and return
+            # a successful response
+            require_approval = request.get('approval_prompt', 'auto') == 'auto'
+            if not require_approval and request.user.accesstoken_set.filter(
+                        application=kwargs['application'],
+                        expires__gt=datetime.datetime.now()).count():
+                uri, headers, body, status = self.create_authorization_response(
+                        request=self.request, scopes=" ".join(scopes),
+                        credentials=credentials, allow=True)
+                self.success_url = uri
+                return HttpResponseRedirect(self.success_url)
             return self.render_to_response(self.get_context_data(**kwargs))
 
         except OAuthToolkitError as error:
