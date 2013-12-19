@@ -18,6 +18,15 @@ SAFE_HTTP_METHODS = ['GET', 'HEAD', 'OPTIONS']
 class OAuthLibMixin(object):
     """
     This mixin decouples Django OAuth Toolkit from OAuthLib.
+
+    Users can configure the Server, Validator and OAuthlibCore
+    classes used by this mixin by setting the following class
+    variables:
+
+      * server_class
+      * validator_class
+      * oauthlib_core_class  # TODO rename it as oauthlib_backend_class
+
     """
     server_class = None
     validator_class = None
@@ -49,7 +58,10 @@ class OAuthLibMixin(object):
     @classmethod
     def get_oauthlib_core_class(cls):
         """
-        Return the OAuthLibCore implementation class to use
+        Return the OAuthLibCore implementation class to use, silently
+        defaults to OAuthLibCore class from oauth2_provider package
+
+        # TODO rename this as get_oauthlib_backend_class
         """
         if not hasattr(cls, 'oauthlib_core_class'):
             return OAuthLibCore
