@@ -42,6 +42,22 @@ class TestOAuthLibMixin(TestCase):
 
         self.assertIsInstance(test_view.get_server(), Server)
 
+    def test_custom_backend(self):
+        class AnotherOauthLibBackend(object):
+            pass
+
+        class TestView(OAuthLibMixin, View):
+            server_class = Server
+            validator_class = OAuth2Validator
+            oauthlib_core_class = AnotherOauthLibBackend
+
+        request = self.request_factory.get("/fake-req")
+        request.user = "fake"
+        test_view = TestView()
+
+        self.assertEqual(test_view.get_oauthlib_core_class(),
+                         AnotherOauthLibBackend)
+
 
 class TestScopedResourceMixin(TestCase):
     @classmethod
