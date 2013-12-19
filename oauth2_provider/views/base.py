@@ -110,7 +110,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             kwargs['application'] = Application.objects.get(client_id=credentials['client_id'])  # TODO: cache it!
             kwargs.update(credentials)
             self.oauth2_data = kwargs
-            # following code is here only because of https://code.djangoproject.com/ticket/17795
+            # following two loc are here only because of https://code.djangoproject.com/ticket/17795
             form = self.get_form(self.get_form_class())
             kwargs['form'] = form
 
