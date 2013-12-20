@@ -2,13 +2,14 @@ from __future__ import unicode_literals
 
 import base64
 import json
+import datetime
 
 from django.test import TestCase, RequestFactory
 from django.core.urlresolvers import reverse
 from django.utils import timezone
 
 from ..compat import urlparse, parse_qs, urlencode, get_user_model
-from ..models import get_application_model, Grant
+from ..models import get_application_model, Grant, AccessToken
 from ..settings import oauth2_settings
 from ..views import ProtectedResourceView
 
@@ -90,6 +91,32 @@ class TestAuthorizationCodeView(BaseTest):
         self.assertEqual(form['state'].value(), "random_state_string")
         self.assertEqual(form['scopes'].value(), "read write")
         self.assertEqual(form['client_id'].value(), self.application.client_id)
+
+    def test_pre_auth_approval_prompt(self):
+        """
+
+        """
+        tok = AccessToken.objects.create(user=self.test_user, token='1234567890',
+                                         application=self.application,
+                                         expires=timezone.now()+datetime.timedelta(days=1),
+                                         scope='read write')
+        self.client.login(username="test_user", password="123456")
+        query_string = urlencode({
+            'client_id': self.application.client_id,
+            'response_type': 'code',
+            'state': 'random_state_string',
+            'scope': 'read write',
+            'redirect_uri': 'http://example.it',
+            'approval_prompt': 'auto',
+        })
+        url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        # user already authorized the application, but with different scopes: prompt them.
+        tok.scope = 'read'
+        tok.save()
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
 
     def test_pre_auth_default_redirect(self):
         """
