@@ -115,11 +115,12 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             kwargs['form'] = form
 
             # Check to see if the user has already granted access and return
-            # a successful response
+            # a successful response depending on 'approval_prompt' url parameter
             require_approval = request.GET.get('approval_prompt', 'force')
             if require_approval == 'auto':
                 tokens = request.user.accesstoken_set.filter(application=kwargs['application'],
                                                              expires__gt=timezone.now()).all()
+                # check past authorizations regarded the same scopes as the current one
                 for token in tokens:
                     if token.allow_scopes(scopes):
                         uri, headers, body, status = self.create_authorization_response(
