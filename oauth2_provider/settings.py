@@ -34,7 +34,7 @@ DEFAULTS = {
     'WRITE_SCOPE': 'write',
     'AUTHORIZATION_CODE_EXPIRE_SECONDS': 60,
     'ACCESS_TOKEN_EXPIRE_SECONDS': 36000,
-    'APPLICATION_MODEL': 'oauth2_provider.Application',
+    'APPLICATION_MODEL': getattr(settings, 'OAUTH2_PROVIDER_APPLICATION_MODEL', 'oauth2_provider.Application'),
 
     # Special settings that will be evaluated at runtime
     '_SCOPES': [],
