@@ -9,7 +9,7 @@ from braces.views import LoginRequiredMixin, CsrfExemptMixin
 
 from ..settings import oauth2_settings
 from ..exceptions import OAuthToolkitError
-from ..forms import AllowForm
+from ..forms import AllowForm, AllowLoginForm
 from ..models import get_application_model
 from .mixins import OAuthLibMixin
 
@@ -65,6 +65,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
     template_name = 'oauth2_provider/authorize.html'
     form_class = AllowForm
 
+    builtin_login = False
     server_class = Server
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
 
@@ -91,6 +92,12 @@ class AuthorizationView(BaseAuthorizationView, FormView):
 
             scopes = form.cleaned_data.get('scopes')
             allow = form.cleaned_data.get('allow')
+            if self.builtin_login and not self.request.user.is_authenticated():
+                from django.contrib.auth import login
+                # Okay, security check complete. Log the user in.
+                login(self.request, form.get_user())
+                if django.VERSION[1]<6 and self.request.session.test_cookie_worked():
+                    self.request.session.delete_test_cookie()
             uri, headers, body, status = self.create_authorization_response(
                 request=self.request, scopes=scopes, credentials=credentials, allow=allow)
             self.success_url = uri
@@ -100,15 +107,19 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         except OAuthToolkitError as error:
             return self.error_response(error)
 
+    def dispatch(self, request, *args, **kwargs):
+        from braces.views import LoginRequiredMixin
+        self.oauth2_data = {}
+        if not self.builtin_login and not request.user.is_authenticated():
+            return super(AuthorizationView, self).dispatch(request, *args, **kwargs)
+        # skip login
+        return super(LoginRequiredMixin, self).dispatch(request, *args, **kwargs)
+
     def get(self, request, *args, **kwargs):
         try:
             scopes, credentials = self.validate_authorization_request(request)
-            kwargs['scopes_descriptions'] = [oauth2_settings.SCOPES[scope] for scope in scopes]
-            kwargs['scopes'] = scopes
-            # at this point we know an Application instance with such client_id exists in the database
-            kwargs['application'] = Application.objects.get(client_id=credentials['client_id'])  # TODO: cache it!
-            kwargs.update(credentials)
-            self.oauth2_data = kwargs
+            credentials['scopes'] = scopes # add the scopes
+            self.oauth2_data = credentials
             # following code is here only because of https://code.djangoproject.com/ticket/17795
             form = self.get_form(self.get_form_class())
             kwargs['form'] = form
@@ -116,6 +127,36 @@ class AuthorizationView(BaseAuthorizationView, FormView):
 
         except OAuthToolkitError as error:
             return self.error_response(error)
+
+    def get_form_class(self):
+        if self.builtin_login: return AllowLoginForm
+        return AllowForm
+
+    def get_form_kwargs(self):
+        kwargs = super(AuthorizationView, self).get_form_kwargs()
+        if self.builtin_login: kwargs.update({'request': self.request}) # required for login
+        return kwargs
+
+    def get_context_data(self,**kwargs):
+        from oauth2_provider.settings import oauth2_settings
+        from oauth2_provider.models import get_application_model
+        from django import VERSION
+        Application = get_application_model()
+        kwargs = super(AuthorizationView, self).get_context_data(**kwargs)
+        self.request.POST = {} # validate based only on GET parameters
+        scopes, credentials = self.validate_authorization_request(self.request)
+        kwargs['scopes_descriptions'] = [oauth2_settings.SCOPES[scope] for scope in scopes]
+        kwargs['scopes'] = scopes
+        # at this point we know an Application instance with such client_id exists in the database
+        kwargs['application'] = Application.objects.get(client_id=credentials['client_id'])
+        kwargs['require_login'] = self.builtin_login and not self.request.user.is_authenticated()
+        kwargs.update(credentials)
+        if kwargs['require_login'] and VERSION[1]<6:
+            self.request.session.set_test_cookie()
+        return kwargs
+
+class AuthorizationLoginView(AuthorizationView):
+    builtin_login = True
 
 
 class TokenView(CsrfExemptMixin, OAuthLibMixin, View):

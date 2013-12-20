@@ -11,6 +11,10 @@ class AllowForm(forms.Form):
     state = forms.CharField(required=False, widget=forms.HiddenInput())
     response_type = forms.CharField(widget=forms.HiddenInput())
 
+from django.contrib.auth.forms import AuthenticationForm
+
+class AllowLoginForm(AuthenticationForm,AllowForm): pass
+
 
 class RegistrationForm(forms.ModelForm):
     """
