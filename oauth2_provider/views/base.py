@@ -117,14 +117,16 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             # Check to see if the user has already granted access and return
             # a successful response
             require_approval = request.GET.get('approval_prompt', 'force')
-            if require_approval == 'auto' and request.user.accesstoken_set.filter(
-                    application=kwargs['application'],
-                    expires__gt=timezone.now()).count():
-                uri, headers, body, status = self.create_authorization_response(
-                    request=self.request, scopes=" ".join(scopes),
-                    credentials=credentials, allow=True)
-                self.success_url = uri
-                return HttpResponseRedirect(self.success_url)
+            if require_approval == 'auto':
+                tokens = request.user.accesstoken_set.filter(application=kwargs['application'],
+                                                             expires__gt=timezone.now()).all()
+                for token in tokens:
+                    if token.allow_scopes(scopes):
+                        uri, headers, body, status = self.create_authorization_response(
+                            request=self.request, scopes=" ".join(scopes),
+                            credentials=credentials, allow=True)
+                        return HttpResponseRedirect(uri)
+
             return self.render_to_response(self.get_context_data(**kwargs))
 
         except OAuthToolkitError as error:
