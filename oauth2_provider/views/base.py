@@ -138,7 +138,7 @@ class TokenView(CsrfExemptMixin, OAuthLibMixin, View):
     """
     Implements an endpoint to provide access tokens
 
-    The endpoint is used in the followin flows:
+    The endpoint is used in the following flows:
      * Authorization code
      * Password
      * Client credentials
