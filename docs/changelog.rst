@@ -1,9 +1,19 @@
 Changelog
 =========
 
-_development_
------------
+0.6.0 [2014-01-26]
+------------------
 
+ * oauthlib 0.6.1 support
+ * Django dev branch support
+ * Python 2.6 support
+ * Skip authorization form via `approval_prompt` parameter
+
+**Bugfixes**
+
+ * Several fixes to the docs
+ * Issue #71: Fix migrations
+ * Issue #65: Use OAuth2 password grant with multiple devices
  * Issue #84: Add information about login template to tutorial.
  * Issue #64: Fix urlencode clientid secret
 
