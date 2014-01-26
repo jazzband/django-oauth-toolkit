@@ -103,7 +103,7 @@ class AbstractApplication(models.Model):
         return reverse('oauth2_provider:detail', args=[str(self.id)])
 
     def __str__(self):
-        return self.name
+        return self.name or self.client_id
 
 
 class Application(AbstractApplication):
