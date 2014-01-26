@@ -106,9 +106,12 @@ Now run `python manage.py syncdb`, login to admin and create some users and grou
 Step 3: Register an application
 -------------------------------
 
-To obtain a valid access_token first we must register an application.
+To obtain a valid access_token first we must register an application. DOT has a set of customizable
+views you can use to CRUD application instances, just point your browser at:
 
-From the admin go to *oauth2_provider* > *applications* > *Add Application*. Fill the form with the following data:
+    `http://localhost:8000/o/applications/`
+
+Click the button `New Application` and fill the form with the following data:
 
 * User: *your current user*
 * Client Type: *confidential*

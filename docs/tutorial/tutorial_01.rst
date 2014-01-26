@@ -69,7 +69,7 @@ redirect value. Django provides more information on `login templates here
 
     <input type="hidden" name="next" value="{{ next }}" />
 
-As a final step, make a syncdb, start the internal server and login into the admin with your credentials.
+As a final step, make a syncdb, start the internal server and login with your credentials.
 
 Create an OAuth2 Client Application
 -----------------------------------
@@ -78,7 +78,7 @@ identified. This operation is usually done manually by a developer, who asks for
 :term:`Authorization Server` and gets access to some sort of backoffice where she can register her application, which
 will act as a :term:`Client` (or :term:`Application` in the Django OAuth Toolkit lingo).
 Let's perform exactly this operation.
-In the admin, section `Oauth2_Provider`, add an Application instance.
+Point your browser to `http://localhost:8000/o/applications/` and add an Application instance.
 `Client id` and `Client Secret` are automatically generated, you have to provide the rest of the informations:
 
  * `User`: the owner of the Application (tipically a developer), could be the current logged in user.
@@ -116,8 +116,8 @@ to the authorization page.
 
 Authorize the application
 +++++++++++++++++++++++++
-When the user clicks the link, she is redirected to your (possibly local) :term:`Authorization Server`. If you're not logged in
-in your Django admin, at this point you should be prompted for username and password. This is because the authorization
+When the user clicks the link, she is redirected to your (possibly local) :term:`Authorization Server`.
+If you're not logged in, at this point you should be prompted for username and password. This is because the authorization
 page is login protected by django-oauth-toolkit. Login, then you should see the not so cute form user can use to give
 her authorization to the client application. Flag the *Allow* checkbox and click *Authorize*, you will be redirected
 again on the consumer service.
