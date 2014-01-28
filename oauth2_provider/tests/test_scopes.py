@@ -75,7 +75,7 @@ class TestScopesSave(BaseTest):
         authcode_data = {
             'client_id': self.application.client_id,
             'state': 'random_state_string',
-            'scopes': 'scope1 scope2',
+            'scope': 'scope1 scope2',
             'redirect_uri': 'http://example.it',
             'response_type': 'code',
             'allow': True,
@@ -97,7 +97,7 @@ class TestScopesSave(BaseTest):
         authcode_data = {
             'client_id': self.application.client_id,
             'state': 'random_state_string',
-            'scopes': 'scope1 scope2',
+            'scope': 'scope1 scope2',
             'redirect_uri': 'http://example.it',
             'response_type': 'code',
             'allow': True,
@@ -133,7 +133,7 @@ class TestScopesProtection(BaseTest):
         authcode_data = {
             'client_id': self.application.client_id,
             'state': 'random_state_string',
-            'scopes': 'scope1 scope2',
+            'scope': 'scope1 scope2',
             'redirect_uri': 'http://example.it',
             'response_type': 'code',
             'allow': True,
@@ -175,7 +175,7 @@ class TestScopesProtection(BaseTest):
         authcode_data = {
             'client_id': self.application.client_id,
             'state': 'random_state_string',
-            'scopes': 'scope2',
+            'scope': 'scope2',
             'redirect_uri': 'http://example.it',
             'response_type': 'code',
             'allow': True,
@@ -217,7 +217,7 @@ class TestScopesProtection(BaseTest):
         authcode_data = {
             'client_id': self.application.client_id,
             'state': 'random_state_string',
-            'scopes': 'scope1 scope3',
+            'scope': 'scope1 scope3',
             'redirect_uri': 'http://example.it',
             'response_type': 'code',
             'allow': True,
@@ -259,7 +259,7 @@ class TestScopesProtection(BaseTest):
         authcode_data = {
             'client_id': self.application.client_id,
             'state': 'random_state_string',
-            'scopes': 'scope1 scope2',
+            'scope': 'scope1 scope2',
             'redirect_uri': 'http://example.it',
             'response_type': 'code',
             'allow': True,
@@ -300,7 +300,7 @@ class TestReadWriteScope(BaseTest):
         authcode_data = {
             'client_id': self.application.client_id,
             'state': 'random_state_string',
-            'scopes': scopes,
+            'scope': scopes,
             'redirect_uri': 'http://example.it',
             'response_type': 'code',
             'allow': True,

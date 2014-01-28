@@ -67,7 +67,7 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         form = response.context["form"]
         self.assertEqual(form['redirect_uri'].value(), "http://example.it")
         self.assertEqual(form['state'].value(), "random_state_string")
-        self.assertEqual(form['scopes'].value(), "read write")
+        self.assertEqual(form['scope'].value(), "read write")
         self.assertEqual(form['client_id'].value(), self.application.client_id)
 
     def test_pre_auth_invalid_client(self):
@@ -128,7 +128,7 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         form_data = {
             'client_id': self.application.client_id,
             'state': 'random_state_string',
-            'scopes': 'read write',
+            'scope': 'read write',
             'redirect_uri': 'http://example.it',
             'response_type': 'token',
             'allow': True,
@@ -149,7 +149,7 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         form_data = {
             'client_id': self.application.client_id,
             'state': 'random_state_string',
-            'scopes': 'read write',
+            'scope': 'read write',
             'redirect_uri': 'http://example.it',
             'response_type': 'token',
             'allow': False,
@@ -168,7 +168,7 @@ class TestImplicitTokenView(BaseTest):
         authcode_data = {
             'client_id': self.application.client_id,
             'state': 'random_state_string',
-            'scopes': 'read write',
+            'scope': 'read write',
             'redirect_uri': 'http://example.it',
             'response_type': 'token',
             'allow': True,

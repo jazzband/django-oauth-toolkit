@@ -89,7 +89,7 @@ class TestAuthorizationCodeView(BaseTest):
         form = response.context["form"]
         self.assertEqual(form['redirect_uri'].value(), "http://example.it")
         self.assertEqual(form['state'].value(), "random_state_string")
-        self.assertEqual(form['scopes'].value(), "read write")
+        self.assertEqual(form['scope'].value(), "read write")
         self.assertEqual(form['client_id'].value(), self.application.client_id)
 
     def test_pre_auth_approval_prompt(self):
@@ -177,7 +177,7 @@ class TestAuthorizationCodeView(BaseTest):
         form_data = {
             'client_id': self.application.client_id,
             'state': 'random_state_string',
-            'scopes': 'read write',
+            'scope': 'read write',
             'redirect_uri': 'http://example.it',
             'response_type': 'code',
             'allow': True,
@@ -198,7 +198,7 @@ class TestAuthorizationCodeView(BaseTest):
         form_data = {
             'client_id': self.application.client_id,
             'state': 'random_state_string',
-            'scopes': 'read write',
+            'scope': 'read write',
             'redirect_uri': 'http://example.it',
             'response_type': 'code',
             'allow': False,
@@ -217,7 +217,7 @@ class TestAuthorizationCodeView(BaseTest):
         form_data = {
             'client_id': self.application.client_id,
             'state': 'random_state_string',
-            'scopes': 'read write',
+            'scope': 'read write',
             'redirect_uri': 'http://example.it',
             'response_type': 'UNKNOWN',
             'allow': True,
@@ -236,7 +236,7 @@ class TestAuthorizationCodeView(BaseTest):
         form_data = {
             'client_id': self.application.client_id,
             'state': 'random_state_string',
-            'scopes': 'read write',
+            'scope': 'read write',
             'redirect_uri': 'http://forbidden.it',
             'response_type': 'code',
             'allow': True,
@@ -254,7 +254,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         authcode_data = {
             'client_id': self.application.client_id,
             'state': 'random_state_string',
-            'scopes': 'read write',
+            'scope': 'read write',
             'redirect_uri': 'http://example.it',
             'response_type': 'code',
             'allow': True,
@@ -559,7 +559,7 @@ class TestAuthorizationCodeProtectedResource(BaseTest):
         authcode_data = {
             'client_id': self.application.client_id,
             'state': 'random_state_string',
-            'scopes': 'read write',
+            'scope': 'read write',
             'redirect_uri': 'http://example.it',
             'response_type': 'code',
             'allow': True,
