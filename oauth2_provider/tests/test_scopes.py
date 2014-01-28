@@ -7,7 +7,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
 
 from .test_utils import TestCaseUtils
-from ..compat import urlparse, parse_qs, get_user_model
+from ..compat import urlparse, parse_qs, get_user_model, urlencode
 from ..models import get_application_model, Grant, AccessToken
 from ..settings import oauth2_settings
 from ..views import ScopedProtectedResourceView, ReadWriteScopedResourceView
@@ -62,6 +62,60 @@ class BaseTest(TestCaseUtils, TestCase):
         self.application.delete()
         self.test_user.delete()
         self.dev_user.delete()
+
+
+class TestScopesQueryParameterBackwardsCompatibility(BaseTest):
+    def setUp(self):
+        super(TestScopesQueryParameterBackwardsCompatibility, self).setUp()
+        oauth2_settings._SCOPES = ['read', 'write']
+
+    def test_scopes_query_parameter_is_supported_on_post(self):
+        """
+        Tests support for plural `scopes` query parameter on POST requests.
+
+        """
+        self.client.login(username="test_user", password="123456")
+
+        # retrieve a valid authorization code
+        authcode_data = {
+            'client_id': self.application.client_id,
+            'state': 'random_state_string',
+            'scopes': 'read write',  # using plural `scopes`
+            'redirect_uri': 'http://example.it',
+            'response_type': 'code',
+            'allow': True,
+        }
+        response = self.client.post(reverse('oauth2_provider:authorize'), data=authcode_data)
+        query_dict = parse_qs(urlparse(response['Location']).query)
+        authorization_code = query_dict['code'].pop()
+
+        grant = Grant.objects.get(code=authorization_code)
+        self.assertEqual(grant.scope, "read write")
+
+    def test_scopes_query_parameter_is_supported_on_get(self):
+        """
+        Tests support for plural `scopes` query parameter on GET requests.
+
+        """
+        self.client.login(username="test_user", password="123456")
+
+        query_string = urlencode({
+            'client_id': self.application.client_id,
+            'state': 'random_state_string',
+            'scopes': 'read write',  # using plural `scopes`
+            'redirect_uri': 'http://example.it',
+            'response_type': 'code',
+        })
+        url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        # check form is in context
+        self.assertIn("form", response.context)
+
+        form = response.context["form"]
+        self.assertEqual(form['scope'].value(), "read write")
 
 
 class TestScopesSave(BaseTest):
