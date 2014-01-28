@@ -71,10 +71,10 @@ class AuthorizationView(BaseAuthorizationView, FormView):
 
     def get_initial(self):
         # TODO: move this scopes conversion from and to string into a utils function
-        scopes = self.oauth2_data.get('scopes', [])
+        scopes = self.oauth2_data.get('scope', self.oauth2_data.get('scopes', []))
         initial_data = {
             'redirect_uri': self.oauth2_data.get('redirect_uri', None),
-            'scopes': ' '.join(scopes),
+            'scope': ' '.join(scopes),
             'client_id': self.oauth2_data.get('client_id', None),
             'state': self.oauth2_data.get('state', None),
             'response_type': self.oauth2_data.get('response_type', None),
@@ -90,7 +90,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                 'state': form.cleaned_data.get('state', None),
             }
 
-            scopes = form.cleaned_data.get('scopes')
+            scopes = form.cleaned_data.get('scope')
             allow = form.cleaned_data.get('allow')
             uri, headers, body, status = self.create_authorization_response(
                 request=self.request, scopes=scopes, credentials=credentials, allow=allow)
