@@ -60,3 +60,15 @@ class TestModels(TestCase):
         )
 
         self.assertRaises(ValidationError, app.full_clean)
+
+    def test_str(self):
+        app = Application(
+            redirect_uris="",
+            user=self.user,
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_IMPLICIT,
+        )
+        self.assertEqual("%s" % app, app.client_id)
+
+        app.name = "test_app"
+        self.assertEqual("%s" % app, "test_app")
