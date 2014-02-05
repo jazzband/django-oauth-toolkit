@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.6.1 [2014-02-05]
+------------------
+
+ * added support for `scope` query parameter keeping backwards compatibility for the original `scopes` parameter.
+ * __str__ method in Application model returns name when available
+
+
 0.6.0 [2014-01-26]
 ------------------
 
@@ -40,7 +47,7 @@ Changelog
  * Optimize queries on access token validation
 
 0.4.0 [2013-08-09]
-----------------------
+------------------
 
 **New Features**
 

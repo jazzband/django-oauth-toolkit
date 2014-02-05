@@ -93,6 +93,12 @@ Highest priority first
 Changelog
 ---------
 
+0.6.1 [2014-02-05]
+~~~~~~~~~~~~~~~~~~
+
+* added support for `scope` query parameter keeping backwards compatibility for the original `scopes` parameter.
+* __str__ method in Application model returns content of `name` field when available
+
 0.6.0 [2014-01-26]
 ~~~~~~~~~~~~~~~~~~
 
