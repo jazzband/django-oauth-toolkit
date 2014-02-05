@@ -68,6 +68,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
 
     'oauth2_provider',
+    'oauth2_provider.tests',
 )
 
 LOGGING = {
