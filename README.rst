@@ -81,14 +81,12 @@ License
 
 django-oauth-toolkit is released under the terms of the **BSD license**. Full details in ``LICENSE`` file.
 
-Roadmap
--------------------------------
+Roadmap / Todo list (help wanted)
+---------------------------------
 
-Highest priority first
-
-* Test server improvements
-* OAuth2 client wrapper
 * OAuth1 support
+* OpenID connector
+* Nonrel storages support
 
 Changelog
 ---------
