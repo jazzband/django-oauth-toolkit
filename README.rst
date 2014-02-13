@@ -18,7 +18,6 @@ Django OAuth Toolkit
    :target: https://coveralls.io/r/evonove/django-oauth-toolkit
 
 If you are facing one or more of the following:
- * Your Django app needs to interact with an OAuth2 authorization server to access 3rd party resources,
  * Your Django app exposes a web API you want to protect with OAuth2 authentication,
  * You need to implement an OAuth2 authorization server to provide tokens management for your infrastructure,
 
