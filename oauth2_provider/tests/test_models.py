@@ -1,6 +1,13 @@
 from __future__ import unicode_literals
 
+try:
+    from unittest import skipIf
+except ImportError:
+    from django.utils.unittest.case import skipIf
+
+import django
 from django.test import TestCase
+from django.test.utils import override_settings
 from django.core.exceptions import ValidationError
 
 from ..models import AccessToken, get_application_model
@@ -72,3 +79,22 @@ class TestModels(TestCase):
 
         app.name = "test_app"
         self.assertEqual("%s" % app, "test_app")
+
+@skipIf(django.VERSION < (1, 5), "Behavior is broken on 1.4 and there is no solution")
+@override_settings(OAUTH2_PROVIDER_APPLICATION_MODEL='tests.TestApplication')
+class TestCustomApplicationModel(TestCase):
+    def setUp(self):
+        self.user = UserModel.objects.create_user("test_user", "test@user.com", "123456")
+
+    def test_related_objects(self):
+        """
+        If a custom application model is installed, it should be present in
+        the related objects and not the swapped out one.
+
+        See issue #90 (https://github.com/evonove/django-oauth-toolkit/issues/90)
+        """
+        # Django internals caches the related objects.
+        del UserModel._meta._related_objects_cache
+        related_object_names = [ro.name for ro in UserModel._meta.get_all_related_objects()]
+        self.assertNotIn('oauth2_provider:application', related_object_names)
+        self.assertIn('tests:testapplication', related_object_names)
