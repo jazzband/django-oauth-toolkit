@@ -37,7 +37,10 @@ module)::
 Then you need to tell Django OAuth Toolkit which model you want to use to represent applications.
 Write something like this in your settings module::
 
-    OAUTH2_PROVIDER = {
-        'APPLICATION_MODEL': 'your_app_name.MyApplication',
-    }
+    OAUTH2_PROVIDER_APPLICATION_MODEL='your_app_name.MyApplication'
+
 That's all, now Django OAuth Toolkit will use your model wherever an Application instance is needed.
+
+    **Notice:** `OAUTH2_PROVIDER_APPLICATION_MODEL` is the only setting variable that is not namespaced, this
+    is because of the way Django currently implements swappable models.
+    See issue #90 (https://github.com/evonove/django-oauth-toolkit/issues/90) for details
