@@ -59,3 +59,6 @@ token from there is not considered cheating, so it's an option.
 
 Try performing a request and check that your :term:`Resource Server` aka :term:`Authorization Server` correctly responds with
 an HTTP 200.
+
+:doc:`Part 3 of the tutorial <tutorial_03>` will show how to use an access token to authenticate
+users.
