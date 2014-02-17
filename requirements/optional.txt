@@ -1,3 +1,2 @@
 -r base.txt
 djangorestframework>=2.3
-mock
