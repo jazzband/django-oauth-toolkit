@@ -81,7 +81,7 @@ Let's perform exactly this operation.
 Point your browser to `http://localhost:8000/o/applications/` and add an Application instance.
 `Client id` and `Client Secret` are automatically generated, you have to provide the rest of the informations:
 
- * `User`: the owner of the Application (tipically a developer), could be the current logged in user.
+ * `User`: the owner of the Application (typically a developer), could be the current logged in user.
 
  * `Redirect uris`: at a certain point of the token request process, the :term:`Authorization Server` needs to know a
    list of url (must be at least one) in the client application service where delivering the :term:`Authorization Token`.
