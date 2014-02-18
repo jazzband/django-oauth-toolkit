@@ -117,7 +117,7 @@ Authorize the Application
 +++++++++++++++++++++++++
 When a user clicks the link, she is redirected to your (possibly local) :term:`Authorization Server`.
 If you're not logged in, you will be prompted for username and password. This is because the authorization
-page is login protected by django-oauth-toolkit. Login, then you should see the not so cute form users can use to give
+page is login protected by django-oauth-toolkit. Login, then you should see the (not so cute) form users can use to give
 her authorization to the client application. Flag the *Allow* checkbox and click *Authorize*, you will be redirected
 again on to the consumer service.
 
