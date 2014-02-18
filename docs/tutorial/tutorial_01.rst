@@ -1,18 +1,16 @@
-Part 1 - make a provider in a minute
+Part 1 - Make a Provider in a Minute
 ====================================
 
 Scenario
 --------
-You want to make your own :term:`Authorization Server`, managing the client applications which will have access to a
-certain API, releasing the tokens and so on...
+You want to make your own :term:`Authorization Server` to issue access tokens to client applications for a certain API.
 
-Start your app
+Start Your App
 --------------
-During this tutorial you will make and XHR POST from an Heroku deployed app to your localhost instance.
-To achieve this operation you need a properly configured Django server with `django-cors-headers` app installed, since
-the domain that originated the request (the app on Heroku) is different from the destination domain (your local instance).
-Such "cross-domain" requests are by default forbidden by web browsers unless you use CORS.
-You can read more about `CORS here <http://en.wikipedia.org/wiki/Cross-origin_resource_sharing>`_.
+During this tutorial you will make an XHR POST from a Heroku deployed app to your localhost instance.
+Since the domain that will originate the request (the app on Heroku) is different than the destination domain (your local instance), 
+you will need to install the `django-cors-headers <https://github.com/ottoyiu/django-cors-headers>`_ app.
+These "cross-domain" requests are by default forbidden by web browsers unless you use `CORS <http://en.wikipedia.org/wiki/Cross-origin_resource_sharing>`_.
 
 Create a virtualenv and install `django-oauth-toolkit` and `django-cors-headers`:
 
@@ -20,7 +18,7 @@ Create a virtualenv and install `django-oauth-toolkit` and `django-cors-headers`
 
     pip install django-oauth-toolkit django-cors-headers
 
-start a Django project, add `oauth2_provider` and `corsheaders` to the installed apps, enable the admin.
+Start a Django project, add `oauth2_provider` and `corsheaders` to the installed apps, and enable admin:
 
 .. code-block:: python
 
@@ -31,7 +29,7 @@ start a Django project, add `oauth2_provider` and `corsheaders` to the installed
         'corsheaders',
     }
 
-Include the Django OAuth Toolkit urls in your `urls.py`, choose the urlspace you prefer, for example:
+Include the Django OAuth Toolkit urls in your `urls.py`, choosing the urlspace you prefer. For example:
 
 .. code-block:: python
 
@@ -42,7 +40,7 @@ Include the Django OAuth Toolkit urls in your `urls.py`, choose the urlspace you
         # ...
     )
 
-Include this middleware in your `settings.py`:
+Include the CORS middleware in your `settings.py`:
 
 .. code-block:: python
 
@@ -52,7 +50,7 @@ Include this middleware in your `settings.py`:
         # ...
     )
 
-Configure this setting to allow CORS requests from all domains (just for the scope of this tutorial):
+Allow CORS requests from all domains (just for the scope of this tutorial):
 
 .. code-block:: python
 
@@ -62,30 +60,31 @@ Configure this setting to allow CORS requests from all domains (just for the sco
 
 Include the required hidden input in your login template, `registration/login.html`.
 The ``{{ next }}`` template context variable will be populated with the correct
-redirect value. Django provides more information on `login templates here
-<https://docs.djangoproject.com/en/dev/topics/auth/default/#django.contrib.auth.views.login>`_.
+redirect value. See the `Django documentation <https://docs.djangoproject.com/en/dev/topics/auth/default/#django.contrib.auth.views.login>`_ 
+for details on using login templates.
 
 .. code-block:: html
 
     <input type="hidden" name="next" value="{{ next }}" />
 
-As a final step, make a syncdb, start the internal server and login with your credentials.
+As a final step, execute syncdb, start the internal server, and login with your credentials.
 
 Create an OAuth2 Client Application
 -----------------------------------
-An application which wants to perform API requests must be registered in the :term:`Authorization Server` to be properly
-identified. This operation is usually done manually by a developer, who asks for an account in the
-:term:`Authorization Server` and gets access to some sort of backoffice where she can register her application, which
-will act as a :term:`Client` (or :term:`Application` in the Django OAuth Toolkit lingo).
-Let's perform exactly this operation.
-Point your browser to `http://localhost:8000/o/applications/` and add an Application instance.
+Before your :term:`Application` can use the :term:`Authorization Server` for user login, 
+you must first register the app (also known as the :term:`Client`.) Once registered, your app will be granted access to 
+the API, subject to approval by its users.
+
+Let's register your application. 
+
+Point your browser to http://localhost:8000/o/applications/ and add an Application instance.
 `Client id` and `Client Secret` are automatically generated, you have to provide the rest of the informations:
 
- * `User`: the owner of the Application (tipically a developer), could be the current logged in user.
+ * `User`: the owner of the Application (e.g. a developer, or the currently logged in user.)
 
- * `Redirect uris`: at a certain point of the token request process, the :term:`Authorization Server` needs to know a
-   list of url (must be at least one) in the client application service where delivering the :term:`Authorization Token`.
-   Developers have the responsibility to correctly provide this value. For this tutorial, paste verbatim the value
+ * `Redirect uris`: Applications must register at least one redirection endpoint prior to utilizing the 
+   authorization endpoint. The :term:`Authorization Server` will deliver the access token to the client only if the client
+   specifies one of the verified redirection uris. For this tutorial, paste verbatim the value
    `http://django-oauth-toolkit.herokuapp.com/consumer/exchange/`
 
  * `Client type`: this value affects the security level at which some communications between the client application and
@@ -99,28 +98,28 @@ Point your browser to `http://localhost:8000/o/applications/` and add an Applica
 Take note of the `Client id` and the `Client Secret` then logout (this is needed only for testing the authorization
 process we'll explain shortly)
 
-Test your authorization server
+Test Your Authorization Server
 ------------------------------
-Your authorization server is ready and can start releasing access tokens. To test the process you need an OAuth2
-consumer: if you know OAuth2 enough you can use curl, requests or anything can speak http. For the rest of us, we have
-a `consumer service <http://django-oauth-toolkit.herokuapp.com/consumer/>`_ deployed on Heroku you can use to test your
-provider.
+Your authorization server is ready and can begin issuing access tokens. To test the process you need an OAuth2
+consumer; if you are familiar enough with OAuth2, you can use curl, requests, or anything that speaks http. For the rest 
+of us, there is a `consumer service <http://django-oauth-toolkit.herokuapp.com/consumer/>`_ deployed on Heroku to test 
+your provider.
 
-Build an authorization link for your users
+Build an Authorization Link for Your Users
 ++++++++++++++++++++++++++++++++++++++++++
-The process of authorizing an application to access OAuth2 protected data in an :term:`Authorization Code` flow is always
-started by the user. You have to prompt your users with a special link they click to start the process. Go to the
-`Consumer <http://django-oauth-toolkit.herokuapp.com/consumer/>`_ page and fill the form with the data of the
-application you created earlier on this tutorial. Submit the form, you'll get the link your users should follow to get
-to the authorization page.
+Authorizing an application to access OAuth2 protected data in an :term:`Authorization Code` flow is always initiated
+by the user. Your application can prompt users to click a special link to start the process. Go to the 
+`Consumer <http://django-oauth-toolkit.herokuapp.com/consumer/>`_ page and complete the form by filling in your
+application's details obtained from the steps in this tutorial. Submit the form, and you'll receive a link your users can 
+use to access the authorization page.
 
-Authorize the application
+Authorize the Application
 +++++++++++++++++++++++++
-When the user clicks the link, she is redirected to your (possibly local) :term:`Authorization Server`.
-If you're not logged in, at this point you should be prompted for username and password. This is because the authorization
-page is login protected by django-oauth-toolkit. Login, then you should see the not so cute form user can use to give
+When a user clicks the link, she is redirected to your (possibly local) :term:`Authorization Server`.
+If you're not logged in, you will be prompted for username and password. This is because the authorization
+page is login protected by django-oauth-toolkit. Login, then you should see the not so cute form users can use to give
 her authorization to the client application. Flag the *Allow* checkbox and click *Authorize*, you will be redirected
-again on the consumer service.
+again on to the consumer service.
 
 __ loginTemplate_
 
@@ -141,7 +140,7 @@ Refresh the token
 +++++++++++++++++
 The page showing the access token retrieved from the :term:`Authorization Server` also let you make a POST request to
 the server itself to swap the refresh token for another, brand new access token.
-Just fill in the missing form fields and click the Refresh button: if everything goes smooth you will se the access and
+Just fill in the missing form fields and click the Refresh button: if everything goes smooth you will see the access and
 refresh token change their values, otherwise you will likely see an error message.
 When finished playing with your authorization server, take note of both the access and refresh tokens, we will use them
 for the next part of the tutorial.
