@@ -45,8 +45,8 @@ setup(
     test_suite='runtests',
     install_requires=[
         'django>=1.4',
-        'django-braces==1.2.2',
-        'six==1.3.0',
+        'django-braces>=1.2.2',
+        'six>=1.3.0',
         'oauthlib==0.6.1',
     ],
     zip_safe=False,
