@@ -116,7 +116,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
 
             # Check to see if the user has already granted access and return
             # a successful response depending on 'approval_prompt' url parameter
-            require_approval = request.GET.get('approval_prompt', 'force')
+            require_approval = request.GET.get('approval_prompt', oauth2_settings.REQUEST_APPROVAL_PROMPT)
             if require_approval == 'auto':
                 tokens = request.user.accesstoken_set.filter(application=kwargs['application'],
                                                              expires__gt=timezone.now()).all()

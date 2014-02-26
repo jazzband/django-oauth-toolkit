@@ -118,6 +118,50 @@ class TestAuthorizationCodeView(BaseTest):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
+    def test_pre_auth_approval_prompt_default(self):
+        """
+
+        """
+        self.assertEqual(oauth2_settings.REQUEST_APPROVAL_PROMPT, 'force')
+
+        AccessToken.objects.create(user=self.test_user, token='1234567890',
+                                   application=self.application,
+                                   expires=timezone.now()+datetime.timedelta(days=1),
+                                   scope='read write')
+        self.client.login(username="test_user", password="123456")
+        query_string = urlencode({
+            'client_id': self.application.client_id,
+            'response_type': 'code',
+            'state': 'random_state_string',
+            'scope': 'read write',
+            'redirect_uri': 'http://example.it',
+        })
+        url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_pre_auth_approval_prompt_default_override(self):
+        """
+
+        """
+        oauth2_settings.REQUEST_APPROVAL_PROMPT = 'auto'
+
+        AccessToken.objects.create(user=self.test_user, token='1234567890',
+                                   application=self.application,
+                                   expires=timezone.now()+datetime.timedelta(days=1),
+                                   scope='read write')
+        self.client.login(username="test_user", password="123456")
+        query_string = urlencode({
+            'client_id': self.application.client_id,
+            'response_type': 'code',
+            'state': 'random_state_string',
+            'scope': 'read write',
+            'redirect_uri': 'http://example.it',
+        })
+        url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+
     def test_pre_auth_default_redirect(self):
         """
         Test for default redirect uri if omitted from query string with response_type: code
