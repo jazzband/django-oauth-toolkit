@@ -6,6 +6,7 @@ Changelog
 
 * Created a setting for the default value for approval prompt.
 * Improved docs
+* Don't pin django-braces and six versions
 
 **Backwards incompatible changes in 0.7.0**
 
