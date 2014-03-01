@@ -24,10 +24,3 @@ Views needed to implement the main OAuth2 authorization flows supported by Djang
 
 .. automodule:: oauth2_provider.views.base
     :members:
-
-Application
------------
-Views providing a CRUD for applications outside the Django Admin.
-
-.. automodule:: oauth2_provider.views.application
-    :members:
