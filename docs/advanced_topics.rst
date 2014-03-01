@@ -1,3 +1,7 @@
+Advanced topics
++++++++++++++++
+
+
 Extending the Application model
 ===============================
 
@@ -44,3 +48,16 @@ That's all, now Django OAuth Toolkit will use your model wherever an Application
     **Notice:** `OAUTH2_PROVIDER_APPLICATION_MODEL` is the only setting variable that is not namespaced, this
     is because of the way Django currently implements swappable models.
     See issue #90 (https://github.com/evonove/django-oauth-toolkit/issues/90) for details
+
+
+Skip authorization form
+=======================
+
+Depending on the OAuth2 flow in use and the access token policy, users might be prompted  for the
+same authorization multiple times: sometimes this is acceptable or even desiderable but other it isn't.
+To control DOT behaviour you can use `approval_prompt` parameter when hitting the authorization endpoint.
+Possible values are:
+ * `force` - users are always prompted for authorization.
+
+ * `auto` - users are prompted only the first time, subsequent authorizations for the same application
+   and scopes will be automatically accepted.

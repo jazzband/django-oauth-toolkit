@@ -34,7 +34,7 @@ Index
    tutorial/tutorial
    rest-framework/rest-framework
    views/views
-   extending_application
+   advanced_topics
    settings
    glossary
 
