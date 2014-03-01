@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 Welcome to Django OAuth Toolkit Documentation
-====================
+=============================================
 
 Django OAuth Toolkit can help you providing out of the box all the endpoints, data and logic needed to add OAuth2
 capabilities to your Django projects. Django OAuth Toolkit makes extensive use of the excellent
@@ -25,7 +25,7 @@ Requirements
 * Django 1.4, 1.5, 1.6b3
 
 Index
-========
+=====
 
 .. toctree::
    :maxdepth: 2
@@ -34,6 +34,8 @@ Index
    tutorial/tutorial
    rest-framework/rest-framework
    views/views
+   views/details
+   models
    advanced_topics
    settings
    glossary
