@@ -21,11 +21,13 @@ log = logging.getLogger('oauth2_provider')
 
 class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
     """
-    Implements a generic endpoint to handle *Authorization Requests* as in :rfc:`4.1.1`. The view does not implement
-    any strategy to determine *authorize/do not authorize* logic.
+    Implements a generic endpoint to handle *Authorization Requests* as in :rfc:`4.1.1`. The view
+    does not implement any strategy to determine *authorize/do not authorize* logic.
     The endpoint is used in the following flows:
-     * Authorization code
-     * Implicit grant
+
+    * Authorization code
+    * Implicit grant
+
     """
     def dispatch(self, request, *args, **kwargs):
         self.oauth2_data = {}
@@ -33,8 +35,8 @@ class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
 
     def error_response(self, error, **kwargs):
         """
-        Handle errors either by redirecting to redirect_uri with a json in the body containing error details or
-        providing an error response
+        Handle errors either by redirecting to redirect_uri with a json in the body containing
+        error details or providing an error response
         """
         redirect, error_response = super(BaseAuthorizationView, self).error_response(error, **kwargs)
 
@@ -47,21 +49,23 @@ class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
 
 class AuthorizationView(BaseAuthorizationView, FormView):
     """
-    Implements and endpoint to handle *Authorization Requests* as in :rfc:`4.1.1` and prompting the user with a form
-    to determine if she authorizes the client application to access her data. This endpoint is reached two times during
-    the authorization process:
-     * first receive a ``GET`` request from user asking authorization for a certain client application, a form is served
-     possibly showing some useful info and prompting for *authorize/do not authorize*.
+    Implements and endpoint to handle *Authorization Requests* as in :rfc:`4.1.1` and prompting the
+    user with a form to determine if she authorizes the client application to access her data.
+    This endpoint is reached two times during the authorization process:
+    * first receive a ``GET`` request from user asking authorization for a certain client
+    application, a form is served possibly showing some useful info and prompting for
+    *authorize/do not authorize*.
 
-     * then receive a ``POST`` request possibly after user authorized the access
+    * then receive a ``POST`` request possibly after user authorized the access
 
-    Some informations contained in the ``GET`` request and needed to create a Grant token during the ``POST`` request
-    would be lost between the two steps above, so they are temporary stored in hidden fields on the form.
+    Some informations contained in the ``GET`` request and needed to create a Grant token during
+    the ``POST`` request would be lost between the two steps above, so they are temporary stored in
+    hidden fields on the form.
     A possible alternative could be keeping such informations in the session.
 
     The endpoint is used in the followin flows:
-     * Authorization code
-     * Implicit grant
+    * Authorization code
+    * Implicit grant
     """
     template_name = 'oauth2_provider/authorize.html'
     form_class = AllowForm
@@ -139,9 +143,9 @@ class TokenView(CsrfExemptMixin, OAuthLibMixin, View):
     Implements an endpoint to provide access tokens
 
     The endpoint is used in the following flows:
-     * Authorization code
-     * Password
-     * Client credentials
+    * Authorization code
+    * Password
+    * Client credentials
     """
     server_class = Server
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
