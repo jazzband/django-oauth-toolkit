@@ -90,6 +90,16 @@ Roadmap / Todo list (help wanted)
 Changelog
 ---------
 
+0.7.0 [2014-03-01]
+~~~~~~~~~~~~~~~~~~
+
+* Created a setting for the default value for approval prompt.
+* Improved docs
+
+**Backwards incompatible changes in 0.7.0**
+
+* Make Application model truly "swappable" (introduces a new non-namespaced setting OAUTH2_PROVIDER_APPLICATION_MODEL)
+
 0.6.1 [2014-02-05]
 ~~~~~~~~~~~~~~~~~~
 
