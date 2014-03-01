@@ -289,6 +289,24 @@ class TestAuthorizationCodeView(BaseTest):
         response = self.client.post(reverse('oauth2_provider:authorize'), data=form_data)
         self.assertEqual(response.status_code, 400)
 
+    def test_code_post_auth_malicious_redirect_uri(self):
+        """
+        Test validation of a malicious redirect_uri
+        """
+        self.client.login(username="test_user", password="123456")
+
+        form_data = {
+            'client_id': self.application.client_id,
+            'state': 'random_state_string',
+            'scope': 'read write',
+            'redirect_uri': '/../',
+            'response_type': 'code',
+            'allow': True,
+        }
+
+        response = self.client.post(reverse('oauth2_provider:authorize'), data=form_data)
+        self.assertEqual(response.status_code, 400)
+
 
 class TestAuthorizationCodeTokenView(BaseTest):
     def get_auth(self):
@@ -593,6 +611,27 @@ class TestAuthorizationCodeTokenView(BaseTest):
         self.assertEqual(content['token_type'], "Bearer")
         self.assertEqual(content['scope'], "read write")
         self.assertEqual(content['expires_in'], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
+
+    def test_malicious_redirect_uri(self):
+        """
+        Request an access token using client_type: public and ensure redirect_uri is
+        properly validated.
+        """
+        self.client.login(username="test_user", password="123456")
+
+        self.application.client_type = Application.CLIENT_PUBLIC
+        self.application.save()
+        authorization_code = self.get_auth()
+
+        token_request_data = {
+            'grant_type': 'authorization_code',
+            'code': authorization_code,
+            'redirect_uri': '/../',
+            'client_id': self.application.client_id
+        }
+
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data)
+        self.assertEqual(response.status_code, 400)
 
 
 class TestAuthorizationCodeProtectedResource(BaseTest):
