@@ -20,7 +20,11 @@ from __future__ import unicode_literals
 import six
 
 from django.conf import settings
-from django.utils import importlib
+try:
+    # Available in Python 2.7+
+    import importlib
+except ImportError:
+    from django.utils import importlib
 
 
 USER_SETTINGS = getattr(settings, 'OAUTH2_PROVIDER', None)
