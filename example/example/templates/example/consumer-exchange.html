@@ -78,7 +78,7 @@
                 url: token_url,
                 type: 'POST',
                 crossDomain: true,
-                data: { code: code, redirect_uri: redirect_url, grant_type: "authorization_code"},
+                data: { code: code, redirect_uri: redirect_url, grant_type: "authorization_code", client_id: client_id, client_secret: client_secret},
                 beforeSend: function(request){
                     request.setRequestHeader("Authorization", "Basic " + btoa(client_id + ":" + client_secret));
                 },
