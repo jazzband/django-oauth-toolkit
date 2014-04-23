@@ -9,7 +9,7 @@ application with OAuth2, in this tutorial we will see how to do it.
 
 Make your API
 -------------
-We start were we left the :doc:`part 1 of the tutorial <tutorial_01>`: you have an authorization server and we want it
+We start where we left the :doc:`part 1 of the tutorial <tutorial_01>`: you have an authorization server and we want it
 to provide an API to access some kind of resources. We don't need an actual resource, so we will simply expose an
 endpoint protected with OAuth2: let's do it in a *class based view* fashion!
 
