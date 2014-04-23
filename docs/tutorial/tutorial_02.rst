@@ -51,7 +51,7 @@ Time to make requests to your API.
 
 For a quick test, try accessing your app at the url `/api/hello` with your browser
 and verify that it reponds with a `403` (in fact no `HTTP_AUTHORIZATION` header was provided).
-You can test your API with anything can perform HTTP requests, but for this tutorial you can use the online
+You can test your API with anything that can perform HTTP requests, but for this tutorial you can use the online
 `consumer client <http://django-oauth-toolkit.herokuapp.com/consumer/client>`_.
 Just fill the form with the URL of the API endpoint (i.e. http://localhost:8000/api/hello if you're on localhost) and
 the access token coming from the :doc:`part 1 of the tutorial <tutorial_01>`. Going in the Django admin and get the
