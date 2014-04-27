@@ -90,6 +90,13 @@ Roadmap / Todo list (help wanted)
 Changelog
 ---------
 
+0.7.1 [2014-04-27]
+~~~~~~~~~~~~~~~~~~
+
+* Added database indexes to the OAuth2 related models to improve performances.
+
+**Warning: schema migration does not work for sqlite3 database, migration should be performed manually**
+
 0.7.0 [2014-03-01]
 ~~~~~~~~~~~~~~~~~~
 
