@@ -59,7 +59,7 @@ class AbstractApplication(models.Model):
     )
 
     client_id = models.CharField(max_length=100, unique=True,
-                                 default=generate_client_id)
+                                 default=generate_client_id, db_index=True)
     user = models.ForeignKey(AUTH_USER_MODEL)
     help_text = _("Allowed URIs list, space separated")
     redirect_uris = models.TextField(help_text=help_text,
@@ -68,7 +68,7 @@ class AbstractApplication(models.Model):
     authorization_grant_type = models.CharField(max_length=32,
                                                 choices=GRANT_TYPES)
     client_secret = models.CharField(max_length=255, blank=True,
-                                     default=generate_client_secret)
+                                     default=generate_client_secret, db_index=True)
     name = models.CharField(max_length=255, blank=True)
 
     class Meta:
@@ -135,7 +135,7 @@ class Grant(models.Model):
     * :attr:`scope` Required scopes, optional
     """
     user = models.ForeignKey(AUTH_USER_MODEL)
-    code = models.CharField(max_length=255)  # code comes from oauthlib
+    code = models.CharField(max_length=255, db_index=True)  # code comes from oauthlib
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL)
     expires = models.DateTimeField()
     redirect_uri = models.CharField(max_length=255)
@@ -170,7 +170,7 @@ class AccessToken(models.Model):
     * :attr:`scope` Allowed scopes
     """
     user = models.ForeignKey(AUTH_USER_MODEL)
-    token = models.CharField(max_length=255)
+    token = models.CharField(max_length=255, db_index=True)
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL)
     expires = models.DateTimeField()
     scope = models.TextField(blank=True)
@@ -222,7 +222,7 @@ class RefreshToken(models.Model):
                            bounded to
     """
     user = models.ForeignKey(AUTH_USER_MODEL)
-    token = models.CharField(max_length=255)
+    token = models.CharField(max_length=255, db_index=True)
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL)
     access_token = models.OneToOneField(AccessToken,
                                         related_name='refresh_token')
