@@ -60,7 +60,7 @@ class AbstractApplication(models.Model):
 
     client_id = models.CharField(max_length=100, unique=True,
                                  default=generate_client_id, db_index=True)
-    user = models.ForeignKey(AUTH_USER_MODEL)
+    user = models.ForeignKey(AUTH_USER_MODEL, related_name="%(app_label)s_%(class)s")
     help_text = _("Allowed URIs list, space separated")
     redirect_uris = models.TextField(help_text=help_text,
                                      validators=[validate_uris], blank=True)
