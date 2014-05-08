@@ -292,6 +292,31 @@ class OAuth2Validator(RequestValidator):
         # TODO check out a more reliable way to communicate expire time to oauthlib
         token['expires_in'] = oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS
 
+    def revoke_token(self, token, token_type_hint, request, *args, **kwargs):
+        """
+        Revoke an access or refresh token.
+
+        :param token: The token string.
+        :param token_type_hint: access_token or refresh_token.
+        :param request: The HTTP Request (oauthlib.common.Request)
+        """
+        if token_type_hint not in [None, 'access_token', 'refresh_token']:
+            token_type_hint = None
+
+        if token_type_hint in [None, 'access_token']:
+            try:
+                AccessToken.objects.get(token=token).delete()
+                return
+            except AccessToken.DoesNotExist:
+                pass
+
+        if token_type_hint in [None, 'refresh_token']:
+            try:
+                RefreshToken.objects.get(token=token).delete()
+                return
+            except RefreshToken.DoesNotExist:
+                pass
+
     def validate_user(self, username, password, client, request, *args, **kwargs):
         """
         Check username and password correspond to a valid and active User
