@@ -73,6 +73,7 @@ class AbstractApplication(models.Model):
 
     class Meta:
         abstract = True
+        app_label = 'oauth2_provider'
 
     @property
     def default_redirect_uri(self):
@@ -141,6 +142,9 @@ class Grant(models.Model):
     redirect_uri = models.CharField(max_length=255)
     scope = models.TextField(blank=True)
 
+    class Meta:
+        app_label = 'oauth2_provider'
+
     def is_expired(self):
         """
         Check token expiration with timezone awareness
@@ -174,6 +178,9 @@ class AccessToken(models.Model):
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL)
     expires = models.DateTimeField()
     scope = models.TextField(blank=True)
+
+    class Meta:
+        app_label = 'oauth2_provider'
 
     def is_valid(self, scopes=None):
         """
@@ -226,6 +233,9 @@ class RefreshToken(models.Model):
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL)
     access_token = models.OneToOneField(AccessToken,
                                         related_name='refresh_token')
+
+    class Meta:
+        app_label = 'oauth2_provider'
 
     def __str__(self):
         return self.token
