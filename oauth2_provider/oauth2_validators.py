@@ -95,11 +95,14 @@ class OAuth2Validator(RequestValidator):
         in request.client
         """
         try:
-            request.client = request.client or Application.objects.get(client_id=client_id)
             return request.client
-        except Application.DoesNotExist:
-            log.debug("Failed body authentication: Application %s does not exist" % client_id)
-            return None
+        except:
+            try:
+                request.client = Application.objects.get(client_id=client_id)
+                return request.client
+            except Application.DoesNotExist:
+                log.debug("Failed body authentication: Application %s does not exist" % client_id)
+                return None
 
     def client_authentication_required(self, request, *args, **kwargs):
         """
