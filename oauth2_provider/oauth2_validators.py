@@ -94,6 +94,8 @@ class OAuth2Validator(RequestValidator):
         If request.client was not set, load application instance for given client_id and store it
         in request.client
         """
+        if request is None:
+        	request = []
         try:
             request.client = Application.objects.get(client_id=client_id)
             return request.client
