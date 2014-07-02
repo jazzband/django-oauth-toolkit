@@ -90,6 +90,11 @@ Roadmap / Todo list (help wanted)
 Changelog
 ---------
 
+0.7.2 [2014-07-02]
+~~~~~~~~~~~~~~~~~~
+
+* Don't pin oauthlib
+
 0.7.1 [2014-04-27]
 ~~~~~~~~~~~~~~~~~~
 
