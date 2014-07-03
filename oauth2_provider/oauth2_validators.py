@@ -94,8 +94,10 @@ class OAuth2Validator(RequestValidator):
         If request.client was not set, load application instance for given client_id and store it
         in request.client
         """
+        if request is None:
+        	request = []
         try:
-            request.client = request.client or Application.objects.get(client_id=client_id)
+            request.client = Application.objects.get(client_id=client_id)
             return request.client
         except Application.DoesNotExist:
             log.debug("Failed body authentication: Application %s does not exist" % client_id)
