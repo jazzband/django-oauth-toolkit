@@ -40,10 +40,17 @@ class URIValidator(RegexValidator):
             url = value
 
 
+class RedirectURIValidator(URIValidator):
+    def __call__(self, value):
+        super(RedirectURIValidator, self).__call__(value)
+        if len(value.split('#')) > 1:
+            raise ValidationError('Redirect URIs must not contain fragments')
+
+
 def validate_uris(value):
     """
     This validator ensures that `value` contains valid blank-separated urls"
     """
-    v = URIValidator()
+    v = RedirectURIValidator()
     for uri in value.split():
         v(uri)
