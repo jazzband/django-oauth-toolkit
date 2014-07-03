@@ -120,3 +120,11 @@ LOGGING = {
 OAUTH2_PROVIDER = {
     '_SCOPES': ['example']
 }
+
+import django
+
+if django.VERSION[:2] < (1, 6):
+    TEST_RUNNER = 'discover_runner.DiscoverRunner'
+    INSTALLED_APPS += ('discover_runner',)
+else:
+    TEST_RUNNER = 'django.test.runner.DiscoverRunner'
