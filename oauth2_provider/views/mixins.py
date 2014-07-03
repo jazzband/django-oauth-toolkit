@@ -123,6 +123,16 @@ class OAuthLibMixin(object):
         core = self.get_oauthlib_core()
         return core.create_token_response(request)
 
+    def create_revocation_response(self, request):
+        """
+        A wrapper method that calls create_revocation_response on the
+        `server_class` instance.
+
+        :param request: The current django.http.HttpRequest object
+        """
+        core = self.get_oauthlib_core()
+        return core.create_revocation_response(request)
+
     def verify_request(self, request):
         """
         A wrapper method that calls verify_request on `server_class` instance.

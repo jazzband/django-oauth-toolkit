@@ -157,3 +157,19 @@ class TokenView(CsrfExemptMixin, OAuthLibMixin, View):
         for k, v in headers.items():
             response[k] = v
         return response
+
+
+class RevokeTokenView(CsrfExemptMixin, OAuthLibMixin, View):
+    """
+    Implements an endpoint to revoke access or refresh tokens
+    """
+    server_class = Server
+    validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
+
+    def post(self, request, *args, **kwargs):
+        url, headers, body, status = self.create_revocation_response(request)
+        response = HttpResponse(content=body, status=status)
+
+        for k, v in headers.items():
+            response[k] = v
+        return response

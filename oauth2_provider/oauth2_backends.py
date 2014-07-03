@@ -108,6 +108,21 @@ class OAuthLibCore(object):
 
         return uri, headers, body, status
 
+    def create_revocation_response(self, request):
+        """
+        A wrapper method that calls create_revocation_response on a
+        `server_class` instance.
+
+        :param request: The current django.http.HttpRequest object
+        """
+        uri, http_method, body, headers = self._extract_params(request)
+
+        headers, body, status = self.server.create_revocation_response(
+            uri, http_method, body, headers)
+        uri = headers.get("Location", None)
+
+        return uri, headers, body, status
+
     def verify_request(self, request, scopes):
         """
         A wrapper method that calls verify_request on `server_class` instance.
