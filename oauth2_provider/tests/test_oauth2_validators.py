@@ -65,3 +65,6 @@ class TestOAuth2Validator(TestCase):
         self.application.save()
         self.request.client = ''
         self.assertTrue(self.validator.client_authentication_required(self.request))
+
+    def test_load_application_fails_when_request_has_no_client(self):
+        self.assertRaises(AssertionError, self.validator.authenticate_client_id, 'client_id', {})

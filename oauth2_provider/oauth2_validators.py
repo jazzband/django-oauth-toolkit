@@ -94,6 +94,10 @@ class OAuth2Validator(RequestValidator):
         If request.client was not set, load application instance for given client_id and store it
         in request.client
         """
+
+        # we want to be sure that request has the client attribute!
+        assert hasattr(request, "client"), "'request' instance has no 'client' attribute"
+
         try:
             request.client = request.client or Application.objects.get(client_id=client_id)
             return request.client
