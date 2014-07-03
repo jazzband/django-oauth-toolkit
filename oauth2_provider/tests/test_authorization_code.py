@@ -388,7 +388,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
 
         # check refresh token cannot be used twice
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 401)
         content = json.loads(response.content.decode("utf-8"))
         self.assertTrue('invalid_grant' in content.values())
 
@@ -472,7 +472,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 401)
 
     def test_basic_auth_bad_authcode(self):
         """
@@ -488,7 +488,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 401)
 
     def test_basic_auth_bad_granttype(self):
         """
@@ -523,7 +523,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 401)
 
     def test_basic_auth_bad_secret(self):
         """
@@ -540,7 +540,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         auth_headers = self.get_basic_auth_header(self.application.client_id, 'BOOM!')
 
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 401)
 
     def test_basic_auth_wrong_auth_type(self):
         """
@@ -562,7 +562,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         }
 
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 401)
 
     def test_request_body_params(self):
         """
@@ -631,7 +631,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         }
 
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 401)
 
 
 class TestAuthorizationCodeProtectedResource(BaseTest):
