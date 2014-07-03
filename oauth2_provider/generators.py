@@ -26,7 +26,7 @@ class ClientIdGenerator(BaseHashGenerator):
 
 class ClientSecretGenerator(BaseHashGenerator):
     def hash(self):
-        return oauthlib_generate_client_id(length=128, chars=CLIENT_ID_CHARACTER_SET)
+        return oauthlib_generate_client_id(length=oauth2_settings.CLIENT_SECRET_GENERATOR_LENGTH, chars=CLIENT_ID_CHARACTER_SET)
 
 
 def generate_client_id():
