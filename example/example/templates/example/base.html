@@ -9,7 +9,13 @@
     <style type="text/css">
         body {
             padding-top: 70px;
-            padding-bottom: 40px;
+        }
+
+        footer {
+            border-top: 1px solid #eee;
+            margin-top: 40px;
+            padding-top: 30px;
+            padding-bottom: 30px;
         }
     </style>
 </head>
@@ -79,6 +85,12 @@
 <div class="container">
   {% block content %}{% endblock %}
 </div>
+
+
+<footer class="container text-center">
+  <a href="https://evonove.it"><img width="80px" src="https://evonove.it/img/logo.png"></a>
+  &nbsp; Django OAuth Toolkit version {{version}}
+</footer>
 
 <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
