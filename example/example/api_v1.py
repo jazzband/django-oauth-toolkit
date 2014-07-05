@@ -1,14 +1,15 @@
 from oauth2_provider.decorators import protected_resource
-from oauth2_provider import VERSION
+from oauth2_provider import VERSION as DOT_VERSION
 
 import json
-from django.http import HttpResponse
 from django import get_version
-from django.views.decorators.csrf import csrf_exempt
-from django.core import serializers
-from django.views.decorators.http import require_http_methods
+from django.http import HttpResponse
 from django.http import HttpResponseBadRequest, HttpResponseNotFound
+from django.core import serializers
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 
+from oauthlib import __version__ as OAUTHLIB_VERSION
 from oauthlib.oauth2 import Server
 
 from .models import MyApplication
@@ -32,8 +33,8 @@ def get_system_info(request, *args, **kwargs):
     A simple "read only" api endpoint, unprotected
     """
     data = {
-        'DOT version': VERSION,
-        'oauthlib version': '0.5.1',
+        'DOT version': DOT_VERSION,
+        'oauthlib version': OAUTHLIB_VERSION,
         'Django version': get_version(),
     }
 

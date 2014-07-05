@@ -3,26 +3,26 @@
 
 {% block content %}
       <!-- Main hero unit for a primary marketing message or call to action -->
-      <div class="hero-unit">
+      <div class="jumbotron">
         <h1>Hello, OAuth!</h1>
         <p>
             Welcome to the OAuth Playground, an utility to show off and test <b>Django OAuth Toolkit</b>'s capabilities.
             This app is particularly useful to complete <a href="https://django-oauth-toolkit.readthedocs.org/en/latest/tutorial_01.html">some of the tutorials</a>.
         </p>
         <p>
-            <a href="https://github.com/evonove/django-oauth-toolkit" class="btn btn-primary btn-large"><i class="icon-github"></i> Github Repo &raquo;</a>
-            <a href="https://django-oauth-toolkit.readthedocs.org/" class="btn btn-success btn-large"><i class="icon-book"></i> Official Docs &raquo;</a>
+            <a href="https://github.com/evonove/django-oauth-toolkit" class="btn btn-primary btn-lg"><i class="fa fa-github"></i> Github Repo &raquo;</a>
+            <a href="https://django-oauth-toolkit.readthedocs.org/" class="btn btn-success btn-lg"><i class="fa fa-book"></i> Official Docs &raquo;</a>
         </p>
       </div>
 
       <div class="row">
-        <div class="span6">
+        <div class="col-md-6">
           <h3>OAuth2 Consumer</h3>
           <h4>Authorization Code flow</h4>
           <p>Do you have an OAuth2 provider implementing the Authorization Code flow and want to test how it goes?</p>
-          <p><a class="btn" href="{% url 'consumer' %}">Use me as a Consumer! &raquo;</a></p>
+          <p><a class="btn btn-default" href="{% url 'consumer' %}">Use me as a Consumer! &raquo;</a></p>
         </div>
-        <div class="span6">
+        <div class="col-md-6">
           <h3>OAuth2 Provider</h3>
           <h4>Create your own app on the playground</h4>
           <p>
@@ -30,15 +30,7 @@
               and <a href="{% url 'oauth2_provider:register' %}">create your own app</a>,
               then <a href="{% url 'api-client' %}">play with the test APIs</a> exposed by the playground.
           </p>
-          <p><a class="btn" href="{% url 'api-client' %}">Use me as a Provider! &raquo;</a></p>
+          <p><a class="btn btn-default" href="{% url 'api-client' %}">Use me as a Provider! &raquo;</a></p>
        </div>
       </div>
-
-      <hr>
-
-      <footer>
-        <p><a href="https://evonove.it"><img width="80px" src="https://evonove.it/img/logo.png"></a>
-        &nbsp Django OAuth Toolkit version {{version}}</p>
-      </footer>
-
 {% endblock %}

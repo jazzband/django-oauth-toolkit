@@ -1,26 +1,49 @@
 {% extends "example/base.html" %}
 
+{% block styles %}
+  <style>
+    .form-login {
+      max-width: 330px;
+      padding: 15px;
+      margin: 0 auto;
+    }
+
+    .form-login-heading {
+      margin-bottom: 10px;
+    }
+
+    .btn-login {
+      margin-top: 15px;
+    }
+
+    input[type="text"].input-lg {
+      margin-bottom: -1px;
+      border-bottom-right-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+
+    input[type="password"].input-lg {
+      margin-bottom: 10px;
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
+  </style>
+{% endblock styles %}
+
 {% block content %}
+  <form class="form-login" role="form" method="post" action="{% url 'django.contrib.auth.views.login' %}">
+    <h2 class="form-login-heading">Please sign in</h2>
 
-{% if form.errors %}
-<p>Your username and password didn't match. Please try again.</p>
-{% endif %}
+    {% csrf_token %}
+    <input id="{{ form.username.auto_id }}" type="text" name="{{ form.username.name }}" class="form-control input-lg" placeholder="Username" required>
+    <input id="{{ form.password.auto_id }}" type="password" name="{{ form.password.name }}" class="form-control input-lg" placeholder="Password" required>
 
-<form method="post" action="{% url 'django.contrib.auth.views.login' %}">
-{% csrf_token %}
-<table>
-<tr>
-    <td>{{ form.username.label_tag }}</td>
-    <td>{{ form.username }}</td>
-</tr>
-<tr>
-    <td>{{ form.password.label_tag }}</td>
-    <td>{{ form.password }}</td>
-</tr>
-</table>
-
-<input type="submit" value="login" />
-<input type="hidden" name="next" value="{{ next }}" />
-</form>
-
-{% endblock %}
+    <input type="hidden" name="next" value="{{ next }}" />
+    <input value="Login" type="submit" class="btn btn-lg btn-primary btn-block btn-login" />
+  </form>
+  {% if form.errors %}
+    <div class="row text-center">
+      <p>Your username and password didn't match. Please try again.</p>
+    </div>
+  {% endif %}
+{% endblock content %}

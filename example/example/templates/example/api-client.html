@@ -2,166 +2,165 @@
 {% load url from future %}
 
 {% block content %}
-<h2>Play with the API</h2>
+  <h2>Play with the API</h2>
 
-<div class="row">
-    <div class="span5">
-        <form class="form-horizontal" id="idForm">
-            <div class="control-group">
-                <label class="control-label" for="idEndpoint">API endpoint</label>
-                <div class="controls">
-                    <select id="idEndpoint" class="span3">
-                        {% for endpoint in endpoints %}
-                        <option>{{ endpoint.url }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-            <div class="control-group">
-                <label class="control-label" for="idLookup">pk (if needed)</label>
-                <div class="controls">
-                    <input type="text" id="idLookup" class="span3">
-                </div>
-            </div>
-            <div class="control-group">
-                <label class="control-label" for="idToken">Access Token</label>
-                <div class="controls">
-                    <input type="text" id="idToken" class="span3">
-                    <span class="help-block">
-                        If you have not registered an Application, try using this builtin token: <em>test_access_token</em>
-                    </span>
-                </div>
-            </div>
-            <div class="control-group">
-                <label class="control-label" for="idData">Payload</label>
-                <div class="controls">
-                    <textarea rows="3" id="idData" class="span3"></textarea>
-                    <span class="help-block">
-                        Use JSON format, e.g. <em>{"param":"value"}</em>
-                    </span>
-                </div>
-            </div>
-            <div class="control-group">
-                <button type="submit" class="btn btn-inverse" id="idGET">GET</button>
-                <button type="submit" class="btn btn-primary" id="idPOST">POST</button>
-                <button type="submit" class="btn btn-warning" id="idPUT">PUT</button>
-                <button type="submit" class="btn btn-danger" id="idDELETE">DELETE</button>
-            </div>
-        </form>
+  <div class="row">
+    <div class="col-sm-5">
+      <form id="idForm" class="form-horizontal" role="form">
+        <div class="form-group">
+          <label class="col-sm-4 control-label">API endpoint</label>
+          <div class="col-sm-8">
+            <select id="idEndpoint" class="form-control">
+              {% for endpoint in endpoints %}
+                <option>{{ endpoint.url }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-4 control-label">pk (if needed)</label>
+          <div class="col-sm-8">
+            <input type="text" id="idLookup" class="form-control">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-4 control-label">Access Token</label>
+          <div class="col-sm-8">
+            <input type="text" id="idToken" class="form-control">
+            <span class="help-block">
+              If you have not registered an Application, try using this builtin token: <em>test_access_token</em>
+            </span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-4 control-label">Payload</label>
+          <div class="col-sm-8">
+            <textarea rows="3" id="idData" class="form-control"></textarea>
+            <span class="help-block">
+              Use JSON format, e.g. <em>{"param":"value"}</em>
+            </span>
+          </div>
+        </div>
+        <div class="control-group">
+          <button type="submit" class="btn btn-success" id="idGET">GET</button>
+          <button type="submit" class="btn btn-primary" id="idPOST">POST</button>
+          <button type="submit" class="btn btn-warning" id="idPUT">PUT</button>
+          <button type="submit" class="btn btn-danger" id="idDELETE">DELETE</button>
+        </div>
+      </form>
     </div>
-    <div class="span7">
-        <p>Response: <span id="idStatus"></span></p>
-        <pre id="idResponse"></pre>
+    <div class="col-sm-7">
+      <p>Response: <span id="idStatus"></span></p>
+      <pre id="idResponse"></pre>
     </div>
-</div>
+  </div>
 
-<h2>API Cheat Sheet</h2>
+  <h2>API Cheat Sheet</h2>
+  <div class="row">
+    <div class="col-sm-12">
+      <h3>GET /system_info</h3>
+      <p>Show simple system informations, this resource is not protected in any way.</p>
+      <p><strong>Authentication:</strong> none</p>
 
-<div class="row"><div class="span12">
+      <h3>GET /applications</h3>
+      <p>Retrieve the list of Applications present in the playground</p>
+      <p><strong>Authentication:</strong> none</p>
 
-    <h3>GET /system_info</h3>
-    <p>Show simple system informations, this resource is not protected in any way.</p>
-    <p><strong>Authentication:</strong> none</p>
-
-    <h3>GET /applications</h3>
-    <p>Retrieve the list of Applications present in the playground</p>
-    <p><strong>Authentication:</strong> none</p>
-
-    <h3>POST /applications</h3>
-    <p>Create a new Application</p>
-    <p><strong>Authentication:</strong> OAuth2, scopes required: can_create_application</p>
-    <p>Parameters:</p>
-    <ul>
+      <h3>POST /applications</h3>
+      <p>Create a new Application</p>
+      <p><strong>Authentication:</strong> OAuth2, scopes required: can_create_application</p>
+      <p>Parameters:</p>
+      <ul>
         <li>name (optional) - Friendly name for the Application</li>
         <li>client_id (optional) - The client identifier issued to the client during the registration</li>
         <li>client_secret (optional) - Confidential secret issued to the client duringthe registration</li>
         <li>client_type (required, values: [public,private]) - Confidential secret issued to the client duringthe registration</li>
         <li>authorization_grant_type (required, values: [authorization-code,implicit,passwordl,client-credentials,all-in-one]) - Authorization flow</li>
-    </ul>
+      </ul>
 
-    <h3>GET /applications/:lookup</h3>
-    <p>Retrieve Application detail</p>
-    <p><strong>Authentication:</strong> OAuth2</p>
+      <h3>GET /applications/:lookup</h3>
+      <p>Retrieve Application detail</p>
+      <p><strong>Authentication:</strong> OAuth2</p>
 
-    <h3>PUT /applications/:lookup</h3>
-    <p>Update Application details</p>
-    <p><strong>Authentication:</strong> OAuth2</p>
-    <p>Parameters: same as application creation</p>
+      <h3>PUT /applications/:lookup</h3>
+      <p>Update Application details</p>
+      <p><strong>Authentication:</strong> OAuth2</p>
+      <p>Parameters: same as application creation</p>
 
-    <h3>DELETE /applications/:lookup</h3>
-    <p>Delete application</p>
-    <p><strong>Authentication:</strong> OAuth2</p>
-
-</div></div>
-{% endblock %}
+      <h3>DELETE /applications/:lookup</h3>
+      <p>Delete application</p>
+      <p><strong>Authentication:</strong> OAuth2</p>
+    </div>
+  </div>
+{% endblock content %}
 
 
 {% block javascript %}
-        <script type="text/javascript">
-        (function() {
+  <script type="text/javascript">
+    (function() {
 
-            $('#idForm').submit(function() {
-                return false;
-            });
+      $('#idForm').submit(function() {
+        return false;
+      });
 
-            var showMsg = function(status, msg) {
-                $('#idStatus').html(status);
-                $('#idResponse').text('').text(msg);
-            };
+      var showMsg = function(status, msg) {
+        $('#idStatus').html(status);
+        $('#idResponse').text('').text(msg);
+      };
 
-            var getUrl = function() {
-                var url = $('#idEndpoint').val();
-                url = url.replace('lookup', $('#idLookup').val());
-                return url;
-            };
+      var getUrl = function() {
+        var url = $('#idEndpoint').val();
+        url = url.replace('lookup', $('#idLookup').val());
+        return url;
+      };
 
-            var callAPI = function(url, reqType, token, data) {
-                if(typeof(token)==='undefined') token = '';
-                if(typeof(data)==='undefined') data = '';
+      var callAPI = function(url, reqType, token, data) {
+        if(typeof(token) === 'undefined') token = '';
+        if(typeof(data) === 'undefined') data = '';
 
-                var req = $.ajax({
-                    url: url,
-                    type: reqType,
-                    contentType: 'application/json',
-                    data: data,
-                    beforeSend: function(request){
-                        request.setRequestHeader("Authorization", "Bearer " + token);
-                    }
-                });
+        var req = $.ajax({
+          url: url,
+          type: reqType,
+          contentType: 'application/json',
+          data: data,
+          beforeSend: function(request){
+            request.setRequestHeader("Authorization", "Bearer " + token);
+          }
+        });
 
-                req.done(function(data, textStatus, jqXHR) {
-                    var status = 'HTTP ' + jqXHR.status;
-                    showMsg(status, JSON.stringify(data, null, 4));
-                });
+        req.done(function(data, textStatus, jqXHR) {
+          var status = 'HTTP ' + jqXHR.status;
+          showMsg(status, JSON.stringify(data, null, 4));
+        });
 
-                req.fail(function(jqXHR){
-                    var status = 'HTTP ' + jqXHR.status;
-                    showMsg(status, "Request failed: " + jqXHR.statusText);
-                });
-            };
+        req.fail(function(jqXHR){
+          var status = 'HTTP ' + jqXHR.status;
+          showMsg(status, "Request failed: " + jqXHR.statusText);
+        });
+      };
 
-            $('#idGET').click(function() {
-                var token = $("#idToken").val();
-                callAPI(getUrl(), 'GET', token);
-            });
+      $('#idGET').click(function() {
+        var token = $("#idToken").val();
+        callAPI(getUrl(), 'GET', token);
+      });
 
-            $('#idPOST').click(function() {
-                var token = $("#idToken").val();
-                var data = $("#idData").val();
-                callAPI(getUrl(), 'POST', token, data);
-            });
+      $('#idPOST').click(function() {
+        var token = $("#idToken").val();
+        var data = $("#idData").val();
+        callAPI(getUrl(), 'POST', token, data);
+      });
 
-            $('#idPUT').click(function() {
-                var token = $("#idToken").val();
-                var data = $("#idData").val();
-                callAPI(getUrl(), 'PUT', token, data);
-            });
+      $('#idPUT').click(function() {
+        var token = $("#idToken").val();
+        var data = $("#idData").val();
+        callAPI(getUrl(), 'PUT', token, data);
+      });
 
-            $('#idDELETE').click(function() {
-                var token = $("#idToken").val();
-                callAPI(getUrl(), 'DELETE', token);
-            });
+      $('#idDELETE').click(function() {
+        var token = $("#idToken").val();
+        callAPI(getUrl(), 'DELETE', token);
+      });
 
-        })();
-    </script>
+    })();
+  </script>
 {% endblock javascript %}

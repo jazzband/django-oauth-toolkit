@@ -1,10 +1,12 @@
-Django>1.4,<1.6
-South==0.8.1
--e git+https://github.com/idan/oauthlib.git#egg=oauthlib
-https://github.com/evonove/django-oauth-toolkit/archive/master.zip
-six==1.3.0
-django-braces==1.0.0
-gunicorn==0.17.4
-dj-database-url==0.2.1
-requests==1.2.3
-psycopg2==2.5.1
+Django>1.4,<1.7
+South==0.8.4
+dj-database-url==0.3.0
+django-braces==1.4.0
+django-oauth-toolkit==0.7.2
+oauthlib==0.6.3
+psycopg2==2.5.3
+requests==2.3.0
+six==1.7.3
+
+# Gunicorn 19.0.0 has a critical bug. Waiting for 19.1.0 release
+git+git://github.com/benoitc/gunicorn.git@26df0651bcf1655ef63ac3b968344d737d3a7bfc#egg=gunicorn

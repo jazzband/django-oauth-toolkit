@@ -2,7 +2,6 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from django.core.urlresolvers import reverse_lazy
 from django.views.generic import TemplateView
-from oauth2_provider import VERSION
 
 from .views import (
     ConsumerView, ConsumerExchangeView, ConsumerDoneView, ApiEndpoint, ApiClientView
@@ -16,7 +15,6 @@ urlpatterns = patterns(
     url(
         regex=r'^$',
         view=TemplateView.as_view(template_name='example/home.html'),
-        kwargs={'version': VERSION},
         name='home'
     ),
     url(

@@ -2,34 +2,49 @@
 {% load url from future %}
 
 {% block content %}
-<h1>Test your OAuth2 provider, I'll be your consumer</h1>
-{% if authorization_link %}
-    <p class="lead">Ok, here is the link you have to use to reach your authorization page and beg for an authorization
-        token</p>
+  <h1>Test your OAuth2 provider, I'll be your consumer</h1>
+  {% if authorization_link %}
+    <p class="lead">
+      Ok, here is the link you have to use to reach your authorization page
+      and beg for an authorization token
+    </p>
     <p>Now click, give your authorization and see you later, possibly with an access token</p>
     <a href="{{ authorization_link }}">{{ authorization_link }}</a>
-{% else %}
-    <p class="lead">(At this point, you should have created an Application instance on your side, up and running.)</p>
+  {% else %}
+    <p class="lead">
+      (At this point, you should have created an Application instance
+      on your side, up and running.)
+    </p>
     {% if not error %}
-        <form method="post" action="">
-            {{ form.non_field_errors }}
-            <fieldset>
-                <legend>Build an authorization link for your provider</legend>
-                {{ form.client_id.errors }}
-                <label>Cliend id</label>
-                {{ form.client_id }}
-                <span class="help-block">Your Application's client_id field.</span>
-                {{ form.authorization_url.errors }}
-                <label>Authorization url</label>
-                {{ form.authorization_url }}
-                <span class="help-block">
-                    The url to the authorization page, it's ok if it points to localhost
-                    (e.g. http://localhost:8000/o/authorize).
-                </span>
-                <button type="submit" class="btn">Submit</button>
-            </fieldset>
+      <form method="post" action="">
         {% csrf_token %}
-        </form>
+
+        {{ form.non_field_errors }}
+
+        <legend>Build an authorization link for your provider</legend>
+        <div class="form-group col-md-6">
+          <label>Client id</label>
+          <input id="{{ form.client_id.auto_id }}" name="{{ form.client_id.name }}"
+          type="text" class="form-control" required />
+          <span class="help-block">Your Application's client_id field.</span>
+          {{ form.client_id.errors }}
+        </div>
+
+        <div class="form-group col-md-6">
+          <label>Authorization url</label>
+          <input id="{{ form.authorization_url.auto_id }}" name="{{ form.authorization_url.name }}"
+          type="url" class="form-control" required />
+          <span class="help-block">
+            The url to the authorization page, it's ok if it points to localhost
+            (e.g. http://localhost:8000/o/authorize).
+          </span>
+          {{ form.authorization_url.errors }}
+        </div>
+
+        <div class="row text-center">
+          <button type="submit" class="btn btn-primary btn-lg">Submit</button>
+        </div>
+      </form>
     {% endif %}
-{% endif %}
-{% endblock %}
+  {% endif %}
+{% endblock content %}
