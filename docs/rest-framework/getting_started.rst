@@ -5,7 +5,7 @@ Django OAuth Toolkit provide a support layer for `Django REST Framework <http://
 This tutorial it's based on the Django REST Framework example and shows you how to easily integrate with it.
 
 Step 1: Minimal setup
-----------------------------
+---------------------
 
 Create a virtualenv and install following packages using `pip`...
 
@@ -36,7 +36,7 @@ To do so add the following lines add the end of your `settings.py` module:
     }
 
 Step 2: Create a simple API
---------------------------
+---------------------------
 
 Let's create a simple API for accessing users and groups.
 
@@ -158,7 +158,7 @@ Grab your access_token and start using your new OAuth2 API:
 Step 5: Testing Restricted Access
 ---------------------------------
 
-Let's try to access resources usign a token with a restricted scope adding a `scope` parameter to the token request
+Let's try to access resources using a token with a restricted scope adding a `scope` parameter to the token request
 
 ::
 

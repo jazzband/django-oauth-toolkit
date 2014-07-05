@@ -57,7 +57,7 @@ Depending on the OAuth2 flow in use and the access token policy, users might be 
 same authorization multiple times: sometimes this is acceptable or even desiderable but other it isn't.
 To control DOT behaviour you can use `approval_prompt` parameter when hitting the authorization endpoint.
 Possible values are:
- * `force` - users are always prompted for authorization.
+* `force` - users are always prompted for authorization.
 
- * `auto` - users are prompted only the first time, subsequent authorizations for the same application
-   and scopes will be automatically accepted.
+* `auto` - users are prompted only the first time, subsequent authorizations for the same application
+  and scopes will be automatically accepted.
