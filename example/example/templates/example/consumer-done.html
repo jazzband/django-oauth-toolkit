@@ -2,95 +2,124 @@
 {% load url from future %}
 
 {% block content %}
-<p class="lead">Show me your token!</p>
-<div class="alert alert-error hide fade in" id="id_alert">
-  <button type="button" class="close" id="id_alert_close">&times;</button>
-  <strong>Error!</strong> <span id="id_error_msg"></span>
-</div>
-{% if form %}
-    <form method="post">
-        {{ form.non_field_errors }}
-        <fieldset>
-            <legend>The Authorization server granted me the following:</legend>
-            <label>Access Token</label>
-            {{ form.access_token }}
+  <p class="lead">Show me your token!</p>
+  <div id="id_alert" class="alert alert-danger hide" role="alert">
+    <strong>Error!</strong> <span id="id_error_msg"></span>
+  </div>
 
-            <label>Token type</label>
-            {{ form.token_type }}
+  {% if form %}
+    <form method="post" role="form">
+      {{ form.non_field_errors }}
 
-            <label>Lifetime in seconds</label>
-            {{ form.expires_in }}
+      <div class="col-sm-6">
+        <p class="lead">The Authorization server granted me the following:</p>
+        <div class="form-group">
+          <label class="control-label">Access Token</label>
+          <input id="{{ form.access_token.auto_id }}" name="{{ form.access_token.name }}"
+          class="form-control" type="text" value="{{ form.access_token.value }}" readonly />
+        </div>
 
-            <label>Refresh Token</label>
-            {{ form.refresh_token }}
+        <div class="form-group">
+          <label class="control-label">Token type</label>
+          <input id="{{ form.token_type.auto_id }}" name="{{ form.token_type.name }}"
+          class="form-control" type="text" value="{{ form.token_type.value }}" readonly />
+        </div>
 
-            <p>Now you can try obtaining another access token using your refresh token and providing client
-            credentials</p>
+        <div class="form-group">
+          <label class="control-label">Lifetime in seconds</label>
+          <input id="{{ form.expires_in.auto_id }}" name="{{ form.expires_in.name }}"
+          class="form-control" type="text" value="{{ form.expires_in.value }}" readonly />
+        </div>
 
-            <label>Client id</label>
-            {{ form.client_id }}
+        <div class="form-group">
+          <label class="control-label">Refresh Token</label>
+          <input id="{{ form.refresh_token.auto_id }}" name="{{ form.refresh_token.name }}"
+          class="form-control" type="text" value="{{ form.refresh_token.value }}" readonly />
+        </div>
+      </div>
+      
+      <div class="col-sm-5 col-sm-offset-1">
+        <div class="row">
+          <p>
+            Now you can try obtaining another access token using your refresh token and providing client
+            credentials
+          </p>
+        </div>
 
-            <label>Client secret</label>
-            {{ form.client_secret }}
+        <div class="form-group">
+          <label class="control-label">Client id</label>
+          <input id="{{ form.client_id.auto_id }}" name="{{ form.client_id.name }}"
+          class="form-control" type="text" value="{{ form.client_id.value|default_if_none:'' }}" />
+        </div>
 
-            <label>Token url</label>
-            {{ form.token_url }}
-            <span class="help-block">
-                The url in your server where to retrieve the access token, it's ok if it points to localhost
-                (e.g. http://localhost:8000/o/token/).
-            </span>
+        <div class="form-group">
+          <label class="control-label">Client secret</label>
+          <input id="{{ form.client_secret.auto_id }}" name="{{ form.client_secret.name }}"
+          class="form-control" type="text" value="{{ form.client_secret.value|default_if_none:'' }}" />
+        </div>
 
-            <button type="submit" class="btn" id="submit_btn">Click to refresh!</button>
-        </fieldset>
+        <div class="form-group">
+          <label class="control-label">Token url</label>
+          <input id="{{ form.token_url.auto_id }}" name="{{ form.token_url.name }}"
+          class="form-control" type="text" value="{{ form.token_url.value|default_if_none:'' }}" />
+          <span class="help-block">
+            The url in your server where to retrieve the access token, it's ok if it points to localhost
+            (e.g. http://localhost:8000/o/token/).
+          </span>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" id="submit_btn">Click to refresh!</button>
+      </div>
     </form>
-{% else %}
-<p>It seems you've got nothing to show :(</p>
-{% endif %}
-{% endblock %}
+
+  {% else %}
+    <p>It seems you've got nothing to show :(</p>
+  {% endif %}
+{% endblock content %}
 
 {% block javascript %}
-    <script type="text/javascript">
+  <script type="text/javascript">
     $(document).ready(function(){
-        $("#submit_btn").click(function(event){
-            event.preventDefault()
-            var token_url = $("#id_token_url").val();
-            var refresh_token = $("#id_refresh_token").val();
-            var client_id = $("#id_client_id").val();
-            var client_secret = $("#id_client_secret").val();
+      $("#submit_btn").click(function(event){
+        event.preventDefault()
+        var token_url = $("#id_token_url").val();
+        var refresh_token = $("#id_refresh_token").val();
+        var client_id = $("#id_client_id").val();
+        var client_secret = $("#id_client_secret").val();
 
-            var show_error = function(msg){
-                $("#id_error_msg").html(msg);
-                $("#id_alert").show();
-            };
+        var show_error = function(msg){
+          $("#id_error_msg").html(msg);
+          $("#id_alert").removeClass('hide');
+        };
 
-            if (!token_url) {
-                show_error('Please specify Token url');
-                return;
-            }
+        if (!token_url) {
+          show_error('Please specify Token url');
+          return;
+        }
 
-            $.ajax({
-                url: token_url,
-                type: 'POST',
-                crossDomain: true,
-                data: { refresh_token: refresh_token, grant_type: "refresh_token"},
-                beforeSend: function(request){
-                    request.setRequestHeader("Authorization", "Basic " + btoa(client_id + ":" + client_secret));
-                },
-                success: function(data){
-                    $("#id_access_token").val(data.access_token);
-                    $("#id_token_type").val(data.token_type);
-                    $("#id_expires").val(data.expires_in);
-                    $("#id_refresh_token").val(data.refresh_token);
-                },
-                error: function(data) {
-                    $("#id_error_msg").html(data.responseText);
-                    $("#id_alert").show();
-                }
-            });
+        $.ajax({
+          url: token_url,
+          type: 'POST',
+          crossDomain: true,
+          data: { refresh_token: refresh_token, grant_type: "refresh_token"},
+          beforeSend: function(request){
+            request.setRequestHeader("Authorization", "Basic " + btoa(client_id + ":" + client_secret));
+          },
+          success: function(data){
+            $("#id_access_token").val(data.access_token);
+            $("#id_token_type").val(data.token_type);
+            $("#id_expires").val(data.expires_in);
+            $("#id_refresh_token").val(data.refresh_token);
+          },
+          error: function(data) {
+            show_error(data.responseText);
+          }
         });
-        $("#id_alert_close").click(function(event) {
-            $(this).parent().hide();
-        });
+      });
+
+      $("#id_alert_close").click(function(event) {
+        $(this).parent().hide();
+      });
     });
-    </script>
+  </script>
 {% endblock javascript %}
