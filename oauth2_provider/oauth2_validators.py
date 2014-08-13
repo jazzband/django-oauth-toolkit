@@ -345,7 +345,6 @@ class OAuth2Validator(RequestValidator):
         try:
             rt = RefreshToken.objects.get(token=refresh_token)
             request.user = rt.user
-            request.refresh_token = rt
             return rt.application == client
 
         except RefreshToken.DoesNotExist:
