@@ -10,7 +10,7 @@ from django.test import TestCase
 from django.test.utils import override_settings
 from django.core.exceptions import ValidationError
 
-from ..models import AccessToken, get_application_model
+from ..models import AccessToken, get_application_model, Grant, AccessToken, RefreshToken
 from ..compat import get_user_model
 
 
@@ -98,3 +98,24 @@ class TestCustomApplicationModel(TestCase):
         related_object_names = [ro.name for ro in UserModel._meta.get_all_related_objects()]
         self.assertNotIn('oauth2_provider:application', related_object_names)
         self.assertIn('tests:testapplication', related_object_names)
+
+
+class TestGrantModel(TestCase):
+
+    def test_str(self):
+        grant = Grant(code="test_code")
+        self.assertEqual("%s" % grant, grant.code)
+
+
+class TestAccessTokenModel(TestCase):
+
+    def test_str(self):
+        access_token = AccessToken(token="test_token")
+        self.assertEqual("%s" % access_token, access_token.token)
+
+
+class TestRefreshTokenModel(TestCase):
+
+    def test_str(self):
+        refresh_token = RefreshToken(token="test_token")
+        self.assertEqual("%s" % refresh_token, refresh_token.token)
