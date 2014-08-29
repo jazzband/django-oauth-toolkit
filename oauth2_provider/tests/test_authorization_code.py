@@ -11,6 +11,7 @@ from django.utils import timezone
 from ..compat import urlparse, parse_qs, urlencode, get_user_model
 from ..models import get_application_model, Grant, AccessToken
 from ..settings import oauth2_settings
+from ..oauth2_validators import OAuth2Validator
 from ..views import ProtectedResourceView
 
 from .test_utils import TestCaseUtils
@@ -473,6 +474,43 @@ class TestAuthorizationCodeTokenView(BaseTest):
         self.assertEqual(response.status_code, 200)
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 401)
+
+    def test_refresh_repeating_requests_non_rotating_tokens(self):
+        """
+        Try refreshing an access token with the same refresh token more than once when not rotating tokens.
+        """
+        class NonRotatingOAuth2Validator(OAuth2Validator):
+            def rotate_refresh_token(self, request):
+                return False
+        validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
+        oauth2_settings.OAUTH2_VALIDATOR_CLASS = NonRotatingOAuth2Validator
+
+        self.client.login(username="test_user", password="123456")
+        authorization_code = self.get_auth()
+
+        token_request_data = {
+            'grant_type': 'authorization_code',
+            'code': authorization_code,
+            'redirect_uri': 'http://example.it'
+        }
+        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
+
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        content = json.loads(response.content.decode("utf-8"))
+        self.assertTrue('refresh_token' in content)
+
+        token_request_data = {
+            'grant_type': 'refresh_token',
+            'refresh_token': content['refresh_token'],
+            'scope': content['scope'],
+        }
+        
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 200)
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 200)
+
+        oauth2_settings.OAUTH2_VALIDATOR_CLASS = validator_class
 
     def test_basic_auth_bad_authcode(self):
         """
