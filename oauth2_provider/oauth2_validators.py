@@ -346,7 +346,7 @@ class OAuth2Validator(RequestValidator):
         try:
             rt = RefreshToken.objects.get(token=refresh_token)
             request.user = rt.user
-            # Temporary store RefreshToken instance to be reused by self.get_original_scopes.
+            # Temporary store RefreshToken instance to be reused by get_original_scopes.
             request.refresh_token = rt
             return rt.application == client
 

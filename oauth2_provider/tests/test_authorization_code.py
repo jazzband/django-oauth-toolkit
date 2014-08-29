@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import base64
 import json
 import datetime
+import mock
 
 from django.test import TestCase, RequestFactory
 from django.core.urlresolvers import reverse
@@ -479,12 +480,6 @@ class TestAuthorizationCodeTokenView(BaseTest):
         """
         Try refreshing an access token with the same refresh token more than once when not rotating tokens.
         """
-        class NonRotatingOAuth2Validator(OAuth2Validator):
-            def rotate_refresh_token(self, request):
-                return False
-        validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
-        oauth2_settings.OAUTH2_VALIDATOR_CLASS = NonRotatingOAuth2Validator
-
         self.client.login(username="test_user", password="123456")
         authorization_code = self.get_auth()
 
@@ -504,13 +499,12 @@ class TestAuthorizationCodeTokenView(BaseTest):
             'refresh_token': content['refresh_token'],
             'scope': content['scope'],
         }
-        
-        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
-        self.assertEqual(response.status_code, 200)
-        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
-        self.assertEqual(response.status_code, 200)
 
-        oauth2_settings.OAUTH2_VALIDATOR_CLASS = validator_class
+        with mock.patch('oauthlib.request_validator.RequestValidator.rotate_refresh_token', return_value=False):
+            response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+            self.assertEqual(response.status_code, 200)
+            response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+            self.assertEqual(response.status_code, 200)
 
     def test_basic_auth_bad_authcode(self):
         """
