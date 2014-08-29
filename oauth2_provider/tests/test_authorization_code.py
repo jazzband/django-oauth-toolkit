@@ -500,7 +500,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             'scope': content['scope'],
         }
 
-        with mock.patch('oauthlib.request_validator.RequestValidator.rotate_refresh_token', return_value=False):
+        with mock.patch('oauthlib.oauth2.rfc6749.request_validator.RequestValidator.rotate_refresh_token', return_value=False):
             response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
             self.assertEqual(response.status_code, 200)
             response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
