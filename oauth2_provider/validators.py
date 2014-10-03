@@ -8,10 +8,11 @@ from django.utils.encoding import force_text
 from django.utils.six.moves.urllib.parse import urlsplit, urlunsplit
 from django.core.validators import RegexValidator
 
+from .settings import oauth2_settings
 
 class URIValidator(RegexValidator):
     regex = re.compile(
-        r'^(?:[a-z0-9\.\-]*)s?://'  # http:// or https://
+        r'^(?:[a-z][a-z0-9\.\-\+]*)://'  # scheme...
         r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
         r'(?!-)[A-Z\d-]{1,63}(?<!-)|'  # also cover non-dotted domain
         r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|'  # ...or ipv4
@@ -41,16 +42,23 @@ class URIValidator(RegexValidator):
 
 
 class RedirectURIValidator(URIValidator):
+    def __init__(self, allowed_schemes):
+        self.allowed_schemes = allowed_schemes
+
     def __call__(self, value):
         super(RedirectURIValidator, self).__call__(value)
+        value = force_text(value)
         if len(value.split('#')) > 1:
             raise ValidationError('Redirect URIs must not contain fragments')
+        scheme, netloc, path, query, fragment = urlsplit(value)
+        if scheme.lower() not in self.allowed_schemes:
+            raise ValidationError('Redirect URI scheme is not allowed.')
 
 
 def validate_uris(value):
     """
-    This validator ensures that `value` contains valid blank-separated urls"
+    This validator ensures that `value` contains valid blank-separated URIs"
     """
-    v = RedirectURIValidator()
+    v = RedirectURIValidator(oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES)
     for uri in value.split():
         v(uri)

@@ -41,6 +41,7 @@ DEFAULTS = {
     'ACCESS_TOKEN_EXPIRE_SECONDS': 36000,
     'APPLICATION_MODEL': getattr(settings, 'OAUTH2_PROVIDER_APPLICATION_MODEL', 'oauth2_provider.Application'),
     'REQUEST_APPROVAL_PROMPT': 'force',
+    'ALLOWED_REDIRECT_URI_SCHEMES': ['http', 'https'],
 
     # Special settings that will be evaluated at runtime
     '_SCOPES': [],
@@ -52,6 +53,7 @@ MANDATORY = (
     'CLIENT_SECRET_GENERATOR_CLASS',
     'OAUTH2_VALIDATOR_CLASS',
     'SCOPES',
+    'ALLOWED_REDIRECT_URI_SCHEMES',
 )
 
 # List of settings that may be in string import notation.

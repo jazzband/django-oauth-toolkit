@@ -1,6 +1,6 @@
 import logging
 
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse
 from django.views.generic import View, FormView
 from django.utils import timezone
 
@@ -11,6 +11,7 @@ from braces.views import LoginRequiredMixin, CsrfExemptMixin
 from ..settings import oauth2_settings
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
+from ..http import HttpResponseUriRedirect
 from ..models import get_application_model
 from .mixins import OAuthLibMixin
 
@@ -41,7 +42,7 @@ class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
         redirect, error_response = super(BaseAuthorizationView, self).error_response(error, **kwargs)
 
         if redirect:
-            return HttpResponseRedirect(error_response['url'])
+            return HttpResponseUriRedirect(error_response['url'])
 
         status = error_response['error'].status_code
         return self.render_to_response(error_response, status=status)
@@ -100,7 +101,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                 request=self.request, scopes=scopes, credentials=credentials, allow=allow)
             self.success_url = uri
             log.debug("Success url for the request: {0}".format(self.success_url))
-            return super(AuthorizationView, self).form_valid(form)
+            return HttpResponseUriRedirect(self.success_url)
 
         except OAuthToolkitError as error:
             return self.error_response(error)
@@ -130,7 +131,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                         uri, headers, body, status = self.create_authorization_response(
                             request=self.request, scopes=" ".join(scopes),
                             credentials=credentials, allow=True)
-                        return HttpResponseRedirect(uri)
+                        return HttpResponseUriRedirect(uri)                            
 
             return self.render_to_response(self.get_context_data(**kwargs))
 
