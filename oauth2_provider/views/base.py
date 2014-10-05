@@ -75,6 +75,8 @@ class AuthorizationView(BaseAuthorizationView, FormView):
     server_class = Server
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
 
+    skip_authorization_completely = False
+
     def get_initial(self):
         # TODO: move this scopes conversion from and to string into a utils function
         scopes = self.oauth2_data.get('scope', self.oauth2_data.get('scopes', []))
@@ -123,7 +125,17 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             # Check to see if the user has already granted access and return
             # a successful response depending on 'approval_prompt' url parameter
             require_approval = request.GET.get('approval_prompt', oauth2_settings.REQUEST_APPROVAL_PROMPT)
-            if require_approval == 'auto':
+
+            # if skip_authorization_completely is True, skip the authorization screen even
+            # if this is the first use of the application and there was no previous authorization
+            # useful for in-house applications-> assume an in-house applications are already approved.
+            if self.skip_authorization_completely:
+                uri, headers, body, status = self.create_authorization_response(
+                    request=self.request, scopes=" ".join(scopes),
+                    credentials=credentials, allow=True)
+                return HttpResponseRedirect(uri)
+
+            elif require_approval == 'auto':
                 tokens = request.user.accesstoken_set.filter(application=kwargs['application'],
                                                              expires__gt=timezone.now()).all()
                 # check past authorizations regarded the same scopes as the current one
