@@ -1,12 +1,14 @@
 from __future__ import unicode_literals
 
+import mock
+
 from django.test import TestCase, RequestFactory
 from django.core.urlresolvers import reverse
 
 from ..compat import urlparse, parse_qs, urlencode, get_user_model
 from ..models import get_application_model
 from ..settings import oauth2_settings
-from ..views import ProtectedResourceView
+from ..views import ProtectedResourceView, AuthorizationView
 
 
 Application = get_application_model()
@@ -135,6 +137,29 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         }
 
         response = self.client.post(reverse('oauth2_provider:authorize'), data=form_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('http://example.it#', response['Location'])
+        self.assertIn('access_token=', response['Location'])
+        self.assertIn('state=random_state_string', response['Location'])
+
+    @mock.patch('oauth2_provider.views.base.AuthorizationView.skip_authorization_completely', True)
+    def test_skip_authorization_completely(self):
+        """
+        If skip_authorization_completely = True, should skip the authorization page.
+        """
+        self.client.login(username="test_user", password="123456")
+
+        query_string = urlencode({
+            'client_id': self.application.client_id,
+            'response_type': 'token',
+            'state': 'random_state_string',
+            'scope': 'read write',
+            'redirect_uri': 'http://example.it',
+        })
+
+        url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
+
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
         self.assertIn('http://example.it#', response['Location'])
         self.assertIn('access_token=', response['Location'])
