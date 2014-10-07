@@ -6,6 +6,7 @@ from datetime import timedelta
 
 from django.utils import timezone
 from django.contrib.auth import authenticate
+from django.core.exceptions import ObjectDoesNotExist
 from oauthlib.oauth2 import RequestValidator
 
 from .compat import unquote_plus
@@ -304,22 +305,20 @@ class OAuth2Validator(RequestValidator):
         :param token_type_hint: access_token or refresh_token.
         :param request: The HTTP Request (oauthlib.common.Request)
         """
-        if token_type_hint not in [None, 'access_token', 'refresh_token']:
+        if token_type_hint not in ['access_token', 'refresh_token']:
             token_type_hint = None
 
-        if token_type_hint in [None, 'access_token']:
-            try:
-                AccessToken.objects.get(token=token).delete()
-                return
-            except AccessToken.DoesNotExist:
-                pass
+        token_types = {
+            'access_token': AccessToken,
+            'refresh_token': RefreshToken,
+        }
 
-        if token_type_hint in [None, 'refresh_token']:
-            try:
-                RefreshToken.objects.get(token=token).delete()
-                return
-            except RefreshToken.DoesNotExist:
-                pass
+        token_type = token_types.get(token_type_hint, AccessToken)
+        try:
+            token_type.objects.get(token=token).delete()
+        except ObjectDoesNotExist:
+            for other_type in [_t for _t in token_types.values() if _t != token_type]:
+                other_type.objects.filter(token=token).delete()
 
     def validate_user(self, username, password, client, request, *args, **kwargs):
         """
