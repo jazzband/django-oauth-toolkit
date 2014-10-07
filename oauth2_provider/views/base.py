@@ -168,7 +168,7 @@ class RevokeTokenView(CsrfExemptMixin, OAuthLibMixin, View):
 
     def post(self, request, *args, **kwargs):
         url, headers, body, status = self.create_revocation_response(request)
-        response = HttpResponse(content=body, status=status)
+        response = HttpResponse(content=body or '', status=status)
 
         for k, v in headers.items():
             response[k] = v
