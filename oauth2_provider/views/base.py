@@ -1,10 +1,8 @@
 import logging
 
 from django.http import HttpResponse, HttpResponseRedirect
-from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import View, FormView
 from django.utils import timezone
-from django.utils.decorators import method_decorator
 
 from oauthlib.oauth2 import Server
 
@@ -152,7 +150,6 @@ class TokenView(CsrfExemptMixin, OAuthLibMixin, View):
     server_class = Server
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
 
-    @method_decorator(sensitive_post_parameters('password'))
     def post(self, request, *args, **kwargs):
         url, headers, body, status = self.create_token_response(request)
         response = HttpResponse(content=body, status=status)
