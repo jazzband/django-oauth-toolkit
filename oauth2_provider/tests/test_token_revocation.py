@@ -118,3 +118,27 @@ class TestRevocationView(BaseTest):
         response = self.client.post(url)
         self.assertEqual(response.status_code, 200)
         self.assertFalse(RefreshToken.objects.filter(id=rtok.id).exists())
+
+    def test_revoke_token_with_wrong_hint(self):
+        """
+        From the revocation rfc, `Section 4.1.2`_ :
+
+        If the server is unable to locate the token using the given hint, it MUST extend its search across all of its supported token typeso
+        .. _`Section 4.1.2`: http://tools.ietf.org/html/draft-ietf-oauth-revocation-11#section-4.1.2
+        """
+        tok = AccessToken.objects.create(user=self.test_user, token='1234567890',
+                                         application=self.application,
+                                         expires=timezone.now()+datetime.timedelta(days=1),
+                                         scope='read write')
+
+        query_string = urlencode({
+            'client_id': self.application.client_id,
+            'client_secret': self.application.client_secret,
+            'token': tok.token,
+            'token_type_hint': 'refresh_token'
+        })
+        url = "{url}?{qs}".format(url=reverse('oauth2_provider:revoke-token'), qs=query_string)
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(AccessToken.objects.filter(id=tok.id).exists())
+
