@@ -19,6 +19,7 @@ your `views.py` module and import the view:
 .. code-block:: python
 
     from oauth2_provider.views.generic import ProtectedResourceView
+    from django.http import HttpResponse
 
 Then create the view which will respond to the API endpoint:
 
