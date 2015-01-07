@@ -115,7 +115,8 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             kwargs['scopes_descriptions'] = [oauth2_settings.SCOPES[scope] for scope in scopes]
             kwargs['scopes'] = scopes
             # at this point we know an Application instance with such client_id exists in the database
-            kwargs['application'] = Application.objects.get(client_id=credentials['client_id'])  # TODO: cache it!
+            application = Application.objects.get(client_id=credentials['client_id'])  # TODO: cache it!
+            kwargs['application'] = application
             kwargs.update(credentials)
             self.oauth2_data = kwargs
             # following two loc are here only because of https://code.djangoproject.com/ticket/17795
@@ -126,10 +127,11 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             # a successful response depending on 'approval_prompt' url parameter
             require_approval = request.GET.get('approval_prompt', oauth2_settings.REQUEST_APPROVAL_PROMPT)
 
-            # if skip_authorization_completely is True, skip the authorization screen even
-            # if this is the first use of the application and there was no previous authorization
-            # useful for in-house applications-> assume an in-house applications are already approved.
-            if self.skip_authorization_completely:
+            # If skip_authorization field is True, skip the authorization screen even
+            # if this is the first use of the application and there was no previous authorization.
+            # This is useful for in-house applications-> assume an in-house applications
+            # are already approved.
+            if application.skip_authorization:
                 uri, headers, body, status = self.create_authorization_response(
                     request=self.request, scopes=" ".join(scopes),
                     credentials=credentials, allow=True)
