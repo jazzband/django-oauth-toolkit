@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import base64
 import json
 import datetime
+import mock
 
 from django.test import TestCase, RequestFactory
 from django.core.urlresolvers import reverse
@@ -11,6 +12,7 @@ from django.utils import timezone
 from ..compat import urlparse, parse_qs, urlencode, get_user_model
 from ..models import get_application_model, Grant, AccessToken
 from ..settings import oauth2_settings
+from ..oauth2_validators import OAuth2Validator
 from ..views import ProtectedResourceView
 
 from .test_utils import TestCaseUtils
@@ -494,6 +496,36 @@ class TestAuthorizationCodeTokenView(BaseTest):
         self.assertEqual(response.status_code, 200)
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 401)
+
+    def test_refresh_repeating_requests_non_rotating_tokens(self):
+        """
+        Try refreshing an access token with the same refresh token more than once when not rotating tokens.
+        """
+        self.client.login(username="test_user", password="123456")
+        authorization_code = self.get_auth()
+
+        token_request_data = {
+            'grant_type': 'authorization_code',
+            'code': authorization_code,
+            'redirect_uri': 'http://example.it'
+        }
+        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
+
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        content = json.loads(response.content.decode("utf-8"))
+        self.assertTrue('refresh_token' in content)
+
+        token_request_data = {
+            'grant_type': 'refresh_token',
+            'refresh_token': content['refresh_token'],
+            'scope': content['scope'],
+        }
+
+        with mock.patch('oauthlib.oauth2.rfc6749.request_validator.RequestValidator.rotate_refresh_token', return_value=False):
+            response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+            self.assertEqual(response.status_code, 200)
+            response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+            self.assertEqual(response.status_code, 200)
 
     def test_basic_auth_bad_authcode(self):
         """
