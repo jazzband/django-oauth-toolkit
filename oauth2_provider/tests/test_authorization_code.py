@@ -50,6 +50,27 @@ class BaseTest(TestCaseUtils, TestCase):
 
 
 class TestAuthorizationCodeView(BaseTest):
+    def test_skip_authorization_completely(self):
+        """
+        If application.skip_authorization = True, should skip the authorization page.
+        """
+        self.client.login(username="test_user", password="123456")
+        self.application.skip_authorization = True
+        self.application.save()
+
+        query_string = urlencode({
+            'client_id': self.application.client_id,
+            'response_type': 'code',
+            'state': 'random_state_string',
+            'scope': 'read write',
+            'redirect_uri': 'http://example.it',
+        })
+        url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+
+
     def test_pre_auth_invalid_client(self):
         """
         Test error for an invalid client_id with response_type: code

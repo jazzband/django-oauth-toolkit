@@ -142,12 +142,13 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         self.assertIn('access_token=', response['Location'])
         self.assertIn('state=random_state_string', response['Location'])
 
-    @mock.patch('oauth2_provider.views.base.AuthorizationView.skip_authorization_completely', True)
     def test_skip_authorization_completely(self):
         """
-        If skip_authorization_completely = True, should skip the authorization page.
+        If application.skip_authorization = True, should skip the authorization page.
         """
         self.client.login(username="test_user", password="123456")
+        self.application.skip_authorization = True
+        self.application.save()
 
         query_string = urlencode({
             'client_id': self.application.client_id,
