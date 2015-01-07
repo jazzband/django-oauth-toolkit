@@ -331,10 +331,9 @@ class OAuth2Validator(RequestValidator):
         return False
 
     def get_original_scopes(self, refresh_token, request, *args, **kwargs):
-        # Avoid second query for RefreshToken since this method is invoked *after* validate_refresh_token.
-        rt = request.refresh_token
-        # Restore request.refresh_token
-        request.refresh_token = rt.token
+        # Avoid second query for RefreshToken since this method is invoked *after*
+        # validate_refresh_token.
+        rt = request.refresh_token_instance
         return rt.access_token.scope
 
     def validate_refresh_token(self, refresh_token, client, request, *args, **kwargs):
@@ -345,8 +344,9 @@ class OAuth2Validator(RequestValidator):
         try:
             rt = RefreshToken.objects.get(token=refresh_token)
             request.user = rt.user
+            request.refresh_token = rt.token
             # Temporary store RefreshToken instance to be reused by get_original_scopes.
-            request.refresh_token = rt
+            request.refresh_token_instance = rt
             return rt.application == client
 
         except RefreshToken.DoesNotExist:
