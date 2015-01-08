@@ -63,8 +63,8 @@ Possible values are:
 * `auto` - users are prompted only the first time, subsequent authorizations for the same application
   and scopes will be automatically accepted.
 
-Skipping authorization completely for trusted applications
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Skip authorization completely for trusted applications
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You might want to completely bypass the authorization form, for instance if your application is an
 in-house product or if you already trust the application owner by other means. To this end, you have to
