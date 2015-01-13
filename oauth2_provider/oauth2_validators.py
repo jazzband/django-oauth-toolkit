@@ -35,7 +35,7 @@ class OAuth2Validator(RequestValidator):
         if not auth:
             return None
 
-        auth_type, auth_string = auth.split(' ')
+        auth_type, auth_string = auth.split(' ', 1)
         if auth_type != "Basic":
             return None
 
