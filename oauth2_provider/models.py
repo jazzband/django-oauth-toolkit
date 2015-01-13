@@ -12,6 +12,7 @@ except ImportError:
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import python_2_unicode_compatible
 from django.core.exceptions import ImproperlyConfigured
+from django.utils.six.moves.urllib.parse import urlparse
 
 from .settings import oauth2_settings
 from .compat import AUTH_USER_MODEL
@@ -95,6 +96,18 @@ class AbstractApplication(models.Model):
         :param uri: Url to check
         """
         return uri in self.redirect_uris.split()
+
+    @property
+    def redirect_uri_schemes(self):
+        """
+        Returns the set of schemes used by the :attr:`redirect_uris`.
+        """
+        schemes = set()
+        for uri in self.redirect_uris.split():
+            parsed = urlparse(uri)
+            if parsed.scheme:
+                schemes.add(parsed.scheme)
+        return schemes
 
     def clean(self):
         from django.core.exceptions import ValidationError
