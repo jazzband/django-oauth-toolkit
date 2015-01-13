@@ -239,7 +239,17 @@ def get_application_model():
     except ValueError:
         e = "APPLICATION_MODEL must be of the form 'app_label.model_name'"
         raise ImproperlyConfigured(e)
-    app_model = get_model(app_label, model_name)
+
+    try:
+        # Django >=1.7
+        from django.apps import apps
+        try:
+            app_model = apps.get_model(app_label, model_name)
+        except LookupError:
+            app_model = None
+    except ImportError:
+        app_model = get_model(app_label, model_name)
+
     if app_model is None:
         e = "APPLICATION_MODEL refers to model {0} that has not been installed"
         raise ImproperlyConfigured(e.format(oauth2_settings.APPLICATION_MODEL))
