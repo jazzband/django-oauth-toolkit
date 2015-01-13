@@ -5,6 +5,8 @@ from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import View, FormView
 from django.utils import timezone
 from django.utils.decorators import method_decorator
+from django.utils.encoding import force_text
+from django.utils.six.moves.urllib.parse import urlparse
 
 from oauthlib.oauth2 import Server
 
@@ -17,6 +19,24 @@ from ..models import get_application_model
 from .mixins import OAuthLibMixin
 
 log = logging.getLogger('oauth2_provider')
+
+
+class CustomSchemesHttpResponseRedirect(HttpResponseRedirect):
+    """
+    HttpResponseRedirect subclass that accepts an `allowed_schemes`
+    positional argument to overwrite the default set of schemes.
+    Warning: if `allowed_schemes` is empty, all schemes are allowed.
+    """
+    def __init__(self, redirect_to, *args, **kwargs):
+        parsed = urlparse(force_text(redirect_to))
+        try:
+            self.allowed_schemes = kwargs.pop('allowed_schemes')
+        except KeyError:
+            pass
+        if self.allowed_schemes and parsed.scheme and parsed.scheme not in self.allowed_schemes:
+            raise DisallowedRedirect("Unsafe redirect to URL with protocol '%s'" % parsed.scheme)
+        super(HttpResponseRedirectBase, self).__init__(*args, **kwargs)
+        self['Location'] = iri_to_uri(redirect_to)
 
 
 class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
@@ -124,16 +144,20 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             # Check to see if the user has already granted access and return
             # a successful response depending on 'approval_prompt' url parameter
             require_approval = request.GET.get('approval_prompt', oauth2_settings.REQUEST_APPROVAL_PROMPT)
+            
+            def build_authorization_response():
+                uri, headers, body, status = self.create_authorization_response(
+                    request=self.request, scopes=" ".join(scopes),
+                    credentials=credentials, allow=True)
+                redirect_schemes = application.redirect_uri_schemes
+                return CustomSchemesHttpResponseRedirect(uri, allowed_schemes=redirect_schemes)
 
             # If skip_authorization field is True, skip the authorization screen even
             # if this is the first use of the application and there was no previous authorization.
             # This is useful for in-house applications-> assume an in-house applications
             # are already approved.
             if application.skip_authorization:
-                uri, headers, body, status = self.create_authorization_response(
-                    request=self.request, scopes=" ".join(scopes),
-                    credentials=credentials, allow=True)
-                return HttpResponseRedirect(uri)
+                return build_authorization_response()
 
             elif require_approval == 'auto':
                 tokens = request.user.accesstoken_set.filter(application=kwargs['application'],
@@ -141,10 +165,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                 # check past authorizations regarded the same scopes as the current one
                 for token in tokens:
                     if token.allow_scopes(scopes):
-                        uri, headers, body, status = self.create_authorization_response(
-                            request=self.request, scopes=" ".join(scopes),
-                            credentials=credentials, allow=True)
-                        return HttpResponseRedirect(uri)
+                        return build_authorization_response()
 
             return self.render_to_response(self.get_context_data(**kwargs))
 
