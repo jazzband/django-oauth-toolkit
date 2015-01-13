@@ -45,6 +45,36 @@ class TestOAuth2Validator(TestCase):
         self.request.headers = {'HTTP_AUTHORIZATION': 'Basic 123456 789'}
         self.assertEqual(self.validator._extract_basic_auth(self.request), '123456 789')
 
+    def test_authenticate_basic_auth(self):
+        self.request.encoding = 'utf-8'
+        # client_id:client_secret
+        self.request.headers = {'HTTP_AUTHORIZATION': 'Basic Y2xpZW50X2lkOmNsaWVudF9zZWNyZXQ=\n'}
+        self.assertTrue(self.validator._authenticate_basic_auth(self.request))
+
+    def test_authenticate_basic_auth_wrong_client_id(self):
+        self.request.encoding = 'utf-8'
+        # wrong_id:client_secret
+        self.request.headers = {'HTTP_AUTHORIZATION': 'Basic d3JvbmdfaWQ6Y2xpZW50X3NlY3JldA==\n'}
+        self.assertFalse(self.validator._authenticate_basic_auth(self.request))
+
+    def test_authenticate_basic_auth_wrong_client_secret(self):
+        self.request.encoding = 'utf-8'
+        # client_id:wrong_secret
+        self.request.headers = {'HTTP_AUTHORIZATION': 'Basic Y2xpZW50X2lkOndyb25nX3NlY3JldA==\n'}
+        self.assertFalse(self.validator._authenticate_basic_auth(self.request))
+
+    def test_authenticate_basic_auth_not_b64_auth_string(self):
+        self.request.encoding = 'utf-8'
+        # Can't b64decode
+        self.request.headers = {'HTTP_AUTHORIZATION': 'Basic not_base64'}
+        self.assertFalse(self.validator._authenticate_basic_auth(self.request))
+
+    def test_authenticate_basic_auth_not_utf8(self):
+        self.request.encoding = 'utf-8'
+        # b64decode('test') will become b'\xb5\xeb-', it can't be decoded as utf-8
+        self.request.headers = {'HTTP_AUTHORIZATION': 'Basic test'}
+        self.assertFalse(self.validator._authenticate_basic_auth(self.request))
+
     def test_authenticate_client_id(self):
         self.assertTrue(self.validator.authenticate_client_id('client_id', self.request))
 
