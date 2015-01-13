@@ -1,22 +1,24 @@
-from django.http import HttpResponseRedirect
-from django.core.exceptions import DisallowedRedirect
-from django.utils.encoding import force_text
-from django.utils.six.moves.urllib.parse import urlparse
+from django.http import HttpResponseRedirectBase
 
 
-class CustomSchemesHttpResponseRedirect(HttpResponseRedirect):
+class SchemedHttpResponseRedirectBase(HttpResponseRedirectBase):
     """
-    HttpResponseRedirect subclass that accepts an `allowed_schemes`
+    HttpResponseRedirectBase-like class that accepts an `allowed_schemes`
     positional argument to overwrite the default set of schemes.
-    Warning: if `allowed_schemes` is empty, all schemes are allowed.
+    Warning: if `allowed_schemes` is empty, no scheme is allowed.
     """
+
     def __init__(self, redirect_to, *args, **kwargs):
-        parsed = urlparse(force_text(redirect_to))
         try:
             self.allowed_schemes = kwargs.pop('allowed_schemes')
         except KeyError:
             pass
-        if self.allowed_schemes and parsed.scheme and parsed.scheme not in self.allowed_schemes:
-            raise DisallowedRedirect("Unsafe redirect to URL with protocol '%s'" % parsed.scheme)
-        super(HttpResponseRedirect, self).__init__(*args, **kwargs)
-        self['Location'] = iri_to_uri(redirect_to)
+        super(HttpResponseRedirectBase, self).__init__(*args, **kwargs)
+
+
+class SchemedHttpResponseRedirect(SchemedHttpResponseRedirectBase):
+    status_code = 302
+
+
+class SchemedHttpResponsePermanentRedirect(SchemedHttpResponseRedirectBase):
+    status_code = 301

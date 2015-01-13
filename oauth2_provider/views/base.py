@@ -15,7 +15,7 @@ from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
 from ..models import get_application_model
 from .mixins import OAuthLibMixin
-from .util import CustomSchemesHttpResponseRedirect
+from .util import SchemedHttpResponseRedirect
 
 log = logging.getLogger('oauth2_provider')
 
@@ -131,7 +131,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                     request=self.request, scopes=" ".join(scopes),
                     credentials=credentials, allow=True)
                 redirect_schemes = application.redirect_uri_schemes
-                return CustomSchemesHttpResponseRedirect(uri, allowed_schemes=redirect_schemes)
+                return SchemedHttpResponseRedirect(uri, allowed_schemes=redirect_schemes)
 
             # If skip_authorization field is True, skip the authorization screen even
             # if this is the first use of the application and there was no previous authorization.
