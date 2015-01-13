@@ -13,7 +13,7 @@ class SchemedHttpResponseRedirectBase(HttpResponseRedirectBase):
             self.allowed_schemes = kwargs.pop('allowed_schemes')
         except KeyError:
             pass
-        super(HttpResponseRedirectBase, self).__init__(redirect_to, *args, **kwargs)
+        super(SchemedHttpResponseRedirectBase, self).__init__(redirect_to, *args, **kwargs)
 
 
 class SchemedHttpResponseRedirect(SchemedHttpResponseRedirectBase):
