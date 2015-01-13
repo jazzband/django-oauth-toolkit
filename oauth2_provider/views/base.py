@@ -101,9 +101,9 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             allow = form.cleaned_data.get('allow')
             uri, headers, body, status = self.create_authorization_response(
                 request=self.request, scopes=scopes, credentials=credentials, allow=allow)
-            self.success_url = uri
-            log.debug("Success url for the request: {0}".format(self.success_url))
-            return super(AuthorizationView, self).form_valid(form)
+            log.debug("Redirect uri for the request: {0}".format(uri))
+            application = get_application_model().objects.get(client_id=credentials['client_id'])  # TODO: cache it!
+            return SchemedHttpResponseRedirect(uri, allowed_schemes=application.redirect_uri_schemes)
 
         except OAuthToolkitError as error:
             return self.error_response(error)
