@@ -54,7 +54,20 @@ class OAuth2Validator(RequestValidator):
 
         encoding = request.encoding or 'utf-8'
 
-        auth_string_decoded = base64.b64decode(auth_string).decode(encoding)
+        try:
+            b64_decoded = base64.b64decode(auth_string)
+        except TypeError:
+            log.debug("Failed basic auth: %s can't be decoded as base64", auth_string)
+            return False
+
+        try:
+            auth_string_decoded = b64_decoded.decode(encoding)
+        except UnicodeDecodeError:
+            log.debug("Failed basic auth: %s can't be decoded as unicode by %s",
+                      auth_string,
+                      encoding)
+            return False
+
         client_id, client_secret = map(unquote_plus, auth_string_decoded.split(':', 1))
 
         if self._load_application(client_id, request) is None:
