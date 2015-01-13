@@ -5,8 +5,6 @@ from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import View, FormView
 from django.utils import timezone
 from django.utils.decorators import method_decorator
-from django.utils.encoding import force_text
-from django.utils.six.moves.urllib.parse import urlparse
 
 from oauthlib.oauth2 import Server
 
@@ -17,26 +15,9 @@ from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
 from ..models import get_application_model
 from .mixins import OAuthLibMixin
+from .util import CustomSchemesHttpResponseRedirect
 
 log = logging.getLogger('oauth2_provider')
-
-
-class CustomSchemesHttpResponseRedirect(HttpResponseRedirect):
-    """
-    HttpResponseRedirect subclass that accepts an `allowed_schemes`
-    positional argument to overwrite the default set of schemes.
-    Warning: if `allowed_schemes` is empty, all schemes are allowed.
-    """
-    def __init__(self, redirect_to, *args, **kwargs):
-        parsed = urlparse(force_text(redirect_to))
-        try:
-            self.allowed_schemes = kwargs.pop('allowed_schemes')
-        except KeyError:
-            pass
-        if self.allowed_schemes and parsed.scheme and parsed.scheme not in self.allowed_schemes:
-            raise DisallowedRedirect("Unsafe redirect to URL with protocol '%s'" % parsed.scheme)
-        super(HttpResponseRedirectBase, self).__init__(*args, **kwargs)
-        self['Location'] = iri_to_uri(redirect_to)
 
 
 class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
@@ -144,7 +125,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             # Check to see if the user has already granted access and return
             # a successful response depending on 'approval_prompt' url parameter
             require_approval = request.GET.get('approval_prompt', oauth2_settings.REQUEST_APPROVAL_PROMPT)
-            
+
             def build_authorization_response():
                 uri, headers, body, status = self.create_authorization_response(
                     request=self.request, scopes=" ".join(scopes),
