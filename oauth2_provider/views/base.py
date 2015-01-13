@@ -15,8 +15,7 @@ from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
 from ..models import get_application_model
 from .mixins import OAuthLibMixin
-
-Application = get_application_model()
+from .util import SchemedHttpResponseRedirect
 
 log = logging.getLogger('oauth2_provider')
 
@@ -102,9 +101,9 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             allow = form.cleaned_data.get('allow')
             uri, headers, body, status = self.create_authorization_response(
                 request=self.request, scopes=scopes, credentials=credentials, allow=allow)
-            self.success_url = uri
-            log.debug("Success url for the request: {0}".format(self.success_url))
-            return super(AuthorizationView, self).form_valid(form)
+            log.debug("Redirect uri for the request: {0}".format(uri))
+            application = get_application_model().objects.get(client_id=credentials['client_id'])  # TODO: cache it!
+            return SchemedHttpResponseRedirect(uri, allowed_schemes=application.redirect_uri_schemes)
 
         except OAuthToolkitError as error:
             return self.error_response(error)
@@ -115,7 +114,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             kwargs['scopes_descriptions'] = [oauth2_settings.SCOPES[scope] for scope in scopes]
             kwargs['scopes'] = scopes
             # at this point we know an Application instance with such client_id exists in the database
-            application = Application.objects.get(client_id=credentials['client_id'])  # TODO: cache it!
+            application = get_application_model().objects.get(client_id=credentials['client_id'])  # TODO: cache it!
             kwargs['application'] = application
             kwargs.update(credentials)
             self.oauth2_data = kwargs
@@ -127,15 +126,19 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             # a successful response depending on 'approval_prompt' url parameter
             require_approval = request.GET.get('approval_prompt', oauth2_settings.REQUEST_APPROVAL_PROMPT)
 
+            def build_authorization_response():
+                uri, headers, body, status = self.create_authorization_response(
+                    request=self.request, scopes=" ".join(scopes),
+                    credentials=credentials, allow=True)
+                redirect_schemes = application.redirect_uri_schemes
+                return SchemedHttpResponseRedirect(uri, allowed_schemes=redirect_schemes)
+
             # If skip_authorization field is True, skip the authorization screen even
             # if this is the first use of the application and there was no previous authorization.
             # This is useful for in-house applications-> assume an in-house applications
             # are already approved.
             if application.skip_authorization:
-                uri, headers, body, status = self.create_authorization_response(
-                    request=self.request, scopes=" ".join(scopes),
-                    credentials=credentials, allow=True)
-                return HttpResponseRedirect(uri)
+                return build_authorization_response()
 
             elif require_approval == 'auto':
                 tokens = request.user.accesstoken_set.filter(application=kwargs['application'],
@@ -143,10 +146,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                 # check past authorizations regarded the same scopes as the current one
                 for token in tokens:
                     if token.allow_scopes(scopes):
-                        uri, headers, body, status = self.create_authorization_response(
-                            request=self.request, scopes=" ".join(scopes),
-                            credentials=credentials, allow=True)
-                        return HttpResponseRedirect(uri)
+                        return build_authorization_response()
 
             return self.render_to_response(self.get_context_data(**kwargs))
 

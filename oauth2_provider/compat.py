@@ -26,6 +26,13 @@ else:
     AUTH_USER_MODEL = 'auth.User'
 
 try:
+    # Django's new application loading system
+    from django.apps import apps
+    get_model = apps.get_model
+except ImportError:
+    from django.db.models import get_model
+
+try:
     from django.contrib.auth import get_user_model
 except ImportError:
     from django.contrib.auth.models import User

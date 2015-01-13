@@ -3,18 +3,13 @@ from __future__ import unicode_literals
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils import timezone
-try:
-    # Django's new application loading system
-    from django.apps import apps
-    get_model = apps.get_model
-except ImportError:
-    from django.db.models import get_model
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import python_2_unicode_compatible
 from django.core.exceptions import ImproperlyConfigured
+from django.utils.six.moves.urllib.parse import urlparse
 
 from .settings import oauth2_settings
-from .compat import AUTH_USER_MODEL
+from .compat import AUTH_USER_MODEL, get_model
 from .generators import generate_client_secret, generate_client_id
 from .validators import validate_uris
 
@@ -95,6 +90,18 @@ class AbstractApplication(models.Model):
         :param uri: Url to check
         """
         return uri in self.redirect_uris.split()
+
+    @property
+    def redirect_uri_schemes(self):
+        """
+        Returns the set of schemes used by the :attr:`redirect_uris`.
+        """
+        schemes = set()
+        for uri in self.redirect_uris.split():
+            parsed = urlparse(uri)
+            if parsed.scheme:
+                schemes.add(parsed.scheme)
+        return schemes
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -239,7 +246,17 @@ def get_application_model():
     except ValueError:
         e = "APPLICATION_MODEL must be of the form 'app_label.model_name'"
         raise ImproperlyConfigured(e)
-    app_model = get_model(app_label, model_name)
+
+    try:
+        # Django >=1.7
+        from django.apps import apps
+        try:
+            app_model = apps.get_model(app_label, model_name)
+        except LookupError:
+            app_model = None
+    except ImportError:
+        app_model = get_model(app_label, model_name)
+
     if app_model is None:
         e = "APPLICATION_MODEL refers to model {0} that has not been installed"
         raise ImproperlyConfigured(e.format(oauth2_settings.APPLICATION_MODEL))
