@@ -19,6 +19,7 @@ class OAuth2ProviderConfig(AppConfig):
 
         # monkey-patch GRANT_TYPE_MAPPING
         from . import oauth2_validators
+        oauth2_validators.Application = Application
         oauth2_validators.GRANT_TYPE_MAPPING = {
             'authorization_code': (Application.GRANT_AUTHORIZATION_CODE,),
             'password': (Application.GRANT_PASSWORD,),

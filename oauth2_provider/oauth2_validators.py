@@ -10,20 +10,14 @@ from django.core.exceptions import ObjectDoesNotExist
 from oauthlib.oauth2 import RequestValidator
 
 from .compat import unquote_plus
-from .models import Grant, AccessToken, RefreshToken, get_application_model
+from .models import Grant, AccessToken, RefreshToken
 from .settings import oauth2_settings
 
-# Application = get_application_model()
+Application = None
 
 log = logging.getLogger('oauth2_provider')
 
-# GRANT_TYPE_MAPPING = {
-#     'authorization_code': (Application.GRANT_AUTHORIZATION_CODE,),
-#     'password': (Application.GRANT_PASSWORD,),
-#     'client_credentials': (Application.GRANT_CLIENT_CREDENTIALS,),
-#     'refresh_token': (Application.GRANT_AUTHORIZATION_CODE, Application.GRANT_PASSWORD,
-#                       Application.GRANT_CLIENT_CREDENTIALS)
-# }
+GRANT_TYPE_MAPPING = {}
 
 
 class OAuth2Validator(RequestValidator):
