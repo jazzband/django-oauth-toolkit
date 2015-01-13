@@ -1,7 +1,5 @@
 from django import forms
 
-# from .models import get_application_model
-
 
 class AllowForm(forms.Form):
     allow = forms.BooleanField(required=False)
@@ -24,5 +22,6 @@ class RegistrationForm(forms.ModelForm):
     TODO: add docstring
     """
     class Meta:
-        # model = get_application_model()
+        # FIXME: monkey-patched in apps.py
+        model = None
         fields = ('name', 'client_id', 'client_secret', 'client_type', 'authorization_grant_type', 'redirect_uris')

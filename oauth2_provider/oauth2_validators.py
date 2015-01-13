@@ -13,11 +13,12 @@ from .compat import unquote_plus
 from .models import Grant, AccessToken, RefreshToken
 from .settings import oauth2_settings
 
+# FIXME: monkey-patched in apps.py
 Application = None
+# FIXME: monkey-patched in apps.py
+GRANT_TYPE_MAPPING = {}
 
 log = logging.getLogger('oauth2_provider')
-
-GRANT_TYPE_MAPPING = {}
 
 
 class OAuth2Validator(RequestValidator):

@@ -6,18 +6,19 @@ class OAuth2ProviderConfig(AppConfig):
     verbose_name = "OAuth2 provider"
 
     def ready(self):
+        # Monkey-patch Meta.model and other root objects
         from .models import get_application_model
         Application = get_application_model()
 
-        # monkey-patch ApplicationOwnerIsUserMixin model
+        # monkey-patch views/application.ApplicationOwnerIsUserMixin model
         from .views.application import ApplicationOwnerIsUserMixin
         ApplicationOwnerIsUserMixin.model = Application
 
-        # monkey-patch RegistrationForm model
+        # monkey-patch forms.RegistrationForm model
         from .forms import RegistrationForm
         RegistrationForm.Meta.model = Application
 
-        # monkey-patch GRANT_TYPE_MAPPING
+        # monkey-patch oauth2_validators.Appliacation and GRANT_TYPE_MAPPING
         from . import oauth2_validators
         oauth2_validators.Application = Application
         oauth2_validators.GRANT_TYPE_MAPPING = {
