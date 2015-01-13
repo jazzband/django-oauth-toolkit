@@ -1,4 +1,4 @@
-from django.http import HttpResponseRedirectBase
+from django.http.response import HttpResponseRedirectBase
 
 
 class SchemedHttpResponseRedirectBase(HttpResponseRedirectBase):
