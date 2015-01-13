@@ -42,6 +42,8 @@ class TestOAuth2Validator(TestCase):
         self.assertIsNone(self.validator._extract_basic_auth(self.request))
         self.request.headers = {'HTTP_AUTHORIZATION': 'Dummy 123456'}
         self.assertIsNone(self.validator._extract_basic_auth(self.request))
+        self.request.headers = {'HTTP_AUTHORIZATION': 'Basic 123456 789'}
+        self.assertEqual(self.validator._extract_basic_auth(self.request), '123456 789')
 
     def test_authenticate_client_id(self):
         self.assertTrue(self.validator.authenticate_client_id('client_id', self.request))
