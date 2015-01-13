@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 import base64
+import binascii
 import logging
 from datetime import timedelta
 
@@ -56,7 +57,7 @@ class OAuth2Validator(RequestValidator):
 
         try:
             b64_decoded = base64.b64decode(auth_string)
-        except TypeError:
+        except (TypeError, binascii.Error):
             log.debug("Failed basic auth: %s can't be decoded as base64", auth_string)
             return False
 
