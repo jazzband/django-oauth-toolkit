@@ -36,7 +36,7 @@ class BaseTest(TestCaseUtils, TestCase):
 
         self.application = Application(
             name="Test Application",
-            redirect_uris="http://localhost http://example.com http://example.it",
+            redirect_uris="http://localhost http://example.com http://example.it mobile-app://callback",
             user=self.dev_user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
@@ -311,6 +311,27 @@ class TestAuthorizationCodeView(BaseTest):
 
         response = self.client.post(reverse('oauth2_provider:authorize'), data=form_data)
         self.assertEqual(response.status_code, 400)
+
+    def test_code_post_auth_custom_scheme_redirect_uri(self):
+        """
+        Test non-default (http, https, ftp) schemes in redirect_uri are allowed
+        """
+        self.client.login(username="test_user", password="123456")
+
+        form_data = {
+            'client_id': self.application.client_id,
+            'state': 'random_state_string',
+            'scope': 'read write',
+            'redirect_uri': 'mobile-app://callback',
+            'response_type': 'code',
+            'allow': True,
+        }
+
+        response = self.client.post(reverse('oauth2_provider:authorize'), data=form_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response['Location'].startswith('mobile-app://callback?'))
+        self.assertIn('state=random_state_string', response['Location'])
+        self.assertIn('code=', response['Location'])
 
     def test_code_post_auth_malicious_redirect_uri(self):
         """
