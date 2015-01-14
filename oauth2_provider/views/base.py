@@ -14,6 +14,7 @@ from ..settings import oauth2_settings
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
 from ..models import get_application_model
+from .http import UnsafeHttpResponseRedirect
 from .mixins import OAuthLibMixin
 
 Application = get_application_model()
@@ -102,9 +103,8 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             allow = form.cleaned_data.get('allow')
             uri, headers, body, status = self.create_authorization_response(
                 request=self.request, scopes=scopes, credentials=credentials, allow=allow)
-            self.success_url = uri
-            log.debug("Success url for the request: {0}".format(self.success_url))
-            return super(AuthorizationView, self).form_valid(form)
+            # uri is already safety-checked by create_authorization_response()
+            return UnsafeHttpResponseRedirect(uri)
 
         except OAuthToolkitError as error:
             return self.error_response(error)
@@ -135,7 +135,8 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                 uri, headers, body, status = self.create_authorization_response(
                     request=self.request, scopes=" ".join(scopes),
                     credentials=credentials, allow=True)
-                return HttpResponseRedirect(uri)
+                # uri is already safety-checked by create_authorization_response()
+                return UnsafeHttpResponseRedirect(uri)
 
             elif require_approval == 'auto':
                 tokens = request.user.accesstoken_set.filter(application=kwargs['application'],
@@ -146,7 +147,8 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                         uri, headers, body, status = self.create_authorization_response(
                             request=self.request, scopes=" ".join(scopes),
                             credentials=credentials, allow=True)
-                        return HttpResponseRedirect(uri)
+                        # uri is already safety-checked by create_authorization_response()
+                        return UnsafeHttpResponseRedirect(uri)
 
             return self.render_to_response(self.get_context_data(**kwargs))
 
