@@ -50,6 +50,8 @@ That's all, now Django OAuth Toolkit will use your model wherever an Application
     See issue #90 (https://github.com/evonove/django-oauth-toolkit/issues/90) for details
 
 
+.. _skip-auth-form:
+
 Skip authorization form
 =======================
 

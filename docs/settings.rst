@@ -20,6 +20,11 @@ For example:
     }
 
 
-TODO: add reference documentation for DOT settings
-
 A big *thank you* to the guys from Django REST Framework for inspiring this.
+
+
+List of available settings
+--------------------------
+
+.. settings_generator::
+    :type: definitions
