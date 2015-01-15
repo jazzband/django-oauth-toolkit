@@ -185,6 +185,46 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         self.assertEqual(response.status_code, 302)
         self.assertIn("error=access_denied", response['Location'])
 
+    def test_implicit_redirection_uri_with_querystring(self):
+        """
+        Tests that a redirection uri with query string is allowed
+        and query string is retained on redirection.
+        See http://tools.ietf.org/html/rfc6749#section-3.1.2
+        """
+        self.client.login(username="test_user", password="123456")
+
+        form_data = {
+            'client_id': self.application.client_id,
+            'state': 'random_state_string',
+            'scope': 'read write',
+            'redirect_uri': 'http://example.com?foo=bar',
+            'response_type': 'token',
+            'allow': True,
+        }
+
+        response = self.client.post(reverse('oauth2_provider:authorize'), data=form_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("http://example.com?foo=bar", response['Location'])
+        self.assertIn("access_token=", response['Location'])
+
+    def test_implicit_fails_when_redirect_uri_path_is_invalid(self):
+        """
+        Tests that a redirection uri is matched using scheme + netloc + path
+        """
+        self.client.login(username="test_user", password="123456")
+
+        form_data = {
+            'client_id': self.application.client_id,
+            'state': 'random_state_string',
+            'scope': 'read write',
+            'redirect_uri': 'http://example.com/a?foo=bar',
+            'response_type': 'code',
+            'allow': True,
+        }
+
+        response = self.client.post(reverse('oauth2_provider:authorize'), data=form_data)
+        self.assertEqual(response.status_code, 400)
+
 
 class TestImplicitTokenView(BaseTest):
     def test_resource_access_allowed(self):

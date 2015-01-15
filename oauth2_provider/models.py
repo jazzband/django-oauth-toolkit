@@ -14,7 +14,7 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.core.exceptions import ImproperlyConfigured
 
 from .settings import oauth2_settings
-from .compat import AUTH_USER_MODEL
+from .compat import AUTH_USER_MODEL, parse_qsl, urlparse
 from .generators import generate_client_secret, generate_client_id
 from .validators import validate_uris
 
@@ -94,7 +94,21 @@ class AbstractApplication(models.Model):
 
         :param uri: Url to check
         """
-        return uri in self.redirect_uris.split()
+        for allowed_uri in self.redirect_uris.split():
+            parsed_allowed_uri = urlparse(allowed_uri)
+            parsed_uri = urlparse(uri)
+
+            if (parsed_allowed_uri.scheme == parsed_uri.scheme and
+                parsed_allowed_uri.netloc == parsed_uri.netloc and
+                parsed_allowed_uri.path == parsed_uri.path):
+
+                aqs_set = set(parse_qsl(parsed_allowed_uri.query))
+                uqs_set = set(parse_qsl(parsed_uri.query))
+
+                if aqs_set.issubset(uqs_set):
+                    return True
+
+        return False
 
     def clean(self):
         from django.core.exceptions import ValidationError

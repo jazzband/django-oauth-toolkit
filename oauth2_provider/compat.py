@@ -10,9 +10,9 @@ from django.conf import settings
 
 # urlparse in python3 has been renamed to urllib.parse
 try:
-    from urlparse import urlparse, parse_qs, urlunparse
+    from urlparse import urlparse, parse_qs, parse_qsl, urlunparse
 except ImportError:
-    from urllib.parse import urlparse, parse_qs, urlunparse
+    from urllib.parse import urlparse, parse_qs, parse_qsl, urlunparse
 
 try:
     from urllib import urlencode, unquote_plus
