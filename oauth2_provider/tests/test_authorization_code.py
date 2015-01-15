@@ -34,9 +34,11 @@ class BaseTest(TestCaseUtils, TestCase):
         self.test_user = UserModel.objects.create_user("test_user", "test@user.com", "123456")
         self.dev_user = UserModel.objects.create_user("dev_user", "dev@user.com", "123456")
 
+        oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES = ['http', 'custom-scheme']
+        
         self.application = Application(
             name="Test Application",
-            redirect_uris="http://localhost http://example.com http://example.it",
+            redirect_uris="http://localhost http://example.com http://example.it custom-scheme://example.com",
             user=self.dev_user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
@@ -111,6 +113,34 @@ class TestAuthorizationCodeView(BaseTest):
 
         form = response.context["form"]
         self.assertEqual(form['redirect_uri'].value(), "http://example.it")
+        self.assertEqual(form['state'].value(), "random_state_string")
+        self.assertEqual(form['scope'].value(), "read write")
+        self.assertEqual(form['client_id'].value(), self.application.client_id)
+
+    def test_pre_auth_valid_client_custom_redirect_uri_scheme(self):
+        """
+        Test response for a valid client_id with response_type: code
+        using a non-standard, but allowed, redirect_uri scheme.
+        """
+        self.client.login(username="test_user", password="123456")
+
+        query_string = urlencode({
+            'client_id': self.application.client_id,
+            'response_type': 'code',
+            'state': 'random_state_string',
+            'scope': 'read write',
+            'redirect_uri': 'custom-scheme://example.com',
+        })
+        url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        # check form is in context and form params are valid
+        self.assertIn("form", response.context)
+
+        form = response.context["form"]
+        self.assertEqual(form['redirect_uri'].value(), "custom-scheme://example.com")
         self.assertEqual(form['state'].value(), "random_state_string")
         self.assertEqual(form['scope'].value(), "read write")
         self.assertEqual(form['client_id'].value(), self.application.client_id)
@@ -329,6 +359,49 @@ class TestAuthorizationCodeView(BaseTest):
 
         response = self.client.post(reverse('oauth2_provider:authorize'), data=form_data)
         self.assertEqual(response.status_code, 400)
+
+    def test_code_post_auth_allow_custom_redirect_uri_scheme(self):
+        """
+        Test authorization code is given for an allowed request with response_type: code
+        using a non-standard, but allowed, redirect_uri scheme.
+        """
+        self.client.login(username="test_user", password="123456")
+
+        form_data = {
+            'client_id': self.application.client_id,
+            'state': 'random_state_string',
+            'scope': 'read write',
+            'redirect_uri': 'custom-scheme://example.com',
+            'response_type': 'code',
+            'allow': True,
+        }
+
+        response = self.client.post(reverse('oauth2_provider:authorize'), data=form_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('custom-scheme://example.com?', response['Location'])
+        self.assertIn('state=random_state_string', response['Location'])
+        self.assertIn('code=', response['Location'])
+
+    def test_code_post_auth_deny_custom_redirect_uri_scheme(self):
+        """
+        Test error when resource owner deny access
+        using a non-standard, but allowed, redirect_uri scheme.
+        """
+        self.client.login(username="test_user", password="123456")
+
+        form_data = {
+            'client_id': self.application.client_id,
+            'state': 'random_state_string',
+            'scope': 'read write',
+            'redirect_uri': 'custom-scheme://example.com',
+            'response_type': 'code',
+            'allow': False,
+        }
+
+        response = self.client.post(reverse('oauth2_provider:authorize'), data=form_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('custom-scheme://example.com?', response['Location'])
+        self.assertIn("error=access_denied", response['Location'])
 
 
 class TestAuthorizationCodeTokenView(BaseTest):
