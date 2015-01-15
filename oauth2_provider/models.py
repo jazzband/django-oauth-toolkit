@@ -94,7 +94,10 @@ class AbstractApplication(models.Model):
 
         :param uri: Url to check
         """
-        return uri in self.redirect_uris.split()
+        for allowed_uri in self.redirect_uris.split():
+            if uri.startswith(allowed_uri):
+                return True
+        return False
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -149,7 +152,7 @@ class Grant(models.Model):
         return timezone.now() >= self.expires
 
     def redirect_uri_allowed(self, uri):
-        return uri == self.redirect_uri
+        return uri.split('?')[0] == self.redirect_uri.split('?')[0]
 
     def __str__(self):
         return self.code
