@@ -184,7 +184,7 @@ class AccessToken(models.Model):
                       :data:`settings.ACCESS_TOKEN_EXPIRE_SECONDS`
     * :attr:`scope` Allowed scopes
     """
-    user = models.ForeignKey(AUTH_USER_MODEL)
+    user = models.ForeignKey(AUTH_USER_MODEL, blank=True, null=True)
     token = models.CharField(max_length=255, db_index=True)
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL)
     expires = models.DateTimeField()
