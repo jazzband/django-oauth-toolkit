@@ -25,7 +25,7 @@ Start a new Django project and add `'rest_framework'` and `'oauth2_provider'` to
     )
 
 Now we need to tell Django REST Framework to use the new authentication backend.
-To do so add the following lines add the end of your `settings.py` module:
+To do so add the following lines at the end of your `settings.py` module:
 
 .. code-block:: python
 
