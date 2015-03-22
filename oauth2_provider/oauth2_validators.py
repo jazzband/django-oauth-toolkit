@@ -293,7 +293,7 @@ class OAuth2Validator(RequestValidator):
 
         expires = timezone.now() + timedelta(seconds=oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
         if request.grant_type == 'client_credentials':
-            request.user = request.client.user
+            request.user = None
 
         access_token = AccessToken(
             user=request.user,
