@@ -192,9 +192,15 @@ class ScopedResourceMixin(object):
 
 class ProtectedResourceMixin(OAuthLibMixin):
     """
-    Helper mixin that implements OAuth2 protection on request dispatch, specially useful for Django Generic Views
+    Helper mixin that implements OAuth2 protection on request dispatch,
+    specially useful for Django Generic Views
     """
     def dispatch(self, request, *args, **kwargs):
+        # let preflight OPTIONS requests pass
+        if request.method.upper() == 'OPTIONS':
+            return super(ProtectedResourceMixin, self).dispatch(request, *args, **kwargs)
+
+        # check if the request is valid and the protected resource may be accessed
         valid, r = self.verify_request(request)
         if valid:
             request.resource_owner = r.user
