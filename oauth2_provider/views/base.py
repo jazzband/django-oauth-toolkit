@@ -76,8 +76,12 @@ class AuthorizationView(BaseAuthorizationView, FormView):
     skip_authorization_completely = False
 
     def get_initial(self):
-        # TODO: move this scopes conversion from and to string into a utils function
-        scopes = self.oauth2_data.get('scope', self.oauth2_data.get('scopes', []))
+        if oauth2_settings.APP_SPECIFIC_SCOPES:
+            application = Application.objects.get(client_id=self.request.GET['client_id'])
+            scopes = application.allowed_scopes.split(' ')
+        else:
+            # TODO: move this scopes conversion from and to string into a utils function
+            scopes = self.oauth2_data.get('scope', self.oauth2_data.get('scopes', []))
         initial_data = {
             'redirect_uri': self.oauth2_data.get('redirect_uri', None),
             'scope': ' '.join(scopes),
