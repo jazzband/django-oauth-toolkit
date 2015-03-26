@@ -25,4 +25,4 @@ class RegistrationForm(forms.ModelForm):
     """
     class Meta:
         model = get_application_model()
-        fields = ('name', 'client_id', 'client_secret', 'client_type', 'authorization_grant_type', 'redirect_uris')
+        fields = '__all__'
