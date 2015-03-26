@@ -3,18 +3,13 @@ from __future__ import unicode_literals
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils import timezone
-try:
-    # Django's new application loading system
-    from django.apps import apps
-    get_model = apps.get_model
-except ImportError:
-    from django.db.models import get_model
+
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import python_2_unicode_compatible
 from django.core.exceptions import ImproperlyConfigured
 
 from .settings import oauth2_settings
-from .compat import AUTH_USER_MODEL, parse_qsl, urlparse
+from .compat import AUTH_USER_MODEL, parse_qsl, urlparse, get_model
 from .generators import generate_client_secret, generate_client_id
 from .validators import validate_uris
 

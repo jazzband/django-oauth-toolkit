@@ -30,3 +30,10 @@ try:
 except ImportError:
     from django.contrib.auth.models import User
     get_user_model = lambda: User
+
+# Django's new application loading system
+try:
+    from django.apps import apps
+    get_model = apps.get_model
+except ImportError:
+    from django.db.models import get_model
