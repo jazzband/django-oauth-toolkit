@@ -3,6 +3,7 @@ from django.test.utils import override_settings
 from django.contrib.auth.models import AnonymousUser
 from django.utils.timezone import now, timedelta
 from django.conf.global_settings import MIDDLEWARE_CLASSES
+from django.http import HttpResponse
 
 from ..compat import get_user_model
 from ..models import get_application_model
@@ -112,3 +113,24 @@ class TestOAuth2Middleware(BaseTest):
         request = self.factory.get("/a-resource", **auth_headers)
         m.process_request(request)
         self.assertEqual(request.user, self.user)
+
+    def test_middleware_response(self):
+        m = OAuth2TokenMiddleware()
+        auth_headers = {
+            'HTTP_AUTHORIZATION': 'Bearer ' + 'tokstr',
+        }
+        request = self.factory.get("/a-resource", **auth_headers)
+        response = HttpResponse()
+        processed = m.process_response(request, response)
+        self.assertIs(response, processed)
+
+    def test_middleware_response_header(self):
+        m = OAuth2TokenMiddleware()
+        auth_headers = {
+            'HTTP_AUTHORIZATION': 'Bearer ' + 'tokstr',
+        }
+        request = self.factory.get("/a-resource", **auth_headers)
+        response = HttpResponse()
+        m.process_response(request, response)
+        self.assertIn('Vary', response)
+        self.assertIn('Authorization', response['Vary'])

@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate
+from django.utils.cache import patch_vary_headers
 
 
 class OAuth2TokenMiddleware(object):
@@ -16,6 +17,9 @@ class OAuth2TokenMiddleware(object):
     tries to authenticate user with the OAuth2 access token and set request.user field. Setting
     also request._cached_user field makes AuthenticationMiddleware use that instead of the one from
     the session.
+
+    It also adds 'Authorization' to the 'Vary' header. So that django's cache middleware or a
+    reverse proxy can create proper cache keys
     """
     def process_request(self, request):
         # do something only if request contains a Bearer token
@@ -24,3 +28,7 @@ class OAuth2TokenMiddleware(object):
                 user = authenticate(request=request)
                 if user:
                     request.user = request._cached_user = user
+
+    def process_response(self, request, response):
+        patch_vary_headers(response, ('Authorization',))
+        return response
