@@ -1,4 +1,4 @@
-Sphinx==1.2.2
+Sphinx
 South==1.0
 oauthlib>=0.6.2
 django-braces==1.4.0
