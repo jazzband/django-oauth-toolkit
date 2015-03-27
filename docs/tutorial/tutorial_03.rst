@@ -24,6 +24,8 @@ which takes care of token verification. In your settings.py:
 
     MIDDLEWARE_CLASSES = (
         '...',
+        # be sure following two appear in this order
+        'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
         'oauth2_provider.middleware.OAuth2TokenMiddleware',
         '...',
     )
