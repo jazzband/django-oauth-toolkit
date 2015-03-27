@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import get_application_model
+from .models import Application
 
 
 class AllowForm(forms.Form):
@@ -24,5 +24,5 @@ class RegistrationForm(forms.ModelForm):
     TODO: add docstring
     """
     class Meta:
-        model = get_application_model()
+        model = Application
         fields = ('name', 'client_id', 'client_secret', 'client_type', 'authorization_grant_type', 'redirect_uris')

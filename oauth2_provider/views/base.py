@@ -17,8 +17,6 @@ from ..http import HttpResponseUriRedirect
 from ..models import get_application_model
 from .mixins import OAuthLibMixin
 
-Application = get_application_model()
-
 log = logging.getLogger('oauth2_provider')
 
 
@@ -116,7 +114,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             kwargs['scopes_descriptions'] = [oauth2_settings.SCOPES[scope] for scope in scopes]
             kwargs['scopes'] = scopes
             # at this point we know an Application instance with such client_id exists in the database
-            application = Application.objects.get(client_id=credentials['client_id'])  # TODO: cache it!
+            application = get_application_model().objects.get(client_id=credentials['client_id'])  # TODO: cache it!
             kwargs['application'] = application
             kwargs.update(credentials)
             self.oauth2_data = kwargs
@@ -147,7 +145,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                         uri, headers, body, status = self.create_authorization_response(
                             request=self.request, scopes=" ".join(scopes),
                             credentials=credentials, allow=True)
-                        return HttpResponseUriRedirect(uri)                            
+                        return HttpResponseUriRedirect(uri)
 
             return self.render_to_response(self.get_context_data(**kwargs))
 

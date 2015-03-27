@@ -11,12 +11,10 @@ class ApplicationOwnerIsUserMixin(LoginRequiredMixin):
     """
     This mixin is used to provide an Application queryset filtered by the current request.user.
     """
-    model = get_application_model()
     fields = '__all__'
 
     def get_queryset(self):
-        queryset = super(ApplicationOwnerIsUserMixin, self).get_queryset()
-        return queryset.filter(user=self.request.user)
+        return get_application_model().objects.filter(user=self.request.user)
 
 
 class ApplicationRegistration(LoginRequiredMixin, CreateView):

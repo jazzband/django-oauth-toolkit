@@ -11,19 +11,17 @@ from django.core.exceptions import ObjectDoesNotExist
 from oauthlib.oauth2 import RequestValidator
 
 from .compat import unquote_plus
-from .models import Grant, AccessToken, RefreshToken, get_application_model
+from .models import Grant, AccessToken, RefreshToken, get_application_model, AbstractApplication
 from .settings import oauth2_settings
-
-Application = get_application_model()
 
 log = logging.getLogger('oauth2_provider')
 
 GRANT_TYPE_MAPPING = {
-    'authorization_code': (Application.GRANT_AUTHORIZATION_CODE,),
-    'password': (Application.GRANT_PASSWORD,),
-    'client_credentials': (Application.GRANT_CLIENT_CREDENTIALS,),
-    'refresh_token': (Application.GRANT_AUTHORIZATION_CODE, Application.GRANT_PASSWORD,
-                      Application.GRANT_CLIENT_CREDENTIALS)
+    'authorization_code': (AbstractApplication.GRANT_AUTHORIZATION_CODE,),
+    'password': (AbstractApplication.GRANT_PASSWORD,),
+    'client_credentials': (AbstractApplication.GRANT_CLIENT_CREDENTIALS,),
+    'refresh_token': (AbstractApplication.GRANT_AUTHORIZATION_CODE, AbstractApplication.GRANT_PASSWORD,
+                      AbstractApplication.GRANT_CLIENT_CREDENTIALS)
 }
 
 
@@ -117,6 +115,7 @@ class OAuth2Validator(RequestValidator):
         # we want to be sure that request has the client attribute!
         assert hasattr(request, "client"), "'request' instance has no 'client' attribute"
 
+        Application = get_application_model()
         try:
             request.client = request.client or Application.objects.get(client_id=client_id)
             return request.client
@@ -149,7 +148,7 @@ class OAuth2Validator(RequestValidator):
 
         self._load_application(request.client_id, request)
         if request.client:
-            return request.client.client_type == Application.CLIENT_CONFIDENTIAL
+            return request.client.client_type == AbstractApplication.CLIENT_CONFIDENTIAL
 
         return super(OAuth2Validator, self).client_authentication_required(request,
                                                                            *args, **kwargs)
@@ -179,7 +178,7 @@ class OAuth2Validator(RequestValidator):
         """
         if self._load_application(client_id, request) is not None:
             log.debug("Application %s has type %s" % (client_id, request.client.client_type))
-            return request.client.client_type != Application.CLIENT_CONFIDENTIAL
+            return request.client.client_type != AbstractApplication.CLIENT_CONFIDENTIAL
         return False
 
     def confirm_redirect_uri(self, client_id, code, redirect_uri, client, *args, **kwargs):
@@ -253,9 +252,9 @@ class OAuth2Validator(RequestValidator):
         rfc:`8.4`, so validate the response_type only if it matches 'code' or 'token'
         """
         if response_type == 'code':
-            return client.authorization_grant_type == Application.GRANT_AUTHORIZATION_CODE
+            return client.authorization_grant_type == AbstractApplication.GRANT_AUTHORIZATION_CODE
         elif response_type == 'token':
-            return client.authorization_grant_type == Application.GRANT_IMPLICIT
+            return client.authorization_grant_type == AbstractApplication.GRANT_IMPLICIT
         else:
             return False
 
