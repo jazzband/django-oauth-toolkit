@@ -46,5 +46,5 @@ For example:
         permission_classes = [TokenHasReadWriteScope]
         required_scopes = ['music']
 
-When a request is performed both the `READ_SCOPE`\`WRITE_SCOPE` and 'music' scopes are required to be authorized for the current access token.
+When a request is performed both the `READ_SCOPE` \\ `WRITE_SCOPE` and 'music' scopes are required to be authorized for the current access token.
 
