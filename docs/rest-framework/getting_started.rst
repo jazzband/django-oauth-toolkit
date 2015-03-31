@@ -5,7 +5,8 @@ Django OAuth Toolkit provide a support layer for `Django REST Framework <http://
 This tutorial is based on the Django REST Framework example and shows you how to easily integrate with it.
 
 **NOTE**
-The followin code has been tested with django 1.7.7 and Django REST Framework 3.1.1
+
+The following code has been tested with django 1.7.7 and Django REST Framework 3.1.1
 
 Step 1: Minimal setup
 ---------------------
@@ -119,6 +120,7 @@ so we can use them for permission check.
 Now run the following commands:
 
 ::
+
     python manage.py migrate
     python manage.py createsuperuser
     python manage.py runserver
@@ -129,6 +131,7 @@ runs the application.
 Next thing you should do is to login in the admin at
 
 ::
+
     http://localhost:8000/admin
 
 and create some users and groups that will be queried later through our API.
@@ -141,6 +144,7 @@ To obtain a valid access_token first we must register an application. DOT has a 
 views you can use to CRUD application instances, just point your browser at:
 
 ::
+
     http://localhost:8000/o/applications/
 
 Click on the link to create a new application and fill the form with the following data:
