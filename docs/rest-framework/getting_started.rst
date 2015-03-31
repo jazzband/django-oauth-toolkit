@@ -4,6 +4,9 @@ Getting started
 Django OAuth Toolkit provide a support layer for `Django REST Framework <http://django-rest-framework.org/>`_.
 This tutorial is based on the Django REST Framework example and shows you how to easily integrate with it.
 
+**NOTE**
+The followin code has been tested with django 1.7.7 and Django REST Framework 3.1.1
+
 Step 1: Minimal setup
 ---------------------
 
@@ -44,27 +47,39 @@ Here's our project's root `urls.py` module:
 
 .. code-block:: python
 
-    from django.conf.urls.defaults import url, patterns, include
+    from django.conf.urls import url, patterns, include
     from django.contrib.auth.models import User, Group
     from django.contrib import admin
     admin.autodiscover()
 
-    from rest_framework import viewsets, routers
-    from rest_framework import permissions
+    from rest_framework import permissions, routers, serializers, viewsets
 
     from oauth2_provider.ext.rest_framework import TokenHasReadWriteScope, TokenHasScope
+
+
+    # first we define the serializers
+    class UserSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = User
+
+
+    class GroupSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = Group
 
 
     # ViewSets define the view behavior.
     class UserViewSet(viewsets.ModelViewSet):
         permission_classes = [permissions.IsAuthenticated, TokenHasReadWriteScope]
-        model = User
+        queryset = User.objects.all()
+        serializer_class = UserSerializer
 
 
     class GroupViewSet(viewsets.ModelViewSet):
         permission_classes = [permissions.IsAuthenticated, TokenHasScope]
         required_scopes = ['groups']
-        model = Group
+        queryset = Group.objects.all()
+        serializer_class = GroupSerializer
 
 
     # Routers provide an easy way of automatically determining the URL conf
@@ -98,10 +113,26 @@ Also add the following to your `settings.py` module:
         )
     }
 
-`OAUTH2_PROVIDER.SCOPES` parameter contains the scopes that the application will be aware of,
+`OAUTH2_PROVIDER.SCOPES` setting parameter contains the scopes that the application will be aware of,
 so we can use them for permission check.
 
-Now run `python manage.py syncdb`, login to admin and create some users and groups.
+Now run the following commands:
+
+::
+    python manage.py migrate
+    python manage.py createsuperuser
+    python manage.py runserver
+
+The first command creates the tables, the second creates the admin user account and the last one
+runs the application.
+
+Next thing you should do is to login in the admin at
+
+::
+    http://localhost:8000/admin
+
+and create some users and groups that will be queried later through our API.
+
 
 Step 3: Register an application
 -------------------------------
@@ -109,11 +140,12 @@ Step 3: Register an application
 To obtain a valid access_token first we must register an application. DOT has a set of customizable
 views you can use to CRUD application instances, just point your browser at:
 
-    `http://localhost:8000/o/applications/`
+::
+    http://localhost:8000/o/applications/
 
-Click the button `New Application` and fill the form with the following data:
+Click on the link to create a new application and fill the form with the following data:
 
-* User: *your current user*
+* Name: *just a name of your choice*
 * Client Type: *confidential*
 * Authorization Grant Type: *Resource owner password-based*
 
@@ -126,9 +158,9 @@ At this point we're ready to request an access_token. Open your shell
 
 ::
 
-    curl -X POST -d "grant_type=password&username=<user_name>&password=<password>" -u'<client_id>:<client_secret>' http://localhost:8000/o/token/
+    curl -X POST -d "grant_type=password&username=<user_name>&password=<password>" -u"<client_id>:<client_secret>" http://localhost:8000/o/token/
 
-The *user_name* and *password* are the credential on any user registered in your :term:`Authorization Server`, like any user created in Step 2.
+The *user_name* and *password* are the credential of the users registered in your :term:`Authorization Server`, like any user created in Step 2.
 Response should be something like:
 
 .. code-block:: javascript
@@ -162,7 +194,7 @@ Let's try to access resources using a token with a restricted scope adding a `sc
 
 ::
 
-    curl -X POST -d "grant_type=password&username=<user_name>&password=<password>&scope=read" http://<client_id>:<client_secret>@localhost:8000/o/token/
+    curl -X POST -d "grant_type=password&username=<user_name>&password=<password>&scope=read" -u"<client_id>:<client_secret>" http://localhost:8000/o/token/
 
 As you can see the only scope provided is `read`:
 
