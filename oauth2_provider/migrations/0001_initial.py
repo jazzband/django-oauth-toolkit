@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 
 from django.db import models, migrations
 from django.conf import settings
+
+from oauth2_provider.settings import oauth2_settings
 import oauth2_provider.generators
 import oauth2_provider.validators
 
@@ -48,7 +50,7 @@ class Migration(migrations.Migration):
                 ('expires', models.DateTimeField()),
                 ('redirect_uri', models.CharField(max_length=255)),
                 ('scope', models.TextField(blank=True)),
-                ('application', models.ForeignKey(to=settings.OAUTH2_PROVIDER_APPLICATION_MODEL)),
+                ('application', models.ForeignKey(to=oauth2_settings.APPLICATION_MODEL)),
                 ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
             ],
         ),
@@ -58,14 +60,14 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(primary_key=True, verbose_name='ID', auto_created=True, serialize=False)),
                 ('token', models.CharField(max_length=255, db_index=True)),
                 ('access_token', models.OneToOneField(to='oauth2_provider.AccessToken', related_name='refresh_token')),
-                ('application', models.ForeignKey(to=settings.OAUTH2_PROVIDER_APPLICATION_MODEL)),
+                ('application', models.ForeignKey(to=oauth2_settings.APPLICATION_MODEL)),
                 ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.AddField(
             model_name='accesstoken',
             name='application',
-            field=models.ForeignKey(to=settings.OAUTH2_PROVIDER_APPLICATION_MODEL),
+            field=models.ForeignKey(to=oauth2_settings.APPLICATION_MODEL),
         ),
         migrations.AddField(
             model_name='accesstoken',
