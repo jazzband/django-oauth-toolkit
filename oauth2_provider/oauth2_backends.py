@@ -26,7 +26,7 @@ class OAuthLibCore(object):
         parsed = list(urlparse(request.get_full_path()))
         unsafe = set(c for c in parsed[4]).difference(urlencoded)
         for c in unsafe:
-            parsed[4] = parsed[4].replace(c, quote(c, safe=''))
+            parsed[4] = parsed[4].replace(c, quote(c, safe=b''))
 
         return urlunparse(parsed)
 
