@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
 
+import json
+
 from oauthlib import oauth2
 from oauthlib.common import urlencode, urlencoded, quote
 
@@ -152,6 +154,24 @@ class OAuthLibCore(object):
 
         valid, r = self.server.verify_request(uri, http_method, body, headers, scopes=scopes)
         return valid, r
+
+
+class JSONOAuthLibCore(OAuthLibCore):
+    """
+    Extends the default OAuthLibCore to parse correctly requests with application/json Content-Type
+    """
+    def _extract_body(self, request):
+        """
+        Extracts the JSON body from the Django request object
+        :param request: The current django.http.HttpRequest object
+        :return: provided POST parameters "urlencodable"
+        """
+        try:
+            body = json.loads(request.body.decode('utf-8')).items()
+        except ValueError:
+            body = ""
+
+        return body
 
 
 def get_oauthlib_core():
