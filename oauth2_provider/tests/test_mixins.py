@@ -52,13 +52,13 @@ class TestOAuthLibMixin(BaseTest):
         class TestView(OAuthLibMixin, View):
             server_class = Server
             validator_class = OAuth2Validator
-            oauthlib_core_class = AnotherOauthLibBackend
+            oauthlib_backend_class = AnotherOauthLibBackend
 
         request = self.request_factory.get("/fake-req")
         request.user = "fake"
         test_view = TestView()
 
-        self.assertEqual(test_view.get_oauthlib_core_class(),
+        self.assertEqual(test_view.get_oauthlib_backend_class(),
                          AnotherOauthLibBackend)
 
 

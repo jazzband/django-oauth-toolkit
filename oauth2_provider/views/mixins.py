@@ -25,7 +25,7 @@ class OAuthLibMixin(object):
 
       * server_class
       * validator_class
-      * oauthlib_core_class  # TODO rename it as oauthlib_backend_class
+      * oauthlib_backend_class
 
     """
     server_class = None
@@ -56,16 +56,14 @@ class OAuthLibMixin(object):
             return cls.validator_class
 
     @classmethod
-    def get_oauthlib_core_class(cls):
+    def get_oauthlib_backend_class(cls):
         """
         Return the OAuthLibCore implementation class to use, silently
         defaults to OAuthLibCore class from oauth2_provider package
-
-        # TODO rename this as get_oauthlib_backend_class
         """
-        if not hasattr(cls, 'oauthlib_core_class'):
+        if not hasattr(cls, 'oauthlib_backend_class'):
             return OAuthLibCore
-        return cls.oauthlib_core_class
+        return cls.oauthlib_backend_class
 
     @classmethod
     def get_server(cls):
@@ -84,7 +82,7 @@ class OAuthLibMixin(object):
         """
         if not hasattr(cls, '_oauthlib_core'):
             server = cls.get_server()
-            core_class = cls.get_oauthlib_core_class()
+            core_class = cls.get_oauthlib_backend_class()
             cls._oauthlib_core = core_class(server)
         return cls._oauthlib_core
 
