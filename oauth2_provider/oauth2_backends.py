@@ -144,4 +144,4 @@ def get_oauthlib_core():
     from oauthlib.oauth2 import Server
 
     server = Server(oauth2_settings.OAUTH2_VALIDATOR_CLASS())
-    return OAuthLibCore(server)
+    return oauth2_settings.OAUTH2_BACKEND_CLASS(server)

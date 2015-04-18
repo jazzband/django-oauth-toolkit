@@ -14,6 +14,7 @@ from django.views.generic import View
 from oauthlib.oauth2 import BackendApplicationServer
 
 from ..models import get_application_model, AccessToken
+from ..oauth2_backends import OAuthLibCore
 from ..oauth2_validators import OAuth2Validator
 from ..settings import oauth2_settings
 from ..views import ProtectedResourceView
@@ -114,6 +115,7 @@ class TestExtendedRequest(BaseTest):
         class TestView(OAuthLibMixin, View):
             server_class = BackendApplicationServer
             validator_class = OAuth2Validator
+            oauthlib_backend_class = OAuthLibCore
 
             def get_scopes(self):
                 return ['read', 'write']
