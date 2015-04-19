@@ -64,6 +64,11 @@ OAUTH2_VALIDATOR_CLASS
 The import string of the ``oauthlib.oauth2.RequestValidator`` subclass that
 validates every step of the OAuth2 process.
 
+OAUTH2_BACKEND_CLASS
+~~~~~~~~~~~~~~~~~~~~
+The import string for the ``oauthlib_backend_class`` used in the ``OAuthLibMixin``,
+to get a ``Server`` instance.
+
 SCOPES
 ~~~~~~
 A dictionnary mapping each scope name to its human description.
