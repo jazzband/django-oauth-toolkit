@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
 
+import json
+
 from oauthlib import oauth2
 from oauthlib.common import urlencode, urlencoded, quote
 
@@ -33,10 +35,20 @@ class OAuthLibCore(object):
     def _extract_params(self, request):
         """
         Extract parameters from the Django request object. Such parameters will then be passed to
-        OAuthLib to build its own Request object
+        OAuthLib to build its own Request object. The body should be encoded using OAuthLib urlencoded
         """
         uri = self._get_escaped_full_path(request)
         http_method = request.method
+        headers = self.extract_headers(request)
+        body = urlencode(self.extract_body(request))
+        return uri, http_method, body, headers
+
+    def extract_headers(self, request):
+        """
+        Extracts headers from the Django request object
+        :param request: The current django.http.HttpRequest object
+        :return: a dictionary with OAuthLib needed headers
+        """
         headers = request.META.copy()
         if 'wsgi.input' in headers:
             del headers['wsgi.input']
@@ -44,8 +56,16 @@ class OAuthLibCore(object):
             del headers['wsgi.errors']
         if 'HTTP_AUTHORIZATION' in headers:
             headers['Authorization'] = headers['HTTP_AUTHORIZATION']
-        body = urlencode(request.POST.items())
-        return uri, http_method, body, headers
+
+        return headers
+
+    def extract_body(self, request):
+        """
+        Extracts the POST body from the Django request object
+        :param request: The current django.http.HttpRequest object
+        :return: provided POST parameters
+        """
+        return request.POST.items()
 
     def validate_authorization_request(self, request):
         """
@@ -136,6 +156,24 @@ class OAuthLibCore(object):
         return valid, r
 
 
+class JSONOAuthLibCore(OAuthLibCore):
+    """
+    Extends the default OAuthLibCore to parse correctly requests with application/json Content-Type
+    """
+    def extract_body(self, request):
+        """
+        Extracts the JSON body from the Django request object
+        :param request: The current django.http.HttpRequest object
+        :return: provided POST parameters "urlencodable"
+        """
+        try:
+            body = json.loads(request.body.decode('utf-8')).items()
+        except ValueError:
+            body = ""
+
+        return body
+
+
 def get_oauthlib_core():
     """
     Utility function that take a request and returns an instance of
@@ -144,4 +182,4 @@ def get_oauthlib_core():
     from oauthlib.oauth2 import Server
 
     server = Server(oauth2_settings.OAUTH2_VALIDATOR_CLASS())
-    return OAuthLibCore(server)
+    return oauth2_settings.OAUTH2_BACKEND_CLASS(server)

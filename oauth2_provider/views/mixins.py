@@ -5,7 +5,6 @@ import logging
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponseForbidden
 
-from ..oauth2_backends import OAuthLibCore
 from ..exceptions import FatalClientError
 from ..settings import oauth2_settings
 
@@ -25,11 +24,12 @@ class OAuthLibMixin(object):
 
       * server_class
       * validator_class
-      * oauthlib_core_class  # TODO rename it as oauthlib_backend_class
+      * oauthlib_backend_class
 
     """
     server_class = None
     validator_class = None
+    oauthlib_backend_class = None
 
     @classmethod
     def get_server_class(cls):
@@ -56,16 +56,16 @@ class OAuthLibMixin(object):
             return cls.validator_class
 
     @classmethod
-    def get_oauthlib_core_class(cls):
+    def get_oauthlib_backend_class(cls):
         """
-        Return the OAuthLibCore implementation class to use, silently
-        defaults to OAuthLibCore class from oauth2_provider package
-
-        # TODO rename this as get_oauthlib_backend_class
+        Return the OAuthLibCore implementation class to use
         """
-        if not hasattr(cls, 'oauthlib_core_class'):
-            return OAuthLibCore
-        return cls.oauthlib_core_class
+        if cls.oauthlib_backend_class is None:
+            raise ImproperlyConfigured(
+                "OAuthLibMixin requires either a definition of 'oauthlib_backend_class'"
+                " or an implementation of 'get_oauthlib_backend_class()'")
+        else:
+            return cls.oauthlib_backend_class
 
     @classmethod
     def get_server(cls):
@@ -84,7 +84,7 @@ class OAuthLibMixin(object):
         """
         if not hasattr(cls, '_oauthlib_core'):
             server = cls.get_server()
-            core_class = cls.get_oauthlib_core_class()
+            core_class = cls.get_oauthlib_backend_class()
             cls._oauthlib_core = core_class(server)
         return cls._oauthlib_core
 

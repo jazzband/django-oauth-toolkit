@@ -12,6 +12,7 @@ class ProtectedResourceView(ProtectedResourceMixin, View):
     """
     server_class = Server
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
+    oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
 
 
 class ScopedProtectedResourceView(ScopedResourceMixin, ProtectedResourceView):
