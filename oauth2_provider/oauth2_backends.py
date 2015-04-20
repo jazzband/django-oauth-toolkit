@@ -32,7 +32,18 @@ class OAuthLibCore(object):
 
         return urlunparse(parsed)
 
-    def _extract_headers(self, request):
+    def _extract_params(self, request):
+        """
+        Extract parameters from the Django request object. Such parameters will then be passed to
+        OAuthLib to build its own Request object. The body should be encoded using OAuthLib urlencoded
+        """
+        uri = self._get_escaped_full_path(request)
+        http_method = request.method
+        headers = self.extract_headers(request)
+        body = urlencode(self.extract_body(request))
+        return uri, http_method, body, headers
+
+    def extract_headers(self, request):
         """
         Extracts headers from the Django request object
         :param request: The current django.http.HttpRequest object
@@ -48,24 +59,13 @@ class OAuthLibCore(object):
 
         return headers
 
-    def _extract_body(self, request):
+    def extract_body(self, request):
         """
         Extracts the POST body from the Django request object
         :param request: The current django.http.HttpRequest object
         :return: provided POST parameters
         """
         return request.POST.items()
-
-    def _extract_params(self, request):
-        """
-        Extract parameters from the Django request object. Such parameters will then be passed to
-        OAuthLib to build its own Request object. The body should be encoded using OAuthLib urlencoded
-        """
-        uri = self._get_escaped_full_path(request)
-        http_method = request.method
-        headers = self._extract_headers(request)
-        body = urlencode(self._extract_body(request))
-        return uri, http_method, body, headers
 
     def validate_authorization_request(self, request):
         """
@@ -160,7 +160,7 @@ class JSONOAuthLibCore(OAuthLibCore):
     """
     Extends the default OAuthLibCore to parse correctly requests with application/json Content-Type
     """
-    def _extract_body(self, request):
+    def extract_body(self, request):
         """
         Extracts the JSON body from the Django request object
         :param request: The current django.http.HttpRequest object
