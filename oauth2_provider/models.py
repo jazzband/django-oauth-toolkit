@@ -94,8 +94,8 @@ class AbstractApplication(models.Model):
             parsed_uri = urlparse(uri)
 
             if (parsed_allowed_uri.scheme == parsed_uri.scheme and
-                parsed_allowed_uri.netloc == parsed_uri.netloc and
-                parsed_allowed_uri.path == parsed_uri.path):
+                    parsed_allowed_uri.netloc == parsed_uri.netloc and
+                    parsed_allowed_uri.path == parsed_uri.path):
 
                 aqs_set = set(parse_qsl(parsed_allowed_uri.query))
                 uqs_set = set(parse_qsl(parsed_uri.query))

@@ -168,7 +168,10 @@ class TestClientResourcePasswordBased(BaseTest):
             'username': 'test_user',
             'password': '123456'
         }
-        auth_headers = self.get_basic_auth_header(urllib.quote_plus(self.application.client_id), urllib.quote_plus(self.application.client_secret))
+        auth_headers = self.get_basic_auth_header(
+            urllib.quote_plus(self.application.client_id),
+            urllib.quote_plus(self.application.client_secret))
+
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
 
@@ -185,5 +188,3 @@ class TestClientResourcePasswordBased(BaseTest):
         view = ResourceView.as_view()
         response = view(request)
         self.assertEqual(response, "This is a protected resource")
-
-

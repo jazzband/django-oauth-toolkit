@@ -10,6 +10,7 @@ from django.core.validators import RegexValidator
 
 from .settings import oauth2_settings
 
+
 class URIValidator(RegexValidator):
     regex = re.compile(
         r'^(?:[a-z][a-z0-9\.\-\+]*)://'  # scheme...

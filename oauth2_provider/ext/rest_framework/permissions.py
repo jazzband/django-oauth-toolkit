@@ -59,4 +59,3 @@ class TokenHasReadWriteScope(TokenHasScope):
             read_write_scope = oauth2_settings.WRITE_SCOPE
 
         return required_scopes + [read_write_scope]
-

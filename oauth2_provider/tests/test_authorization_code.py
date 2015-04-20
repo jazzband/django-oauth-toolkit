@@ -12,7 +12,6 @@ from django.utils import timezone
 from ..compat import urlparse, parse_qs, urlencode, get_user_model
 from ..models import get_application_model, Grant, AccessToken
 from ..settings import oauth2_settings
-from ..oauth2_validators import OAuth2Validator
 from ..views import ProtectedResourceView
 
 from .test_utils import TestCaseUtils
@@ -35,7 +34,7 @@ class BaseTest(TestCaseUtils, TestCase):
         self.dev_user = UserModel.objects.create_user("dev_user", "dev@user.com", "123456")
 
         oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES = ['http', 'custom-scheme']
-        
+
         self.application = Application(
             name="Test Application",
             redirect_uris="http://localhost http://example.com http://example.it custom-scheme://example.com",
@@ -73,7 +72,6 @@ class TestAuthorizationCodeView(BaseTest):
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
-
 
     def test_pre_auth_invalid_client(self):
         """
@@ -147,11 +145,11 @@ class TestAuthorizationCodeView(BaseTest):
 
     def test_pre_auth_approval_prompt(self):
         """
-
+        TODO
         """
         tok = AccessToken.objects.create(user=self.test_user, token='1234567890',
                                          application=self.application,
-                                         expires=timezone.now()+datetime.timedelta(days=1),
+                                         expires=timezone.now() + datetime.timedelta(days=1),
                                          scope='read write')
         self.client.login(username="test_user", password="123456")
         query_string = urlencode({
@@ -173,13 +171,13 @@ class TestAuthorizationCodeView(BaseTest):
 
     def test_pre_auth_approval_prompt_default(self):
         """
-
+        TODO
         """
         self.assertEqual(oauth2_settings.REQUEST_APPROVAL_PROMPT, 'force')
 
         AccessToken.objects.create(user=self.test_user, token='1234567890',
                                    application=self.application,
-                                   expires=timezone.now()+datetime.timedelta(days=1),
+                                   expires=timezone.now() + datetime.timedelta(days=1),
                                    scope='read write')
         self.client.login(username="test_user", password="123456")
         query_string = urlencode({
@@ -195,13 +193,13 @@ class TestAuthorizationCodeView(BaseTest):
 
     def test_pre_auth_approval_prompt_default_override(self):
         """
-
+        TODO
         """
         oauth2_settings.REQUEST_APPROVAL_PROMPT = 'auto'
 
         AccessToken.objects.create(user=self.test_user, token='1234567890',
                                    application=self.application,
-                                   expires=timezone.now()+datetime.timedelta(days=1),
+                                   expires=timezone.now() + datetime.timedelta(days=1),
                                    scope='read write')
         self.client.login(username="test_user", password="123456")
         query_string = urlencode({
@@ -634,7 +632,8 @@ class TestAuthorizationCodeTokenView(BaseTest):
             'scope': content['scope'],
         }
 
-        with mock.patch('oauthlib.oauth2.rfc6749.request_validator.RequestValidator.rotate_refresh_token', return_value=False):
+        with mock.patch('oauthlib.oauth2.rfc6749.request_validator.RequestValidator.rotate_refresh_token',
+                        return_value=False):
             response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
             self.assertEqual(response.status_code, 200)
             response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
@@ -742,7 +741,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             'code': authorization_code,
             'redirect_uri': 'http://example.it',
             'client_id': self.application.client_id,
-            'client_secret':  self.application.client_secret,
+            'client_secret': self.application.client_secret,
         }
 
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data)

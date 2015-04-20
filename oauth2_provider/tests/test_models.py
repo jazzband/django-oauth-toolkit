@@ -11,7 +11,7 @@ from django.test.utils import override_settings
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-from ..models import AccessToken, get_application_model, Grant, AccessToken, RefreshToken
+from ..models import get_application_model, Grant, AccessToken, RefreshToken
 from ..compat import get_user_model
 
 
@@ -80,6 +80,7 @@ class TestModels(TestCase):
 
         app.name = "test_app"
         self.assertEqual("%s" % app, "test_app")
+
 
 @skipIf(django.VERSION < (1, 5), "Behavior is broken on 1.4 and there is no solution")
 @override_settings(OAUTH2_PROVIDER_APPLICATION_MODEL='tests.TestApplication')

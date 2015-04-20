@@ -19,7 +19,6 @@ def protected_resource(scopes=None, validator_cls=OAuth2Validator, server_cls=Se
             # An access token is required to get here...
             # ...
             pass
-    
     """
     _scopes = scopes or []
 

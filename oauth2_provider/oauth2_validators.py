@@ -90,7 +90,7 @@ class OAuth2Validator(RequestValidator):
         Remember that this method is NOT RECOMMENDED and SHOULD be limited to clients unable to
         directly utilize the HTTP Basic authentication scheme. See rfc:`2.3.1` for more details.
         """
-        #TODO: check if oauthlib has already unquoted client_id and client_secret
+        # TODO: check if oauthlib has already unquoted client_id and client_secret
         client_id = request.client_id
         client_secret = request.client_secret
 

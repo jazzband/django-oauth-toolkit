@@ -76,7 +76,7 @@ class TestOAuth2Backend(BaseTest):
         'oauth2_provider.backends.OAuth2Backend',
         'django.contrib.auth.backends.ModelBackend',
     ),
-    MIDDLEWARE_CLASSES=MIDDLEWARE_CLASSES+('oauth2_provider.middleware.OAuth2TokenMiddleware',)
+    MIDDLEWARE_CLASSES=MIDDLEWARE_CLASSES + ('oauth2_provider.middleware.OAuth2TokenMiddleware',)
 )
 class TestOAuth2Middleware(BaseTest):
 
