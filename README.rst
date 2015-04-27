@@ -53,7 +53,7 @@ Install with pip::
 Add `oauth2_provider` to your `INSTALLED_APPS`
 
 .. code-block:: python
-    
+
     INSTALLED_APPS = (
         ...
         'oauth2_provider',
@@ -95,6 +95,11 @@ master branch
 
 * ``oauthlib_backend_class`` is now pluggable through Django settings
 * #127: ``application/json`` Content-Type is now supported using ``JSONOAuthLibCore``
+
+0.8.1 [2015-04-27]
+~~~~~~~~~~~~~~~~~~
+
+* South migrations fixed. Added new django migrations.
 
 0.8.0 [2015-03-27]
 ~~~~~~~~~~~~~~~~~~
