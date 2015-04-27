@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.8.1 [2015-04-27]
+------------------
+
+* South migrations fixed. Added new django migrations.
+
+
 0.8.0 [2015-03-27]
 ------------------
 

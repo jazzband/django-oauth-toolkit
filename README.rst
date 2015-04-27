@@ -53,7 +53,7 @@ Install with pip::
 Add `oauth2_provider` to your `INSTALLED_APPS`
 
 .. code-block:: python
-    
+
     INSTALLED_APPS = (
         ...
         'oauth2_provider',
@@ -89,6 +89,11 @@ Roadmap / Todo list (help wanted)
 
 Changelog
 ---------
+
+0.8.1 [2015-04-27]
+~~~~~~~~~~~~~~~~~~
+
+* South migrations fixed. Added new django migrations.
 
 0.8.0 [2015-03-27]
 ~~~~~~~~~~~~~~~~~~
