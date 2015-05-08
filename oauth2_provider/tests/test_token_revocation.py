@@ -60,6 +60,30 @@ class TestRevocationView(BaseTest):
         self.assertEqual(response.content, b'')
         self.assertFalse(AccessToken.objects.filter(id=tok.id).exists())
 
+    def test_revoke_access_token_public(self):
+        public_app = Application(
+            name="Test Application",
+            redirect_uris="http://localhost http://example.com http://example.it",
+            user=self.dev_user,
+            client_type=Application.CLIENT_PUBLIC,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+        )
+        public_app.save()
+
+        tok = AccessToken.objects.create(user=self.test_user, token='1234567890',
+                                         application=public_app,
+                                         expires=timezone.now() + datetime.timedelta(days=1),
+                                         scope='read write')
+
+        query_string = urlencode({
+            'client_id': public_app.client_id,
+            'token': tok.token,
+        })
+
+        url = "{url}?{qs}".format(url=reverse('oauth2_provider:revoke-token'), qs=query_string)
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 200)
+
     def test_revoke_access_token_with_hint(self):
         """
 
