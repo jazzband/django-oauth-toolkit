@@ -38,6 +38,15 @@ The import string of the class (model) representing your applications. Overwrite
 this value if you wrote your own implementation (subclass of
 ``oauth2_provider.models.Application``).
 
+APPLICATION_REGISTRATION_PERMISSIONS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Which permissions are required to be able to register an application. By default
+only superusers or users with ```oauth2_provider | application | Can add application```
+permission are allowed to register applications. If this setting is set to ```None```
+then all authenticated users are allowed to register applications. For more information
+about setting more complex permissions see
+`MultiplePermissionsRequiredMixin <https://django-braces.readthedocs.org/en/latest/access.html#multiplepermissionsrequiredmixin>`_.
+
 AUTHORIZATION_CODE_EXPIRE_SECONDS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The number of seconds an authorization code remains valid. Requesting an access

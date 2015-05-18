@@ -1,6 +1,8 @@
 from __future__ import unicode_literals
 
 from django.core.urlresolvers import reverse
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 
 from ..models import get_application_model
@@ -14,6 +16,10 @@ class BaseTest(TestCase):
     def setUp(self):
         self.foo_user = UserModel.objects.create_user("foo_user", "test@user.com", "123456")
         self.bar_user = UserModel.objects.create_user("bar_user", "dev@user.com", "123456")
+
+        application_content_type = ContentType.objects.get_for_model(Application)
+        add_application_permission = Permission.objects.get(content_type=application_content_type, codename='add_application')
+        self.foo_user.user_permissions.add(add_application_permission)
 
     def tearDown(self):
         self.foo_user.delete()
