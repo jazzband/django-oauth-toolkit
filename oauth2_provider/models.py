@@ -1,7 +1,9 @@
 from __future__ import unicode_literals
 
+from datetime import timedelta
+
 from django.core.urlresolvers import reverse
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 
 from django.utils.translation import ugettext_lazy as _
@@ -266,3 +268,16 @@ def get_application_model():
         e = "APPLICATION_MODEL refers to model {0} that has not been installed"
         raise ImproperlyConfigured(e.format(oauth2_settings.APPLICATION_MODEL))
     return app_model
+
+
+def clear_expired():
+    REFRESH_TOKEN_EXPIRE_SECONDS = oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS
+    if not isinstance(REFRESH_TOKEN_EXPIRE_SECONDS, timedelta):
+        REFRESH_TOKEN_EXPIRE_SECONDS = timedelta(seconds=REFRESH_TOKEN_EXPIRE_SECONDS)
+    now = timezone.now()
+    with transaction.atomic():
+        if REFRESH_TOKEN_EXPIRE_SECONDS:
+            refresh_expire_date = now - REFRESH_TOKEN_EXPIRE_SECONDS
+            RefreshToken.objects.filter(access_token__expires__lt=refresh_expire_date).delete()
+        AccessToken.objects.filter(refresh_token__isnull=True, expires__lt=now).delete()
+        Grant.objects.filter(expires__lt=now).delete()
