@@ -41,6 +41,7 @@ DEFAULTS = {
     'AUTHORIZATION_CODE_EXPIRE_SECONDS': 60,
     'ACCESS_TOKEN_EXPIRE_SECONDS': 36000,
     'APPLICATION_MODEL': getattr(settings, 'OAUTH2_PROVIDER_APPLICATION_MODEL', 'oauth2_provider.Application'),
+    'APPLICATION_REGISTRATION_PERMISSIONS': None,
     'APPLICATION_REGISTRATION_PERMISSIONS': {
         'all': ('oauth2_provider.add_application', ),
     },
