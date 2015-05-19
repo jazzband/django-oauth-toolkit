@@ -73,7 +73,7 @@ class AbstractApplication(models.Model):
     name = models.CharField(max_length=255, blank=True)
     skip_authorization = models.BooleanField(default=False)
     # only used if oauth2_settings.APP_SPECIFIC_SCOPES is True
-    allowed_scopes = models.TextField(help_text="List of allowed scopes for this application, space separated")
+    allowed_scopes = models.TextField(help_text="List of allowed scopes for this application, space separated", blank=True)
 
     class Meta:
         abstract = True
