@@ -46,7 +46,7 @@ Django OAuth Toolkit provides decorators to help you in protecting your function
     box. GET, HEAD, OPTIONS http methods require "read" scope.
     Otherwise "write" scope is required::
 
-        from oauth2_provider.decorators import protected_resource
+        from oauth2_provider.decorators import rw_protected_resource
 
         @rw_protected_resource()
         def my_view(request):
@@ -56,7 +56,7 @@ Django OAuth Toolkit provides decorators to help you in protecting your function
 
     If you need, you can ask for other scopes over "read" and "write"::
 
-        from oauth2_provider.decorators import protected_resource
+        from oauth2_provider.decorators import rw_protected_resource
 
         @rw_protected_resource(scopes=['exotic_scope'])
         def my_view(request):
