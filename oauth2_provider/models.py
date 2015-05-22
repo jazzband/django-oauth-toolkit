@@ -202,9 +202,6 @@ class AbstractAccessToken(models.Model):
 
         return resource_scopes.issubset(provided_scopes)
 
-    def __str__(self):
-        return self.token
-
 
 class AccessToken(AbstractAccessToken):
     """
@@ -222,6 +219,9 @@ class AccessToken(AbstractAccessToken):
     """
     token = models.CharField(max_length=255, db_index=True)
 
+    def __str__(self):
+        return self.token
+
 # Add swappable like this to not break django 1.4 compatibility
 AccessToken._meta.swappable = 'OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL'
 
@@ -235,9 +235,6 @@ class AbstractRefreshToken(models.Model):
 
     class Meta:
         abstract = True
-
-    def __str__(self):
-        return self.token
 
 
 class RefreshToken(AbstractRefreshToken):
@@ -254,6 +251,9 @@ class RefreshToken(AbstractRefreshToken):
                            bounded to
     """
     token = models.CharField(max_length=255, db_index=True)
+
+    def __str__(self):
+        return self.token
 
 # Add swappable like this to not break django 1.4 compatibility
 RefreshToken._meta.swappable = 'OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL'
