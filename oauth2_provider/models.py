@@ -166,24 +166,13 @@ class Grant(models.Model):
 
 @python_2_unicode_compatible
 class AbstractAccessToken(models.Model):
-    """
-    An AccessToken instance represents the actual access token to
-    access user's resources, as in :rfc:`5`.
-
-    Fields:
-
-    * :attr:`user` The Django user representing resources' owner
-    * :attr:`token` Access token
-    * :attr:`application` Application instance
-    * :attr:`expires` Expire time in seconds, defaults to
-                      :data:`settings.ACCESS_TOKEN_EXPIRE_SECONDS`
-    * :attr:`scope` Allowed scopes
-    """
     user = models.ForeignKey(AUTH_USER_MODEL, blank=True, null=True)
-    token = models.CharField(max_length=255, db_index=True)
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL)
     expires = models.DateTimeField()
     scope = models.TextField(blank=True)
+
+    class Meta:
+        abstract = True
 
     def is_valid(self, scopes=None):
         """
@@ -218,7 +207,20 @@ class AbstractAccessToken(models.Model):
 
 
 class AccessToken(AbstractAccessToken):
-    pass
+    """
+    An AccessToken instance represents the actual access token to
+    access user's resources, as in :rfc:`5`.
+
+    Fields:
+
+    * :attr:`user` The Django user representing resources' owner
+    * :attr:`token` Access token
+    * :attr:`application` Application instance
+    * :attr:`expires` Expire time in seconds, defaults to
+                      :data:`settings.ACCESS_TOKEN_EXPIRE_SECONDS`
+    * :attr:`scope` Allowed scopes
+    """
+    token = models.CharField(max_length=255, db_index=True)
 
 # Add swappable like this to not break django 1.4 compatibility
 AccessToken._meta.swappable = 'OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL'
@@ -226,6 +228,19 @@ AccessToken._meta.swappable = 'OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL'
 
 @python_2_unicode_compatible
 class AbstractRefreshToken(models.Model):
+    user = models.ForeignKey(AUTH_USER_MODEL)
+    application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL)
+    access_token = models.OneToOneField(oauth2_settings.ACCESS_TOKEN_MODEL,
+                                        related_name='refresh_token')
+
+    class Meta:
+        abstract = True
+
+    def __str__(self):
+        return self.token
+
+
+class RefreshToken(AbstractRefreshToken):
     """
     A RefreshToken instance represents a token that can be swapped for a new
     access token when it expires.
@@ -238,18 +253,7 @@ class AbstractRefreshToken(models.Model):
     * :attr:`access_token` AccessToken instance this refresh token is
                            bounded to
     """
-    user = models.ForeignKey(AUTH_USER_MODEL)
     token = models.CharField(max_length=255, db_index=True)
-    application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL)
-    access_token = models.OneToOneField(oauth2_settings.ACCESS_TOKEN_MODEL,
-                                        related_name='refresh_token')
-
-    def __str__(self):
-        return self.token
-
-
-class RefreshToken(AbstractRefreshToken):
-    pass
 
 # Add swappable like this to not break django 1.4 compatibility
 RefreshToken._meta.swappable = 'OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL'
