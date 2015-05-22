@@ -11,11 +11,13 @@ from django.test.utils import override_settings
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-from ..models import get_application_model, Grant, AccessToken, RefreshToken
+from ..models import get_application_model, Grant, get_access_token_model, get_refresh_token_model
 from ..compat import get_user_model
 
 
 Application = get_application_model()
+AccessToken = get_access_token_model()
+RefreshToken = get_refresh_token_model()
 UserModel = get_user_model()
 
 

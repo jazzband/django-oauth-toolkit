@@ -165,7 +165,7 @@ class Grant(models.Model):
 
 
 @python_2_unicode_compatible
-class AccessToken(models.Model):
+class AbstractAccessToken(models.Model):
     """
     An AccessToken instance represents the actual access token to
     access user's resources, as in :rfc:`5`.
@@ -217,8 +217,15 @@ class AccessToken(models.Model):
         return self.token
 
 
+class AccessToken(AbstractAccessToken):
+    pass
+
+# Add swappable like this to not break django 1.4 compatibility
+AccessToken._meta.swappable = 'OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL'
+
+
 @python_2_unicode_compatible
-class RefreshToken(models.Model):
+class AbstractRefreshToken(models.Model):
     """
     A RefreshToken instance represents a token that can be swapped for a new
     access token when it expires.
@@ -234,11 +241,18 @@ class RefreshToken(models.Model):
     user = models.ForeignKey(AUTH_USER_MODEL)
     token = models.CharField(max_length=255, db_index=True)
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL)
-    access_token = models.OneToOneField(AccessToken,
+    access_token = models.OneToOneField(oauth2_settings.ACCESS_TOKEN_MODEL,
                                         related_name='refresh_token')
 
     def __str__(self):
         return self.token
+
+
+class RefreshToken(AbstractRefreshToken):
+    pass
+
+# Add swappable like this to not break django 1.4 compatibility
+RefreshToken._meta.swappable = 'OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL'
 
 
 def get_application_model():
@@ -253,3 +267,31 @@ def get_application_model():
         e = "APPLICATION_MODEL refers to model {0} that has not been installed"
         raise ImproperlyConfigured(e.format(oauth2_settings.APPLICATION_MODEL))
     return app_model
+
+
+def get_access_token_model():
+    """ Return the AccessToken model that is active in this project. """
+    try:
+        app_label, model_name = oauth2_settings.ACCESS_TOKEN_MODEL.split('.')
+    except ValueError:
+        e = "ACCESS_TOKEN_MODEL must be of the form 'app_label.model_name'"
+        raise ImproperlyConfigured(e)
+    access_token_model = get_model(app_label, model_name)
+    if access_token_model is None:
+        e = "ACCESS_TOKEN_MODEL refers to model {0} that has not been installed"
+        raise ImproperlyConfigured(e.format(oauth2_settings.ACCESS_TOKEN_MODEL))
+    return access_token_model
+
+
+def get_refresh_token_model():
+    """ Return the RefreshToken model that is active in this project. """
+    try:
+        app_label, model_name = oauth2_settings.REFRESH_TOKEN_MODEL.split('.')
+    except ValueError:
+        e = "REFRESH_TOKEN_MODEL must be of the form 'app_label.model_name'"
+        raise ImproperlyConfigured(e)
+    refresh_token_model = get_model(app_label, model_name)
+    if refresh_token_model is None:
+        e = "REFRESH_TOKEN_MODEL refers to model {0} that has not been installed"
+        raise ImproperlyConfigured(e.format(oauth2_settings.REFRESH_TOKEN_MODEL))
+    return refresh_token_model

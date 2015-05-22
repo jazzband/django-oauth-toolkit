@@ -13,7 +13,7 @@ from django.views.generic import View
 
 from oauthlib.oauth2 import BackendApplicationServer
 
-from ..models import get_application_model, AccessToken
+from ..models import get_application_model, get_access_token_model
 from ..oauth2_backends import OAuthLibCore
 from ..oauth2_validators import OAuth2Validator
 from ..settings import oauth2_settings
@@ -24,6 +24,7 @@ from .test_utils import TestCaseUtils
 
 
 Application = get_application_model()
+AccessToken = get_access_token_model()
 UserModel = get_user_model()
 
 
