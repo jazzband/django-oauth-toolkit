@@ -164,7 +164,6 @@ class Grant(models.Model):
         return self.code
 
 
-@python_2_unicode_compatible
 class AbstractAccessToken(models.Model):
     user = models.ForeignKey(AUTH_USER_MODEL, blank=True, null=True)
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL)
@@ -203,6 +202,7 @@ class AbstractAccessToken(models.Model):
         return resource_scopes.issubset(provided_scopes)
 
 
+@python_2_unicode_compatible
 class AccessToken(AbstractAccessToken):
     """
     An AccessToken instance represents the actual access token to
@@ -226,7 +226,6 @@ class AccessToken(AbstractAccessToken):
 AccessToken._meta.swappable = 'OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL'
 
 
-@python_2_unicode_compatible
 class AbstractRefreshToken(models.Model):
     user = models.ForeignKey(AUTH_USER_MODEL)
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL)
@@ -237,6 +236,7 @@ class AbstractRefreshToken(models.Model):
         abstract = True
 
 
+@python_2_unicode_compatible
 class RefreshToken(AbstractRefreshToken):
     """
     A RefreshToken instance represents a token that can be swapped for a new
