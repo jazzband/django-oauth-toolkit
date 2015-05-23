@@ -25,7 +25,7 @@ class TestModels(TestCase):
 
     def test_allow_scopes(self):
         self.client.login(username="test_user", password="123456")
-        app = Application(
+        app = Application.objects.create(
             name="test_app",
             redirect_uris="http://localhost http://example.com http://example.it",
             user=self.user,
@@ -96,10 +96,12 @@ class TestCustomApplicationModel(TestCase):
         See issue #90 (https://github.com/evonove/django-oauth-toolkit/issues/90)
         """
         # Django internals caches the related objects.
-        del UserModel._meta._related_objects_cache
+        if django.VERSION < (1, 8):
+            del UserModel._meta._related_objects_cache
         related_object_names = [ro.name for ro in UserModel._meta.get_all_related_objects()]
         self.assertNotIn('oauth2_provider:application', related_object_names)
-        self.assertIn('tests:testapplication', related_object_names)
+        self.assertIn('tests%stestapplication' % (':' if django.VERSION < (1, 8) else '_'),
+                      related_object_names)
 
 
 class TestGrantModel(TestCase):
