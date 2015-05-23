@@ -423,6 +423,27 @@ class TestAuthorizationCodeView(BaseTest):
         self.assertIn("http://example.com?foo=bar", response['Location'])
         self.assertIn("code=", response['Location'])
 
+    def test_code_post_auth_failing_redirection_uri_with_querystring(self):
+        """
+        Test that in case of error the querystring of the redirection uri is preserved
+
+        See https://github.com/evonove/django-oauth-toolkit/issues/238
+        """
+        self.client.login(username="test_user", password="123456")
+
+        form_data = {
+            'client_id': self.application.client_id,
+            'state': 'random_state_string',
+            'scope': 'read write',
+            'redirect_uri': 'http://example.com?foo=bar',
+            'response_type': 'code',
+            'allow': False,
+        }
+
+        response = self.client.post(reverse('oauth2_provider:authorize'), data=form_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual("http://example.com?foo=bar&error=access_denied", response['Location'])
+
     def test_code_post_auth_fails_when_redirect_uri_path_is_invalid(self):
         """
         Tests that a redirection uri is matched using scheme + netloc + path
