@@ -156,12 +156,8 @@ class OAuthLibMixin(object):
         """
         oauthlib_error = error.oauthlib_error
 
-        separator = '?'
-        try:
-            if '?' in oauthlib_error.redirect_uri:
-                separator = '&'
-        except:
-            pass
+        redirect_uri = oauthlib_error.redirect_uri or ""
+        separator = '&' if '?' in redirect_uri else '?'
 
         error_response = {
             'error': oauthlib_error,
