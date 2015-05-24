@@ -7,6 +7,7 @@ master branch
 * ``oauthlib_backend_class`` is now pluggable through Django settings
 * #127: ``application/json`` Content-Type is now supported using ``JSONOAuthLibCore``
 * #238: Fixed redirect uri handling in case of error
+* #229: Invalidate access tokens when getting a new refresh token
 
 
 0.8.1 [2015-04-27]
