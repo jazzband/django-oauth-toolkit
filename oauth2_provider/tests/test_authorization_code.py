@@ -10,7 +10,7 @@ from django.core.urlresolvers import reverse
 from django.utils import timezone
 
 from ..compat import urlparse, parse_qs, urlencode, get_user_model
-from ..models import get_application_model, Grant, AccessToken
+from ..models import get_application_model, Grant, AccessToken, RefreshToken
 from ..settings import oauth2_settings
 from ..views import ProtectedResourceView
 
@@ -546,6 +546,37 @@ class TestAuthorizationCodeTokenView(BaseTest):
         self.assertEqual(response.status_code, 401)
         content = json.loads(response.content.decode("utf-8"))
         self.assertTrue('invalid_grant' in content.values())
+
+    def test_refresh_invalidates_old_tokens(self):
+        """
+        Ensure existing refresh tokens are cleaned up when issuing new ones
+        """
+        self.client.login(username="test_user", password="123456")
+        authorization_code = self.get_auth()
+
+        token_request_data = {
+            'grant_type': 'authorization_code',
+            'code': authorization_code,
+            'redirect_uri': 'http://example.it'
+        }
+        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
+
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        content = json.loads(response.content.decode("utf-8"))
+
+        rt = content['refresh_token']
+        at = content['access_token']
+
+        token_request_data = {
+            'grant_type': 'refresh_token',
+            'refresh_token': rt,
+            'scope': content['scope'],
+        }
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 200)
+
+        self.assertFalse(RefreshToken.objects.filter(token=rt).exists())
+        self.assertFalse(AccessToken.objects.filter(token=at).exists())
 
     def test_refresh_no_scopes(self):
         """

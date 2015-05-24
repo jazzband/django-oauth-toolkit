@@ -118,6 +118,7 @@ class TestRevocationView(BaseTest):
         response = self.client.post(url)
         self.assertEqual(response.status_code, 200)
         self.assertFalse(RefreshToken.objects.filter(id=rtok.id).exists())
+        self.assertFalse(AccessToken.objects.filter(id=rtok.access_token.id).exists())
 
     def test_revoke_token_with_wrong_hint(self):
         """
