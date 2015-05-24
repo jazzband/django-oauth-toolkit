@@ -43,7 +43,7 @@ APPLICATION_REGISTRATION_PERMISSIONS
 Defines which permissions are required to be able to register an application.
 By default every authenticated user is able to register applications.
 
-A common setup for none public sites might be to only allow superusers and users
+A common setup for non public sites might be to only allow superusers and users
 with the ```oauth2_provider | application | Can add application``` permission to be allowed
 to register applications.
 
