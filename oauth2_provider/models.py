@@ -213,6 +213,13 @@ class AccessToken(models.Model):
 
         return resource_scopes.issubset(provided_scopes)
 
+    def revoke(self):
+        """
+        Convenience method to uniform tokens' interface, for now
+        simply remove this token from the database in order to revoke it.
+        """
+        self.delete()
+
     def __str__(self):
         return self.token
 
@@ -236,6 +243,13 @@ class RefreshToken(models.Model):
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL)
     access_token = models.OneToOneField(AccessToken,
                                         related_name='refresh_token')
+
+    def revoke(self):
+        """
+        Delete this refresh token along with related access token
+        """
+        AccessToken.objects.get(id=self.access_token.id).revoke()
+        self.delete()
 
     def __str__(self):
         return self.token
