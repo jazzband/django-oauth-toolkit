@@ -165,8 +165,8 @@ class Grant(models.Model):
 
 
 class AbstractAccessToken(models.Model):
-    user = models.ForeignKey(AUTH_USER_MODEL, blank=True, null=True)
-    application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL)
+    user = models.ForeignKey(AUTH_USER_MODEL, related_name='accesstoken_set', blank=True, null=True)
+    application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL, related_name='accesstoken_set')
     expires = models.DateTimeField()
     scope = models.TextField(blank=True)
 
@@ -227,8 +227,8 @@ AccessToken._meta.swappable = 'OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL'
 
 
 class AbstractRefreshToken(models.Model):
-    user = models.ForeignKey(AUTH_USER_MODEL)
-    application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL)
+    user = models.ForeignKey(AUTH_USER_MODEL, related_name='refreshtoken_set')
+    application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL, related_name='refreshtoken_set')
     access_token = models.OneToOneField(oauth2_settings.ACCESS_TOKEN_MODEL,
                                         related_name='refresh_token')
 
