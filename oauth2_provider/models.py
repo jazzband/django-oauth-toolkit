@@ -246,7 +246,7 @@ class AbstractRefreshToken(models.Model):
         """
         Delete this refresh token along with related access token
         """
-        AccessToken.objects.get(id=self.access_token.id).revoke()
+        get_access_token_model().objects.get(id=self.access_token.id).revoke()
         self.delete()
 
 
