@@ -201,6 +201,13 @@ class AbstractAccessToken(models.Model):
 
         return resource_scopes.issubset(provided_scopes)
 
+    def revoke(self):
+        """
+        Convenience method to uniform tokens' interface, for now
+        simply remove this token from the database in order to revoke it.
+        """
+        self.delete()
+
 
 @python_2_unicode_compatible
 class AccessToken(AbstractAccessToken):
@@ -219,13 +226,6 @@ class AccessToken(AbstractAccessToken):
     """
     token = models.CharField(max_length=255, db_index=True)
 
-    def revoke(self):
-        """
-        Convenience method to uniform tokens' interface, for now
-        simply remove this token from the database in order to revoke it.
-        """
-        self.delete()
-
     def __str__(self):
         return self.token
 
@@ -241,6 +241,13 @@ class AbstractRefreshToken(models.Model):
 
     class Meta:
         abstract = True
+
+    def revoke(self):
+        """
+        Delete this refresh token along with related access token
+        """
+        AccessToken.objects.get(id=self.access_token.id).revoke()
+        self.delete()
 
 
 @python_2_unicode_compatible
@@ -258,13 +265,6 @@ class RefreshToken(AbstractRefreshToken):
                            bounded to
     """
     token = models.CharField(max_length=255, db_index=True)
-
-    def revoke(self):
-        """
-        Delete this refresh token along with related access token
-        """
-        AccessToken.objects.get(id=self.access_token.id).revoke()
-        self.delete()
 
     def __str__(self):
         return self.token
