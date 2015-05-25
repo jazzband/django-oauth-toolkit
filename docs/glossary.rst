@@ -15,7 +15,8 @@ Glossary
         An application providing access to its own resources through an API protected following the OAuth2 spec.
 
     Application
-        TODO
+        An Application represents a Client on the Authorization server. Usually an Application is
+        created manually by client's developers after logging in on an Authorization Server.
 
     Client
         A client is an application authorized to access OAuth2-protected resources on behalf and with the authorization
