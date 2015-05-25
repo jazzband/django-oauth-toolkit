@@ -175,8 +175,7 @@ class AccessToken(models.Model):
     * :attr:`user` The Django user representing resources' owner
     * :attr:`token` Access token
     * :attr:`application` Application instance
-    * :attr:`expires` Expire time in seconds, defaults to
-                      :data:`settings.ACCESS_TOKEN_EXPIRE_SECONDS`
+    * :attr:`expires` Date and time of token expiration, in DateTime format
     * :attr:`scope` Allowed scopes
     """
     user = models.ForeignKey(AUTH_USER_MODEL, blank=True, null=True)
