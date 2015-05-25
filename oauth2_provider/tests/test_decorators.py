@@ -20,6 +20,7 @@ class TestProtectedResourceDecorator(TestCase, TestCaseUtils):
     @classmethod
     def setUpClass(cls):
         cls.request_factory = RequestFactory()
+        super(TestProtectedResourceDecorator, cls).setUpClass()
 
     def setUp(self):
         self.user = UserModel.objects.create_user("test_user", "test@user.com", "123456")

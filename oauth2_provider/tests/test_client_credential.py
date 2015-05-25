@@ -111,6 +111,7 @@ class TestExtendedRequest(BaseTest):
     @classmethod
     def setUpClass(cls):
         cls.request_factory = RequestFactory()
+        super(TestExtendedRequest, cls).setUpClass()
 
     def test_extended_request(self):
         class TestView(OAuthLibMixin, View):

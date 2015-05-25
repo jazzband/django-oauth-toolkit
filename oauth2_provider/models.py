@@ -219,6 +219,13 @@ class AccessToken(AbstractAccessToken):
     """
     token = models.CharField(max_length=255, db_index=True)
 
+    def revoke(self):
+        """
+        Convenience method to uniform tokens' interface, for now
+        simply remove this token from the database in order to revoke it.
+        """
+        self.delete()
+
     def __str__(self):
         return self.token
 
@@ -251,6 +258,13 @@ class RefreshToken(AbstractRefreshToken):
                            bounded to
     """
     token = models.CharField(max_length=255, db_index=True)
+
+    def revoke(self):
+        """
+        Delete this refresh token along with related access token
+        """
+        AccessToken.objects.get(id=self.access_token.id).revoke()
+        self.delete()
 
     def __str__(self):
         return self.token

@@ -155,9 +155,13 @@ class OAuthLibMixin(object):
         :param error: :attr:`OAuthToolkitError`
         """
         oauthlib_error = error.oauthlib_error
+
+        redirect_uri = oauthlib_error.redirect_uri or ""
+        separator = '&' if '?' in redirect_uri else '?'
+
         error_response = {
             'error': oauthlib_error,
-            'url': "{0}?{1}".format(oauthlib_error.redirect_uri, oauthlib_error.urlencoded)
+            'url': "{0}{1}{2}".format(oauthlib_error.redirect_uri, separator, oauthlib_error.urlencoded)
         }
         error_response.update(kwargs)
 

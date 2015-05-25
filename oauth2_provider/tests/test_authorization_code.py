@@ -10,7 +10,7 @@ from django.core.urlresolvers import reverse
 from django.utils import timezone
 
 from ..compat import urlparse, parse_qs, urlencode, get_user_model
-from ..models import get_application_model, Grant, get_access_token_model
+from ..models import get_application_model, Grant, get_access_token_model, get_refresh_token_model
 from ..settings import oauth2_settings
 from ..views import ProtectedResourceView
 
@@ -19,6 +19,7 @@ from .test_utils import TestCaseUtils
 
 Application = get_application_model()
 AccessToken = get_access_token_model()
+RefreshToken = get_access_token_model()
 UserModel = get_user_model()
 
 
@@ -424,6 +425,27 @@ class TestAuthorizationCodeView(BaseTest):
         self.assertIn("http://example.com?foo=bar", response['Location'])
         self.assertIn("code=", response['Location'])
 
+    def test_code_post_auth_failing_redirection_uri_with_querystring(self):
+        """
+        Test that in case of error the querystring of the redirection uri is preserved
+
+        See https://github.com/evonove/django-oauth-toolkit/issues/238
+        """
+        self.client.login(username="test_user", password="123456")
+
+        form_data = {
+            'client_id': self.application.client_id,
+            'state': 'random_state_string',
+            'scope': 'read write',
+            'redirect_uri': 'http://example.com?foo=bar',
+            'response_type': 'code',
+            'allow': False,
+        }
+
+        response = self.client.post(reverse('oauth2_provider:authorize'), data=form_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual("http://example.com?foo=bar&error=access_denied", response['Location'])
+
     def test_code_post_auth_fails_when_redirect_uri_path_is_invalid(self):
         """
         Tests that a redirection uri is matched using scheme + netloc + path
@@ -526,6 +548,37 @@ class TestAuthorizationCodeTokenView(BaseTest):
         self.assertEqual(response.status_code, 401)
         content = json.loads(response.content.decode("utf-8"))
         self.assertTrue('invalid_grant' in content.values())
+
+    def test_refresh_invalidates_old_tokens(self):
+        """
+        Ensure existing refresh tokens are cleaned up when issuing new ones
+        """
+        self.client.login(username="test_user", password="123456")
+        authorization_code = self.get_auth()
+
+        token_request_data = {
+            'grant_type': 'authorization_code',
+            'code': authorization_code,
+            'redirect_uri': 'http://example.it'
+        }
+        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
+
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        content = json.loads(response.content.decode("utf-8"))
+
+        rt = content['refresh_token']
+        at = content['access_token']
+
+        token_request_data = {
+            'grant_type': 'refresh_token',
+            'refresh_token': rt,
+            'scope': content['scope'],
+        }
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 200)
+
+        self.assertFalse(RefreshToken.objects.filter(token=rt).exists())
+        self.assertFalse(AccessToken.objects.filter(token=at).exists())
 
     def test_refresh_no_scopes(self):
         """
