@@ -6,9 +6,6 @@ Django OAuth Toolkit
 .. image:: https://badge.fury.io/py/django-oauth-toolkit.png
     :target: http://badge.fury.io/py/django-oauth-toolkit
 
-.. image:: https://pypip.in/d/django-oauth-toolkit/badge.png
-        :target: https://crate.io/packages/django-oauth-toolkit?version=latest
-
 .. image:: https://travis-ci.org/evonove/django-oauth-toolkit.png
    :alt: Build Status
    :target: https://travis-ci.org/evonove/django-oauth-toolkit

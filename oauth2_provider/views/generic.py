@@ -17,7 +17,8 @@ class ProtectedResourceView(ProtectedResourceMixin, View):
 
 class ScopedProtectedResourceView(ScopedResourceMixin, ProtectedResourceView):
     """
-    Generic view protecting resources by providing OAuth2 authentication and Scopes handling out of the box
+    Generic view protecting resources by providing OAuth2 authentication and Scopes handling
+    out of the box
     """
     pass
 
