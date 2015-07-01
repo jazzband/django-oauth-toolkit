@@ -10,6 +10,12 @@ master branch
 * #229: Invalidate access tokens when getting a new refresh token
 
 
+0.8.2 [2015-06-25]
+------------------
+
+* Fix the migrations to be two-step and allow upgrade from 0.7.2
+
+
 0.8.1 [2015-04-27]
 ------------------
 

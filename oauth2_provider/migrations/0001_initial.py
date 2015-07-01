@@ -26,8 +26,7 @@ class Migration(migrations.Migration):
                 ('authorization_grant_type', models.CharField(max_length=32, choices=[('authorization-code', 'Authorization code'), ('implicit', 'Implicit'), ('password', 'Resource owner password-based'), ('client-credentials', 'Client credentials')])),
                 ('client_secret', models.CharField(default=oauth2_provider.generators.generate_client_secret, max_length=255, db_index=True, blank=True)),
                 ('name', models.CharField(max_length=255, blank=True)),
-                ('skip_authorization', models.BooleanField(default=False)),
-                ('user', models.ForeignKey(related_name='oauth2_provider_application', to=settings.AUTH_USER_MODEL)),
+                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'abstract': False,
@@ -41,7 +40,7 @@ class Migration(migrations.Migration):
                 ('expires', models.DateTimeField()),
                 ('scope', models.TextField(blank=True)),
                 ('application', models.ForeignKey(to=oauth2_settings.APPLICATION_MODEL)),
-                ('user', models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.CreateModel(

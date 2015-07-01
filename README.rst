@@ -87,6 +87,7 @@ Roadmap / Todo list (help wanted)
 Changelog
 ---------
 
+
 master branch
 ~~~~~~~~~~~~~
 
@@ -94,6 +95,11 @@ master branch
 * #127: ``application/json`` Content-Type is now supported using ``JSONOAuthLibCore``
 * #238: Fixed redirect uri handling in case of error
 * #229: Invalidate access tokens when getting a new refresh token
+
+0.8.2 [2015-06-25]
+~~~~~~~~~~~~~~~~~~
+
+* Fix the migrations to be two-step and allow upgrade from 0.7.2
 
 0.8.1 [2015-04-27]
 ~~~~~~~~~~~~~~~~~~
