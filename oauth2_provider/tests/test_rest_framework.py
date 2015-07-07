@@ -19,7 +19,7 @@ UserModel = get_user_model()
 try:
     from rest_framework import permissions
     from rest_framework.views import APIView
-    from ..ext.rest_framework import OAuth2Authentication, TokenHasScope, TokenHasReadWriteScope
+    from ..ext.rest_framework import OAuth2Authentication, TokenHasScope, TokenHasReadWriteScope, TokenHasResourceScope
 
     class MockView(APIView):
         permission_classes = (permissions.IsAuthenticated,)
@@ -40,12 +40,17 @@ try:
     class ReadWriteScopedView(OAuth2View):
         permission_classes = [permissions.IsAuthenticated, TokenHasReadWriteScope]
 
+    class ResourceScopedView(OAuth2View):
+        permission_classes = [permissions.IsAuthenticated, TokenHasResourceScope]
+        required_scopes = ['resource1']
+
     urlpatterns = patterns(
         '',
         url(r'^oauth2/', include('oauth2_provider.urls')),
         url(r'^oauth2-test/$', OAuth2View.as_view()),
         url(r'^oauth2-scoped-test/$', ScopedView.as_view()),
         url(r'^oauth2-read-write-test/$', ReadWriteScopedView.as_view()),
+        url(r'^oauth2-resource-scoped-test/$', ResourceScopedView.as_view()),
     )
 
     rest_framework_installed = True
@@ -64,7 +69,7 @@ class TestOAuth2Authentication(BaseTest):
     urls = 'oauth2_provider.tests.test_rest_framework'
 
     def setUp(self):
-        oauth2_settings._SCOPES = ['read', 'write', 'scope1', 'scope2']
+        oauth2_settings._SCOPES = ['read', 'write', 'scope1', 'scope2', 'resource1']
 
         self.test_user = UserModel.objects.create_user("test_user", "test@user.com", "123456")
         self.dev_user = UserModel.objects.create_user("dev_user", "dev@user.com", "123456")
@@ -152,4 +157,40 @@ class TestOAuth2Authentication(BaseTest):
 
         auth = self._create_authorization_header(self.access_token.token)
         response = self.client.post("/oauth2-read-write-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 403)
+
+    @unittest.skipUnless(rest_framework_installed, 'djangorestframework not installed')
+    def test_resource_scoped_permission_get_allow(self):
+        self.access_token.scope = 'resource1:read'
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.get("/oauth2-resource-scoped-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 200)
+
+    @unittest.skipUnless(rest_framework_installed, 'djangorestframework not installed')
+    def test_resource_scoped_permission_post_allow(self):
+        self.access_token.scope = 'resource1:write'
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.post("/oauth2-resource-scoped-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 200)
+
+    @unittest.skipUnless(rest_framework_installed, 'djangorestframework not installed')
+    def test_resource_scoped_permission_get_denied(self):
+        self.access_token.scope = 'resource1:write'
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.get("/oauth2-resource-scoped-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 403)
+
+    @unittest.skipUnless(rest_framework_installed, 'djangorestframework not installed')
+    def test_resource_scoped_permission_post_denied(self):
+        self.access_token.scope = 'resource1:read'
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.post("/oauth2-resource-scoped-test/", HTTP_AUTHORIZATION=auth)
         self.assertEqual(response.status_code, 403)

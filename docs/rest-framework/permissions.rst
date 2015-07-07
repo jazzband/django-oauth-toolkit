@@ -48,3 +48,18 @@ For example:
 
 When a request is performed both the `READ_SCOPE` \\ `WRITE_SCOPE` and 'music' scopes are required to be authorized for the current access token.
 
+TokenHasResourceScope
+----------------------
+The `TokenHasResourceScope` permission class allows the access only when the current access token has been authorized for **all** the scopes listed in the `required_scopes` field of the view but according of request's method.
+
+When the current request's method is one of the "safe" methods, the access is allowed only if the access token has been authorized for the `scope:read` scope (for example `music:read`).
+When the request's method is one of "non safe" methods, the access is allowed only if the access token has been authorizes for the `scope:write` scope (for example `music:write`).
+
+.. code-block:: python
+
+    class SongView(views.APIView):
+        authentication_classes = [OAuth2Authentication]
+        permission_classes = [TokenHasResourceScope]
+        required_scopes = ['music']
+
+The `required_scopes` attribute is mandatory (you just need inform the resource scope).
