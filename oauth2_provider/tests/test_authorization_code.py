@@ -261,7 +261,7 @@ class TestAuthorizationCodeView(BaseTest):
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
-        self.assertIn("error=unauthorized_client", response['Location'])
+        self.assertIn("error=unsupported_response_type", response['Location'])
 
     def test_code_post_auth_allow(self):
         """
