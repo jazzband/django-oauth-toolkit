@@ -143,11 +143,11 @@ class OAuth2Validator(RequestValidator):
         if self._extract_basic_auth(request):
             return True
 
-        if request.client_id and request.client_secret:
+        if getattr(request, 'client_id', None) and getattr(request, 'client_secret', None):
             return True
 
         self._load_application(request.client_id, request)
-        if request.client:
+        if getattr(request, 'client', None):
             return request.client.client_type == AbstractApplication.CLIENT_CONFIDENTIAL
 
         return super(OAuth2Validator, self).client_authentication_required(request,
