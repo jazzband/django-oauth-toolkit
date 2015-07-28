@@ -55,7 +55,10 @@ class OAuth2Validator(RequestValidator):
         if not auth_string:
             return False
 
-        encoding = request.encoding or 'utf-8'
+        try:
+            encoding = request.encoding
+        except AttributeError:
+            encoding = 'utf-8'
 
         try:
             b64_decoded = base64.b64decode(auth_string)
@@ -91,10 +94,10 @@ class OAuth2Validator(RequestValidator):
         directly utilize the HTTP Basic authentication scheme. See rfc:`2.3.1` for more details.
         """
         # TODO: check if oauthlib has already unquoted client_id and client_secret
-        client_id = request.client_id
-        client_secret = request.client_secret
-
-        if not client_id or not client_secret:
+        try:
+            client_id = request.client_id
+            client_secret = request.client_secret
+        except AttributeError:
             return False
 
         if self._load_application(client_id, request) is None:
@@ -143,8 +146,12 @@ class OAuth2Validator(RequestValidator):
         if self._extract_basic_auth(request):
             return True
 
-        if request.client_id and request.client_secret:
-            return True
+        try:
+            if request.client_id and request.client_secret:
+                return True
+        except AttributeError:
+            log.debug("Client id or client secret not provided, proceed evaluating if authentication is required...")
+            pass
 
         self._load_application(request.client_id, request)
         if request.client:
