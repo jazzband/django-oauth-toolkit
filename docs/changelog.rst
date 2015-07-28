@@ -2,7 +2,7 @@ Changelog
 =========
 
 0.9.0 [2015-07-28]
-~~~~~~~~~~~~~~~~~~
+------------------
 
 * ``oauthlib_backend_class`` is now pluggable through Django settings
 * #127: ``application/json`` Content-Type is now supported using ``JSONOAuthLibCore``
