@@ -32,6 +32,18 @@ class OAuthLibCore(object):
 
         return urlunparse(parsed)
 
+    def _get_extra_credentials(self, request):
+        """
+        Produce extra credentials for token response. This dictionary will be
+        merged with the response.
+        See also: `oauthlib.oauth2.rfc6749.TokenEndpoint.create_token_response`
+
+        :param request: The current django.http.HttpRequest object
+        :return: dictionary of extra credentials or None (default)
+        """
+        return None
+
+
     def _extract_params(self, request):
         """
         Extract parameters from the Django request object. Such parameters will then be passed to
@@ -121,9 +133,10 @@ class OAuthLibCore(object):
         :param request: The current django.http.HttpRequest object
         """
         uri, http_method, body, headers = self._extract_params(request)
+        extra_credentials = self._get_extra_credentials(request)
 
         headers, body, status = self.server.create_token_response(uri, http_method, body,
-                                                                  headers)
+                                                                  headers, extra_credentials)
         uri = headers.get("Location", None)
 
         return uri, headers, body, status
