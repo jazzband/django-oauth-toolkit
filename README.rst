@@ -87,6 +87,10 @@ Roadmap / Todo list (help wanted)
 Changelog
 ---------
 
+master
+~~~~~~~~~~~~~~~~~~
+
+* #273: Generic read write scope by resource
 
 0.9.0 [2015-07-28]
 ~~~~~~~~~~~~~~~~~~
