@@ -18,7 +18,7 @@ class OAuthLibCore(object):
         """
         :params server: An instance of oauthlib.oauth2.Server class
         """
-        self.server = server or oauth2.Server(oauth2_settings.OAUTH2_VALIDATOR_CLASS())
+        self.server = server or oauth2_settings.OAUTH2_SERVER_CLASS(oauth2_settings.OAUTH2_VALIDATOR_CLASS())
 
     def _get_escaped_full_path(self, request):
         """
@@ -179,7 +179,6 @@ def get_oauthlib_core():
     Utility function that take a request and returns an instance of
     `oauth2_provider.backends.OAuthLibCore`
     """
-    from oauthlib.oauth2 import Server
-
-    server = Server(oauth2_settings.OAUTH2_VALIDATOR_CLASS())
+    validator = oauth2_settings.OAUTH2_VALIDATOR_CLASS()
+    server = oauth2_settings.OAUTH2_SERVER_CLASS(validator)
     return oauth2_settings.OAUTH2_BACKEND_CLASS(server)

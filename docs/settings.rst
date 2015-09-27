@@ -59,6 +59,11 @@ CLIENT_SECRET_GENERATOR_LENGTH
 The length of the generated secrets, in characters. If this value is too low,
 secrets may become subject to bruteforce guessing.
 
+OAUTH2_SERVER_CLASS
+~~~~~~~~~~~~~~~~~~~~
+The import string for the ``server_class`` (or ``oauthlib.oauth2.Server`` subclass)
+used in the ``OAuthLibMixin`` that implements OAuth2 grant types.
+
 OAUTH2_VALIDATOR_CLASS
 ~~~~~~~~~~~~~~~~~~~~~~
 The import string of the ``oauthlib.oauth2.RequestValidator`` subclass that
