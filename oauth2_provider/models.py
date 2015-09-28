@@ -120,11 +120,30 @@ class AbstractApplication(models.Model):
             error = _('Redirect_uris could not be empty with {0} grant_type')
             raise ValidationError(error.format(self.authorization_grant_type))
 
+    def get_cors_header(self, origin):
+        '''Return a proper cors-header for this origin, in the context of this
+        application.
+
+        :param origin: Origin-url from HTTP-request.
+        :raises: Application.NoSuitableOriginFoundError
+        '''
+        parsed_origin = urlparse(origin)
+        for allowed_uri in self.redirect_uris.split():
+            parsed_allowed_uri = urlparse(allowed_uri)
+            if (parsed_allowed_uri.scheme == parsed_origin.scheme and
+                    parsed_allowed_uri.netloc == parsed_origin.netloc and
+                    parsed_allowed_uri.port == parsed_origin.port):
+                return origin
+        raise Application.NoSuitableOriginFoundError
+
     def get_absolute_url(self):
         return reverse('oauth2_provider:detail', args=[str(self.id)])
 
     def __str__(self):
         return self.name or self.client_id
+
+    class NoSuitableOriginFoundError(Exception):
+        pass
 
 
 class Application(AbstractApplication):
