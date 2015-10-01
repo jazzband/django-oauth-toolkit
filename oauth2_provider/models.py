@@ -55,7 +55,7 @@ class AbstractApplication(models.Model):
 
     client_id = models.CharField(max_length=100, unique=True,
                                  default=generate_client_id, db_index=True)
-    user = models.ForeignKey(AUTH_USER_MODEL, related_name="%(app_label)s_%(class)s")
+    user = models.ForeignKey(AUTH_USER_MODEL, editable=False,
     help_text = _("Allowed URIs list, space separated")
     redirect_uris = models.TextField(help_text=help_text,
                                      validators=[validate_uris], blank=True)
@@ -65,7 +65,7 @@ class AbstractApplication(models.Model):
     client_secret = models.CharField(max_length=255, blank=True,
                                      default=generate_client_secret, db_index=True)
     name = models.CharField(max_length=255, blank=True)
-    skip_authorization = models.BooleanField(default=False)
+    skip_authorization = models.BooleanField(default=False, editable=False)
 
     class Meta:
         abstract = True
@@ -145,7 +145,7 @@ class Grant(models.Model):
     * :attr:`redirect_uri` Self explained
     * :attr:`scope` Required scopes, optional
     """
-    user = models.ForeignKey(AUTH_USER_MODEL)
+    user = models.ForeignKey(AUTH_USER_MODEL, editable=False)
     code = models.CharField(max_length=255, db_index=True)  # code comes from oauthlib
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL)
     expires = models.DateTimeField()
