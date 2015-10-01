@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from oauth2_provider.settings import oauth2_settings
 from django.db import models, migrations
-import oauth2_provider.validators
-import oauth2_provider.generators
 from django.conf import settings
 
 
@@ -16,10 +13,10 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-             model_name='Application',
-             name='skip_authorization',
-             field=models.BooleanField(default=False),
-             preserve_default=True,
+            model_name='Application',
+            name='skip_authorization',
+            field=models.BooleanField(default=False),
+            preserve_default=True,
         ),
         migrations.AlterField(
             model_name='Application',
