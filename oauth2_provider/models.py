@@ -71,7 +71,6 @@ class AbstractApplication(models.Model):
 
     class Meta:
         abstract = True
-        app_label = 'oauth2_provider'
 
     @property
     def default_redirect_uri(self):
