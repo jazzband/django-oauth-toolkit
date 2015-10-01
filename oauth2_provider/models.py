@@ -53,18 +53,20 @@ class AbstractApplication(models.Model):
         (GRANT_CLIENT_CREDENTIALS, _('Client credentials')),
     )
 
+    name = models.CharField(max_length=255, blank=True)
     client_id = models.CharField(max_length=100, unique=True,
                                  default=generate_client_id, db_index=True)
-    user = models.ForeignKey(AUTH_USER_MODEL, editable=False,
-                             related_name="%(app_label)s_%(class)s")
-    redirect_uris = models.TextField(help_text=_("Allowed URIs list, space separated"),
-                                     validators=[validate_uris], blank=True)
+    client_secret = models.CharField(max_length=255, blank=True,
+                                     default=generate_client_secret, db_index=True)
     client_type = models.CharField(max_length=32, choices=CLIENT_TYPES)
     authorization_grant_type = models.CharField(max_length=32,
                                                 choices=GRANT_TYPES)
-    client_secret = models.CharField(max_length=255, blank=True,
-                                     default=generate_client_secret, db_index=True)
-    name = models.CharField(max_length=255, blank=True)
+    redirect_uris = models.TextField(help_text=_("Allowed URIs list, space separated"),
+                                     validators=[validate_uris], blank=True)
+
+    # Not editable
+    user = models.ForeignKey(AUTH_USER_MODEL, editable=False,
+                             related_name="%(app_label)s_%(class)s")
     skip_authorization = models.BooleanField(default=False, editable=False)
 
     class Meta:
