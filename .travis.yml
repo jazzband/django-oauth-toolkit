@@ -10,14 +10,17 @@ env:
   - TOX_ENV=py27-django16
   - TOX_ENV=py27-django17
   - TOX_ENV=py27-django18
+  - TOX_ENV=py27-django19
   - TOX_ENV=py33-django15
   - TOX_ENV=py33-django16
   - TOX_ENV=py33-django17
   - TOX_ENV=py33-django18
+  - TOX_ENV=py33-django19
   - TOX_ENV=py34-django15
   - TOX_ENV=py34-django16
   - TOX_ENV=py34-django17
   - TOX_ENV=py34-django18
+  - TOX_ENV=py34-django19
   - TOX_ENV=docs
 
 install:
