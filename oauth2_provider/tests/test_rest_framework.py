@@ -6,9 +6,9 @@ from django.test import TestCase
 from django.utils import timezone
 
 try:
-    import unittest
-except ImportError:
     from django.utils import unittest
+except ImportError:
+    import unittest
 
 from .test_utils import TestCaseUtils
 from ..models import AccessToken, get_application_model
