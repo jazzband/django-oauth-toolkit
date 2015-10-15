@@ -20,7 +20,6 @@ env:
   - TOX_ENV=py34-django17
   - TOX_ENV=py34-django18
   - TOX_ENV=py34-django19
-  - TOX_ENV=py35-django19
   - TOX_ENV=docs
 
 install:
