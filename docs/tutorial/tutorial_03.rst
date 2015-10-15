@@ -24,7 +24,8 @@ which takes care of token verification. In your settings.py:
 
     MIDDLEWARE_CLASSES = (
         '...',
-        # be sure following two appear in this order
+        # If you use SessionAuthenticationMiddleware, be sure it appears before OAuth2TokenMiddleware.
+        # SessionAuthenticationMiddleware is NOT required for using django-oauth-toolkit.
         'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
         'oauth2_provider.middleware.OAuth2TokenMiddleware',
         '...',
@@ -42,6 +43,9 @@ If you put the OAuth2 backend *before* AuthenticationMiddleware, or Authenticati
 not used at all, it will try to authenticate user with the OAuth2 access token and set
 `request.user` and `request._cached_user` fields so that AuthenticationMiddleware (when active)
 will not try to get user from the session.
+
+If you use SessionAuthenticationMiddleware, be sure it appears before OAuth2TokenMiddleware.
+However SessionAuthenticationMiddleware is NOT required for using django-oauth-toolkit.
 
 Protect your view
 -----------------
