@@ -43,3 +43,9 @@ if django.VERSION >= (1, 5):
     from django.template.defaulttags import url
 else:
     from django.templatetags.future import url
+
+# Django 1.9 drops the NullHandler since Python 2.7 includes it
+try:
+    from logging import NullHandler
+except ImportError:
+    from django.utils.log import NullHandler
