@@ -43,7 +43,6 @@ class OAuthLibCore(object):
         """
         return None
 
-
     def _extract_params(self, request):
         """
         Extract parameters from the Django request object. Such parameters will then be passed to
