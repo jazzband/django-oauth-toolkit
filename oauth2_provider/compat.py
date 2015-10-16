@@ -37,3 +37,9 @@ try:
     get_model = apps.get_model
 except ImportError:
     from django.db.models import get_model
+
+# Django 1.5 add the support of context variables for the url template tag
+if django.VERSION >= (1, 5):
+    from django.template.defaulttags import url
+else:
+    from django.templatetags.future import url

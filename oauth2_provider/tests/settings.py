@@ -100,7 +100,7 @@ LOGGING = {
         },
         'null': {
             'level': 'DEBUG',
-            'class': 'django.utils.log.NullHandler',
+            'class': 'oauth2_provider.compat_handlers.NullHandler',
         },
     },
     'loggers': {
