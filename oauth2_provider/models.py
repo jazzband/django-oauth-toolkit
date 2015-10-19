@@ -155,6 +155,9 @@ class Grant(models.Model):
         """
         Check token expiration with timezone awareness
         """
+        if not self.expires:
+            return True
+            
         return timezone.now() >= self.expires
 
     def redirect_uri_allowed(self, uri):
@@ -196,6 +199,9 @@ class AccessToken(models.Model):
         """
         Check token expiration with timezone awareness
         """
+        if not self.expires:
+            return True
+        
         return timezone.now() >= self.expires
 
     def allow_scopes(self, scopes):
