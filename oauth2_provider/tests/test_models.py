@@ -139,6 +139,11 @@ class TestGrantModel(TestCase):
     def test_str(self):
         grant = Grant(code="test_code")
         self.assertEqual("%s" % grant, grant.code)
+    
+    def test_expires_can_be_none(self):
+        grant = Grant(code="test_code")
+        self.assertIsNone(grant.expires)
+        self.assertFalse(grant.is_expired())
 
 
 class TestAccessTokenModel(TestCase):
@@ -159,6 +164,11 @@ class TestAccessTokenModel(TestCase):
         )
         access_token = AccessToken.objects.create(token="test_token", application=app, expires=timezone.now())
         self.assertIsNone(access_token.user)
+    
+    def test_expires_can_be_none(self):
+        access_token = AccessToken(token="test_token")
+        self.assertIsNone(access_token.expires)
+        self.assertFalse(access_token.is_expired())
 
 
 class TestRefreshTokenModel(TestCase):
