@@ -6,8 +6,6 @@ from django.views.generic import View, FormView
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 
-from oauthlib.oauth2 import Server
-
 from braces.views import LoginRequiredMixin, CsrfExemptMixin
 
 from ..settings import oauth2_settings
@@ -71,7 +69,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
     template_name = 'oauth2_provider/authorize.html'
     form_class = AllowForm
 
-    server_class = Server
+    server_class = oauth2_settings.OAUTH2_SERVER_CLASS
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
     oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
 
@@ -163,7 +161,7 @@ class TokenView(CsrfExemptMixin, OAuthLibMixin, View):
     * Password
     * Client credentials
     """
-    server_class = Server
+    server_class = oauth2_settings.OAUTH2_SERVER_CLASS
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
     oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
 
@@ -181,7 +179,7 @@ class RevokeTokenView(CsrfExemptMixin, OAuthLibMixin, View):
     """
     Implements an endpoint to revoke access or refresh tokens
     """
-    server_class = Server
+    server_class = oauth2_settings.OAUTH2_SERVER_CLASS
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
     oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
 

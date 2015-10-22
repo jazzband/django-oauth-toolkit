@@ -2,15 +2,22 @@ import json
 import mock
 
 from django.test import TestCase, RequestFactory
+from django.test.utils import override_settings
 
 from ..backends import get_oauthlib_core
 from ..oauth2_backends import OAuthLibCore, JSONOAuthLibCore
 
 
 class TestOAuthLibCoreBackend(TestCase):
+
     def setUp(self):
         self.factory = RequestFactory()
         self.oauthlib_core = OAuthLibCore()
+
+    def test_swappable_serer_class(self):
+        with mock.patch('oauth2_provider.oauth2_backends.oauth2_settings.OAUTH2_SERVER_CLASS'):
+            oauthlib_core = OAuthLibCore()
+            self.assertTrue(isinstance(oauthlib_core.server, mock.MagicMock))
 
     def test_form_urlencoded_extract_params(self):
         payload = "grant_type=password&username=john&password=123456"
