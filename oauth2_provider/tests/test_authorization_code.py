@@ -7,6 +7,7 @@ import mock
 
 from django.test import TestCase, RequestFactory
 from django.core.urlresolvers import reverse
+from django.test.utils import override_settings
 from django.utils import timezone
 
 from ..compat import urlparse, parse_qs, urlencode, get_user_model
@@ -1003,3 +1004,34 @@ class TestAuthorizationCodeProtectedResource(BaseTest):
         view = ResourceView.as_view()
         response = view(request)
         self.assertEqual(response.status_code, 403)
+
+
+class TestDefaultScopes(BaseTest):
+
+    def test_pre_auth_deafult_scopes(self):
+        """
+        Test response for a valid client_id with response_type: code using default scopes
+        """
+        self.client.login(username="test_user", password="123456")
+        oauth2_settings._DEFAULT_SCOPES = ['read']
+
+        query_string = urlencode({
+            'client_id': self.application.client_id,
+            'response_type': 'code',
+            'state': 'random_state_string',
+            'redirect_uri': 'http://example.it',
+        })
+        url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        # check form is in context and form params are valid
+        self.assertIn("form", response.context)
+
+        form = response.context["form"]
+        self.assertEqual(form['redirect_uri'].value(), "http://example.it")
+        self.assertEqual(form['state'].value(), "random_state_string")
+        self.assertEqual(form['scope'].value(), 'read')
+        self.assertEqual(form['client_id'].value(), self.application.client_id)
+        oauth2_settings._DEFAULT_SCOPES = []

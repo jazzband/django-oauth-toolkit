@@ -26,7 +26,6 @@ try:
 except ImportError:
     from django.utils import importlib
 
-
 USER_SETTINGS = getattr(settings, 'OAUTH2_PROVIDER', None)
 
 DEFAULTS = {
@@ -37,6 +36,7 @@ DEFAULTS = {
     'OAUTH2_VALIDATOR_CLASS': 'oauth2_provider.oauth2_validators.OAuth2Validator',
     'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.OAuthLibCore',
     'SCOPES': {"read": "Reading scope", "write": "Writing scope"},
+    'DEFAULT_SCOPES': {},
     'READ_SCOPE': 'read',
     'WRITE_SCOPE': 'write',
     'AUTHORIZATION_CODE_EXPIRE_SECONDS': 60,
@@ -48,6 +48,7 @@ DEFAULTS = {
 
     # Special settings that will be evaluated at runtime
     '_SCOPES': [],
+    '_DEFAULT_SCOPES': [],
 }
 
 # List of settings that cannot be empty
@@ -129,6 +130,8 @@ class OAuth2ProviderSettings(object):
         # Overriding special settings
         if attr == '_SCOPES':
             val = list(six.iterkeys(self.SCOPES))
+        if attr == '_DEFAULT_SCOPES':
+            val = list(six.iterkeys(self.DEFAULT_SCOPES))
 
         self.validate_setting(attr, val)
 
