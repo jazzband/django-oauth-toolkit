@@ -17,3 +17,9 @@ urlpatterns += (
     url(r'^applications/(?P<pk>\d+)/delete/$', views.ApplicationDelete.as_view(), name="delete"),
     url(r'^applications/(?P<pk>\d+)/update/$', views.ApplicationUpdate.as_view(), name="update"),
 )
+
+urlpatterns += (
+    url(r'^authorized_tokens/$', views.AuthorizedTokensListView.as_view(), name="authorized-token-list"),
+    url(r'^authorized_tokens/(?P<pk>\d+)/delete/$', views.AuthorizedTokenDeleteView.as_view(),
+        name="authorized-token-delete"),
+)

@@ -81,6 +81,36 @@ class TestModels(TestCase):
         app.name = "test_app"
         self.assertEqual("%s" % app, "test_app")
 
+    def test_scopes_property(self):
+        self.client.login(username="test_user", password="123456")
+
+        app = Application.objects.create(
+            name="test_app",
+            redirect_uris="http://localhost http://example.com http://example.it",
+            user=self.user,
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+        )
+
+        access_token = AccessToken(
+            user=self.user,
+            scope='read write',
+            expires=0,
+            token='',
+            application=app
+        )
+
+        access_token2 = AccessToken(
+            user=self.user,
+            scope='write',
+            expires=0,
+            token='',
+            application=app
+        )
+
+        self.assertEqual(access_token.scopes, {'read': 'Reading scope', 'write': 'Writing scope'})
+        self.assertEqual(access_token2.scopes, {'write': 'Writing scope'})
+
 
 @skipIf(django.VERSION < (1, 5), "Behavior is broken on 1.4 and there is no solution")
 @override_settings(OAUTH2_PROVIDER_APPLICATION_MODEL='tests.TestApplication')
