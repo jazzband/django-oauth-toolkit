@@ -81,7 +81,6 @@ class TestAuthorizedTokenViews(TestCase):
 
         response = self.client.get(reverse('oauth2_provider:authorized-token-list'))
         self.assertEqual(response.status_code, 200)
-        print(response.content.decode())
         self.assertNotIn(b'There are no authorized tokens yet.', response.content)
 
     def test_list_view_shows_correct_user_token(self):
