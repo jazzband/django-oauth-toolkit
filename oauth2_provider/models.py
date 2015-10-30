@@ -221,6 +221,13 @@ class AccessToken(models.Model):
         """
         self.delete()
 
+    @property
+    def scopes(self):
+        """
+        Returns a dictionary of allowed scope names (as keys) with their descriptions (as values)
+        """
+        return {name: desc for name, desc in oauth2_settings.SCOPES.items() if name in self.scope.split()}
+
     def __str__(self):
         return self.token
 

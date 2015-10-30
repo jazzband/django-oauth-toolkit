@@ -99,3 +99,10 @@ class TestApplicationViews(BaseTest):
 
         response = self.client.get(reverse('oauth2_provider:detail', args=(self.app_bar_1.pk,)))
         self.assertEqual(response.status_code, 404)
+
+    def test_delete_view_deletes(self):
+        self.client.login(username="foo_user", password="123456")
+        response = self.client.post(reverse('oauth2_provider:delete', args=(self.app_foo_1.pk,)))
+
+        self.assertFalse(Application.objects.filter(pk=self.app_foo_1.pk).exists())
+        self.assertRedirects(response, reverse('oauth2_provider:list'))
