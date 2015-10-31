@@ -15,5 +15,12 @@ class OAuthLibCore(oauth2_backends.OAuthLibCore):
             for authentication and not pass the credentials in the request body
         """
         if isinstance(request, Request):
-            return request.data.items()
+            try:
+                # support DRF 2.x
+                if not hasattr(request, 'data'):
+                    return request.DATA.items()
+                return request.data.items()
+            except (ValueError, AttributeError):
+                # complex json request (list?) is not easily serializable
+                return ""
         return super(OAuthLibCore, self).extract_body(request)
