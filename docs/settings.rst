@@ -86,6 +86,19 @@ WRITE_SCOPE
 ~~~~~~~~~~~
 The name of the *write* scope.
 
+REFRESH_TOKEN_EXPIRE_SECONDS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The number of seconds before a refresh token gets removed from the database by
+the ``cleartokens``` management command. It's important that ``cleartokens``
+runs regularly (eg: via cron) in order for this setting to work.
+
+If ``cleartokens`` runs daily the maximum delay before a refresh token is
+removed is ``REFRESH_TOKEN_EXPIRE_SECONDS`` + 1 day. This is normally not a
+problem since refresh tokens are long lived.
+
+Note: Refresh tokens need to expire before AccessTokens can be removed from the
+database. Using ``cleartokens`` without ``REFRESH_TOKEN_EXPIRE_SECONDS`` has limited effect.
+
 REQUEST_APPROVAL_PROMPT
 ~~~~~~~~~~~~~~~~~~~~~~~
 Can be ``'force'`` or ``'auto'``.
