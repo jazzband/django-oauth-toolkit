@@ -271,13 +271,21 @@ def get_application_model():
 
 
 def clear_expired():
-    REFRESH_TOKEN_EXPIRE_SECONDS = oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS
-    if not isinstance(REFRESH_TOKEN_EXPIRE_SECONDS, timedelta):
-        REFRESH_TOKEN_EXPIRE_SECONDS = timedelta(seconds=REFRESH_TOKEN_EXPIRE_SECONDS)
     now = timezone.now()
+    refresh_expire_at = None
+
+    REFRESH_TOKEN_EXPIRE_SECONDS = oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS
+    if REFRESH_TOKEN_EXPIRE_SECONDS:
+        if not isinstance(REFRESH_TOKEN_EXPIRE_SECONDS, timedelta):
+            try:
+                REFRESH_TOKEN_EXPIRE_SECONDS = timedelta(seconds=REFRESH_TOKEN_EXPIRE_SECONDS)
+            except TypeError:
+                e = "REFRESH_TOKEN_EXPIRE_SECONDS must be either a timedelta or seconds"
+                raise ImproperlyConfigured(e)
+        refresh_expire_at = now - REFRESH_TOKEN_EXPIRE_SECONDS
+
     with transaction.atomic():
-        if REFRESH_TOKEN_EXPIRE_SECONDS:
-            refresh_expire_date = now - REFRESH_TOKEN_EXPIRE_SECONDS
-            RefreshToken.objects.filter(access_token__expires__lt=refresh_expire_date).delete()
+        if refresh_expire_at:
+            RefreshToken.objects.filter(access_token__expires__lt=refresh_expire_at).delete()
         AccessToken.objects.filter(refresh_token__isnull=True, expires__lt=now).delete()
         Grant.objects.filter(expires__lt=now).delete()
