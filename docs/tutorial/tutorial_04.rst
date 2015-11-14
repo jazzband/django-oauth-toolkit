@@ -18,7 +18,7 @@ Note that these revocation-specific parameters are in addition to the authentica
 
 Setup a Request
 ----------------
-Depending on the client type you're using, the token revocation request you may submit to the authentication server mayy vary. A `Public` client, for example, will not have access to your `Client Secret`. A revoke request from a public client would omit that secret, and take the form:
+Depending on the client type you're using, the token revocation request you may submit to the authentication server may vary. A `Public` client, for example, will not have access to your `Client Secret`. A revoke request from a public client would omit that secret, and take the form:
 
 ::
 
