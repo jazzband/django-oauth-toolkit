@@ -76,7 +76,16 @@ to get a ``Server`` instance.
 
 SCOPES
 ~~~~~~
-A dictionnary mapping each scope name to its human description.
+A dictionary mapping each scope name to its human description.
+
+DEFAULT_SCOPES
+~~~~~~~~~~~~~~
+A list of scopes that should be returned by default.
+This is a subset of the keys of the SCOPES setting.
+By default this is set to '__all__' meaning that the whole set of SCOPES will be returned.
+.. code-block:: python
+
+  DEFAULT_SCOPES = ['read', 'write']
 
 READ_SCOPE
 ~~~~~~~~~~
