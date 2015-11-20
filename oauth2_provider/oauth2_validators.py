@@ -278,7 +278,7 @@ class OAuth2Validator(RequestValidator):
         return set(scopes).issubset(set(oauth2_settings._SCOPES))
 
     def get_default_scopes(self, client_id, request, *args, **kwargs):
-        return oauth2_settings._DEFAULT_SCOPES or oauth2_settings._SCOPES
+        return oauth2_settings._DEFAULT_SCOPES
 
     def validate_redirect_uri(self, client_id, redirect_uri, request, *args, **kwargs):
         return request.client.redirect_uri_allowed(redirect_uri)
