@@ -5,6 +5,7 @@ master
 ------------------
 
 * **#322: dropping support for python 2.6 and django 1.4, 1.5, 1.6**
+* #323: Application registration view uses custom application model in form class
 * #299: 'server_class' is now pluggable through Django settings
 * #309: Add the py35-django19 env to travis
 * #308: Use compact syntax for tox envs
