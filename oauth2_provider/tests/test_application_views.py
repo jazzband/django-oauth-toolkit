@@ -1,7 +1,9 @@
 from __future__ import unicode_literals
 
+import mock
 from django.core.urlresolvers import reverse
 from django.test import TestCase
+from django.test.utils import override_settings
 
 from ..models import get_application_model
 from ..compat import get_user_model
@@ -21,6 +23,24 @@ class BaseTest(TestCase):
 
 
 class TestApplicationRegistrationView(BaseTest):
+    def test_get_form_class(self):
+        """
+        Tests that the form class returned by the 'get_form_class' method is
+        bound to custom application model defined in the
+        'OAUTH2_PROVIDER_APPLICATION_MODEL' setting.
+        """
+        from ..views.application import ApplicationRegistration
+        from .models import TestApplication
+        from ..settings import oauth2_settings
+        # Patch oauth2 settings to use a custom Application model
+        oauth2_settings.APPLICATION_MODEL = 'tests.TestApplication'
+        # Create a registration view and tests that the model form is bound
+        # to the custom Application model
+        application_form_class = ApplicationRegistration().get_form_class()
+        self.assertEqual(TestApplication, application_form_class._meta.model)
+        # Revert oauth2 settings
+        oauth2_settings.APPLICATION_MODEL = 'oauth2_provider.Application'
+
     def test_application_registration_user(self):
         self.client.login(username="foo_user", password="123456")
 

@@ -1,9 +1,9 @@
 from django.core.urlresolvers import reverse_lazy
+from django.forms.models import modelform_factory
 from django.views.generic import CreateView, DetailView, DeleteView, ListView, UpdateView
 
 from braces.views import LoginRequiredMixin
 
-from ..forms import RegistrationForm
 from ..models import get_application_model
 
 
@@ -21,8 +21,17 @@ class ApplicationRegistration(LoginRequiredMixin, CreateView):
     """
     View used to register a new Application for the request.user
     """
-    form_class = RegistrationForm
     template_name = "oauth2_provider/application_registration_form.html"
+
+    def get_form_class(self):
+        """
+        Returns the form class for the application model
+        """
+        return modelform_factory(
+            get_application_model(),
+            fields=('name', 'client_id', 'client_secret', 'client_type',
+                    'authorization_grant_type', 'redirect_uris')
+        )
 
     def form_valid(self, form):
         form.instance.user = self.request.user
