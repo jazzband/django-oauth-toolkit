@@ -1,6 +1,8 @@
 from django import forms
 
-from .models import Application
+from .models import get_application_model
+
+Application = get_application_model()
 
 
 class AllowForm(forms.Form):

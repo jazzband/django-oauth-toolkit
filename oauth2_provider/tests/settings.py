@@ -121,6 +121,8 @@ OAUTH2_PROVIDER = {
     '_SCOPES': ['example']
 }
 
+OAUTH2_PROVIDER_APPLICATION_MODEL = 'tests.TestApplication'
+
 import django
 
 if django.VERSION[:2] < (1, 6):
