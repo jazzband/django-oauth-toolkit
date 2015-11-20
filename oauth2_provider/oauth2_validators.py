@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+import six
 import base64
 import binascii
 import logging
@@ -59,6 +60,11 @@ class OAuth2Validator(RequestValidator):
             encoding = request.encoding
         except AttributeError:
             encoding = 'utf-8'
+
+        # Encode auth_string to bytes. This is needed for python3.2 compatibility
+        # because b64decode function only supports bytes type in input.
+        if isinstance(auth_string, six.string_types):
+            auth_string = auth_string.encode(encoding)
 
         try:
             b64_decoded = base64.b64decode(auth_string)
