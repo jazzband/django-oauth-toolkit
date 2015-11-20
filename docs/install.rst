@@ -29,7 +29,6 @@ Sync your database
 
 .. sourcecode:: sh
 
-    $ python manage.py syncdb
     $ python manage.py migrate oauth2_provider
 
 Next step is our :doc:`first tutorial <tutorial/tutorial_01>`.
