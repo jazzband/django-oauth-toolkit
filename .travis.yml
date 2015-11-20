@@ -18,12 +18,11 @@ env:
   - TOX_ENV=docs
 
 matrix:
-    # Python 3.5 not yet available on travis, watch this to see when it is.
+  # Python 3.5 not yet available on travis, watch this to see when it is.
   fast_finish: true
   allow_failures:
-    - env:
-        - TOX_ENV=py35-django18
-        - TOX_ENV=py35-django19
+    - env: TOX_ENV=py35-django18
+    - env: TOX_ENV=py35-django19
 
 install:
   - pip install tox
