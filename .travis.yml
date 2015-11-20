@@ -17,6 +17,13 @@ env:
   - TOX_ENV=py35-django19
   - TOX_ENV=docs
 
+matrix:
+  include:
+    - python: 3.5
+      env:
+        - TOX_ENV=py35-django18
+        - TOX_ENV=py35-django19
+
 install:
   - pip install tox
   - pip install coveralls
