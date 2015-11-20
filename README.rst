@@ -37,8 +37,8 @@ guidelines <https://django-oauth-toolkit.readthedocs.org/en/latest/contributing.
 Requirements
 ------------
 
-* Python 2.6, 2.7, 3.3, 3.4, 3.5
-* Django 1.4, 1.5, 1.6, 1.7, 1.8, 1.9
+* Python 2.7, 3.2, 3.3, 3.4, 3.5
+* Django 1.7, 1.8, 1.9
 
 Installation
 ------------
@@ -90,6 +90,7 @@ Changelog
 master
 ~~~~~~~~~~~~~~~~~~
 
+* **#322: dropping support for python 2.6 and django 1.4, 1.5, 1.6**
 * #299: 'server_class' is now pluggable through Django settings
 * #309: Add the py35-django19 env to travis
 * #308: Use compact syntax for tox envs
