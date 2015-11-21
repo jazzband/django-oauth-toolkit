@@ -7,13 +7,13 @@ from django.http import HttpResponse
 
 from ..compat import get_user_model
 from ..models import get_application_model
-from ..models import AccessToken
+from ..models import get_access_token_model
 from ..backends import OAuth2Backend
 from ..middleware import OAuth2TokenMiddleware
 
 UserModel = get_user_model()
 ApplicationModel = get_application_model()
-
+AccessToken = get_access_token_model()
 
 class BaseTest(TestCase):
     """

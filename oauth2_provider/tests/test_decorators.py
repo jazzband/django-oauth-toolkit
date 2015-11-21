@@ -6,12 +6,13 @@ from django.utils import timezone
 
 from ..decorators import protected_resource, rw_protected_resource
 from ..settings import oauth2_settings
-from ..models import get_application_model, AccessToken
+from ..models import get_application_model, get_access_token_model
 from ..compat import get_user_model
 from .test_utils import TestCaseUtils
 
 
 Application = get_application_model()
+AccessToken = get_access_token_model()
 UserModel = get_user_model()
 
 

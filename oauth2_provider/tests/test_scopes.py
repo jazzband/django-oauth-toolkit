@@ -8,11 +8,12 @@ from django.core.urlresolvers import reverse
 
 from .test_utils import TestCaseUtils
 from ..compat import urlparse, parse_qs, get_user_model, urlencode
-from ..models import get_application_model, Grant, AccessToken
+from ..models import get_application_model, Grant, get_access_token_model
 from ..settings import oauth2_settings
 from ..views import ScopedProtectedResourceView, ReadWriteScopedResourceView
 
 Application = get_application_model()
+AccessToken = get_access_token_model()
 UserModel = get_user_model()
 
 

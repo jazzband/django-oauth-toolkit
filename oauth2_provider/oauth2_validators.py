@@ -12,7 +12,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from oauthlib.oauth2 import RequestValidator
 
 from .compat import unquote_plus
-from .models import Grant, AccessToken, RefreshToken, get_application_model, AbstractApplication
+from .models import Grant, get_access_token_model, get_refresh_token_model, get_application_model, AbstractApplication
 from .settings import oauth2_settings
 
 log = logging.getLogger('oauth2_provider')
@@ -225,6 +225,9 @@ class OAuth2Validator(RequestValidator):
         if not token:
             return False
 
+        # Load the AccessToken model
+        AccessToken = get_access_token_model()
+
         try:
             access_token = AccessToken.objects.select_related("application", "user").get(
                 token=token)
@@ -296,6 +299,13 @@ class OAuth2Validator(RequestValidator):
         Save access and refresh token, If refresh token is issued, remove old refresh tokens as
         in rfc:`6`
         """
+
+        # Load the AccessToken model
+        AccessToken = get_access_token_model()
+
+        # Load the RefreshToken model
+        RefreshToken = get_refresh_token_model()
+
         if request.refresh_token:
             # remove used refresh token
             try:
@@ -338,6 +348,12 @@ class OAuth2Validator(RequestValidator):
         if token_type_hint not in ['access_token', 'refresh_token']:
             token_type_hint = None
 
+        # Load the AccessToken model
+        AccessToken = get_access_token_model()
+
+        # Load the RefreshToken model
+        RefreshToken = get_refresh_token_model()
+
         token_types = {
             'access_token': AccessToken,
             'refresh_token': RefreshToken,
@@ -372,6 +388,9 @@ class OAuth2Validator(RequestValidator):
         Check refresh_token exists and refers to the right client.
         Also attach User instance to the request object
         """
+        # Load the RefreshToken model
+        RefreshToken = get_refresh_token_model()
+
         try:
             rt = RefreshToken.objects.get(token=refresh_token)
             request.user = rt.user
