@@ -104,6 +104,7 @@ Also add the following to your `settings.py` module:
     OAUTH2_PROVIDER = {
         # this is the list of available scopes
         'SCOPES': {'read': 'Read scope', 'write': 'Write scope', 'groups': 'Access to your groups'}
+        'OAUTH2_BACKEND_CLASS': 'oauth2_provider.ext.rest_framework.oauth2_backends.OAuthLibCore',
     }
 
     REST_FRAMEWORK = {

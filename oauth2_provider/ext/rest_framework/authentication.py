@@ -1,4 +1,7 @@
+from django.utils.translation import ugettext_lazy as _
+
 from rest_framework.authentication import BaseAuthentication
+from rest_framework import exceptions
 
 from ...oauth2_backends import get_oauthlib_core
 
@@ -16,10 +19,14 @@ class OAuth2Authentication(BaseAuthentication):
         """
         oauthlib_core = get_oauthlib_core()
         valid, r = oauthlib_core.verify_request(request, scopes=[])
-        if valid:
-            return r.user, r.access_token
-        else:
+
+        if not valid:
             return None
+
+        if not r.user.is_active:
+            raise exceptions.AuthenticationFailed(_('User inactive or deleted.'))
+
+        return r.user, r.access_token
 
     def authenticate_header(self, request):
         """
