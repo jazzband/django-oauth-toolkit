@@ -14,6 +14,9 @@ UserModel = get_user_model()
 
 
 class TestAuthorizedTokenViews(TestCase):
+    """
+    TestCase superclass for Authorized Token Views' Test Cases
+    """
     def setUp(self):
         self.foo_user = UserModel.objects.create_user("foo_user", "test@user.com", "123456")
         self.bar_user = UserModel.objects.create_user("bar_user", "dev@user.com", "123456")
@@ -31,6 +34,11 @@ class TestAuthorizedTokenViews(TestCase):
         self.foo_user.delete()
         self.bar_user.delete()
 
+
+class TestAuthorizedTokenListView(TestAuthorizedTokenViews):
+    """
+    Tests for the Authorized Token ListView
+    """
     def test_list_view_authorization_required(self):
         """
         Test that the view redirects to login page if user is not logged-in.
@@ -97,6 +105,11 @@ class TestAuthorizedTokenViews(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'There are no authorized tokens yet.', response.content)
 
+
+class TestAuthorizedTokenDeleteView(TestAuthorizedTokenViews):
+    """
+    Tests for the Authorized Token DeleteView
+    """
     def test_delete_view_authorization_required(self):
         """
         Test that the view redirects to login page if user is not logged-in.

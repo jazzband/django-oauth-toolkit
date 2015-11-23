@@ -1,4 +1,4 @@
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse_lazy
 from django.forms.models import modelform_factory
 from django.views.generic import CreateView, DetailView, DeleteView, ListView, UpdateView
 
@@ -59,10 +59,8 @@ class ApplicationDelete(ApplicationOwnerIsUserMixin, DeleteView):
     View used to delete an application owned by the request.user
     """
     context_object_name = 'application'
+    success_url = reverse_lazy('oauth2_provider:list')
     template_name = "oauth2_provider/application_confirm_delete.html"
-
-    def get_success_url(self):
-        return reverse('oauth2_provider:list')
 
 
 class ApplicationUpdate(ApplicationOwnerIsUserMixin, UpdateView):
