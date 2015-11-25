@@ -46,6 +46,7 @@ class BaseTest(TestCaseUtils, TestCase):
         self.application.save()
 
         oauth2_settings._SCOPES = ['read', 'write']
+        oauth2_settings._DEFAULT_SCOPES = ['read', 'write']
 
     def tearDown(self):
         self.application.delete()
@@ -1008,7 +1009,7 @@ class TestAuthorizationCodeProtectedResource(BaseTest):
 
 class TestDefaultScopes(BaseTest):
 
-    def test_pre_auth_deafult_scopes(self):
+    def test_pre_auth_default_scopes(self):
         """
         Test response for a valid client_id with response_type: code using default scopes
         """
@@ -1034,4 +1035,3 @@ class TestDefaultScopes(BaseTest):
         self.assertEqual(form['state'].value(), "random_state_string")
         self.assertEqual(form['scope'].value(), 'read')
         self.assertEqual(form['client_id'].value(), self.application.client_id)
-        oauth2_settings._DEFAULT_SCOPES = []

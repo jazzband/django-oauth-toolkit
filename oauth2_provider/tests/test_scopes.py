@@ -68,6 +68,7 @@ class TestScopesQueryParameterBackwardsCompatibility(BaseTest):
     def setUp(self):
         super(TestScopesQueryParameterBackwardsCompatibility, self).setUp()
         oauth2_settings._SCOPES = ['read', 'write']
+        oauth2_settings._DEFAULT_SCOPES = ['read', 'write']
 
     def test_scopes_query_parameter_is_supported_on_post(self):
         """
