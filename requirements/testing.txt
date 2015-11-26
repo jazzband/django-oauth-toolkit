@@ -1,2 +1,6 @@
 -r optional.txt
 mock==1.0.1
+pytest==2.8.3
+pytest-django==2.9.1
+pytest-xdist==1.13.1
+pytest-cov==2.2.0
