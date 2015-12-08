@@ -30,6 +30,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'abstract': False,
+                'swappable': 'OAUTH2_PROVIDER_APPLICATION_MODEL',
             },
         ),
         migrations.CreateModel(
