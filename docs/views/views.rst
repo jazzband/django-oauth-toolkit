@@ -9,4 +9,5 @@ Django OAuth Toolkit provides a set of pre-defined views for different purposes:
    function_based
    class_based
    application
+   token
    mixins
