@@ -38,6 +38,7 @@ Index
    models
    advanced_topics
    settings
+   management_commands
    glossary
 
 .. toctree::
