@@ -1,10 +1,13 @@
 Changelog
 =========
 
-master
+0.10.0 [2015-12-14]
 ------------------
 
 * **#322: dropping support for python 2.6 and django 1.4, 1.5, 1.6**
+* #310: Fixed error that could occur sometimes when checking validity of incomplete AccessToken/Grant
+* #333: Added possibility to specify the default list of scopes returned when scope parameter is missing
+* #325: Added management views of issued tokens
 * #249: Added a command to clean expired tokens
 * #323: Application registration view uses custom application model in form class
 * #299: 'server_class' is now pluggable through Django settings
