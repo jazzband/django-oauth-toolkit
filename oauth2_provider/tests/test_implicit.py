@@ -37,6 +37,7 @@ class BaseTest(TestCase):
         self.application.save()
 
         oauth2_settings._SCOPES = ['read', 'write']
+        oauth2_settings._DEFAULT_SCOPES = ['read']
 
     def tearDown(self):
         self.application.delete()
@@ -45,6 +46,26 @@ class BaseTest(TestCase):
 
 
 class TestImplicitAuthorizationCodeView(BaseTest):
+    def test_pre_auth_valid_client_default_scopes(self):
+        """
+        Test response for a valid client_id with response_type: token and default_scopes
+        """
+        self.client.login(username="test_user", password="123456")
+        query_string = urlencode({
+            'client_id': self.application.client_id,
+            'response_type': 'token',
+            'state': 'random_state_string',
+            'redirect_uri': 'http://example.it',
+        })
+
+        url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        self.assertIn("form", response.context)
+        form = response.context["form"]
+        self.assertEqual(form['scope'].value(), 'read')
+
     def test_pre_auth_valid_client(self):
         """
         Test response for a valid client_id with response_type: token
