@@ -2,7 +2,7 @@
 The `compat` module provides support for backwards compatibility with older
 versions of django and python..
 """
-
+# flake8: noqa
 from __future__ import unicode_literals
 
 import django
@@ -10,14 +10,14 @@ from django.conf import settings
 
 # urlparse in python3 has been renamed to urllib.parse
 try:
-    from urlparse import urlparse, parse_qs, parse_qsl, urlunparse  # noqa
+    from urlparse import urlparse, parse_qs, parse_qsl, urlunparse
 except ImportError:
-    from urllib.parse import urlparse, parse_qs, parse_qsl, urlunparse  # noqa
+    from urllib.parse import urlparse, parse_qs, parse_qsl, urlunparse
 
 try:
-    from urllib import urlencode, unquote_plus  # noqa
+    from urllib import urlencode, unquote_plus
 except ImportError:
-    from urllib.parse import urlencode, unquote_plus  # noqa
+    from urllib.parse import urlencode, unquote_plus
 
 # Django 1.5 add support for custom auth user model
 if django.VERSION >= (1, 5):
@@ -26,20 +26,20 @@ else:
     AUTH_USER_MODEL = 'auth.User'
 
 try:
-    from django.contrib.auth import get_user_model  # noqa
+    from django.contrib.auth import get_user_model
 except ImportError:
-    from django.contrib.auth.models import User  # noqa
+    from django.contrib.auth.models import User
     get_user_model = lambda: User
 
 # Django's new application loading system
 try:
-    from django.apps import apps  # noqa
+    from django.apps import apps
     get_model = apps.get_model
 except ImportError:
-    from django.db.models import get_model  # noqa
+    from django.db.models import get_model
 
 # Django 1.5 add the support of context variables for the url template tag
 if django.VERSION >= (1, 5):
-    from django.template.defaulttags import url  # noqa
+    from django.template.defaulttags import url
 else:
-    from django.templatetags.future import url  # noqa
+    from django.templatetags.future import url

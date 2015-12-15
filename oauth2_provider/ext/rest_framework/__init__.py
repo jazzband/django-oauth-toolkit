@@ -1,2 +1,3 @@
-from .authentication import OAuth2Authentication  # noqa
-from .permissions import TokenHasScope, TokenHasReadWriteScope, TokenHasResourceScope  # noqa
+# flake8: noqa
+from .authentication import OAuth2Authentication
+from .permissions import TokenHasScope, TokenHasReadWriteScope, TokenHasResourceScope
