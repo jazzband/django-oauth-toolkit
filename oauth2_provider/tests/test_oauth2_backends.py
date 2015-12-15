@@ -2,7 +2,6 @@ import json
 import mock
 
 from django.test import TestCase, RequestFactory
-from django.test.utils import override_settings
 
 from ..backends import get_oauthlib_core
 from ..oauth2_backends import OAuthLibCore, JSONOAuthLibCore

@@ -10,14 +10,14 @@ from django.conf import settings
 
 # urlparse in python3 has been renamed to urllib.parse
 try:
-    from urlparse import urlparse, parse_qs, parse_qsl, urlunparse
+    from urlparse import urlparse, parse_qs, parse_qsl, urlunparse  # noqa
 except ImportError:
-    from urllib.parse import urlparse, parse_qs, parse_qsl, urlunparse
+    from urllib.parse import urlparse, parse_qs, parse_qsl, urlunparse  # noqa
 
 try:
-    from urllib import urlencode, unquote_plus
+    from urllib import urlencode, unquote_plus  # noqa
 except ImportError:
-    from urllib.parse import urlencode, unquote_plus
+    from urllib.parse import urlencode, unquote_plus  # noqa
 
 # Django 1.5 add support for custom auth user model
 if django.VERSION >= (1, 5):
@@ -26,20 +26,20 @@ else:
     AUTH_USER_MODEL = 'auth.User'
 
 try:
-    from django.contrib.auth import get_user_model
+    from django.contrib.auth import get_user_model  # noqa
 except ImportError:
-    from django.contrib.auth.models import User
+    from django.contrib.auth.models import User  # noqa
     get_user_model = lambda: User
 
 # Django's new application loading system
 try:
-    from django.apps import apps
+    from django.apps import apps  # noqa
     get_model = apps.get_model
 except ImportError:
-    from django.db.models import get_model
+    from django.db.models import get_model  # noqa
 
 # Django 1.5 add the support of context variables for the url template tag
 if django.VERSION >= (1, 5):
-    from django.template.defaulttags import url
+    from django.template.defaulttags import url  # noqa
 else:
-    from django.templatetags.future import url
+    from django.templatetags.future import url  # noqa
