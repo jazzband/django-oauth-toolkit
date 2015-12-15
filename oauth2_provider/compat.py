@@ -2,7 +2,7 @@
 The `compat` module provides support for backwards compatibility with older
 versions of django and python..
 """
-
+# flake8: noqa
 from __future__ import unicode_literals
 
 import django

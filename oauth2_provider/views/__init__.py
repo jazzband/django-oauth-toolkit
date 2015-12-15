@@ -1,3 +1,4 @@
+# flake8: noqa
 from .base import AuthorizationView, TokenView, RevokeTokenView
 from .application import ApplicationRegistration, ApplicationDetail, ApplicationList, \
     ApplicationDelete, ApplicationUpdate
