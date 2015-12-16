@@ -115,7 +115,11 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             # at this point we know an Application instance with such client_id exists in the database
             application = get_application_model().objects.get(client_id=credentials['client_id'])  # TODO: cache it!
             kwargs['application'] = application
-            kwargs.update(credentials)
+            kwargs['client_id'] = credentials['client_id']
+            kwargs['redirect_uri'] = credentials['redirect_uri']
+            kwargs['response_type'] = credentials['response_type']
+            kwargs['state'] = credentials['state']
+
             self.oauth2_data = kwargs
             # following two loc are here only because of https://code.djangoproject.com/ticket/17795
             form = self.get_form(self.get_form_class())
