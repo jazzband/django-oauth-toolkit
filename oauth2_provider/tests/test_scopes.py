@@ -124,7 +124,7 @@ class TestScopesQueryParameterBackwardsCompatibility(BaseTest):
         self.assertIn("form", response.context)
 
         form = response.context["form"]
-        self.assertEqual(form['scope'].value(), "read write")
+        self.assertEqual(form['scope'].value().split(), "read write".split())
 
 
 class TestScopesSave(BaseTest):
