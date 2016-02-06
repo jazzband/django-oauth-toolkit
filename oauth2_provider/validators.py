@@ -63,3 +63,15 @@ def validate_uris(value):
     v = RedirectURIValidator(oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES)
     for uri in value.split():
         v(uri)
+
+
+def validate_application_scopes(value):
+    """
+    This validator ensures that the server allows the provided scope
+    """
+    provided_scopes = set(oauth2_settings._SCOPES)
+    resource_scopes = set(value.split())
+    if not resource_scopes:
+        raise ValidationError('This field is required.')
+    if not resource_scopes.issubset(provided_scopes):
+        raise ValidationError('scope is not allowed.')

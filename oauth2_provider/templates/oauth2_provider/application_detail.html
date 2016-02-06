@@ -28,6 +28,16 @@
             </li>
 
             <li>
+                <p><b>{% trans "Client Allowed Scopes" %}</b></p>
+                <p>{{ application.scope }}</p>
+            </li>
+
+            <li>
+                <p><b>{% trans "Client Default Scopes" %}</b></p>
+                <p>{{ application.default_scope }}</p>
+            </li>
+
+            <li>
                 <p><b>{% trans "Redirect Uris" %}</b></p>
                 <textarea class="input-block-level" readonly>{{ application.redirect_uris }}</textarea>
             </li>
