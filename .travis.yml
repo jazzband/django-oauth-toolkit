@@ -19,10 +19,13 @@ env:
 
 matrix:
   # Python 3.5 not yet available on travis, watch this to see when it is.
+  # Python 3.2 is no longer supposed by pip used by travis.
   fast_finish: true
   allow_failures:
     - env: TOX_ENV=py35-django18
     - env: TOX_ENV=py35-django19
+    - env:  TOX_ENV=py32-django17
+    - env:  TOX_ENV=py32-django18
 
 install:
   - pip install tox
