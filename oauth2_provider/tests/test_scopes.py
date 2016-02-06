@@ -45,18 +45,25 @@ class BaseTest(TestCaseUtils, TestCase):
         self.test_user = UserModel.objects.create_user("test_user", "test@user.com", "123456")
         self.dev_user = UserModel.objects.create_user("dev_user", "dev@user.com", "123456")
 
+        oauth2_settings.SCOPES = {"read": "Reading scope",
+                                "write": "Writing scope",
+                                "scope1": "scope1",
+                                "scope2": "scope2",
+                                "scope3": "scope3"}
+        oauth2_settings._SCOPES = ['read', 'write', 'scope1', 'scope2', 'scope3']
+        oauth2_settings.READ_SCOPE = 'read'
+        oauth2_settings.WRITE_SCOPE = 'write'
+
         self.application = Application(
             name="Test Application",
             redirect_uris="http://localhost http://example.com http://example.it",
             user=self.dev_user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+            scope='read write scope1 scope2 scope3',
+            default_scope='read write scope1 scope2 scope3',
         )
         self.application.save()
-
-        oauth2_settings._SCOPES = ['read', 'write', 'scope1', 'scope2', 'scope3']
-        oauth2_settings.READ_SCOPE = 'read'
-        oauth2_settings.WRITE_SCOPE = 'write'
 
     def tearDown(self):
         self.application.delete()
@@ -68,7 +75,8 @@ class TestScopesQueryParameterBackwardsCompatibility(BaseTest):
     def setUp(self):
         super(TestScopesQueryParameterBackwardsCompatibility, self).setUp()
         oauth2_settings._SCOPES = ['read', 'write']
-        oauth2_settings._DEFAULT_SCOPES = ['read', 'write']
+        self.application.default_scope = 'read write'
+        self.application.save()
 
     def test_scopes_query_parameter_is_supported_on_post(self):
         """
@@ -120,6 +128,11 @@ class TestScopesQueryParameterBackwardsCompatibility(BaseTest):
 
 
 class TestScopesSave(BaseTest):
+    def setUp(self):
+        super(TestScopesSave, self).setUp()
+        oauth2_settings._SCOPES = ['read', 'write', 'scope1', 'scope2', 'scope3']
+        self.application.default_scope = 'read write scope1 scope2 scope3'
+        self.application.save()
     def test_scopes_saved_in_grant(self):
         """
         Test scopes are properly saved in grant
@@ -178,6 +191,8 @@ class TestScopesSave(BaseTest):
 
 
 class TestScopesProtection(BaseTest):
+    def setUp(self):
+        super(TestScopesProtection, self).setUp()
     def test_scopes_protection_valid(self):
         """
         Test access to a scope protected resource with correct scopes provided
@@ -348,6 +363,8 @@ class TestScopesProtection(BaseTest):
 
 
 class TestReadWriteScope(BaseTest):
+    def setUp(self):
+        super(TestReadWriteScope, self).setUp()
     def get_access_token(self, scopes):
         self.client.login(username="test_user", password="123456")
 

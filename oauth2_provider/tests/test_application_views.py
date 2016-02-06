@@ -50,7 +50,9 @@ class TestApplicationRegistrationView(BaseTest):
             'client_secret': 'client_secret',
             'client_type': Application.CLIENT_CONFIDENTIAL,
             'redirect_uris': 'http://example.com',
-            'authorization_grant_type': Application.GRANT_AUTHORIZATION_CODE
+            'authorization_grant_type': Application.GRANT_AUTHORIZATION_CODE,
+            'scope': 'read write',
+            'default_scope': 'read write'
         }
 
         response = self.client.post(reverse('oauth2_provider:register'), form_data)

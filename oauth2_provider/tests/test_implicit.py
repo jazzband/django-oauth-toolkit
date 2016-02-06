@@ -27,17 +27,17 @@ class BaseTest(TestCase):
         self.test_user = UserModel.objects.create_user("test_user", "test@user.com", "123456")
         self.dev_user = UserModel.objects.create_user("dev_user", "dev@user.com", "123456")
 
+        oauth2_settings._SCOPES = ['read', 'write']
+
         self.application = Application(
             name="Test Implicit Application",
             redirect_uris="http://localhost http://example.com http://example.it",
             user=self.dev_user,
             client_type=Application.CLIENT_PUBLIC,
             authorization_grant_type=Application.GRANT_IMPLICIT,
+            default_scope='read',
         )
         self.application.save()
-
-        oauth2_settings._SCOPES = ['read', 'write']
-        oauth2_settings._DEFAULT_SCOPES = ['read']
 
     def tearDown(self):
         self.application.delete()
