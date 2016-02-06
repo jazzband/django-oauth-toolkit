@@ -64,7 +64,7 @@ class TestPasswordTokenView(BaseTest):
 
         content = json.loads(response.content.decode("utf-8"))
         self.assertEqual(content['token_type'], "Bearer")
-        self.assertEqual(content['scope'].split(), "read write".split())
+        self.assertEqual(content['scope'], "read write")
         self.assertEqual(content['expires_in'], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
 
     def test_bad_credentials(self):

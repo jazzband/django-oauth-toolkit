@@ -93,20 +93,6 @@ class AbstractApplication(models.Model):
                       "or all-in-one grant_type, you must define " \
                       "redirect_uris field in your Application model"
 
-    @property
-    def scopes(self):
-        """
-        Returns a dictionary of allowed scope names (as keys) with their descriptions (as values)
-        """
-        return {name: desc for name, desc in oauth2_settings.SCOPES.items() if name in self.scope.split()}
-
-    @property
-    def default_scopes(self):
-        """
-        Returns a dictionary of default scope names (as keys) with their descriptions (as values)
-        """
-        return {name: desc for name, desc in oauth2_settings.SCOPES.items() if name in self.default_scope.split()}
-
     def redirect_uri_allowed(self, uri):
         """
         Checks if given url is one of the items in :attr:`redirect_uris` string
