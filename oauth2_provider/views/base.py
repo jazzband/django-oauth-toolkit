@@ -79,7 +79,10 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         if oauth2_settings.APP_SPECIFIC_SCOPES:
             ApplicationModel = get_application_model()
             application = ApplicationModel.objects.get(client_id=self.request.GET['client_id'])
-            scopes = application.allowed_scopes.split(' ')
+            allowed_scopes = application.allowed_scopes.split(' ')
+            requested_scopes = self.oauth2_data.get('scope', self.oauth2_data.get('scopes', []))
+            # now reduce down to allowed scopes
+            scopes = list(set(allowed_scopes) & set(requested_scopes))
         else:
             # TODO: move this scopes conversion from and to string into a utils function
             scopes = self.oauth2_data.get('scope', self.oauth2_data.get('scopes', []))
