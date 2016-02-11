@@ -198,7 +198,7 @@ class TestAccessTokenModel(TestCase):
         self.assertTrue(access_token.is_expired())
 
 @skipIf(django.VERSION < (1, 5), "Behavior is broken on 1.4 and there is no solution")
-@override_settings(OAUTH2_PROVIDER_GRANT_MODEL='tests.TestAccessToken')
+@override_settings(OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL='tests.TestAccessToken')
 class TestCustomAccessTokenModel(TestCase):
     def setUp(self):
         self.user = UserModel.objects.create_user("test_user", "test@user.com", "123456")
@@ -226,7 +226,7 @@ class TestRefreshTokenModel(TestCase):
         self.assertEqual("%s" % refresh_token, refresh_token.token)
 
 @skipIf(django.VERSION < (1, 5), "Behavior is broken on 1.4 and there is no solution")
-@override_settings(OAUTH2_PROVIDER_GRANT_MODEL='tests.TestRefreshToken')
+@override_settings(OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL='tests.TestRefreshToken')
 class TestCustomRefreshTokenModel(TestCase):
     def setUp(self):
         self.user = UserModel.objects.create_user("test_user", "test@user.com", "123456")
