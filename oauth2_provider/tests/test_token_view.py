@@ -6,10 +6,11 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils import timezone
 
-from ..models import get_application_model, AccessToken
+from ..models import get_application_model, get_access_token_model
 from ..compat import get_user_model
 
 Application = get_application_model()
+AccessToken = get_access_token_model()
 UserModel = get_user_model()
 
 

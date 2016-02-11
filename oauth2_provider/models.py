@@ -127,11 +127,11 @@ class Application(AbstractApplication):
     pass
 
 # Add swappable like this to not break django 1.4 compatibility
-Application._meta.swappable = 'OAUTH2_PROVIDER_APPLICATION_MODEL'
+Application._meta.swappable = 'OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL'
 
 
 @python_2_unicode_compatible
-class Grant(models.Model):
+class AbstractGrant(models.Model):
     """
     A Grant instance represents a token with a short lifetime that can
     be swapped for an access token, as described in :rfc:`4.1.2`
@@ -153,6 +153,9 @@ class Grant(models.Model):
     redirect_uri = models.CharField(max_length=255)
     scope = models.TextField(blank=True)
 
+    class Meta:
+        abstract = True
+
     def is_expired(self):
         """
         Check token expiration with timezone awareness
@@ -168,9 +171,14 @@ class Grant(models.Model):
     def __str__(self):
         return self.code
 
+class Grant(AbstractGrant):
+    pass
+
+# Add swappable like this to not break django 1.4 compatibility
+Grant._meta.swappable = 'OAUTH2_PROVIDER_GRANT_MODEL'
 
 @python_2_unicode_compatible
-class AccessToken(models.Model):
+class AbstractAccessToken(models.Model):
     """
     An AccessToken instance represents the actual access token to
     access user's resources, as in :rfc:`5`.
@@ -188,6 +196,9 @@ class AccessToken(models.Model):
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL)
     expires = models.DateTimeField()
     scope = models.TextField(blank=True)
+
+    class Meta:
+        abstract = True
 
     def is_valid(self, scopes=None):
         """
@@ -237,9 +248,15 @@ class AccessToken(models.Model):
     def __str__(self):
         return self.token
 
+class AccessToken(AbstractAccessToken):
+    pass
+
+# Add swappable like this to not break django 1.4 compatibility
+AccessToken._meta.swappable = 'OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL'
+
 
 @python_2_unicode_compatible
-class RefreshToken(models.Model):
+class AbstractRefreshToken(models.Model):
     """
     A RefreshToken instance represents a token that can be swapped for a new
     access token when it expires.
@@ -255,8 +272,11 @@ class RefreshToken(models.Model):
     user = models.ForeignKey(AUTH_USER_MODEL)
     token = models.CharField(max_length=255, db_index=True)
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL)
-    access_token = models.OneToOneField(AccessToken,
+    access_token = models.OneToOneField(oauth2_settings.ACCESS_TOKEN_MODEL,
                                         related_name='refresh_token')
+
+    class Meta:
+        abstract = True
 
     def revoke(self):
         """
@@ -268,20 +288,65 @@ class RefreshToken(models.Model):
     def __str__(self):
         return self.token
 
+class RefreshToken(AbstractRefreshToken):
+    pass
+
+# Add swappable like this to not break django 1.4 compatibility
+RefreshToken._meta.swappable = 'OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL'
 
 def get_application_model():
     """ Return the Application model that is active in this project. """
     try:
         app_label, model_name = oauth2_settings.APPLICATION_MODEL.split('.')
     except ValueError:
-        e = "APPLICATION_MODEL must be of the form 'app_label.model_name'"
+        e = "ACCESS_TOKEN_MODEL must be of the form 'app_label.model_name'"
         raise ImproperlyConfigured(e)
     app_model = get_model(app_label, model_name)
     if app_model is None:
-        e = "APPLICATION_MODEL refers to model {0} that has not been installed"
+        e = "ACCESS_TOKEN_MODEL refers to model {0} that has not been installed"
         raise ImproperlyConfigured(e.format(oauth2_settings.APPLICATION_MODEL))
     return app_model
 
+def get_grant_model():
+    """ Return the Grant model that is active in this project. """
+    try:
+        app_label, model_name = oauth2_settings.GRANT_MODEL.split('.')
+    except ValueError:
+        e = "GRANT_MODEL must be of the form 'app_label.model_name'"
+        raise ImproperlyConfigured(e)
+    app_model = get_model(app_label, model_name)
+    if app_model is None:
+        e = "GRANT_MODEL refers to model {0} that has not been installed"
+        raise ImproperlyConfigured(e.format(oauth2_settings.GRANT_MODEL))
+    return app_model
+
+
+def get_access_token_model():
+    """ Return the AccessToken model that is active in this project. """
+    try:
+        app_label, model_name = oauth2_settings.ACCESS_TOKEN_MODEL.split('.')
+    except ValueError:
+        e = "ACCESS_TOKEN_MODEL must be of the form 'app_label.model_name'"
+        raise ImproperlyConfigured(e)
+    app_model = get_model(app_label, model_name)
+    if app_model is None:
+        e = "ACCESS_TOKEN_MODEL refers to model {0} that has not been installed"
+        raise ImproperlyConfigured(e.format(oauth2_settings.ACCESS_TOKEN_MODEL))
+    return app_model
+
+
+def get_refersh_token_model():
+    """ Return the Application model that is active in this project. """
+    try:
+        app_label, model_name = oauth2_settings.REFRESH_TOKEN_MODEL.split('.')
+    except ValueError:
+        e = "REFRESH_TOKEN_MODEL must be of the form 'app_label.model_name'"
+        raise ImproperlyConfigured(e)
+    app_model = get_model(app_label, model_name)
+    if app_model is None:
+        e = "REFRESH_TOKEN_MODEL refers to model {0} that has not been installed"
+        raise ImproperlyConfigured(e.format(oauth2_settings.REFRESH_TOKEN_MODEL))
+    return app_model
 
 def clear_expired():
     now = timezone.now()

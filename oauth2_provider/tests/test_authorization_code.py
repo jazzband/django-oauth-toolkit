@@ -1,24 +1,26 @@
 from __future__ import unicode_literals
 
 import base64
-import json
 import datetime
-import mock
+import json
 
-from django.test import TestCase, RequestFactory
+import mock
 from django.core.urlresolvers import reverse
+from django.test import RequestFactory, TestCase
 from django.test.utils import override_settings
 from django.utils import timezone
 
-from ..compat import urlparse, parse_qs, urlencode, get_user_model
-from ..models import get_application_model, Grant, AccessToken, RefreshToken
+from ..compat import get_user_model, parse_qs, urlencode, urlparse
+from ..models import (get_access_token_model, get_application_model,
+                      get_grant_model, get_refersh_token_model)
 from ..settings import oauth2_settings
 from ..views import ProtectedResourceView
-
 from .test_utils import TestCaseUtils
 
-
 Application = get_application_model()
+Grant = get_grant_model()
+AccessToken = get_access_token_model()
+RefreshToken = get_refersh_token_model()
 UserModel = get_user_model()
 
 

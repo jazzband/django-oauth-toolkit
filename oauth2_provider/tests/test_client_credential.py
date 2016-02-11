@@ -2,28 +2,27 @@ from __future__ import unicode_literals
 
 import json
 
-try:
-    import urllib.parse as urllib
-except ImportError:
-    import urllib
-
 from django.core.urlresolvers import reverse
-from django.test import TestCase, RequestFactory
+from django.test import RequestFactory, TestCase
 from django.views.generic import View
-
 from oauthlib.oauth2 import BackendApplicationServer
 
-from ..models import get_application_model, AccessToken
+from ..compat import get_user_model
+from ..models import get_access_token_model, get_application_model
 from ..oauth2_backends import OAuthLibCore
 from ..oauth2_validators import OAuth2Validator
 from ..settings import oauth2_settings
 from ..views import ProtectedResourceView
 from ..views.mixins import OAuthLibMixin
-from ..compat import get_user_model
 from .test_utils import TestCaseUtils
 
+try:
+    import urllib.parse as urllib
+except ImportError:
+    import urllib
 
 Application = get_application_model()
+AccessToken = get_access_token_model()
 UserModel = get_user_model()
 
 

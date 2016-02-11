@@ -1,18 +1,18 @@
-from django.test import TestCase, RequestFactory
-from django.test.utils import override_settings
-from django.contrib.auth.models import AnonymousUser
-from django.utils.timezone import now, timedelta
 from django.conf.global_settings import MIDDLEWARE_CLASSES
+from django.contrib.auth.models import AnonymousUser
 from django.http import HttpResponse
+from django.test import RequestFactory, TestCase
+from django.test.utils import override_settings
+from django.utils.timezone import now, timedelta
 
-from ..compat import get_user_model
-from ..models import get_application_model
-from ..models import AccessToken
 from ..backends import OAuth2Backend
+from ..compat import get_user_model
 from ..middleware import OAuth2TokenMiddleware
+from ..models import get_access_token_model, get_application_model
 
-UserModel = get_user_model()
 ApplicationModel = get_application_model()
+AccessToken = get_access_token_model()
+UserModel = get_user_model()
 
 
 class BaseTest(TestCase):

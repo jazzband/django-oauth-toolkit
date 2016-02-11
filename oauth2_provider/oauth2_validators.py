@@ -12,7 +12,9 @@ from django.core.exceptions import ObjectDoesNotExist
 from oauthlib.oauth2 import RequestValidator
 
 from .compat import unquote_plus
-from .models import Grant, AccessToken, RefreshToken, get_application_model, AbstractApplication
+from .models import (get_grant_model, get_access_token_model,
+                     get_refersh_token_model, get_application_model,
+                     AbstractApplication)
 from .settings import oauth2_settings
 
 log = logging.getLogger('oauth2_provider')
@@ -198,6 +200,7 @@ class OAuth2Validator(RequestValidator):
         """
         Ensure the redirect_uri is listed in the Application instance redirect_uris field
         """
+        Grant = get_grant_model()
         grant = Grant.objects.get(code=code, application=client)
         return grant.redirect_uri_allowed(redirect_uri)
 
@@ -205,6 +208,7 @@ class OAuth2Validator(RequestValidator):
         """
         Remove the temporary grant used to swap the authorization token
         """
+        Grant = get_grant_model()
         grant = Grant.objects.get(code=code, application=request.client)
         grant.delete()
 
@@ -225,6 +229,8 @@ class OAuth2Validator(RequestValidator):
         if not token:
             return False
 
+        AccessToken = get_access_token_model()
+
         try:
             access_token = AccessToken.objects.select_related("application", "user").get(
                 token=token)
@@ -241,6 +247,7 @@ class OAuth2Validator(RequestValidator):
             return False
 
     def validate_code(self, client_id, code, client, request, *args, **kwargs):
+        Grant = get_grant_model()
         try:
             grant = Grant.objects.get(code=code, application=client)
             if not grant.is_expired():
@@ -286,6 +293,7 @@ class OAuth2Validator(RequestValidator):
     def save_authorization_code(self, client_id, code, request, *args, **kwargs):
         expires = timezone.now() + timedelta(
             seconds=oauth2_settings.AUTHORIZATION_CODE_EXPIRE_SECONDS)
+        Grant = get_grant_model()
         g = Grant(application=request.client, user=request.user, code=code['code'],
                   expires=expires, redirect_uri=request.redirect_uri,
                   scope=' '.join(request.scopes))
@@ -296,6 +304,8 @@ class OAuth2Validator(RequestValidator):
         Save access and refresh token, If refresh token is issued, remove old refresh tokens as
         in rfc:`6`
         """
+        RefreshToken = get_refersh_token_model()
+
         if request.refresh_token:
             # remove used refresh token
             try:
@@ -306,6 +316,8 @@ class OAuth2Validator(RequestValidator):
         expires = timezone.now() + timedelta(seconds=oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
         if request.grant_type == 'client_credentials':
             request.user = None
+
+        AccessToken = get_access_token_model()
 
         access_token = AccessToken(
             user=request.user,
@@ -337,6 +349,9 @@ class OAuth2Validator(RequestValidator):
         """
         if token_type_hint not in ['access_token', 'refresh_token']:
             token_type_hint = None
+
+        AccessToken = get_access_token_model()
+        RefreshToken = get_refersh_token_model()
 
         token_types = {
             'access_token': AccessToken,
@@ -372,6 +387,7 @@ class OAuth2Validator(RequestValidator):
         Check refresh_token exists and refers to the right client.
         Also attach User instance to the request object
         """
+        RefreshToken = get_refersh_token_model()
         try:
             rt = RefreshToken.objects.get(token=refresh_token)
             request.user = rt.user
