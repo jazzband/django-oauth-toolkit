@@ -127,7 +127,7 @@ class Application(AbstractApplication):
     pass
 
 # Add swappable like this to not break django 1.4 compatibility
-Application._meta.swappable = 'OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL'
+Application._meta.swappable = 'OAUTH2_PROVIDER_APPLICATION_MODEL'
 
 
 @python_2_unicode_compatible
@@ -299,11 +299,11 @@ def get_application_model():
     try:
         app_label, model_name = oauth2_settings.APPLICATION_MODEL.split('.')
     except ValueError:
-        e = "ACCESS_TOKEN_MODEL must be of the form 'app_label.model_name'"
+        e = "APPLICATION_MODEL must be of the form 'app_label.model_name'"
         raise ImproperlyConfigured(e)
     app_model = get_model(app_label, model_name)
     if app_model is None:
-        e = "ACCESS_TOKEN_MODEL refers to model {0} that has not been installed"
+        e = "APPLICATION_MODEL refers to model {0} that has not been installed"
         raise ImproperlyConfigured(e.format(oauth2_settings.APPLICATION_MODEL))
     return app_model
 
