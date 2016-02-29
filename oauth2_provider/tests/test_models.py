@@ -1,22 +1,27 @@
 from __future__ import unicode_literals
 
+import django
+from django.core.exceptions import ValidationError
+from django.test import TestCase
+from django.test.utils import override_settings
+from django.utils import timezone
+
+from ..compat import get_user_model
+from ..models import (get_access_token_model, get_application_model,
+                      get_grant_model, get_refersh_token_model)
+
 try:
     from unittest import skipIf
 except ImportError:
     from django.utils.unittest.case import skipIf
 
-import django
-from django.test import TestCase
-from django.test.utils import override_settings
-from django.core.exceptions import ValidationError
-from django.utils import timezone
-
-from ..models import get_application_model, Grant, AccessToken, RefreshToken
-from ..compat import get_user_model
-
-
 Application = get_application_model()
+Grant = get_grant_model()
+AccessToken = get_access_token_model()
+RefreshToken = get_refersh_token_model()
 UserModel = get_user_model()
+
+APP_MODEL_SEPERATOR = ':' if django.VERSION < (1, 8) else '_'
 
 
 class TestModels(TestCase):
@@ -129,8 +134,9 @@ class TestCustomApplicationModel(TestCase):
         if django.VERSION < (1, 8):
             del UserModel._meta._related_objects_cache
         related_object_names = [ro.name for ro in UserModel._meta.get_all_related_objects()]
-        self.assertNotIn('oauth2_provider:application', related_object_names)
-        self.assertIn('tests%stestapplication' % (':' if django.VERSION < (1, 8) else '_'),
+        self.assertNotIn('oauth2_provider%sapplication' % APP_MODEL_SEPERATOR,
+                         related_object_names)
+        self.assertIn('tests%stestapplication' % APP_MODEL_SEPERATOR,
                       related_object_names)
 
 
@@ -145,6 +151,27 @@ class TestGrantModel(TestCase):
         self.assertIsNone(grant.expires)
         self.assertTrue(grant.is_expired())
 
+@skipIf(django.VERSION < (1, 5), "Behavior is broken on 1.4 and there is no solution")
+@override_settings(OAUTH2_PROVIDER_GRANT_MODEL='tests.TestGrant')
+class TestCustomGrantModel(TestCase):
+    def setUp(self):
+        self.user = UserModel.objects.create_user("test_user", "test@user.com", "123456")
+
+    def test_related_objects(self):
+        """
+        If a custom grant model is installed, it should be present in
+        the related objects and not the swapped out one.
+
+        See issue #90 (https://github.com/evonove/django-oauth-toolkit/issues/90)
+        """
+        # Django internals caches the related objects.
+        if django.VERSION < (1, 8):
+            del UserModel._meta._related_objects_cache
+        related_object_names = [ro.name for ro in UserModel._meta.get_all_related_objects()]
+        self.assertNotIn('oauth2_provider%sgrant' % APP_MODEL_SEPERATOR,
+                         related_object_names)
+        self.assertIn('tests%stestgrant' % APP_MODEL_SEPERATOR,
+                      related_object_names)
 
 class TestAccessTokenModel(TestCase):
     def setUp(self):
@@ -170,9 +197,52 @@ class TestAccessTokenModel(TestCase):
         self.assertIsNone(access_token.expires)
         self.assertTrue(access_token.is_expired())
 
+@skipIf(django.VERSION < (1, 5), "Behavior is broken on 1.4 and there is no solution")
+@override_settings(OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL='tests.TestAccessToken')
+class TestCustomAccessTokenModel(TestCase):
+    def setUp(self):
+        self.user = UserModel.objects.create_user("test_user", "test@user.com", "123456")
+
+    def test_related_objects(self):
+        """
+        If a custom access token model is installed, it should be present in
+        the related objects and not the swapped out one.
+
+        See issue #90 (https://github.com/evonove/django-oauth-toolkit/issues/90)
+        """
+        # Django internals caches the related objects.
+        if django.VERSION < (1, 8):
+            del UserModel._meta._related_objects_cache
+        related_object_names = [ro.name for ro in UserModel._meta.get_all_related_objects()]
+        self.assertNotIn('oauth2_provider%saccesstoken' % APP_MODEL_SEPERATOR,
+                         related_object_names)
+        self.assertIn('tests%stestaccesstoken' % APP_MODEL_SEPERATOR,
+                      related_object_names)
 
 class TestRefreshTokenModel(TestCase):
 
     def test_str(self):
         refresh_token = RefreshToken(token="test_token")
         self.assertEqual("%s" % refresh_token, refresh_token.token)
+
+@skipIf(django.VERSION < (1, 5), "Behavior is broken on 1.4 and there is no solution")
+@override_settings(OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL='tests.TestRefreshToken')
+class TestCustomRefreshTokenModel(TestCase):
+    def setUp(self):
+        self.user = UserModel.objects.create_user("test_user", "test@user.com", "123456")
+
+    def test_related_objects(self):
+        """
+        If a custom refresh token model is installed, it should be present in
+        the related objects and not the swapped out one.
+
+        See issue #90 (https://github.com/evonove/django-oauth-toolkit/issues/90)
+        """
+        # Django internals caches the related objects.
+        if django.VERSION < (1, 8):
+            del UserModel._meta._related_objects_cache
+        related_object_names = [ro.name for ro in UserModel._meta.get_all_related_objects()]
+        self.assertNotIn('oauth2_provider%srefreshtoken' % APP_MODEL_SEPERATOR,
+                         related_object_names)
+        self.assertIn('tests%stestrefreshtoken' % APP_MODEL_SEPERATOR,
+                      related_object_names)

@@ -11,12 +11,13 @@ except ImportError:
     import unittest
 
 from .test_utils import TestCaseUtils
-from ..models import AccessToken, get_application_model
+from ..models import get_access_token_model, get_application_model
 from ..settings import oauth2_settings
 from ..compat import get_user_model
 
 
 Application = get_application_model()
+AccessToken = get_access_token_model()
 UserModel = get_user_model()
 
 

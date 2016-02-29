@@ -1,17 +1,17 @@
 import json
 from datetime import timedelta
 
-from django.test import TestCase, RequestFactory
+from django.test import RequestFactory, TestCase
 from django.utils import timezone
 
-from ..decorators import protected_resource, rw_protected_resource
-from ..settings import oauth2_settings
-from ..models import get_application_model, AccessToken
 from ..compat import get_user_model
+from ..decorators import protected_resource, rw_protected_resource
+from ..models import get_access_token_model, get_application_model
+from ..settings import oauth2_settings
 from .test_utils import TestCaseUtils
 
-
 Application = get_application_model()
+AccessToken = get_access_token_model()
 UserModel = get_user_model()
 
 

@@ -11,9 +11,14 @@ except ImportError:  # django < 1.5
 else:
     User = get_user_model()
 
-from oauth2_provider.models import get_application_model
+from oauth2_provider.models import (get_application_model,
+                                    get_access_token_model,
+                                    get_grant_model,
+                                    get_refersh_token_model)
 ApplicationModel = get_application_model()
-
+GrantModel = get_grant_model()
+AccessTokenModel = get_access_token_model()
+RefreshTokenModel = get_refersh_token_model
 
 class Migration(SchemaMigration):
 
@@ -60,7 +65,7 @@ class Migration(SchemaMigration):
             ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm["%s.%s" % (User._meta.app_label, User._meta.object_name)])),
             ('token', self.gf('django.db.models.fields.CharField')(max_length=255)),
             ('application', self.gf('django.db.models.fields.related.ForeignKey')(to=orm["%s.%s" % (ApplicationModel._meta.app_label, ApplicationModel._meta.object_name)])),
-            ('access_token', self.gf('django.db.models.fields.related.OneToOneField')(related_name='refresh_token', unique=True, to=orm['oauth2_provider.AccessToken'])),
+            ('access_token', self.gf('django.db.models.fields.related.OneToOneField')(related_name='refresh_token', unique=True, to=ormorm["%s.%s" % (AccessTokenModel._meta.app_label, AccessTokenModel._meta.object_name)])),
         ))
         db.send_create_signal(u'oauth2_provider', ['RefreshToken'])
 
@@ -116,8 +121,8 @@ class Migration(SchemaMigration):
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
-        u'oauth2_provider.accesstoken': {
-            'Meta': {'object_name': 'AccessToken'},
+        u"%s.%s" % (AccessTokenModel._meta.app_label, AccessTokenModel._meta.object_name): {
+            'Meta': {'object_name': AccessTokenModel.__name__},
             'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['%s.%s']"% (ApplicationModel._meta.app_label, ApplicationModel._meta.object_name)}),
             'expires': ('django.db.models.fields.DateTimeField', [], {}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -136,8 +141,8 @@ class Migration(SchemaMigration):
             'redirect_uris': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['%s.%s']"% (User._meta.app_label, User._meta.object_name)})
         },
-        u'oauth2_provider.grant': {
-            'Meta': {'object_name': 'Grant'},
+        u"%s.%s" % (GrantModel._meta.app_label, GrantModel._meta.object_name)': {
+            'Meta': {'object_name': GrantModel.__name__},
             'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['%s.%s']"% (ApplicationModel._meta.app_label, ApplicationModel._meta.object_name)}),
             'code': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'expires': ('django.db.models.fields.DateTimeField', [], {}),
@@ -146,9 +151,9 @@ class Migration(SchemaMigration):
             'scope': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['%s.%s']"% (User._meta.app_label, User._meta.object_name)})
         },
-        u'oauth2_provider.refreshtoken': {
-            'Meta': {'object_name': 'RefreshToken'},
-            'access_token': ('django.db.models.fields.related.OneToOneField', [], {'related_name': "'refresh_token'", 'unique': 'True', 'to': u"orm['oauth2_provider.AccessToken']"}),
+        u"%s.%s" % (RefreshTokenModel._meta.app_label, RefreshTokenModel._meta.object_name)': {
+            'Meta': {'object_name': RefreshTokenModel.__name__},
+            'access_token': ('django.db.models.fields.related.OneToOneField', [], {'related_name': "'refresh_token'", 'unique': 'True', 'to': {'to': u"orm['%s.%s']"% (AccessTokenModel._meta.app_label, AccessTokenModel._meta.object_name)}}),
             'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['%s.%s']"% (ApplicationModel._meta.app_label, ApplicationModel._meta.object_name)}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'token': ('django.db.models.fields.CharField', [], {'max_length': '255'}),

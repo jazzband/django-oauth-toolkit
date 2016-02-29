@@ -5,8 +5,8 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.test.utils import override_settings
 
-from ..models import get_application_model
 from ..compat import get_user_model
+from ..models import get_application_model
 
 Application = get_application_model()
 UserModel = get_user_model()

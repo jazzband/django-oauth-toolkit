@@ -44,6 +44,9 @@ DEFAULTS = {
     'ACCESS_TOKEN_EXPIRE_SECONDS': 36000,
     'REFRESH_TOKEN_EXPIRE_SECONDS': None,
     'APPLICATION_MODEL': getattr(settings, 'OAUTH2_PROVIDER_APPLICATION_MODEL', 'oauth2_provider.Application'),
+    'GRANT_MODEL': getattr(settings, 'OAUTH2_PROVIDER_GRANT_MODEL', 'oauth2_provider.Grant'),
+    'ACCESS_TOKEN_MODEL': getattr(settings, 'OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL', 'oauth2_provider.AccessToken'),
+    'REFRESH_TOKEN_MODEL': getattr(settings, 'OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL', 'oauth2_provider.RefreshToken'),
     'REQUEST_APPROVAL_PROMPT': 'force',
     'ALLOWED_REDIRECT_URI_SCHEMES': ['http', 'https'],
 
