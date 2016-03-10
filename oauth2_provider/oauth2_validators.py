@@ -7,6 +7,7 @@ import logging
 from datetime import timedelta
 
 from django.utils import timezone
+from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.exceptions import ObjectDoesNotExist
 from oauthlib.oauth2 import RequestValidator
@@ -57,7 +58,7 @@ class OAuth2Validator(RequestValidator):
             return False
 
         try:
-            encoding = request.encoding
+            encoding = request.encoding or settings.DEFAULT_CHARSET or 'utf-8'
         except AttributeError:
             encoding = 'utf-8'
 

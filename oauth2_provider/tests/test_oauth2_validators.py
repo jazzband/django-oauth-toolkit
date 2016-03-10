@@ -53,6 +53,12 @@ class TestOAuth2Validator(TestCase):
         self.request.headers = {'HTTP_AUTHORIZATION': 'Basic Y2xpZW50X2lkOmNsaWVudF9zZWNyZXQ=\n'}
         self.assertTrue(self.validator._authenticate_basic_auth(self.request))
 
+    def test_authenticate_basic_auth_default_encoding(self):
+        self.request.encoding = None
+        # client_id:client_secret
+        self.request.headers = {'HTTP_AUTHORIZATION': 'Basic Y2xpZW50X2lkOmNsaWVudF9zZWNyZXQ=\n'}
+        self.assertTrue(self.validator._authenticate_basic_auth(self.request))
+
     def test_authenticate_basic_auth_wrong_client_id(self):
         self.request.encoding = 'utf-8'
         # wrong_id:client_secret
