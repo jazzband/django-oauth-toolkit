@@ -28,16 +28,16 @@ class BaseTest(TestCaseUtils, TestCase):
         self.test_user = UserModel.objects.create_user("test_user", "test@user.com", "123456")
         self.dev_user = UserModel.objects.create_user("dev_user", "dev@user.com", "123456")
 
+        oauth2_settings._SCOPES = ['read', 'write']
+
         self.application = Application(
             name="Test Password Application",
             user=self.dev_user,
             client_type=Application.CLIENT_PUBLIC,
             authorization_grant_type=Application.GRANT_PASSWORD,
+            default_scope='read write',
         )
         self.application.save()
-
-        oauth2_settings._SCOPES = ['read', 'write']
-        oauth2_settings._DEFAULT_SCOPES = ['read', 'write']
 
     def tearDown(self):
         self.application.delete()
@@ -46,6 +46,8 @@ class BaseTest(TestCaseUtils, TestCase):
 
 
 class TestPasswordTokenView(BaseTest):
+    def setUp(self):
+        super(TestPasswordTokenView, self).setUp()
     def test_get_token(self):
         """
         Request an access token using Resource Owner Password Flow

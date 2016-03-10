@@ -30,7 +30,7 @@ class ApplicationRegistration(LoginRequiredMixin, CreateView):
         return modelform_factory(
             get_application_model(),
             fields=('name', 'client_id', 'client_secret', 'client_type',
-                    'authorization_grant_type', 'redirect_uris')
+                    'authorization_grant_type', 'redirect_uris', 'scope', 'default_scope')
         )
 
     def form_valid(self, form):

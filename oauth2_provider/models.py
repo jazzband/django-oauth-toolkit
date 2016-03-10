@@ -13,7 +13,7 @@ from django.core.exceptions import ImproperlyConfigured
 from .settings import oauth2_settings
 from .compat import AUTH_USER_MODEL, parse_qsl, urlparse, get_model
 from .generators import generate_client_secret, generate_client_id
-from .validators import validate_uris
+from .validators import validate_uris, validate_application_scopes
 
 
 @python_2_unicode_compatible
@@ -68,6 +68,14 @@ class AbstractApplication(models.Model):
                                      default=generate_client_secret, db_index=True)
     name = models.CharField(max_length=255, blank=True)
     skip_authorization = models.BooleanField(default=False)
+    help_text = _("Allowed scopes list, space separated")
+    scope = models.TextField(help_text=help_text,
+                            default=' '.join(oauth2_settings._DEFAULT_APPLICATION_ALLOWED_SCOPES),
+                            validators=[validate_application_scopes])
+    help_text = _("Default scopes list, space separated")
+    default_scope = models.TextField(help_text=help_text,
+                            default=' '.join(oauth2_settings._DEFAULT_APPLICATION_DEFAULT_SCOPES),
+                            validators=[validate_application_scopes])
 
     class Meta:
         abstract = True
@@ -121,7 +129,6 @@ class AbstractApplication(models.Model):
 
     def __str__(self):
         return self.name or self.client_id
-
 
 class Application(AbstractApplication):
     pass

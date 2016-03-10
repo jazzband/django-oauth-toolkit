@@ -1013,7 +1013,8 @@ class TestDefaultScopes(BaseTest):
         Test response for a valid client_id with response_type: code using default scopes
         """
         self.client.login(username="test_user", password="123456")
-        oauth2_settings._DEFAULT_SCOPES = ['read']
+        self.application.default_scope = 'read'
+        self.application.save()
 
         query_string = urlencode({
             'client_id': self.application.client_id,

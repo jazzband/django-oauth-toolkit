@@ -37,7 +37,8 @@ DEFAULTS = {
     'OAUTH2_VALIDATOR_CLASS': 'oauth2_provider.oauth2_validators.OAuth2Validator',
     'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.OAuthLibCore',
     'SCOPES': {"read": "Reading scope", "write": "Writing scope"},
-    'DEFAULT_SCOPES': ['__all__'],
+    'DEFAULT_APPLICATION_ALLOWED_SCOPES': ['__all__'],
+    'DEFAULT_APPLICATION_DEFAULT_SCOPES': ['__all__'],
     'READ_SCOPE': 'read',
     'WRITE_SCOPE': 'write',
     'AUTHORIZATION_CODE_EXPIRE_SECONDS': 60,
@@ -49,7 +50,8 @@ DEFAULTS = {
 
     # Special settings that will be evaluated at runtime
     '_SCOPES': [],
-    '_DEFAULT_SCOPES': [],
+    '_DEFAULT_APPLICATION_ALLOWED_SCOPES': [],
+    '_DEFAULT_APPLICATION_DEFAULT_SCOPES': [],
 }
 
 # List of settings that cannot be empty
@@ -131,18 +133,30 @@ class OAuth2ProviderSettings(object):
         # Overriding special settings
         if attr == '_SCOPES':
             val = list(six.iterkeys(self.SCOPES))
-        if attr == '_DEFAULT_SCOPES':
-            if '__all__' in self.DEFAULT_SCOPES:
-                # If DEFAULT_SCOPES is set to ['__all__'] the whole set of scopes is returned
+        if attr == '_DEFAULT_APPLICATION_ALLOWED_SCOPES':
+            if '__all__' in self.DEFAULT_APPLICATION_ALLOWED_SCOPES:
+                # If DEFAULT_APPLICATION_ALLOWED_SCOPES is set to ['__all__'] the whole set of scopes is returned
                 val = list(self._SCOPES)
             else:
                 # Otherwise we return a subset (that can be void) of SCOPES
                 val = []
-                for scope in self.DEFAULT_SCOPES:
+                for scope in self.DEFAULT_APPLICATION_ALLOWED_SCOPES:
                     if scope in self._SCOPES:
                         val.append(scope)
                     else:
-                        raise ImproperlyConfigured("Defined DEFAULT_SCOPES not present in SCOPES")
+                        raise ImproperlyConfigured("Defined DEFAULT_APPLICATION_ALLOWED_SCOPES not present in SCOPES")
+        if attr == '_DEFAULT_APPLICATION_DEFAULT_SCOPES':
+            if '__all__' in self.DEFAULT_APPLICATION_DEFAULT_SCOPES:
+                # If DEFAULT_APPLICATION_DEFAULT_SCOPES is set to ['__all__'] the whole set of scopes is returned
+                val = list(self._SCOPES)
+            else:
+                # Otherwise we return a subset (that can be void) of SCOPES
+                val = []
+                for scope in self.DEFAULT_APPLICATION_DEFAULT_SCOPES:
+                    if scope in self._SCOPES:
+                        val.append(scope)
+                    else:
+                        raise ImproperlyConfigured("Defined DEFAULT_APPLICATION_DEFAULT_SCOPES not present in SCOPES")
 
         self.validate_setting(attr, val)
 
