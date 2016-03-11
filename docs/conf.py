@@ -19,9 +19,12 @@ import sys, os, re
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here)
 sys.path.insert(0, os.path.dirname(here))
-sys.path.insert(0, os.path.join(os.path.dirname(here), 'example'))
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'oauth2_provider.tests.settings'
+
+import django
+django.setup()
+
 import oauth2_provider
 
 # -- General configuration -----------------------------------------------------
