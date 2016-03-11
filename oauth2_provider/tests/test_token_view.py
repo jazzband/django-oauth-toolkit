@@ -2,12 +2,13 @@ from __future__ import unicode_literals
 
 import datetime
 
+from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils import timezone
 
 from ..models import get_application_model, AccessToken
-from ..compat import get_user_model
+
 
 Application = get_application_model()
 UserModel = get_user_model()

@@ -1,18 +1,15 @@
 from __future__ import unicode_literals
 
-try:
-    from unittest import skipIf
-except ImportError:
-    from django.utils.unittest.case import skipIf
+from unittest import skipIf
 
 import django
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.test.utils import override_settings
-from django.core.exceptions import ValidationError
 from django.utils import timezone
 
 from ..models import get_application_model, Grant, AccessToken, RefreshToken
-from ..compat import get_user_model
 
 
 Application = get_application_model()

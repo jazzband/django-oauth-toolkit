@@ -2,11 +2,12 @@ from __future__ import unicode_literals
 
 import datetime
 
-from django.test import TestCase, RequestFactory
+from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
+from django.test import TestCase, RequestFactory
 from django.utils import timezone
 
-from ..compat import urlencode, get_user_model
+from ..compat import urlencode
 from ..models import get_application_model, AccessToken, RefreshToken
 from ..settings import oauth2_settings
 

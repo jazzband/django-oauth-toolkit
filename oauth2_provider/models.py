@@ -2,6 +2,8 @@ from __future__ import unicode_literals
 
 from datetime import timedelta
 
+from django.apps import apps
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models, transaction
 from django.utils import timezone
@@ -11,7 +13,7 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.core.exceptions import ImproperlyConfigured
 
 from .settings import oauth2_settings
-from .compat import AUTH_USER_MODEL, parse_qsl, urlparse, get_model
+from .compat import parse_qsl, urlparse
 from .generators import generate_client_secret, generate_client_id
 from .validators import validate_uris
 
@@ -57,7 +59,7 @@ class AbstractApplication(models.Model):
 
     client_id = models.CharField(max_length=100, unique=True,
                                  default=generate_client_id, db_index=True)
-    user = models.ForeignKey(AUTH_USER_MODEL, related_name="%(app_label)s_%(class)s")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="%(app_label)s_%(class)s")
     help_text = _("Allowed URIs list, space separated")
     redirect_uris = models.TextField(help_text=help_text,
                                      validators=[validate_uris], blank=True)
@@ -146,7 +148,7 @@ class Grant(models.Model):
     * :attr:`redirect_uri` Self explained
     * :attr:`scope` Required scopes, optional
     """
-    user = models.ForeignKey(AUTH_USER_MODEL)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
     code = models.CharField(max_length=255, db_index=True)  # code comes from oauthlib
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL)
     expires = models.DateTimeField()
@@ -183,7 +185,7 @@ class AccessToken(models.Model):
     * :attr:`expires` Date and time of token expiration, in DateTime format
     * :attr:`scope` Allowed scopes
     """
-    user = models.ForeignKey(AUTH_USER_MODEL, blank=True, null=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
     token = models.CharField(max_length=255, db_index=True)
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL)
     expires = models.DateTimeField()
@@ -252,7 +254,7 @@ class RefreshToken(models.Model):
     * :attr:`access_token` AccessToken instance this refresh token is
                            bounded to
     """
-    user = models.ForeignKey(AUTH_USER_MODEL)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
     token = models.CharField(max_length=255, db_index=True)
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL)
     access_token = models.OneToOneField(AccessToken,
@@ -276,7 +278,7 @@ def get_application_model():
     except ValueError:
         e = "APPLICATION_MODEL must be of the form 'app_label.model_name'"
         raise ImproperlyConfigured(e)
-    app_model = get_model(app_label, model_name)
+    app_model = apps.get_model(app_label, model_name)
     if app_model is None:
         e = "APPLICATION_MODEL refers to model {0} that has not been installed"
         raise ImproperlyConfigured(e.format(oauth2_settings.APPLICATION_MODEL))

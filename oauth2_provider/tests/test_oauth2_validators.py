@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 
 import mock
@@ -5,7 +6,6 @@ from oauthlib.common import Request
 
 from ..oauth2_validators import OAuth2Validator
 from ..models import get_application_model
-from ..compat import get_user_model
 
 UserModel = get_user_model()
 AppModel = get_application_model()

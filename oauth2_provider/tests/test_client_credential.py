@@ -8,6 +8,7 @@ except ImportError:
     import urllib
 
 from django.core.urlresolvers import reverse
+from django.contrib.auth import get_user_model
 from django.test import TestCase, RequestFactory
 from django.views.generic import View
 
@@ -19,7 +20,6 @@ from ..oauth2_validators import OAuth2Validator
 from ..settings import oauth2_settings
 from ..views import ProtectedResourceView
 from ..views.mixins import OAuthLibMixin
-from ..compat import get_user_model
 from .test_utils import TestCaseUtils
 
 

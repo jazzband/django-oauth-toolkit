@@ -1,12 +1,12 @@
 from datetime import timedelta
 
+from django.contrib.auth import get_user_model
 from django.test import TestCase, RequestFactory
 from django.utils import timezone
 
 from ..decorators import protected_resource, rw_protected_resource
 from ..settings import oauth2_settings
 from ..models import get_application_model, AccessToken
-from ..compat import get_user_model
 from .test_utils import TestCaseUtils
 
 

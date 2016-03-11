@@ -2,15 +2,17 @@ from __future__ import unicode_literals
 
 import json
 
-from django.test import TestCase, RequestFactory
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
+from django.test import TestCase, RequestFactory
 
 from .test_utils import TestCaseUtils
-from ..compat import urlparse, parse_qs, get_user_model, urlencode
+from ..compat import urlparse, parse_qs, urlencode
 from ..models import get_application_model, Grant, AccessToken
 from ..settings import oauth2_settings
 from ..views import ScopedProtectedResourceView, ReadWriteScopedResourceView
+
 
 Application = get_application_model()
 UserModel = get_user_model()
