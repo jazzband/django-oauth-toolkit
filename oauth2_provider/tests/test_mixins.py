@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 from django.core.exceptions import ImproperlyConfigured
 from django.views.generic import View
 from django.test import TestCase, RequestFactory
-from django.http import HttpResponse
 
 from oauthlib.oauth2 import Server
 
@@ -99,10 +98,6 @@ class TestProtectedResourceMixin(BaseTest):
         class TestView(ProtectedResourceMixin, View):
             server_class = Server
             validator_class = OAuth2Validator
-
-            def options(self, request, *args, **kwargs):
-                """Django 1.4 doesn't provide a default options method"""
-                return HttpResponse()
 
         request = self.request_factory.options("/fake-req")
         view = TestView.as_view()

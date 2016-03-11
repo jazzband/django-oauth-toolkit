@@ -1,7 +1,5 @@
 from __future__ import unicode_literals
 
-from unittest import skipIf
-
 import django
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
@@ -109,7 +107,6 @@ class TestModels(TestCase):
         self.assertEqual(access_token2.scopes, {'write': 'Writing scope'})
 
 
-@skipIf(django.VERSION < (1, 5), "Behavior is broken on 1.4 and there is no solution")
 @override_settings(OAUTH2_PROVIDER_APPLICATION_MODEL='tests.TestApplication')
 class TestCustomApplicationModel(TestCase):
     def setUp(self):
