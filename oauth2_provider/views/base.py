@@ -2,7 +2,7 @@ import logging
 
 from django.http import HttpResponse
 from django.views.decorators.debug import sensitive_post_parameters
-from django.views.generic import View, FormView
+from django.views.generic import View, TemplateView, FormView
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 
@@ -18,7 +18,7 @@ from .mixins import OAuthLibMixin
 log = logging.getLogger('oauth2_provider')
 
 
-class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
+class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, TemplateView):
     """
     Implements a generic endpoint to handle *Authorization Requests* as in :rfc:`4.1.1`. The view
     does not implement any strategy to determine *authorize/do not authorize* logic.
