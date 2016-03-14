@@ -8,6 +8,7 @@ from django.utils.decorators import method_decorator
 
 from braces.views import LoginRequiredMixin, CsrfExemptMixin
 
+from ..scopes import get_scopes_backend
 from ..settings import oauth2_settings
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
@@ -110,7 +111,8 @@ class AuthorizationView(BaseAuthorizationView, FormView):
     def get(self, request, *args, **kwargs):
         try:
             scopes, credentials = self.validate_authorization_request(request)
-            kwargs['scopes_descriptions'] = [oauth2_settings.SCOPES[scope] for scope in scopes]
+            all_scopes = get_scopes_backend().get_all_scopes()
+            kwargs["scopes_descriptions"] = [all_scopes[scope] for scope in scopes]
             kwargs['scopes'] = scopes
             # at this point we know an Application instance with such client_id exists in the database
             application = get_application_model().objects.get(client_id=credentials['client_id'])  # TODO: cache it!

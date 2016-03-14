@@ -96,6 +96,9 @@ class TestOAuth2Authentication(BaseTest):
             application=self.application
         )
 
+    def tearDown(self):
+        oauth2_settings._SCOPES = ['read', 'write']
+
     def _create_authorization_header(self, token):
         return "Bearer {0}".format(token)
 

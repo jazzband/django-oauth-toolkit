@@ -126,7 +126,3 @@ LOGGING = {
         },
     }
 }
-
-OAUTH2_PROVIDER = {
-    '_SCOPES': ['example']
-}

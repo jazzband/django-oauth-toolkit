@@ -35,6 +35,7 @@ DEFAULTS = {
     'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.OAuthLibCore',
     'SCOPES': {"read": "Reading scope", "write": "Writing scope"},
     'DEFAULT_SCOPES': ['__all__'],
+    'SCOPES_BACKEND_CLASS': 'oauth2_provider.scopes.SettingsScopes',
     'READ_SCOPE': 'read',
     'WRITE_SCOPE': 'write',
     'AUTHORIZATION_CODE_EXPIRE_SECONDS': 60,
@@ -68,6 +69,7 @@ IMPORT_STRINGS = (
     'OAUTH2_SERVER_CLASS',
     'OAUTH2_VALIDATOR_CLASS',
     'OAUTH2_BACKEND_CLASS',
+    'SCOPES_BACKEND_CLASS',
 )
 
 

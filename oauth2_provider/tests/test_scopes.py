@@ -60,6 +60,7 @@ class BaseTest(TestCaseUtils, TestCase):
         oauth2_settings.WRITE_SCOPE = 'write'
 
     def tearDown(self):
+        oauth2_settings._SCOPES = ["read", "write"]
         self.application.delete()
         self.test_user.delete()
         self.dev_user.delete()
@@ -323,26 +324,26 @@ class TestReadWriteScope(BaseTest):
         return content['access_token']
 
     def test_improperly_configured(self):
-        oauth2_settings._SCOPES = ['scope1']
+        oauth2_settings.SCOPES = {'scope1': 'Scope 1'}
 
         request = self.factory.get("/fake")
         view = ReadWriteResourceView.as_view()
         self.assertRaises(ImproperlyConfigured, view, request)
 
-        oauth2_settings._SCOPES = ['read', 'write']
+        oauth2_settings.SCOPES = {'read': 'Read Scope', 'write': 'Write Scope'}
         oauth2_settings.READ_SCOPE = 'ciccia'
 
         view = ReadWriteResourceView.as_view()
         self.assertRaises(ImproperlyConfigured, view, request)
 
     def test_properly_configured(self):
-        oauth2_settings._SCOPES = ['scope1']
+        oauth2_settings.SCOPES = {'scope1': 'Scope 1'}
 
         request = self.factory.get("/fake")
         view = ReadWriteResourceView.as_view()
         self.assertRaises(ImproperlyConfigured, view, request)
 
-        oauth2_settings._SCOPES = ['read', 'write']
+        oauth2_settings.SCOPES = {'read': 'Read Scope', 'write': 'Write Scope'}
         oauth2_settings.READ_SCOPE = 'ciccia'
 
         view = ReadWriteResourceView.as_view()

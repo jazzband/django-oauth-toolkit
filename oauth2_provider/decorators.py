@@ -6,6 +6,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 from .oauth2_validators import OAuth2Validator
 from .oauth2_backends import OAuthLibCore
+from .scopes import get_scopes_backend
 from .settings import oauth2_settings
 
 
@@ -55,7 +56,7 @@ def rw_protected_resource(scopes=None, validator_cls=OAuth2Validator, server_cls
         @wraps(view_func)
         def _validate(request, *args, **kwargs):
             # Check if provided scopes are acceptable
-            provided_scopes = oauth2_settings._SCOPES
+            provided_scopes = get_scopes_backend().get_all_scopes()
             read_write_scopes = [oauth2_settings.READ_SCOPE, oauth2_settings.WRITE_SCOPE]
 
             if not set(read_write_scopes).issubset(set(provided_scopes)):

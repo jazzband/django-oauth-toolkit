@@ -15,6 +15,7 @@ from oauthlib.oauth2 import RequestValidator
 from .compat import unquote_plus
 from .exceptions import FatalClientError
 from .models import Grant, AccessToken, RefreshToken, get_application_model, AbstractApplication
+from .scopes import get_scopes_backend
 from .settings import oauth2_settings
 
 
@@ -279,10 +280,12 @@ class OAuth2Validator(RequestValidator):
         """
         Ensure required scopes are permitted (as specified in the settings file)
         """
-        return set(scopes).issubset(set(oauth2_settings._SCOPES))
+        available_scopes = get_scopes_backend().get_available_scopes(application=client, request=request)
+        return set(scopes).issubset(set(available_scopes))
 
     def get_default_scopes(self, client_id, request, *args, **kwargs):
-        return oauth2_settings._DEFAULT_SCOPES
+        default_scopes = get_scopes_backend().get_default_scopes(application=request.client, request=request)
+        return default_scopes
 
     def validate_redirect_uri(self, client_id, redirect_uri, request, *args, **kwargs):
         return request.client.redirect_uri_allowed(redirect_uri)

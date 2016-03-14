@@ -6,6 +6,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponseForbidden
 
 from ..exceptions import FatalClientError
+from ..scopes import get_scopes_backend
 from ..settings import oauth2_settings
 
 
@@ -221,7 +222,7 @@ class ReadWriteScopedResourceMixin(ScopedResourceMixin, OAuthLibMixin):
     read_write_scope = None
 
     def __new__(cls, *args, **kwargs):
-        provided_scopes = oauth2_settings._SCOPES
+        provided_scopes = get_scopes_backend().get_all_scopes()
         read_write_scopes = [oauth2_settings.READ_SCOPE, oauth2_settings.WRITE_SCOPE]
 
         if not set(read_write_scopes).issubset(set(provided_scopes)):

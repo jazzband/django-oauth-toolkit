@@ -11,6 +11,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import python_2_unicode_compatible
 from django.core.exceptions import ImproperlyConfigured
 
+from .scopes import get_scopes_backend
 from .settings import oauth2_settings
 from .compat import parse_qsl, reverse, urlparse
 from .generators import generate_client_secret, generate_client_id
@@ -239,7 +240,9 @@ class AccessToken(models.Model):
         """
         Returns a dictionary of allowed scope names (as keys) with their descriptions (as values)
         """
-        return {name: desc for name, desc in oauth2_settings.SCOPES.items() if name in self.scope.split()}
+        all_scopes = get_scopes_backend().get_all_scopes()
+        token_scopes = self.scope.split()
+        return {name: desc for name, desc in all_scopes.items() if name in token_scopes}
 
     def __str__(self):
         return self.token

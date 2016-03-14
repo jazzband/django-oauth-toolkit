@@ -1056,3 +1056,4 @@ class TestDefaultScopes(BaseTest):
         self.assertEqual(form['state'].value(), "random_state_string")
         self.assertEqual(form['scope'].value(), 'read')
         self.assertEqual(form['client_id'].value(), self.application.client_id)
+        oauth2_settings._DEFAULT_SCOPES = ['read', 'write']
