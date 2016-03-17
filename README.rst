@@ -87,6 +87,11 @@ Roadmap / Todo list (help wanted)
 Changelog
 ---------
 
+Development
+~~~~~~~~~~~
+
+* #357: Support multiple-user clients by allowing User to be NULL for Applications
+
 0.10.0 [2015-12-14]
 ~~~~~~~~~~~~~~~~~~~
 
