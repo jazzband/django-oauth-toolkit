@@ -1,5 +1,8 @@
+from django import http
 from django.contrib.auth import authenticate
 from django.utils.cache import patch_vary_headers
+
+from .models import Application
 
 
 class OAuth2TokenMiddleware(object):
@@ -32,3 +35,46 @@ class OAuth2TokenMiddleware(object):
     def process_response(self, request, response):
         patch_vary_headers(response, ('Authorization',))
         return response
+
+HEADERS = ('x-requested-with', 'content-type', 'accept', 'origin',
+           'authorization', 'x-csrftoken')
+METHODS = ('GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS')
+
+
+class CorsMiddleware(object):
+    def process_request(self, request):
+        '''If this is a preflight-request, we must always return 200'''
+        if (request.method == 'OPTIONS' and
+                'HTTP_ACCESS_CONTROL_REQUEST_METHOD' in request.META):
+            return http.HttpResponse()
+        return None
+
+    def process_response(self, request, response):
+        '''Add cors-headers to request if they can be derived correctly'''
+        try:
+            cors_allow_origin = _get_cors_allow_origin_header(request)
+        except Application.NoSuitableOriginFoundError:
+            pass
+        else:
+            response['Access-Control-Allow-Origin'] = cors_allow_origin
+            response['Access-Control-Allow-Credentials'] = 'true'
+            if request.method == 'OPTIONS':
+                response['Access-Control-Allow-Headers'] = ', '.join(HEADERS)
+                response['Access-Control-Allow-Methods'] = ', '.join(METHODS)
+        return response
+
+
+def _get_cors_allow_origin_header(request):
+    '''Fetch the oauth-application that is responsible for making the
+    request and return a sutible cors-header, or None
+    '''
+    origin = request.META.get('HTTP_ORIGIN')
+    if origin:
+        try:
+            app = Application.objects.filter(redirect_uris__contains=origin)[0]
+        except IndexError:
+            # No application for this origin found
+            pass
+        else:
+            return app.get_cors_header(origin)
+    raise Application.NoSuitableOriginFoundError
