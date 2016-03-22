@@ -8,17 +8,16 @@ You want to make your own :term:`Authorization Server` to issue access tokens to
 Start Your App
 --------------
 During this tutorial you will make an XHR POST from a Heroku deployed app to your localhost instance.
-Since the domain that will originate the request (the app on Heroku) is different than the destination domain (your local instance),
-you will need to install the `django-cors-headers <https://github.com/ottoyiu/django-cors-headers>`_ app.
+Since the domain that will originate the request (the app on Heroku) is different than the destination domain (your local instance), you will need to use the cors-middleware that we're providing.
 These "cross-domain" requests are by default forbidden by web browsers unless you use `CORS <http://en.wikipedia.org/wiki/Cross-origin_resource_sharing>`_.
 
-Create a virtualenv and install `django-oauth-toolkit` and `django-cors-headers`:
+Create a virtualenv and install `django-oauth-toolkit`:
 
 ::
 
-    pip install django-oauth-toolkit django-cors-headers
+    pip install django-oauth-toolkit
 
-Start a Django project, add `oauth2_provider` and `corsheaders` to the installed apps, and enable admin:
+Start a Django project, add `oauth2_provider` to the installed apps, and enable admin:
 
 .. code-block:: python
 
@@ -26,7 +25,6 @@ Start a Django project, add `oauth2_provider` and `corsheaders` to the installed
         'django.contrib.admin',
         # ...
         'oauth2_provider',
-        'corsheaders',
     }
 
 Include the Django OAuth Toolkit urls in your `urls.py`, choosing the urlspace you prefer. For example:
@@ -46,17 +44,11 @@ Include the CORS middleware in your `settings.py`:
 
     MIDDLEWARE_CLASSES = (
         # ...
-        'corsheaders.middleware.CorsMiddleware',
+        'oauth2_provider.middleware.CorsMiddleware',
         # ...
     )
 
-Allow CORS requests from all domains (just for the scope of this tutorial):
-
-.. code-block:: python
-
-    CORS_ORIGIN_ALLOW_ALL = True
-
-.. _loginTemplate:
+This will allow CORS requests from the redirect uris of your applications.
 
 Include the required hidden input in your login template, `registration/login.html`.
 The ``{{ next }}`` template context variable will be populated with the correct
