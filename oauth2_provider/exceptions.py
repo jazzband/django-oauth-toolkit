@@ -15,3 +15,10 @@ class FatalClientError(OAuthToolkitError):
     Class for critical errors
     """
     pass
+
+
+class UnsupportedResponseTypeError(OAuthToolkitError):
+    """
+    Class for unsupported response type
+    """
+    pass

@@ -36,7 +36,7 @@ DEFAULTS = {
     'OAUTH2_SERVER_CLASS': 'oauthlib.oauth2.Server',
     'OAUTH2_VALIDATOR_CLASS': 'oauth2_provider.oauth2_validators.OAuth2Validator',
     'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.OAuthLibCore',
-    'SCOPES': {"read": "Reading scope", "write": "Writing scope"},
+    'SCOPES': {"read": "Reading scope", "write": "Writing scope", "openid": "OpenID Connect"},
     'DEFAULT_SCOPES': ['__all__'],
     'READ_SCOPE': 'read',
     'WRITE_SCOPE': 'write',
@@ -46,6 +46,12 @@ DEFAULTS = {
     'APPLICATION_MODEL': getattr(settings, 'OAUTH2_PROVIDER_APPLICATION_MODEL', 'oauth2_provider.Application'),
     'REQUEST_APPROVAL_PROMPT': 'force',
     'ALLOWED_REDIRECT_URI_SCHEMES': ['http', 'https'],
+
+    # TODO: this can't have a reasonable default - can it be made better?
+    'OPENID_CONNECT_TOKEN_ISSUER': '??????',
+    'OPENID_CONNECT_ID_TOKEN_LIFETIME': 300,
+    'OPENID_CONNECT_ID_TOKEN_ALG': 'HS512',
+    'OPENID_USER_CLAIMS_PROVIDER_CLASS': None,
 
     # Special settings that will be evaluated at runtime
     '_SCOPES': [],
@@ -70,6 +76,7 @@ IMPORT_STRINGS = (
     'OAUTH2_SERVER_CLASS',
     'OAUTH2_VALIDATOR_CLASS',
     'OAUTH2_BACKEND_CLASS',
+    'OPENID_USER_CLAIMS_PROVIDER_CLASS'
 )
 
 

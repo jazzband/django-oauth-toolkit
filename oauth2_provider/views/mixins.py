@@ -105,7 +105,7 @@ class OAuthLibMixin(object):
         :param request: The current django.http.HttpRequest object
         :param scopes: A space-separated string of provided scopes
         :param credentials: Authorization credentials dictionary containing
-                           `client_id`, `state`, `redirect_uri`, `response_type`
+                           `client_id`, `state`, `redirect_uri`, `response_type`, `claims`
         :param allow: True if the user authorize the client, otherwise False
         """
         # TODO: move this scopes conversion from and to string into a utils function
@@ -208,6 +208,7 @@ class ProtectedResourceMixin(OAuthLibMixin):
         valid, r = self.verify_request(request)
         if valid:
             request.resource_owner = r.user
+            request.oauthlib_request = r
             return super(ProtectedResourceMixin, self).dispatch(request, *args, **kwargs)
         else:
             return HttpResponseForbidden()

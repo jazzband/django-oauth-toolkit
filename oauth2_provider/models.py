@@ -50,11 +50,13 @@ class AbstractApplication(models.Model):
     GRANT_IMPLICIT = 'implicit'
     GRANT_PASSWORD = 'password'
     GRANT_CLIENT_CREDENTIALS = 'client-credentials'
+    GRANT_OPENID_CONNECT = 'openid'
     GRANT_TYPES = (
         (GRANT_AUTHORIZATION_CODE, _('Authorization code')),
         (GRANT_IMPLICIT, _('Implicit')),
         (GRANT_PASSWORD, _('Resource owner password-based')),
         (GRANT_CLIENT_CREDENTIALS, _('Client credentials')),
+        (GRANT_OPENID_CONNECT, _('OpenID Connect')),
     )
 
     client_id = models.CharField(max_length=100, unique=True,
@@ -147,6 +149,9 @@ class Grant(models.Model):
                       :data:`settings.AUTHORIZATION_CODE_EXPIRE_SECONDS`
     * :attr:`redirect_uri` Self explained
     * :attr:`scope` Required scopes, optional
+    * :attr:`claims` Requested OpenID Connect claims, optional
+    * :attr:`max_age` openid connect max_age param, optional
+    * :attr:`acr` openid connect acr used, optional
     """
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     code = models.CharField(max_length=255, db_index=True)  # code comes from oauthlib
@@ -154,6 +159,9 @@ class Grant(models.Model):
     expires = models.DateTimeField()
     redirect_uri = models.CharField(max_length=255)
     scope = models.TextField(blank=True)
+    claims = models.TextField(blank=True)
+    max_age = models.SmallIntegerField(null=True)
+    acr = models.CharField(max_length=255, null=True)
 
     def is_expired(self):
         """
@@ -184,12 +192,14 @@ class AccessToken(models.Model):
     * :attr:`application` Application instance
     * :attr:`expires` Date and time of token expiration, in DateTime format
     * :attr:`scope` Allowed scopes
+    * :attr:`claims` Requested OpenID Connect claims, optional
     """
     user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
     token = models.CharField(max_length=255, db_index=True)
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL)
     expires = models.DateTimeField()
     scope = models.TextField(blank=True)
+    claims = models.TextField(blank=True)
 
     def is_valid(self, scopes=None):
         """
