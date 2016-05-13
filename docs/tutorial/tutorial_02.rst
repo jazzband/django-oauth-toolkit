@@ -34,14 +34,36 @@ URL this view will respond to:
 
 .. code-block:: python
 
+    from django.conf.urls import patterns, url
+    from oauth2_provider import views
+    from django.conf import settings
     from .views import ApiEndpoint
 
     urlpatterns = patterns(
         '',
         url(r'^admin/', include(admin.site.urls)),
-        url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),  # look ma, I'm a provider!
-        url(r'^api/hello', ApiEndpoint.as_view()),  # and also a resource server!
+
+        # OAuth2 provider endpoints
+        url(r'^o/authorize/$', views.AuthorizationView.as_view(), name="authorize"),
+        url(r'^o/token/$', views.TokenView.as_view(), name="token"),
+        url(r'^o/revoke-token/$', views.RevokeTokenView.as_view(), name="revoke-token"),
+
+        url(r'^api/hello', ApiEndpoint.as_view()),  # a resource endpoint
     )
+
+    if settings.DEBUG:
+        # OAuth2 Application management views
+
+        urlpatterns += patterns(
+            '',
+            url(r'^o/applications/$', views.ApplicationList.as_view(), name="application-list"),
+            url(r'^o/applications/register/$', views.ApplicationRegistration.as_view(), name="application-register"),
+            url(r'^o/applications/(?P<pk>\d+)/$', views.ApplicationDetail.as_view(), name="application-detail"),
+            url(r'^o/applications/(?P<pk>\d+)/delete/$', views.ApplicationDelete.as_view(), name="application-delete"),
+            url(r'^o/applications/(?P<pk>\d+)/update/$', views.ApplicationUpdate.as_view(), name="application-update"),
+        )
+
+You will probably want to write your own application views to deal with permissions and access control but the ones packaged with the library can get you started when developing the app.
 
 Since we inherit from `ProtectedResourceView`, we're done and our API is OAuth2 protected - for the sake of the lazy
 programmer.
