@@ -47,7 +47,7 @@ of the pull request.
 Pull upstream changes into your fork regularly
 ==============================================
 
-It's a good practice to pull upstream changes from master into your fork on a regular basis, infact if you work on
+It's a good practice to pull upstream changes from master into your fork on a regular basis, in fact if you work on
 outdated code and your changes diverge too far from master, the pull request has to be rejected.
 
 To pull in upstream changes::
@@ -85,7 +85,7 @@ Add the tests!
 --------------
 
 Whenever you add code, you have to add tests as well. We cannot accept untested code, so unless it is a peculiar
-situation you previously discussed with the core commiters, if your pull request reduces the test coverage it will be
+situation you previously discussed with the core committers, if your pull request reduces the test coverage it will be
 **immediately rejected**.
 
 Code conventions matter

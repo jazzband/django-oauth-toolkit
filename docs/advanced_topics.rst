@@ -55,9 +55,9 @@ That's all, now Django OAuth Toolkit will use your model wherever an Application
 Skip authorization form
 =======================
 
-Depending on the OAuth2 flow in use and the access token policy, users might be prompted  for the
-same authorization multiple times: sometimes this is acceptable or even desiderable but other it isn't.
-To control DOT behaviour you can use `approval_prompt` parameter when hitting the authorization endpoint.
+Depending on the OAuth2 flow in use and the access token policy, users might be prompted for the
+same authorization multiple times: sometimes this is acceptable or even desirable but other times it isn't.
+To control DOT behaviour you can use the `approval_prompt` parameter when hitting the authorization endpoint.
 Possible values are:
 
 * `force` - users are always prompted for authorization.
