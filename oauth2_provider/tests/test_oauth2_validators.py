@@ -1,25 +1,31 @@
+from datetime import timedelta
+
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import TransactionTestCase
+from django.utils import timezone
 
 import mock
 from oauthlib.common import Request
 
+from ..exceptions import FatalClientError
 from ..oauth2_validators import OAuth2Validator
-from ..models import get_application_model
+from ..models import get_application_model, AccessToken, RefreshToken
 
 UserModel = get_user_model()
 AppModel = get_application_model()
 
 
-class TestOAuth2Validator(TestCase):
+class TestOAuth2Validator(TransactionTestCase):
     def setUp(self):
         self.user = UserModel.objects.create_user("user", "test@user.com", "123456")
         self.request = mock.MagicMock(wraps=Request)
-        self.request.client = None
+        self.request.user = self.user
+        self.request.grant_type = "not client"
         self.validator = OAuth2Validator()
         self.application = AppModel.objects.create(
             client_id='client_id', client_secret='client_secret', user=self.user,
             client_type=AppModel.CLIENT_PUBLIC, authorization_grant_type=AppModel.GRANT_PASSWORD)
+        self.request.client = self.application
 
     def tearDown(self):
         self.application.delete()
@@ -108,3 +114,129 @@ class TestOAuth2Validator(TestCase):
 
     def test_load_application_fails_when_request_has_no_client(self):
         self.assertRaises(AssertionError, self.validator.authenticate_client_id, 'client_id', {})
+
+    def test_rotate_refresh_token__is_true(self):
+        self.assertTrue(self.validator.rotate_refresh_token(mock.MagicMock()))
+
+    def test_save_bearer_token__without_user__raises_fatal_client(self):
+        token = {}
+
+        with self.assertRaises(FatalClientError):
+            self.validator.save_bearer_token(token, mock.MagicMock())
+
+    def test_save_bearer_token__with_existing_tokens__does_not_create_new_tokens(self):
+
+        rotate_token_function = mock.MagicMock()
+        rotate_token_function.return_value = False
+        self.validator.rotate_refresh_token = rotate_token_function
+
+        access_token = AccessToken.objects.create(
+            token="123",
+            user=self.user,
+            expires=timezone.now() + timedelta(seconds=60),
+            application=self.application
+        )
+        refresh_token = RefreshToken.objects.create(
+            access_token=access_token,
+            token="abc",
+            user=self.user,
+            application=self.application
+        )
+        self.request.refresh_token_instance = refresh_token
+        token = {
+            "scope": "foo bar",
+            "refresh_token": "abc",
+            "access_token": "123",
+        }
+
+        self.assertEqual(1, RefreshToken.objects.count())
+        self.assertEqual(1, AccessToken.objects.count())
+
+        self.validator.save_bearer_token(token, self.request)
+
+        self.assertEqual(1, RefreshToken.objects.count())
+        self.assertEqual(1, AccessToken.objects.count())
+
+    def test_save_bearer_token__checks_to_rotate_tokens(self):
+
+        rotate_token_function = mock.MagicMock()
+        rotate_token_function.return_value = False
+        self.validator.rotate_refresh_token = rotate_token_function
+
+        access_token = AccessToken.objects.create(
+            token="123",
+            user=self.user,
+            expires=timezone.now() + timedelta(seconds=60),
+            application=self.application
+        )
+        refresh_token = RefreshToken.objects.create(
+            access_token=access_token,
+            token="abc",
+            user=self.user,
+            application=self.application
+        )
+        self.request.refresh_token_instance = refresh_token
+        token = {
+            "scope": "foo bar",
+            "refresh_token": "abc",
+            "access_token": "123",
+        }
+
+        self.validator.save_bearer_token(token, self.request)
+        rotate_token_function.assert_called_once_with(self.request)
+
+    def test_save_bearer_token__with_new_token__creates_new_tokens(self):
+        token = {
+            "scope": "foo bar",
+            "refresh_token": "abc",
+            "access_token": "123",
+        }
+
+        self.assertEqual(0, RefreshToken.objects.count())
+        self.assertEqual(0, AccessToken.objects.count())
+
+        self.validator.save_bearer_token(token, self.request)
+
+        self.assertEqual(1, RefreshToken.objects.count())
+        self.assertEqual(1, AccessToken.objects.count())
+
+    def test_save_bearer_token__with_new_token_equal_to_existing_token__revokes_old_tokens(self):
+        access_token = AccessToken.objects.create(
+            token="123",
+            user=self.user,
+            expires=timezone.now() + timedelta(seconds=60),
+            application=self.application
+        )
+        refresh_token = RefreshToken.objects.create(
+            access_token=access_token,
+            token="abc",
+            user=self.user,
+            application=self.application
+        )
+
+        self.request.refresh_token_instance = refresh_token
+
+        token = {
+            "scope": "foo bar",
+            "refresh_token": "abc",
+            "access_token": "123",
+        }
+
+        self.assertEqual(1, RefreshToken.objects.count())
+        self.assertEqual(1, AccessToken.objects.count())
+
+        self.validator.save_bearer_token(token, self.request)
+
+        self.assertEqual(1, RefreshToken.objects.count())
+        self.assertEqual(1, AccessToken.objects.count())
+
+    def test_save_bearer_token__with_no_refresh_token__creates_new_access_token_only(self):
+        token = {
+            "scope": "foo bar",
+            "access_token": "123",
+        }
+
+        self.validator.save_bearer_token(token, self.request)
+
+        self.assertEqual(0, RefreshToken.objects.count())
+        self.assertEqual(1, AccessToken.objects.count())

@@ -10,9 +10,11 @@ from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
 from oauthlib.oauth2 import RequestValidator
 
 from .compat import unquote_plus
+from .exceptions import FatalClientError
 from .models import Grant, AccessToken, RefreshToken, get_application_model, AbstractApplication
 from .settings import oauth2_settings
 
@@ -85,6 +87,9 @@ class OAuth2Validator(RequestValidator):
 
         if self._load_application(client_id, request) is None:
             log.debug("Failed basic auth: Application %s does not exist" % client_id)
+            return False
+        elif request.client.client_id != client_id:
+            log.debug("Failed basic auth: wrong client id %s" % client_id)
             return False
         elif request.client.client_secret != client_secret:
             log.debug("Failed basic auth: wrong client secret %s" % client_secret)
@@ -292,41 +297,88 @@ class OAuth2Validator(RequestValidator):
                   scope=' '.join(request.scopes))
         g.save()
 
+    @transaction.atomic
     def save_bearer_token(self, token, request, *args, **kwargs):
         """
-        Save access and refresh token, If refresh token is issued, remove old refresh tokens as
-        in rfc:`6`
+        Save access and refresh token, If refresh token is issued, remove or
+        reuse old refresh token as in rfc:`6`
+
+        @see: https://tools.ietf.org/html/draft-ietf-oauth-v2-31#page-43
         """
-        if request.refresh_token:
-            # remove used refresh token
-            try:
-                RefreshToken.objects.get(token=request.refresh_token).revoke()
-            except RefreshToken.DoesNotExist:
-                assert()  # TODO though being here would be very strange, at least log the error
+
+        if 'scope' not in token:
+            raise FatalClientError(u"Failed to renew access token: missing scope")
 
         expires = timezone.now() + timedelta(seconds=oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
+
         if request.grant_type == 'client_credentials':
             request.user = None
 
+        # This comes from OAuthLib:
+        # https://github.com/idan/oauthlib/blob/1.0.3/oauthlib/oauth2/rfc6749/tokens.py#L267
+        # Its value is either a new random code; or if we are reusing
+        # refresh tokens, then it is the same value that the request passed in
+        # (stored in `request.refresh_token`)
+        refresh_token_code = token.get('refresh_token', None)
+
+        if refresh_token_code:
+            # an instance of `RefreshToken` that matches the old refresh code.
+            # Set on the request in `validate_refresh_token`
+            refresh_token_instance = getattr(request, 'refresh_token_instance', None)
+
+            # If we are to reuse tokens, and we can: do so
+            if not self.rotate_refresh_token(request) and \
+                isinstance(refresh_token_instance, RefreshToken) and \
+                    refresh_token_instance.access_token:
+
+                access_token = AccessToken.objects.select_for_update().get(
+                    pk=refresh_token_instance.access_token.pk
+                )
+                access_token.user = request.user
+                access_token.scope = token['scope']
+                access_token.expires = expires
+                access_token.token = token['access_token']
+                access_token.application = request.client
+                access_token.save()
+
+            # else create fresh with access & refresh tokens
+            else:
+                # revoke existing tokens if possible
+                if isinstance(refresh_token_instance, RefreshToken):
+                    try:
+                        refresh_token_instance.revoke()
+                    except (AccessToken.DoesNotExist, RefreshToken.DoesNotExist):
+                        pass
+                    else:
+                        setattr(request, 'refresh_token_instance', None)
+
+                access_token = self._create_access_token(expires, request, token)
+
+                refresh_token = RefreshToken(
+                    user=request.user,
+                    token=refresh_token_code,
+                    application=request.client,
+                    access_token=access_token
+                )
+                refresh_token.save()
+
+        # No refresh token should be created, just access token
+        else:
+            self._create_access_token(expires, request, token)
+
+        # TODO: check out a more reliable way to communicate expire time to oauthlib
+        token['expires_in'] = oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS
+
+    def _create_access_token(self, expires, request, token):
         access_token = AccessToken(
             user=request.user,
             scope=token['scope'],
             expires=expires,
             token=token['access_token'],
-            application=request.client)
+            application=request.client
+        )
         access_token.save()
-
-        if 'refresh_token' in token:
-            refresh_token = RefreshToken(
-                user=request.user,
-                token=token['refresh_token'],
-                application=request.client,
-                access_token=access_token
-            )
-            refresh_token.save()
-
-        # TODO check out a more reliable way to communicate expire time to oauthlib
-        token['expires_in'] = oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS
+        return access_token
 
     def revoke_token(self, token, token_type_hint, request, *args, **kwargs):
         """
