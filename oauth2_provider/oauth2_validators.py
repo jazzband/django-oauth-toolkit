@@ -307,7 +307,7 @@ class OAuth2Validator(RequestValidator):
         """
 
         if 'scope' not in token:
-            raise FatalClientError(u"Failed to renew access token: missing scope")
+            raise FatalClientError("Failed to renew access token: missing scope")
 
         expires = timezone.now() + timedelta(seconds=oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
 
