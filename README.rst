@@ -32,7 +32,7 @@ Contributing
 ------------
 
 We love contributions, so please feel free to fix bugs, improve things, provide documentation. Just `follow the
-guidelines <https://django-oauth-toolkit.readthedocs.org/en/latest/contributing.html>`_ and submit a PR.
+guidelines <https://django-oauth-toolkit.readthedocs.io/en/latest/contributing.html>`_ and submit a PR.
 
 Reporting security issues
 -------------------------
@@ -80,7 +80,7 @@ Notice that `oauth2_provider` namespace is mandatory.
 Documentation
 --------------
 
-The `full documentation <https://django-oauth-toolkit.readthedocs.org/>`_ is on *Read the Docs*.
+The `full documentation <https://django-oauth-toolkit.readthedocs.io/>`_ is on *Read the Docs*.
 
 License
 -------
