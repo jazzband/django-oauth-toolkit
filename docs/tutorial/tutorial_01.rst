@@ -82,7 +82,7 @@ Point your browser to http://localhost:8000/o/applications/ and add an Applicati
 
  * `User`: the owner of the Application (e.g. a developer, or the currently logged in user.)
 
- * `Redirect uris`: Applications must register at least one redirection endpoint beofre using the
+ * `Redirect uris`: Applications must register at least one redirection endpoint before using the
    authorization endpoint. The :term:`Authorization Server` will deliver the access token to the client only if the client
    specifies one of the verified redirection uris. For this tutorial, paste verbatim the value
    `http://django-oauth-toolkit.herokuapp.com/consumer/exchange/`
