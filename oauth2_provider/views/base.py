@@ -75,17 +75,22 @@ class AuthorizationView(BaseAuthorizationView, FormView):
 
     skip_authorization_completely = False
 
+    def getscopes(self):
+            return self.oauth2_data.get('scope', self.oauth2_data.get('scopes', []))
+
     def get_initial(self):
-        if oauth2_settings.APP_SPECIFIC_SCOPES:
-            ApplicationModel = get_application_model()
-            application = ApplicationModel.objects.get(client_id=self.request.GET['client_id'])
+
+        application = get_application_model().objects.get(client_id=self.request.GET['client_id'])
+        allowed_scopes = None
+        if application.allowed_scopes:
+            # this will be [''], which evaluates to True if allowed_scopes is the empty string (but not None)
             allowed_scopes = application.allowed_scopes.split(' ')
-            requested_scopes = self.oauth2_data.get('scope', self.oauth2_data.get('scopes', []))
+        if allowed_scopes:
+            requested_scopes = self.getscopes()
             # now reduce down to allowed scopes
             scopes = list(set(allowed_scopes) & set(requested_scopes))
         else:
-            # TODO: move this scopes conversion from and to string into a utils function
-            scopes = self.oauth2_data.get('scope', self.oauth2_data.get('scopes', []))
+            scopes = self.getscopes()
         initial_data = {
             'redirect_uri': self.oauth2_data.get('redirect_uri', None),
             'scope': ' '.join(scopes),
