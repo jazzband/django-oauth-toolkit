@@ -73,7 +73,8 @@ class AbstractApplication(models.Model):
     name = models.CharField(max_length=255, blank=True)
     skip_authorization = models.BooleanField(default=False)
     # only used if not blank
-    allowed_scopes = models.TextField(help_text="List of allowed scopes for this application, space separated", blank=True)
+    allowed_scopes = models.TextField(help_text="List of allowed scopes for this application, space separated",
+                                      blank=True)
 
     class Meta:
         abstract = True

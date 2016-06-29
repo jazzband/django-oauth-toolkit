@@ -73,7 +73,6 @@ class AuthorizationView(BaseAuthorizationView, FormView):
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
     oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
 
-
     def getscopes(self):
         return self.oauth2_data.get('scope', self.oauth2_data.get('scopes', []))
 
