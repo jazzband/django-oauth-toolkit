@@ -2,7 +2,7 @@ import logging
 
 from django.core.exceptions import ImproperlyConfigured
 
-from rest_framework.permissions import BasePermission
+from rest_framework.permissions import BasePermission, IsAuthenticated
 
 from ...settings import oauth2_settings
 
@@ -29,7 +29,7 @@ class TokenHasScope(BasePermission):
 
             return token.is_valid(required_scopes)
 
-        assert False, ('TokenHasScope requires either the'
+        assert False, ('TokenHasScope requires the'
                        '`oauth2_provider.rest_framework.OAuth2Authentication` authentication '
                        'class to be used.')
 
@@ -84,3 +84,16 @@ class TokenHasResourceScope(TokenHasScope):
         ]
 
         return required_scopes
+
+
+class IsAuthenticatedOrTokenHasScope(BasePermission):
+    """
+    The user is authenticated using some backend or the token has the right scope
+    This is usefull when combined with the DjangoModelPermissions to allow people browse the browsable api's
+    if they log in using the a non token bassed middleware,
+    and let them access the api's using a rest client with a token
+    """
+    def has_permission(self, request, view):
+        is_authenticated = IsAuthenticated()
+        token_has_scope = TokenHasScope()
+        return is_authenticated.has_permission(request, view) or token_has_scope.has_permission(request, view)
