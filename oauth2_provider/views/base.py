@@ -73,24 +73,12 @@ class AuthorizationView(BaseAuthorizationView, FormView):
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
     oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
 
-    skip_authorization_completely = False
 
     def getscopes(self):
-            return self.oauth2_data.get('scope', self.oauth2_data.get('scopes', []))
+        return self.oauth2_data.get('scope', self.oauth2_data.get('scopes', []))
 
     def get_initial(self):
-
-        application = get_application_model().objects.get(client_id=self.request.GET['client_id'])
-        allowed_scopes = None
-        if application.allowed_scopes:
-            # this will be [''], which evaluates to True if allowed_scopes is the empty string (but not None)
-            allowed_scopes = application.allowed_scopes.split(' ')
-        if allowed_scopes:
-            requested_scopes = self.getscopes()
-            # now reduce down to allowed scopes
-            scopes = list(set(allowed_scopes) & set(requested_scopes))
-        else:
-            scopes = self.getscopes()
+        scopes = self.getscopes()
         initial_data = {
             'redirect_uri': self.oauth2_data.get('redirect_uri', None),
             'scope': ' '.join(scopes),
@@ -108,8 +96,17 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                 'response_type': form.cleaned_data.get('response_type', None),
                 'state': form.cleaned_data.get('state', None),
             }
-
-            scopes = form.cleaned_data.get('scope')
+            application = get_application_model().objects.get(client_id=credentials['client_id'])
+            allowed_scopes = None
+            if application.allowed_scopes:
+                # this will be [''], which evaluates to True if allowed_scopes is the empty string (but not None)
+                allowed_scopes = application.allowed_scopes.split(' ')
+            if allowed_scopes:
+                requested_scopes = self.getscopes()
+                # now reduce down to allowed scopes
+                scopes = list(set(allowed_scopes) & set(requested_scopes))
+            else:
+                scopes = form.cleaned_data.get('scope')
             allow = form.cleaned_data.get('allow')
             uri, headers, body, status = self.create_authorization_response(
                 request=self.request, scopes=scopes, credentials=credentials, allow=allow)
