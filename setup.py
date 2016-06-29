@@ -55,5 +55,8 @@ setup(
         'oauthlib==1.0.3',
         'six',
     ],
+    tests_require=[
+        'pytest',
+    ],
     zip_safe=False,
 )
