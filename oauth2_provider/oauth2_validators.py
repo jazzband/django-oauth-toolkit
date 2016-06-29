@@ -280,7 +280,7 @@ class OAuth2Validator(RequestValidator):
 
     def get_default_scopes(self, client_id, request, *args, **kwargs):
         if request.client.allowed_scopes:
-            return request.client.allowed_scopes
+            return request.client.allowed_scopes.split(' ')
         else:
             return oauth2_settings._DEFAULT_SCOPES
 
