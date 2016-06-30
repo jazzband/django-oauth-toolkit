@@ -69,3 +69,13 @@ class ApplicationUpdate(ApplicationOwnerIsUserMixin, UpdateView):
     """
     context_object_name = 'application'
     template_name = "oauth2_provider/application_form.html"
+
+    def get_form_class(self):
+        """
+        Returns the form class for the application model
+        """
+        return modelform_factory(
+            get_application_model(),
+            fields=('name', 'client_id', 'client_secret', 'client_type',
+                    'authorization_grant_type', 'redirect_uris')
+        )
