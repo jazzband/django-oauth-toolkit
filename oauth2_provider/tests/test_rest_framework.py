@@ -19,7 +19,9 @@ UserModel = get_user_model()
 try:
     from rest_framework import permissions
     from rest_framework.views import APIView
+    from rest_framework.test import force_authenticate, APIRequestFactory
     from ..ext.rest_framework import OAuth2Authentication, TokenHasScope, TokenHasReadWriteScope, TokenHasResourceScope
+    from ..ext.rest_framework import IsAuthenticatedOrTokenHasScope
 
     class MockView(APIView):
         permission_classes = (permissions.IsAuthenticated,)
@@ -37,6 +39,10 @@ try:
         permission_classes = [permissions.IsAuthenticated, TokenHasScope]
         required_scopes = ['scope1']
 
+    class AuthenticatedOrScopedView(OAuth2View):
+        permission_classes = [IsAuthenticatedOrTokenHasScope]
+        required_scopes = ['scope1']
+
     class ReadWriteScopedView(OAuth2View):
         permission_classes = [permissions.IsAuthenticated, TokenHasReadWriteScope]
 
@@ -51,6 +57,7 @@ try:
         url(r'^oauth2-scoped-test/$', ScopedView.as_view()),
         url(r'^oauth2-read-write-test/$', ReadWriteScopedView.as_view()),
         url(r'^oauth2-resource-scoped-test/$', ResourceScopedView.as_view()),
+        url(r'^oauth2-authenticated-or-scoped-test/$', AuthenticatedOrScopedView.as_view()),
     )
 
     rest_framework_installed = True
@@ -106,12 +113,57 @@ class TestOAuth2Authentication(BaseTest):
         self.assertEqual(response.status_code, 401)
 
     @unittest.skipUnless(rest_framework_installed, 'djangorestframework not installed')
+    def test_authentication_or_scope_denied(self):
+        # user is not authenticated
+        # not a correct token
+        auth = self._create_authorization_header("fake-token")
+        response = self.client.get("/oauth2-authenticated-or-scoped-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 401)
+        # token doesn't have correct scope
+        auth = self._create_authorization_header(self.access_token.token)
+
+        factory = APIRequestFactory()
+        request = factory.get("/oauth2-authenticated-or-scoped-test/")
+        request.auth = auth
+        force_authenticate(request, token=self.access_token)
+        response = AuthenticatedOrScopedView.as_view()(request)
+        # authenticated but wrong scope, this is 403, not 401
+        self.assertEqual(response.status_code, 403)
+
+    @unittest.skipUnless(rest_framework_installed, 'djangorestframework not installed')
     def test_scoped_permission_allow(self):
         self.access_token.scope = 'scope1'
         self.access_token.save()
 
         auth = self._create_authorization_header(self.access_token.token)
         response = self.client.get("/oauth2-scoped-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 200)
+
+    @unittest.skipUnless(rest_framework_installed, 'djangorestframework not installed')
+    def test_authenticated_or_scoped_permission_allow(self):
+        self.access_token.scope = 'scope1'
+        self.access_token.save()
+        # correct token and correct scope
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.get("/oauth2-authenticated-or-scoped-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 200)
+
+        auth = self._create_authorization_header("fake-token")
+        # incorrect token  but authenticated
+        factory = APIRequestFactory()
+        request = factory.get("/oauth2-authenticated-or-scoped-test/")
+        request.auth = auth
+        force_authenticate(request, self.test_user)
+        response = AuthenticatedOrScopedView.as_view()(request)
+        self.assertEqual(response.status_code, 200)
+
+        # correct token  but not authenticated
+        request = factory.get("/oauth2-authenticated-or-scoped-test/")
+        request.auth = auth
+        self.access_token.scope = 'scope1'
+        self.access_token.save()
+        force_authenticate(request, token=self.access_token)
+        response = AuthenticatedOrScopedView.as_view()(request)
         self.assertEqual(response.status_code, 200)
 
     @unittest.skipUnless(rest_framework_installed, 'djangorestframework not installed')
