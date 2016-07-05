@@ -63,3 +63,21 @@ When the request's method is one of "non safe" methods, the access is allowed on
         required_scopes = ['music']
 
 The `required_scopes` attribute is mandatory (you just need inform the resource scope).
+
+
+IsAuthenticatedOrTokenHasScope
+------------------------------
+The `TokenHasResourceScope` permission class allows the access only when the current access token has been authorized for **all** the scopes listed in the `required_scopes` field of the view but according of request's method.
+And also allows access to Authenticated users who are authenticated in django, but were not authenticated trought the OAuth2Authentication class.
+This allows for protection of the api using scopes, but still let's users browse the full browseable API.
+To restrict users to only browse the parts of the browseable API they should be allowed to see, you can combine this wwith the DjangoModelPermission or the DjangoObjectPermission.
+
+For example:
+
+.. code-block:: python
+
+    class SongView(views.APIView):
+        permission_classes = [IsAuthenticatedOrTokenHasScope, DjangoModelPermission]
+        required_scopes = ['music']
+
+The `required_scopes` attribute is mandatory.

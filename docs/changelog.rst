@@ -4,6 +4,7 @@ Changelog
 Development
 ~~~~~~~~~~~
 
+* #396: added an IsAuthenticatedOrTokenHasScope Permission
 * #357: Support multiple-user clients by allowing User to be NULL for Applications
 
 
