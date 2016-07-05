@@ -38,6 +38,9 @@ class AbstractApplication(models.Model):
     * :attr:`client_secret` Confidential secret issued to the client during
                             the registration process as described in :rfc:`2.2`
     * :attr:`name` Friendly name for the Application
+    * :attr:`skip_authorization` Boolean indication that this application doesn't present
+                                 the Authorize view to the user
+    * :attr:`allowed_scopes` Space separated list of scopes this application can ever get
     """
     CLIENT_CONFIDENTIAL = 'confidential'
     CLIENT_PUBLIC = 'public'
@@ -125,6 +128,21 @@ class AbstractApplication(models.Model):
 
     def get_absolute_url(self):
         return reverse('oauth2_provider:detail', args=[str(self.id)])
+
+    def get_allowed_scopes_from_scopes(self, scopes):
+        """
+        Filters the given list of scopes so it only contains the allowed scopes
+        """
+        scopes = scopes.split(' ')
+        allowed_scopes = None
+        if application.allowed_scopes:
+            # this will be [''], which evaluates to True if allowed_scopes is the empty string (but not None)
+            allowed_scopes = application.allowed_scopes.split(' ')
+        if allowed_scopes:
+            # now reduce down to allowed scopes and make it a space separated list again
+            scopes = set(allowed_scopes) & set(scopes)
+        return ' '.join(scopes)
+
 
     def __str__(self):
         return self.name or self.client_id
