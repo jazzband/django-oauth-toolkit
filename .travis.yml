@@ -25,5 +25,5 @@ install:
 script:
   - tox
 
-after_success:
+after_script:
   - coveralls
