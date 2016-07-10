@@ -5,15 +5,15 @@ python:
 sudo: false
 
 env:
-  - TOX_ENV=py27-django18
-  - TOX_ENV=py27-django19
-  - TOX_ENV=py32-django18
-  - TOX_ENV=py33-django18
-  - TOX_ENV=py34-django18
-  - TOX_ENV=py34-django19
-  - TOX_ENV=py35-django18
-  - TOX_ENV=py35-django19
-  - TOX_ENV=docs
+  - TOXENV=py27-django18
+  - TOXENV=py27-django19
+  - TOXENV=py32-django18
+  - TOXENV=py33-django18
+  - TOXENV=py34-django18
+  - TOXENV=py34-django19
+  - TOXENV=py35-django18
+  - TOXENV=py35-django19
+  - TOXENV=docs
 
 matrix:
   fast_finish: true
@@ -23,7 +23,7 @@ install:
   - pip install coveralls
 
 script:
-  - tox -e $TOX_ENV
+  - tox
 
 after_success:
   - coveralls
