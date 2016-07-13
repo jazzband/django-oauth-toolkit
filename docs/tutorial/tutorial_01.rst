@@ -128,7 +128,7 @@ you probably need to `setup your login template correctly`__.
 
 Exchange the token
 ++++++++++++++++++
-At this point your autorization server redirected the user to a special page on the consumer passing in an
+At this point your authorization server redirected the user to a special page on the consumer passing in an
 :term:`Authorization Code`, a special token the consumer will use to obtain the final access token.
 This operation is usually done automatically by the client application during the request/response cycle, but we cannot
 make a POST request from Heroku to your localhost, so we proceed manually with this step. Fill the form with the
