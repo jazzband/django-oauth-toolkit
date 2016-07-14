@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import (get_grant_model, get_access_token_model,
-                     get_refersh_token_model, get_application_model)
+                     get_refresh_token_model, get_application_model)
 
 
 class RawIDAdmin(admin.ModelAdmin):
