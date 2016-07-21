@@ -302,7 +302,8 @@ class OAuth2Validator(RequestValidator):
             try:
                 RefreshToken.objects.get(token=request.refresh_token).revoke()
             except RefreshToken.DoesNotExist:
-                assert()  # TODO though being here would be very strange, at least log the error
+                # other client already revoked it.
+                pass
 
         expires = timezone.now() + timedelta(seconds=oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
         if request.grant_type == 'client_credentials':
