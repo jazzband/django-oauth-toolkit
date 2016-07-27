@@ -78,7 +78,7 @@ App Specific Scopes
 ===================
 You can restrict each individual application to a separate subset of scopes.
 Using the ``allowed_scopes = 'scope1 scope2'`` field on the ``Application`` model you can limit the scopes an application
-can get. This is usefull if you trust an application owner only for e.g. read access and don't want
+can get. This is useful if you trust an application owner only for e.g. read access and don't want
 your users to give write access, or avoid the application to covertly request a scope it shouldn't get
 once it knows you have anabled ``skip_authorization``
 
