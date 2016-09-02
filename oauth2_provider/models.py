@@ -133,11 +133,12 @@ class AbstractApplication(models.Model):
         """
         Filters the given list of scopes so it only contains the allowed scopes
         """
-        scopes = scopes.split(' ')
+        if isinstance(scopes, basestring):
+            scopes = scopes.split(' ')
         allowed_scopes = None
-        if application.allowed_scopes:
+        if self.allowed_scopes:
             # this will be [''], which evaluates to True if allowed_scopes is the empty string (but not None)
-            allowed_scopes = application.allowed_scopes.split(' ')
+            allowed_scopes = self.allowed_scopes.split(' ')
         if allowed_scopes:
             # now reduce down to allowed scopes and make it a space separated list again
             scopes = set(allowed_scopes) & set(scopes)
