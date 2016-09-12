@@ -16,7 +16,7 @@ Create a virtualenv and install `django-oauth-toolkit` and `django-cors-headers`
 
 ::
 
-    pip install django-oauth-toolkit django-cors-headers
+    pip install django-oauth-toolkit django-cors-middleware
 
 Start a Django project, add `oauth2_provider` and `corsheaders` to the installed apps, and enable admin:
 
