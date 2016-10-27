@@ -33,12 +33,11 @@ Include the Django OAuth Toolkit urls in your `urls.py`, choosing the urlspace y
 
 .. code-block:: python
 
-    urlpatterns = patterns(
-        '',
+    urlpatterns = [
         url(r'^admin/', include(admin.site.urls)),
         url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
         # ...
-    )
+    ]
 
 Include the CORS middleware in your `settings.py`:
 

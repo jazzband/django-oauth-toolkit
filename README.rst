@@ -72,10 +72,10 @@ Notice that `oauth2_provider` namespace is mandatory.
 
 .. code-block:: python
 
-    urlpatterns = patterns(
+    urlpatterns = [
         ...
         url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
-    )
+    ]
 
 Documentation
 --------------

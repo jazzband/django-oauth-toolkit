@@ -1,7 +1,7 @@
 import unittest
 from datetime import timedelta
 
-from django.conf.urls import patterns, url, include
+from django.conf.urls import url, include
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from django.test import TestCase
@@ -50,15 +50,14 @@ try:
         permission_classes = [permissions.IsAuthenticated, TokenHasResourceScope]
         required_scopes = ['resource1']
 
-    urlpatterns = patterns(
-        '',
+    urlpatterns = [
         url(r'^oauth2/', include('oauth2_provider.urls')),
         url(r'^oauth2-test/$', OAuth2View.as_view()),
         url(r'^oauth2-scoped-test/$', ScopedView.as_view()),
         url(r'^oauth2-read-write-test/$', ReadWriteScopedView.as_view()),
         url(r'^oauth2-resource-scoped-test/$', ResourceScopedView.as_view()),
         url(r'^oauth2-authenticated-or-scoped-test/$', AuthenticatedOrScopedView.as_view()),
-    )
+    ]
 
     rest_framework_installed = True
 except ImportError:

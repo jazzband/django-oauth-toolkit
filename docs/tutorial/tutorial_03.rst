@@ -65,11 +65,10 @@ To check everything works properly, mount the view above to some url:
 
 .. code-block:: python
 
-    urlpatterns = patterns(
-        '',
+    urlpatterns = [
         url(r'^secret$', 'my.views.secret_page', name='secret'),
         '...',
-    )
+    ]
 
 You should have an :term:`Application` registered at this point, if you don't, follow the steps in
 the previous tutorials to create one. Obtain an :term:`Access Token`, either following the OAuth2

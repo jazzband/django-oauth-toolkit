@@ -48,7 +48,7 @@ Here's our project's root `urls.py` module:
 
 .. code-block:: python
 
-    from django.conf.urls import url, patterns, include
+    from django.conf.urls import url, include
     from django.contrib.auth.models import User, Group
     from django.contrib import admin
     admin.autodiscover()
@@ -91,11 +91,11 @@ Here's our project's root `urls.py` module:
 
     # Wire up our API using automatic URL routing.
     # Additionally, we include login URLs for the browseable API.
-    urlpatterns = patterns('',
+    urlpatterns = [
         url(r'^', include(router.urls)),
         url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
         url(r'^admin/', include(admin.site.urls)),
-    )
+    ]
 
 Also add the following to your `settings.py` module:
 
