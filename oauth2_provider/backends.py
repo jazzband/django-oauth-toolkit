@@ -15,8 +15,7 @@ class OAuth2Backend(object):
     def authenticate(self, **credentials):
         request = credentials.get('request')
         if request is not None:
-            oauthlib_core = get_oauthlib_core()
-            valid, r = oauthlib_core.verify_request(request, scopes=[])
+            valid, r = OAuthLibCore.verify_request(request, scopes=[])
             if valid:
                 return r.user
         return None
