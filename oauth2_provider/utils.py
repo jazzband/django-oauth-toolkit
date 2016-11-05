@@ -45,4 +45,3 @@ def build_claims_doc(scopes, requested_claims, claims_location="userinfo"):
         claims_doc.update(requested_claims.get(claims_location))
 
     return claims_doc
-
