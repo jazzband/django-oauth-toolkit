@@ -53,6 +53,7 @@ setup(
         'django>=1.7',
         'django-braces>=1.8.1',
         'oauthlib==1.0.3',
+        'python-jose>=0.6.1',
         'six',
     ],
     zip_safe=False,
