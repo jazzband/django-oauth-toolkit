@@ -154,7 +154,7 @@ Development
 * fixed ``get_application_model`` on Django 1.7
 * fixed non rotating refresh tokens
 * #137: fixed base template
-* customized ``client_secret`` lenght
+* customized ``client_secret`` length
 * #38: create access tokens not bound to a user instance for *client credentials* flow
 
 0.7.2 [2014-07-02]

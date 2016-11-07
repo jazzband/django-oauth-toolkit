@@ -9,14 +9,14 @@ Start Your App
 --------------
 During this tutorial you will make an XHR POST from a Heroku deployed app to your localhost instance.
 Since the domain that will originate the request (the app on Heroku) is different from the destination domain (your local instance),
-you will need to install the `django-cors-headers <https://github.com/ottoyiu/django-cors-headers>`_ app.
+you will need to install the `django-cors-middleware <https://github.com/zestedesavoir/django-cors-middleware>`_ app.
 These "cross-domain" requests are by default forbidden by web browsers unless you use `CORS <http://en.wikipedia.org/wiki/Cross-origin_resource_sharing>`_.
 
-Create a virtualenv and install `django-oauth-toolkit` and `django-cors-headers`:
+Create a virtualenv and install `django-oauth-toolkit` and `django-cors-middleware`:
 
 ::
 
-    pip install django-oauth-toolkit django-cors-headers
+    pip install django-oauth-toolkit django-cors-middleware
 
 Start a Django project, add `oauth2_provider` and `corsheaders` to the installed apps, and enable admin:
 
@@ -128,7 +128,7 @@ you probably need to `setup your login template correctly`__.
 
 Exchange the token
 ++++++++++++++++++
-At this point your autorization server redirected the user to a special page on the consumer passing in an
+At this point your authorization server redirected the user to a special page on the consumer passing in an
 :term:`Authorization Code`, a special token the consumer will use to obtain the final access token.
 This operation is usually done automatically by the client application during the request/response cycle, but we cannot
 make a POST request from Heroku to your localhost, so we proceed manually with this step. Fill the form with the
