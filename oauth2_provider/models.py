@@ -6,7 +6,7 @@ from django.apps import apps
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models, transaction
-from django.utils import timezone
+from django.utils import timezone, six, six
 
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import python_2_unicode_compatible
@@ -133,7 +133,7 @@ class AbstractApplication(models.Model):
         """
         Filters the given list of scopes so it only contains the allowed scopes
         """
-        if isinstance(scopes, basestring):
+        if isinstance(scopes, six.string_types):
             scopes = scopes.split(' ')
         allowed_scopes = None
         if self.allowed_scopes:
@@ -238,7 +238,7 @@ class AccessToken(models.Model):
         """
         if not scopes:
             return True
-        if isinstance(scopes, basestring):
+        if isinstance(scopes, six.string_types):
             scopes = scopes.split()
 
         provided_scopes = set(self.scope.split())
