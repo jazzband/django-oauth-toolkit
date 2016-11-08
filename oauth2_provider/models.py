@@ -238,6 +238,8 @@ class AccessToken(models.Model):
         """
         if not scopes:
             return True
+        if isinstance(scopes, basestring):
+            scopes = scopes.split()
 
         provided_scopes = set(self.scope.split())
         resource_scopes = set(scopes)
