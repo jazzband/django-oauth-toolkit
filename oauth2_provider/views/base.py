@@ -92,9 +92,9 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         """
         get an application from a client_id, this caches the applications
         """
-        app = self._application_cache.get(client_id, get_application_model().objects.get(client_id=client_id))
-        self._application_cache[client_id] = app
-        return app
+        if client_id not in self._application_cache:
+            self._application_cache[client_id] = get_application_model().objects.get(client_id=client_id)
+        return self._application_cache[client_id]
 
     def form_valid(self, form):
         try:
