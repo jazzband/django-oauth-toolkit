@@ -124,7 +124,8 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             kwargs['scopes'] = scopes
             # at this point we know an Application instance with such client_id exists in the database
             application = self.get_application(credentials['client_id'])
-            # filter scopes here, so an application with sckip_authorization still only gets the allowed scopes
+            # filter scopes here, so an application with skip_authorization still only gets the allowed scopes
+            # returns a string
             scopes = application.get_allowed_scopes_from_scopes(scopes)
 
             kwargs['application'] = application
@@ -144,7 +145,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             # are already approved.
             if application.skip_authorization:
                 uri, headers, body, status = self.create_authorization_response(
-                    request=self.request, scopes=" ".join(scopes),
+                    request=self.request, scopes=scopes,
                     credentials=credentials, allow=True)
                 return HttpResponseUriRedirect(uri)
 
@@ -155,7 +156,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                 for token in tokens:
                     if token.allow_scopes(scopes):
                         uri, headers, body, status = self.create_authorization_response(
-                            request=self.request, scopes=" ".join(scopes),
+                            request=self.request, scopes=scopes,
                             credentials=credentials, allow=True)
                         return HttpResponseUriRedirect(uri)
 
