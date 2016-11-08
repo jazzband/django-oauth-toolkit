@@ -43,7 +43,7 @@ class TestModels(TestCase):
         self.assertFalse(access_token.allow_scopes(['write', 'destroy']))
         self.assertTrue(access_token.allow_scopes('read write'))
         self.assertTrue(access_token.allow_scopes('write read'))
-        self.assertTrue(access_token.allow_scopes('write read read']))
+        self.assertTrue(access_token.allow_scopes('write read read'))
         self.assertTrue(access_token.allow_scopes(''))
         self.assertFalse(access_token.allow_scopes('write destroy'))
 

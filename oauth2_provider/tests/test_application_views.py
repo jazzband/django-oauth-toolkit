@@ -5,6 +5,7 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 
 from ..models import get_application_model
+from ..views.base import AuthorizationView
 
 
 Application = get_application_model()
@@ -75,6 +76,12 @@ class TestApplicationViews(BaseTest):
 
         self.app_bar_1 = self._create_application('app bar_user 1', self.bar_user)
         self.app_bar_2 = self._create_application('app bar_user 2', self.bar_user)
+
+    def test_get_application(self):
+        """Test the get_application method from the AuthorizationView"""
+        self.assertEqual(self.app_foo_1, AuthorizationView().get_application(self.app_foo_1.client_id))
+        # test twice to test the cache
+        self.assertEqual(self.app_foo_1, AuthorizationView().get_application(self.app_foo_1.client_id))
 
     def tearDown(self):
         super(TestApplicationViews, self).tearDown()
