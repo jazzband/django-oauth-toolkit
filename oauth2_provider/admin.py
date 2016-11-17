@@ -6,6 +6,7 @@ from .models import Grant, AccessToken, RefreshToken, get_application_model
 class RawIDAdmin(admin.ModelAdmin):
     raw_id_fields = ('user',)
 
+
 Application = get_application_model()
 
 admin.site.register(Application, RawIDAdmin)

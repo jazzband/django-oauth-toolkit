@@ -5,6 +5,7 @@ from django.conf.urls import url, include
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from django.test import TestCase
+from django.test.utils import override_settings
 from django.utils import timezone
 
 from .test_utils import TestCaseUtils
@@ -71,9 +72,8 @@ class BaseTest(TestCaseUtils, TestCase):
     pass
 
 
+@override_settings(ROOT_URLCONF=__name__)
 class TestOAuth2Authentication(BaseTest):
-    urls = 'oauth2_provider.tests.test_rest_framework'
-
     def setUp(self):
         oauth2_settings._SCOPES = ['read', 'write', 'scope1', 'scope2', 'resource1']
 
