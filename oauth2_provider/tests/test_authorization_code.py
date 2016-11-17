@@ -707,13 +707,14 @@ class TestAuthorizationCodeTokenView(BaseTest):
             'refresh_token': content['refresh_token'],
             'scope': content['scope'],
         }
+        oauth2_settings.ROTATE_REFRESH_TOKEN = False
 
-        with mock.patch('oauthlib.oauth2.rfc6749.request_validator.RequestValidator.rotate_refresh_token',
-                        return_value=False):
-            response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
-            self.assertEqual(response.status_code, 200)
-            response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
-            self.assertEqual(response.status_code, 200)
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 200)
+        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 200)
+
+        oauth2_settings.ROTATE_REFRESH_TOKEN = True
 
     def test_basic_auth_bad_authcode(self):
         """

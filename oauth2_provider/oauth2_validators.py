@@ -297,6 +297,11 @@ class OAuth2Validator(RequestValidator):
                   scope=' '.join(request.scopes))
         g.save()
 
+    def rotate_refresh_token(self, request):
+        """
+        """
+        return oauth2_settings.ROTATE_REFRESH_TOKEN
+
     @transaction.atomic
     def save_bearer_token(self, token, request, *args, **kwargs):
         """
