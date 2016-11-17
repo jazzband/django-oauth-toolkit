@@ -4,6 +4,7 @@ Changelog
 Development
 ~~~~~~~~~~~
 
+* #424: Added a ROTATE_REFRESH_TOKEN setting to control whether refresh tokens are reused or not
 * #315: AuthorizationView does not overwrite requests on get
 * #425: Added support for Django 1.10
 * #396: Added an IsAuthenticatedOrTokenHasScope Permission
