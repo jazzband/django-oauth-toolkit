@@ -54,6 +54,28 @@ class BaseTest(TestCaseUtils, TestCase):
         self.dev_user.delete()
 
 
+class TestRegressionIssue315(BaseTest):
+    """
+    Test to avoid regression for the issue 315: request object
+    was being reassigned when getting AuthorizationView
+    """
+
+    def test_request_is_not_overwritten(self):
+        self.client.login(username="test_user", password="123456")
+        query_string = urlencode({
+            'client_id': self.application.client_id,
+            'response_type': 'code',
+            'state': 'random_state_string',
+            'scope': 'read write',
+            'redirect_uri': 'http://example.it',
+        })
+        url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        assert 'request' not in response.context_data
+
+
 class TestAuthorizationCodeView(BaseTest):
     def test_skip_authorization_completely(self):
         """
