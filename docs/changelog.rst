@@ -4,6 +4,7 @@ Changelog
 Development
 ~~~~~~~~~~~
 
+* #315: AuthorizationView does not overwrite requests on get
 * #425: Added support for Django 1.10
 * #396: Added an IsAuthenticatedOrTokenHasScope Permission
 * #357: Support multiple-user clients by allowing User to be NULL for Applications
