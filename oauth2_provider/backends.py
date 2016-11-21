@@ -12,8 +12,7 @@ class OAuth2Backend(object):
     Authenticate against an OAuth2 access token
     """
 
-    def authenticate(self, **credentials):
-        request = credentials.get('request')
+    def authenticate(self, request=None, **credentials):
         if request is not None:
             valid, r = OAuthLibCore.verify_request(request, scopes=[])
             if valid:
