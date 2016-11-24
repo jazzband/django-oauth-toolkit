@@ -299,6 +299,7 @@ class OAuth2Validator(RequestValidator):
 
     def rotate_refresh_token(self, request):
         """
+        Checks if rotate refresh token is enabled
         """
         return oauth2_settings.ROTATE_REFRESH_TOKEN
 

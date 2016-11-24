@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 import base64
 import json
 import datetime
-import mock
 
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse

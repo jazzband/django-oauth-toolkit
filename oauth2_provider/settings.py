@@ -155,4 +155,5 @@ class OAuth2ProviderSettings(object):
         if not val and attr in self.mandatory:
             raise AttributeError("OAuth2Provider setting: '%s' is mandatory" % attr)
 
+
 oauth2_settings = OAuth2ProviderSettings(USER_SETTINGS, DEFAULTS, IMPORT_STRINGS, MANDATORY)
