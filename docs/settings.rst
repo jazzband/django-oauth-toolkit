@@ -101,8 +101,11 @@ REFRESH_TOKEN_EXPIRE_SECONDS
 The number of seconds before a refresh token gets removed from the database by
 the ``cleartokens`` management command. Check :ref:`cleartokens` management command for further info.
 
+ROTATE_REFRESH_TOKEN
+~~~~~~~~~~~~~~~~~~~~
+When is set to `True` (default) a new refresh token is issued to the client when the client refresh an access token.
+
 REQUEST_APPROVAL_PROMPT
 ~~~~~~~~~~~~~~~~~~~~~~~
 Can be ``'force'`` or ``'auto'``.
 The strategy used to display the authorization form. Refer to :ref:`skip-auth-form`.
-
