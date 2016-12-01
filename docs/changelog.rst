@@ -1,7 +1,7 @@
 Changelog
 =========
 
-Development
+0.11.0 [2016-12-1]
 ~~~~~~~~~~~
 
 * #424: Added a ROTATE_REFRESH_TOKEN setting to control whether refresh tokens are reused or not

@@ -97,7 +97,7 @@ Roadmap / Todo list (help wanted)
 Changelog
 ---------
 
-Development
+0.11.0 [2016-12-1]
 ~~~~~~~~~~~
 
 * #315: AuthorizationView does not overwrite requests on get
