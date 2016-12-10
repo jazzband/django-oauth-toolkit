@@ -97,6 +97,11 @@ Roadmap / Todo list (help wanted)
 Changelog
 ---------
 
+0.12.0 [Unreleased]
+~~~~~~~~~~
+
+* Support for the `scopes` query parameter, deprecated in 0.6.1, has been dropped
+
 0.11.0 [2016-12-1]
 ~~~~~~~~~~~
 
