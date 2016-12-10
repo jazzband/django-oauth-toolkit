@@ -17,15 +17,12 @@ back to the defaults.
 """
 from __future__ import unicode_literals
 
+import importlib
 import six
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-try:
-    # Available in Python 2.7+
-    import importlib
-except ImportError:
-    from django.utils import importlib
+
 
 USER_SETTINGS = getattr(settings, 'OAUTH2_PROVIDER', None)
 

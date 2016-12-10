@@ -108,7 +108,7 @@ LOGGING = {
         },
         'null': {
             'level': 'DEBUG',
-            'class': 'oauth2_provider.compat_handlers.NullHandler',
+            'class': 'logging.NullHandler',
         },
     },
     'loggers': {
