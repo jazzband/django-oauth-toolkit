@@ -32,6 +32,14 @@ The number of seconds an access token remains valid. Requesting a protected
 resource after this duration will fail. Keep this value high enough so clients
 can cache the token for a reasonable amount of time.
 
+ALLOWED_REDIRECT_URI_SCHEMES
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Default: ``["http", "https"]``
+
+A list of schemes that the ``redirect_uri`` field will be validated against.
+Setting this to ``["https"]`` only in production is strongly recommended.
+
 APPLICATION_MODEL
 ~~~~~~~~~~~~~~~~~
 The import string of the class (model) representing your applications. Overwrite
