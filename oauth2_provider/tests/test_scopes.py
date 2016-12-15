@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase, RequestFactory
 
 from .test_utils import TestCaseUtils
-from ..compat import urlparse, parse_qs, urlencode
+from ..compat import urlparse, parse_qs
 from ..models import get_application_model, Grant, AccessToken
 from ..settings import oauth2_settings
 from ..views import ScopedProtectedResourceView, ReadWriteScopedResourceView

@@ -24,7 +24,7 @@ class AccessTokenAdmin(admin.ModelAdmin):
 
 
 class RefreshTokenAdmin(admin.ModelAdmin):
-    list_display = ("token", "user", "application", "expires")
+    list_display = ("token", "user", "application")
     raw_id_fields = ("user", "access_token")
 
 
