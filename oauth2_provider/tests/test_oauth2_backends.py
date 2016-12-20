@@ -13,7 +13,7 @@ class TestOAuthLibCoreBackend(TestCase):
         self.factory = RequestFactory()
         self.oauthlib_core = OAuthLibCore()
 
-    def test_swappable_serer_class(self):
+    def test_swappable_server_class(self):
         with mock.patch('oauth2_provider.oauth2_backends.oauth2_settings.OAUTH2_SERVER_CLASS'):
             oauthlib_core = OAuthLibCore()
             self.assertTrue(isinstance(oauthlib_core.server, mock.MagicMock))
