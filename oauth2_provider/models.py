@@ -259,6 +259,8 @@ class RefreshToken(models.Model):
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL)
     access_token = models.OneToOneField(AccessToken,
                                         related_name='refresh_token')
+    created = models.DateTimeField(default=timezone.now)
+    modified = models.DateTimeField(auto_now=True)
 
     def revoke(self):
         """
