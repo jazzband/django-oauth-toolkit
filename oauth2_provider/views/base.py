@@ -48,7 +48,7 @@ class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
 
 class AuthorizationView(BaseAuthorizationView, FormView):
     """
-    Implements and endpoint to handle *Authorization Requests* as in :rfc:`4.1.1` and prompting the
+    Implements an endpoint to handle *Authorization Requests* as in :rfc:`4.1.1` and prompting the
     user with a form to determine if she authorizes the client application to access her data.
     This endpoint is reached two times during the authorization process:
     * first receive a ``GET`` request from user asking authorization for a certain client
@@ -58,11 +58,11 @@ class AuthorizationView(BaseAuthorizationView, FormView):
     * then receive a ``POST`` request possibly after user authorized the access
 
     Some informations contained in the ``GET`` request and needed to create a Grant token during
-    the ``POST`` request would be lost between the two steps above, so they are temporary stored in
+    the ``POST`` request would be lost between the two steps above, so they are temporarily stored in
     hidden fields on the form.
     A possible alternative could be keeping such informations in the session.
 
-    The endpoint is used in the followin flows:
+    The endpoint is used in the following flows:
     * Authorization code
     * Implicit grant
     """
