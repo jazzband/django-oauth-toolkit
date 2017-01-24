@@ -110,6 +110,15 @@ class AuthorizationView(BaseAuthorizationView, FormView):
     def get(self, request, *args, **kwargs):
         try:
             scopes, credentials = self.validate_authorization_request(request)
+
+            # If the callback URI does not require authorization; immediately return a response
+            if 'redirect_uri' in request.GET and request.GET['redirect_uri'] in oauth2_settings.uris_without_auth:
+                uri, headers, body, status = self.create_authorization_response(
+                        request=self.request, scopes=" ".join(scopes),
+                        credentials=credentials, allow=True)
+                self.success_url = uri
+                return HttpResponseRedirect(self.success_url)
+
             kwargs['scopes_descriptions'] = [oauth2_settings.SCOPES[scope] for scope in scopes]
             kwargs['scopes'] = scopes
             # at this point we know an Application instance with such client_id exists in the database
