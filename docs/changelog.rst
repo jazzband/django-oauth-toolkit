@@ -2,7 +2,7 @@ Changelog
 =========
 
 0.11.0 [2016-12-1]
-~~~~~~~~~~~
+------------------
 
 * #424: Added a ROTATE_REFRESH_TOKEN setting to control whether refresh tokens are reused or not
 * #315: AuthorizationView does not overwrite requests on get
@@ -13,7 +13,7 @@ Changelog
 
 
 0.10.0 [2015-12-14]
-------------------
+-------------------
 
 * **#322: dropping support for python 2.6 and django 1.4, 1.5, 1.6**
 * #310: Fixed error that could occur sometimes when checking validity of incomplete AccessToken/Grant
@@ -175,7 +175,7 @@ Changelog
  * Bugfix #27: OAuthlib refresh token refactoring
 
 0.3.0 [2013-06-14]
-----------------------
+------------------
 
  * `Django REST Framework <http://django-rest-framework.org/>`_ integration layer
  * Bugfix #13: Populate request with client and user in validate_bearer_token
