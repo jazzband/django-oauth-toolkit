@@ -1,12 +1,12 @@
 Part 4 - Revoking an OAuth2 Token 
-====================================
+=================================
 
 Scenario
 --------
 You've granted a user an :term:`Access Token`, following :doc:`part 1 <tutorial_01>` and now you would like to revoke that token, probably in response to a client request (to logout).
 
 Revoking a Token
---------------
+----------------
 Be sure that you've granted a valid token. If you've hooked in `oauth-toolkit` into your `urls.py` as specified in :doc:`part 1 <tutorial_01>`, you'll have a URL at `/o/revoke_token`. By submitting the appropriate request to that URL, you can revoke a user's :term:`Access Token`.
 
 `Oauthlib <https://github.com/idan/oauthlib>`_ is compliant with https://tools.ietf.org/html/rfc7009, so as specified, the revocation request requires:
@@ -17,7 +17,7 @@ Be sure that you've granted a valid token. If you've hooked in `oauth-toolkit` i
 Note that these revocation-specific parameters are in addition to the authentication parameters already specified by your particular client type.   
 
 Setup a Request
-----------------
+---------------
 Depending on the client type you're using, the token revocation request you may submit to the authentication server may vary. A `Public` client, for example, will not have access to your `Client Secret`. A revoke request from a public client would omit that secret, and take the form:
 
 ::
