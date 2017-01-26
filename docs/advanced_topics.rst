@@ -1,6 +1,7 @@
 Advanced topics
 +++++++++++++++
 
+.. _extend_app_model:
 
 Extending the Application model
 ===============================

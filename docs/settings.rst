@@ -68,7 +68,7 @@ The length of the generated secrets, in characters. If this value is too low,
 secrets may become subject to bruteforce guessing.
 
 OAUTH2_SERVER_CLASS
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 The import string for the ``server_class`` (or ``oauthlib.oauth2.Server`` subclass)
 used in the ``OAuthLibMixin`` that implements OAuth2 grant types.
 
@@ -85,6 +85,8 @@ to get a ``Server`` instance.
 SCOPES
 ~~~~~~
 A dictionary mapping each scope name to its human description.
+
+.. _settings_default_scopes:
 
 DEFAULT_SCOPES
 ~~~~~~~~~~~~~~

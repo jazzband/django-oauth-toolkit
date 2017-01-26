@@ -34,6 +34,7 @@ Index
    tutorial/tutorial
    rest-framework/rest-framework
    views/views
+   templates
    views/details
    models
    advanced_topics
