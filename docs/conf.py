@@ -110,7 +110,8 @@ pygments_style = 'sphinx'
 
 # http://www.sphinx-doc.org/en/1.5.1/ext/intersphinx.html
 extensions.append('sphinx.ext.intersphinx')
-intersphinx_mapping = {'python3': ('https://docs.python.org/3.5', None)}
+intersphinx_mapping = {'python3': ('https://docs.python.org/3.5', None),
+                       'django': ('http://django.readthedocs.org/en/latest/', None)}
 
 
 
