@@ -108,6 +108,12 @@ pygments_style = 'sphinx'
 #keep_warnings = False
 
 
+# http://www.sphinx-doc.org/en/1.5.1/ext/intersphinx.html
+extensions.append('sphinx.ext.intersphinx')
+intersphinx_mapping = {'python3': ('https://docs.python.org/3.5', None)}
+
+
+
 # -- Options for HTML output ---------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
