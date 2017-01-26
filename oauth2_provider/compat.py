@@ -15,3 +15,9 @@ try:
     from urllib import urlencode, unquote_plus
 except ImportError:
     from urllib.parse import urlencode, unquote_plus
+
+# changed in Django 1.10 (broken in Django 2.0)
+try:
+    from django.urls import reverse, reverse_lazy
+except ImportError:
+    from django.core.urlresolvers import reverse, reverse_lazy

@@ -3,10 +3,10 @@ from __future__ import unicode_literals
 import datetime
 
 from django.contrib.auth import get_user_model
-from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils import timezone
 
+from ..compat import reverse
 from ..models import get_application_model, AccessToken
 
 

@@ -1,9 +1,9 @@
 from __future__ import unicode_literals
 
 from django.contrib.auth import get_user_model
-from django.core.urlresolvers import reverse
 from django.test import TestCase
 
+from ..compat import reverse
 from ..models import get_application_model
 
 

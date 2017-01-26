@@ -7,13 +7,13 @@ try:
 except ImportError:
     import urllib
 
-from django.core.urlresolvers import reverse
 from django.contrib.auth import get_user_model
 from django.test import TestCase, RequestFactory
 from django.views.generic import View
 
 from oauthlib.oauth2 import BackendApplicationServer
 
+from ..compat import reverse
 from ..models import get_application_model, AccessToken
 from ..oauth2_backends import OAuthLibCore
 from ..oauth2_validators import OAuth2Validator

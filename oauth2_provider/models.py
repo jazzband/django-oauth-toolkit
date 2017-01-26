@@ -4,7 +4,6 @@ from datetime import timedelta
 
 from django.apps import apps
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.db import models, transaction
 from django.utils import timezone
 
@@ -13,7 +12,7 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.core.exceptions import ImproperlyConfigured
 
 from .settings import oauth2_settings
-from .compat import parse_qsl, urlparse
+from .compat import parse_qsl, reverse, urlparse
 from .generators import generate_client_secret, generate_client_id
 from .validators import validate_uris
 

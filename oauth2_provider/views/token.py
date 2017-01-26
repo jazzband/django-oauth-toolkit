@@ -5,6 +5,7 @@ from django.views.generic import ListView, DeleteView
 
 from braces.views import LoginRequiredMixin
 
+from ..compat import reverse_lazy
 from ..models import AccessToken
 
 

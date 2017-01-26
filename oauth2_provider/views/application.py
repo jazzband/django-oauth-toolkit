@@ -1,9 +1,9 @@
-from django.core.urlresolvers import reverse_lazy
 from django.forms.models import modelform_factory
 from django.views.generic import CreateView, DetailView, DeleteView, ListView, UpdateView
 
 from braces.views import LoginRequiredMixin
 
+from ..compat import reverse_lazy
 from ..models import get_application_model
 
 

@@ -4,11 +4,10 @@ import json
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
-from django.core.urlresolvers import reverse
 from django.test import TestCase, RequestFactory
 
 from .test_utils import TestCaseUtils
-from ..compat import urlparse, parse_qs
+from ..compat import parse_qs, reverse, urlparse
 from ..models import get_application_model, Grant, AccessToken
 from ..settings import oauth2_settings
 from ..views import ScopedProtectedResourceView, ReadWriteScopedResourceView
