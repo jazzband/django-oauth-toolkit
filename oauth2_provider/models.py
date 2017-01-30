@@ -125,6 +125,9 @@ class AbstractApplication(models.Model):
     def __str__(self):
         return self.name or self.client_id
 
+    def allows_grant_type(self, *grant_types):
+        return self.authorization_grant_type in grant_types
+
 
 class Application(AbstractApplication):
     class Meta(AbstractApplication.Meta):

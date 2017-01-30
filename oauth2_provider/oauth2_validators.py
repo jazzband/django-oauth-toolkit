@@ -263,7 +263,7 @@ class OAuth2Validator(RequestValidator):
         Validate both grant_type is a valid string and grant_type is allowed for current workflow
         """
         assert(grant_type in GRANT_TYPE_MAPPING)  # mapping misconfiguration
-        return request.client.authorization_grant_type in GRANT_TYPE_MAPPING[grant_type]
+        return request.client.allows_grant_type(*GRANT_TYPE_MAPPING[grant_type])
 
     def validate_response_type(self, client_id, response_type, client, request, *args, **kwargs):
         """
@@ -271,9 +271,9 @@ class OAuth2Validator(RequestValidator):
         rfc:`8.4`, so validate the response_type only if it matches 'code' or 'token'
         """
         if response_type == 'code':
-            return client.authorization_grant_type == AbstractApplication.GRANT_AUTHORIZATION_CODE
+            return client.allows_grant_type(AbstractApplication.GRANT_AUTHORIZATION_CODE)
         elif response_type == 'token':
-            return client.authorization_grant_type == AbstractApplication.GRANT_IMPLICIT
+            return client.allows_grant_type(AbstractApplication.GRANT_IMPLICIT)
         else:
             return False
 
