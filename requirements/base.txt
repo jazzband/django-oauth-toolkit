@@ -1,4 +1,4 @@
 Sphinx==1.3.3
 oauthlib==1.1.2
-django-braces==1.8.1
+django-braces==1.11.0
 six
