@@ -101,6 +101,7 @@ Changelog
 ~~~~~~~~~~
 
 * Support for the `scopes` query parameter, deprecated in 0.6.1, has been dropped
+* #448: Added support for customizing applications' allowed grant types
 
 0.11.0 [2016-12-1]
 ~~~~~~~~~~~
