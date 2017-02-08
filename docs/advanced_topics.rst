@@ -54,6 +54,19 @@ That's all, now Django OAuth Toolkit will use your model wherever an Application
     is because of the way Django currently implements swappable models.
     See issue #90 (https://github.com/evonove/django-oauth-toolkit/issues/90) for details
 
+Multiple Grants
+~~~~~~~~~~~~~~~
+
+The default application model supports a single OAuth grant (e.g. authorization code, client credentials). If you need
+applications to support multiple grants, override the `allows_grant_type` method. For example, if you want applications
+to support the authorization code *and* client credentials grants, you might do the following::
+
+    from oauth2_provider.models import AbstractApplication
+
+    class MyApplication(AbstractApplication):
+        def allows_grant_type(self, *grant_types):
+            # Assume, for this example, that self.authorization_grant_type is set to self.GRANT_AUTHORIZATION_CODE
+            return bool( set(self.authorization_grant_type, self.GRANT_CLIENT_CREDENTIALS) & grant_types )
 
 .. _skip-auth-form:
 
