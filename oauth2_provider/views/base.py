@@ -72,12 +72,13 @@ class AuthorizationView(BaseAuthorizationView, FormView):
     server_class = oauth2_settings.OAUTH2_SERVER_CLASS
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
     oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
+    _application_cache = {}
 
-    skip_authorization_completely = False
+    def getscopes(self):
+        return self.oauth2_data.get('scope', self.oauth2_data.get('scopes', []))
 
     def get_initial(self):
-        # TODO: move this scopes conversion from and to string into a utils function
-        scopes = self.oauth2_data.get('scope', self.oauth2_data.get('scopes', []))
+        scopes = self.getscopes()
         initial_data = {
             'redirect_uri': self.oauth2_data.get('redirect_uri', None),
             'scope': ' '.join(scopes),
@@ -87,6 +88,14 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         }
         return initial_data
 
+    def get_application(self, client_id):
+        """
+        get an application from a client_id, this caches the applications
+        """
+        if client_id not in self._application_cache:
+            self._application_cache[client_id] = get_application_model().objects.get(client_id=client_id)
+        return self._application_cache[client_id]
+
     def form_valid(self, form):
         try:
             credentials = {
@@ -95,8 +104,9 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                 'response_type': form.cleaned_data.get('response_type', None),
                 'state': form.cleaned_data.get('state', None),
             }
+            application = self.get_application(credentials['client_id'])
+            scopes = application.get_allowed_scopes_from_scopes(form.cleaned_data.get('scope'))
 
-            scopes = form.cleaned_data.get('scope')
             allow = form.cleaned_data.get('allow')
             uri, headers, body, status = self.create_authorization_response(
                 request=self.request, scopes=scopes, credentials=credentials, allow=allow)
@@ -113,7 +123,11 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             kwargs['scopes_descriptions'] = [oauth2_settings.SCOPES[scope] for scope in scopes]
             kwargs['scopes'] = scopes
             # at this point we know an Application instance with such client_id exists in the database
-            application = get_application_model().objects.get(client_id=credentials['client_id'])  # TODO: cache it!
+            application = self.get_application(credentials['client_id'])
+            # filter scopes here, so an application with skip_authorization still only gets the allowed scopes
+            # returns a string
+            scopes = application.get_allowed_scopes_from_scopes(scopes)
+
             kwargs['application'] = application
             kwargs['client_id'] = credentials['client_id']
             kwargs['redirect_uri'] = credentials['redirect_uri']
@@ -135,7 +149,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             # are already approved.
             if application.skip_authorization:
                 uri, headers, body, status = self.create_authorization_response(
-                    request=self.request, scopes=" ".join(scopes),
+                    request=self.request, scopes=scopes,
                     credentials=credentials, allow=True)
                 return HttpResponseUriRedirect(uri)
 
@@ -146,7 +160,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                 for token in tokens:
                     if token.allow_scopes(scopes):
                         uri, headers, body, status = self.create_authorization_response(
-                            request=self.request, scopes=" ".join(scopes),
+                            request=self.request, scopes=scopes,
                             credentials=credentials, allow=True)
                         return HttpResponseUriRedirect(uri)
 

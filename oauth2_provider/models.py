@@ -5,7 +5,7 @@ from datetime import timedelta
 from django.apps import apps
 from django.conf import settings
 from django.db import models, transaction
-from django.utils import timezone
+from django.utils import timezone, six, six
 
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import python_2_unicode_compatible
@@ -37,6 +37,9 @@ class AbstractApplication(models.Model):
     * :attr:`client_secret` Confidential secret issued to the client during
                             the registration process as described in :rfc:`2.2`
     * :attr:`name` Friendly name for the Application
+    * :attr:`skip_authorization` Boolean indication that this application doesn't present
+                                 the Authorize view to the user
+    * :attr:`allowed_scopes` Space separated list of scopes this application can ever get
     """
     CLIENT_CONFIDENTIAL = 'confidential'
     CLIENT_PUBLIC = 'public'
@@ -71,6 +74,9 @@ class AbstractApplication(models.Model):
                                      default=generate_client_secret, db_index=True)
     name = models.CharField(max_length=255, blank=True)
     skip_authorization = models.BooleanField(default=False)
+    # only used if not blank
+    allowed_scopes = models.TextField(help_text="List of allowed scopes for this application, space separated",
+                                      blank=True)
 
     class Meta:
         abstract = True
@@ -121,6 +127,22 @@ class AbstractApplication(models.Model):
 
     def get_absolute_url(self):
         return reverse('oauth2_provider:detail', args=[str(self.id)])
+
+    def get_allowed_scopes_from_scopes(self, scopes):
+        """
+        Filters the given list of scopes so it only contains the allowed scopes
+        """
+        if isinstance(scopes, six.string_types):
+            scopes = scopes.split(' ')
+        allowed_scopes = None
+        if self.allowed_scopes:
+            # this will be [''], which evaluates to True if allowed_scopes is the empty string (but not None)
+            allowed_scopes = self.allowed_scopes.split(' ')
+        if allowed_scopes:
+            # now reduce down to allowed scopes and make it a space separated list again
+            scopes = set(allowed_scopes) & set(scopes)
+        return ' '.join(scopes)
+
 
     def __str__(self):
         return self.name or self.client_id
@@ -221,6 +243,8 @@ class AccessToken(models.Model):
         """
         if not scopes:
             return True
+        if isinstance(scopes, six.string_types):
+            scopes = scopes.split()
 
         provided_scopes = set(self.scope.split())
         resource_scopes = set(scopes)

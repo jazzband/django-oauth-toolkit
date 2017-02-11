@@ -90,3 +90,13 @@ You might want to completely bypass the authorization form, for instance if your
 in-house product or if you already trust the application owner by other means. To this end, you have to
 set ``skip_authorization = True`` on the ``Application`` model, either programmaticaly or within the
 Django admin. Users will *not* be prompted for authorization, even on the first use of the application.
+
+
+App Specific Scopes
+===================
+You can restrict each individual application to a separate subset of scopes.
+Using the ``allowed_scopes = 'scope1 scope2'`` field on the ``Application`` model you can limit the scopes an application
+can get. This is useful if you trust an application owner only for e.g. read access and don't want
+your users to give write access, or avoid the application to covertly request a scope it shouldn't get
+once it knows you have anabled ``skip_authorization``
+

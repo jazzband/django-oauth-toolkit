@@ -41,6 +41,77 @@ class TestModels(TestCase):
         self.assertTrue(access_token.allow_scopes(['write', 'read', 'read']))
         self.assertTrue(access_token.allow_scopes([]))
         self.assertFalse(access_token.allow_scopes(['write', 'destroy']))
+        self.assertTrue(access_token.allow_scopes('read write'))
+        self.assertTrue(access_token.allow_scopes('write read'))
+        self.assertTrue(access_token.allow_scopes('write read read'))
+        self.assertTrue(access_token.allow_scopes(''))
+        self.assertFalse(access_token.allow_scopes('write destroy'))
+
+
+    def test_get_allowed_scopes_from_scopes(self):
+        self.client.login(username="test_user", password="123456")
+        app = Application.objects.create(
+            name="test_app",
+            redirect_uris="http://localhost http://example.com http://example.it",
+            user=self.user,
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+        )
+
+        # app has no allowed scopes set, so everything specified should be allowed (but no more)
+        scopes = app.get_allowed_scopes_from_scopes(['read', 'write'])
+        self.assertTrue(all(x in scopes for x in ['read', 'write']))
+        scopes = app.get_allowed_scopes_from_scopes('read write')
+        self.assertTrue(all(x in scopes for x in ['read', 'write']))
+        scopes = app.get_allowed_scopes_from_scopes(['write', 'read'])
+        self.assertTrue(all(x in scopes for x in ['read', 'write']))
+        scopes = app.get_allowed_scopes_from_scopes(['write', 'read', 'read'])
+        self.assertTrue(all(x in scopes for x in ['read', 'write']))
+        scopes = app.get_allowed_scopes_from_scopes('write read read')
+        self.assertTrue(all(x in scopes for x in ['read', 'write']))
+        scopes = app.get_allowed_scopes_from_scopes([])
+        self.assertFalse(any(x in scopes for x in ['read', 'write']))
+        scopes = app.get_allowed_scopes_from_scopes('')
+        self.assertFalse(any(x in scopes for x in ['read', 'write']))
+        scopes = app.get_allowed_scopes_from_scopes(['read', 'destroy'])
+        self.assertTrue(all(x in scopes for x in ['read', 'destroy']))
+        self.assertFalse ('write' in scopes)
+
+        app.allowed_scopes = 'read destroy'
+
+        # app  does not allow write scope, so it should never be in allowed scopes
+        scopes = app.get_allowed_scopes_from_scopes(['read', 'write'])
+        self.assertTrue('read' in scopes)
+        self.assertFalse('write' in scopes)
+        self.assertFalse('destroy' in scopes)
+
+        scopes = app.get_allowed_scopes_from_scopes('read write')
+        self.assertTrue('read' in scopes)
+        self.assertFalse('write' in scopes)
+        self.assertFalse('destroy' in scopes)
+
+        scopes = app.get_allowed_scopes_from_scopes(['write', 'read'])
+        self.assertTrue('read' in scopes)
+        self.assertFalse('write' in scopes)
+        self.assertFalse('destroy' in scopes)
+        scopes = app.get_allowed_scopes_from_scopes(['write', 'read', 'read'])
+        self.assertTrue('read' in scopes)
+        self.assertFalse('write' in scopes)
+        self.assertFalse('destroy' in scopes)
+
+        scopes = app.get_allowed_scopes_from_scopes('write read read')
+        self.assertTrue('read' in scopes)
+        self.assertFalse('write' in scopes)
+        self.assertFalse('destroy' in scopes)
+
+        scopes = app.get_allowed_scopes_from_scopes([])
+        self.assertFalse(any(x in scopes for x in ['read', 'write', 'destroy']))
+        scopes = app.get_allowed_scopes_from_scopes('')
+        self.assertFalse(any(x in scopes for x in ['read', 'write', 'destroy']))
+        scopes = app.get_allowed_scopes_from_scopes(['read', 'destroy'])
+        self.assertTrue('read' in scopes)
+        self.assertTrue('destroy' in scopes)
+        self.assertFalse('write' in scopes)
 
     def test_grant_authorization_code_redirect_uris(self):
         app = Application(
