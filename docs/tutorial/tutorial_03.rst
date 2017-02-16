@@ -22,10 +22,18 @@ which takes care of token verification. In your settings.py:
         '...',
     )
 
-    MIDDLEWARE_CLASSES = (
+    MIDDLEWARE = (
         '...',
         # If you use SessionAuthenticationMiddleware, be sure it appears before OAuth2TokenMiddleware.
         # SessionAuthenticationMiddleware is NOT required for using django-oauth-toolkit.
+        'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+        'oauth2_provider.middleware.OAuth2TokenMiddleware',
+        '...',
+    )
+
+    # Or on Django<1.10:
+    MIDDLEWARE_CLASSES = (
+        '...',
         'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
         'oauth2_provider.middleware.OAuth2TokenMiddleware',
         '...',

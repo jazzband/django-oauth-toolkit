@@ -43,6 +43,13 @@ Include the CORS middleware in your `settings.py`:
 
 .. code-block:: python
 
+    MIDDLEWARE = (
+        # ...
+        'corsheaders.middleware.CorsMiddleware',
+        # ...
+    )
+
+    # Or on Django < 1.10:
     MIDDLEWARE_CLASSES = (
         # ...
         'corsheaders.middleware.CorsMiddleware',
