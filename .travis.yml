@@ -1,6 +1,7 @@
 language: python
 python:
   - "3.5"
+  - "3.6"
 
 sudo: false
 
@@ -9,8 +10,6 @@ env:
   - TOXENV=py27-django19
   - TOXENV=py27-django110
   - TOXENV=py27-djangomaster
-  - TOXENV=py32-django18
-  - TOXENV=py33-django18
   - TOXENV=py34-django18
   - TOXENV=py34-django19
   - TOXENV=py34-django110
@@ -19,6 +18,7 @@ env:
   - TOXENV=py35-django19
   - TOXENV=py35-django110
   - TOXENV=py35-djangomaster
+  - TOXENV=py36-djangomaster
   - TOXENV=docs
 
 matrix:
