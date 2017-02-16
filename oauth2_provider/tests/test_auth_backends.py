@@ -1,4 +1,3 @@
-from django.conf.global_settings import MIDDLEWARE_CLASSES
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.test import TestCase, RequestFactory
@@ -10,6 +9,12 @@ from ..models import get_application_model
 from ..models import AccessToken
 from ..backends import OAuth2Backend
 from ..middleware import OAuth2TokenMiddleware
+try:
+    # Django<1.10 compatibility
+    from django.conf.global_settings import MIDDLEWARE_CLASSES as MIDDLEWARE
+except ImportError:
+    from django.conf.global_settings import MIDDLEWARE
+
 
 UserModel = get_user_model()
 ApplicationModel = get_application_model()
@@ -76,7 +81,9 @@ class TestOAuth2Backend(BaseTest):
         'oauth2_provider.backends.OAuth2Backend',
         'django.contrib.auth.backends.ModelBackend',
     ),
-    MIDDLEWARE_CLASSES=tuple(MIDDLEWARE_CLASSES) + ('oauth2_provider.middleware.OAuth2TokenMiddleware',)
+    MIDDLEWARE=tuple(MIDDLEWARE) + ('oauth2_provider.middleware.OAuth2TokenMiddleware',),
+    # Django<1.10 compat:
+    MIDDLEWARE_CLASSES=tuple(MIDDLEWARE) + ('oauth2_provider.middleware.OAuth2TokenMiddleware',)
 )
 class TestOAuth2Middleware(BaseTest):
 
