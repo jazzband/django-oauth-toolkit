@@ -17,6 +17,7 @@ from .exceptions import FatalClientError
 from .models import Grant, AccessToken, RefreshToken, get_application_model, AbstractApplication
 from .settings import oauth2_settings
 
+
 log = logging.getLogger('oauth2_provider')
 
 GRANT_TYPE_MAPPING = {
@@ -31,7 +32,8 @@ GRANT_TYPE_MAPPING = {
 class OAuth2Validator(RequestValidator):
     def _extract_basic_auth(self, request):
         """
-        Return authentication string if request contains basic auth credentials, else return None
+        Return authentication string if request contains basic auth credentials,
+        otherwise return None
         """
         auth = request.headers.get('HTTP_AUTHORIZATION', None)
         if not auth:
@@ -93,11 +95,12 @@ class OAuth2Validator(RequestValidator):
 
     def _authenticate_request_body(self, request):
         """
-        Try to authenticate the client using client_id and client_secret parameters
-        included in body.
+        Try to authenticate the client using client_id and client_secret
+        parameters included in body.
 
-        Remember that this method is NOT RECOMMENDED and SHOULD be limited to clients unable to
-        directly utilize the HTTP Basic authentication scheme. See rfc:`2.3.1` for more details.
+        Remember that this method is NOT RECOMMENDED and SHOULD be limited to
+        clients unable to directly utilize the HTTP Basic authentication scheme.
+        See rfc:`2.3.1` for more details.
         """
         # TODO: check if oauthlib has already unquoted client_id and client_secret
         try:
@@ -117,8 +120,8 @@ class OAuth2Validator(RequestValidator):
 
     def _load_application(self, client_id, request):
         """
-        If request.client was not set, load application instance for given client_id and store it
-        in request.client
+        If request.client was not set, load application instance for given
+        client_id and store it in request.client
         """
 
         # we want to be sure that request has the client attribute!
@@ -141,11 +144,11 @@ class OAuth2Validator(RequestValidator):
             * Resource owner password grant
             * Refresh token grant
 
-        If the request contains authorization headers, always authenticate the client no matter
-        the grant type.
+        If the request contains authorization headers, always authenticate the client
+        no matter the grant type.
 
-        If the request does not contain authorization headers, proceed with authentication only if
-        the client is of type `Confidential`.
+        If the request does not contain authorization headers, proceed with authentication
+        only if the client is of type `Confidential`.
 
         If something goes wrong, call oauthlib implementation of the method.
         """
@@ -172,9 +175,10 @@ class OAuth2Validator(RequestValidator):
 
         First we try to authenticate with HTTP Basic Auth, and that is the PREFERRED
         authentication method.
-        Whether this fails we support including the client credentials in the request-body, but
-        this method is NOT RECOMMENDED and SHOULD be limited to clients unable to directly utilize
-        the HTTP Basic authentication scheme. See rfc:`2.3.1` for more details
+        Whether this fails we support including the client credentials in the request-body,
+        but this method is NOT RECOMMENDED and SHOULD be limited to clients unable to
+        directly utilize the HTTP Basic authentication scheme.
+        See rfc:`2.3.1` for more details
         """
         authenticated = self._authenticate_basic_auth(request)
 

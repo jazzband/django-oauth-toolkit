@@ -98,14 +98,14 @@ Changelog
 ---------
 
 0.12.0 [Unreleased]
-~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 
 * **Dropped support for Python 3.2 and Python 3.3**, added support for Python 3.6
 * Support for the `scopes` query parameter, deprecated in 0.6.1, has been dropped
 * #448: Added support for customizing applications' allowed grant types
 
 0.11.0 [2016-12-1]
-~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 * #315: AuthorizationView does not overwrite requests on get
 * #425: Added support for Django 1.10

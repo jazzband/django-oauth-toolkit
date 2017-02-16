@@ -11,8 +11,8 @@ from .settings import oauth2_settings
 
 def protected_resource(scopes=None, validator_cls=OAuth2Validator, server_cls=Server):
     """
-    Decorator to protect views by providing OAuth2 authentication out of the box, optionally with
-    scope handling.
+    Decorator to protect views by providing OAuth2 authentication out of the box,
+    optionally with scope handling.
 
         @protected_resource()
         def my_view(request):
@@ -38,8 +38,8 @@ def protected_resource(scopes=None, validator_cls=OAuth2Validator, server_cls=Se
 
 def rw_protected_resource(scopes=None, validator_cls=OAuth2Validator, server_cls=Server):
     """
-    Decorator to protect views by providing OAuth2 authentication and read/write scopes out of the
-    box.
+    Decorator to protect views by providing OAuth2 authentication and read/write scopes
+    out of the box.
     GET, HEAD, OPTIONS http methods require "read" scope. Otherwise "write" scope is required.
 
         @rw_protected_resource()

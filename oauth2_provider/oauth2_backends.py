@@ -22,8 +22,8 @@ class OAuthLibCore(object):
 
     def _get_escaped_full_path(self, request):
         """
-        Django considers "safe" some characters that aren't so for oauthlib. We have to search for
-        them and properly escape.
+        Django considers "safe" some characters that aren't so for oauthlib.
+        We have to search for them and properly escape.
         """
         parsed = list(urlparse(request.get_full_path()))
         unsafe = set(c for c in parsed[4]).difference(urlencoded)
@@ -45,8 +45,9 @@ class OAuthLibCore(object):
 
     def _extract_params(self, request):
         """
-        Extract parameters from the Django request object. Such parameters will then be passed to
-        OAuthLib to build its own Request object. The body should be encoded using OAuthLib urlencoded
+        Extract parameters from the Django request object.
+        Such parameters will then be passed to OAuthLib to build its own
+        Request object. The body should be encoded using OAuthLib urlencoded.
         """
         uri = self._get_escaped_full_path(request)
         http_method = request.method
@@ -170,7 +171,7 @@ class OAuthLibCore(object):
 
 class JSONOAuthLibCore(OAuthLibCore):
     """
-    Extends the default OAuthLibCore to parse correctly requests with application/json Content-Type
+    Extends the default OAuthLibCore to parse correctly application/json requests
     """
     def extract_body(self, request):
         """
