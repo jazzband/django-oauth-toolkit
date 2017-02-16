@@ -21,3 +21,12 @@ try:
     from django.urls import reverse, reverse_lazy
 except ImportError:
     from django.core.urlresolvers import reverse, reverse_lazy
+
+# bastb Django 1.10 has updated Middleware. This code imports the Mixin required to get old-style
+# middleware working again
+# More?
+#  https://docs.djangoproject.com/en/1.10/topics/http/middleware/#upgrading-pre-django-1-10-style-middleware
+try:
+    from django.utils.deprecation import MiddlewareMixin
+except ImportError:
+    MiddlewareMixin = object

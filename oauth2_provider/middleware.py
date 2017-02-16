@@ -1,18 +1,9 @@
 from django.contrib.auth import authenticate
 from django.utils.cache import patch_vary_headers
-
-# bastb Django 1.10 has updated Middleware. This code imports the Mixin required to get old-style
-# middleware working again
-# More?
-#  https://docs.djangoproject.com/en/1.10/topics/http/middleware/#upgrading-pre-django-1-10-style-middleware
-try:
-    from django.utils.deprecation import MiddlewareMixin
-    middleware_parent_class = MiddlewareMixin
-except ImportError:
-    middleware_parent_class = object
+from .compat import MiddlewareMixin
 
 
-class OAuth2TokenMiddleware(middleware_parent_class):
+class OAuth2TokenMiddleware(MiddlewareMixin):
     """
     Middleware for OAuth2 user authentication
 
