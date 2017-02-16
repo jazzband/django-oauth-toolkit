@@ -16,6 +16,9 @@ env:
 
 matrix:
   fast_finish: true
+  allow_failures:
+    - env: TOXENV=py35-djangomaster
+    - env: TOXENV=py36-djangomaster
 
 install:
   - pip install tox "virtualenv<14"
