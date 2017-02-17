@@ -100,6 +100,10 @@ Changelog
 0.12.0 [Unreleased]
 ~~~~~~~~~~~~~~~~~~~
 
+* **New feature**: Class-based scopes backends. Listing scopes, available scopes and default scopes
+  is now done through the class that the `SCOPES_BACKEND_CLASS` setting points to.
+  By default, this is set to `oauth2_provider.scopes.SettingsScopes` which implements the
+  legacy settings-based scope behaviour. No changes are necessary.
 * **Dropped support for Python 3.2 and Python 3.3**, added support for Python 3.6
 * Support for the `scopes` query parameter, deprecated in 0.6.1, has been dropped
 * #448: Added support for customizing applications' allowed grant types

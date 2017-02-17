@@ -82,30 +82,6 @@ OAUTH2_BACKEND_CLASS
 The import string for the ``oauthlib_backend_class`` used in the ``OAuthLibMixin``,
 to get a ``Server`` instance.
 
-SCOPES
-~~~~~~
-A dictionary mapping each scope name to its human description.
-
-.. _settings_default_scopes:
-
-DEFAULT_SCOPES
-~~~~~~~~~~~~~~
-A list of scopes that should be returned by default.
-This is a subset of the keys of the SCOPES setting.
-By default this is set to '__all__' meaning that the whole set of SCOPES will be returned.
-
-.. code-block:: python
-
-  DEFAULT_SCOPES = ['read', 'write']
-
-READ_SCOPE
-~~~~~~~~~~
-The name of the *read* scope.
-
-WRITE_SCOPE
-~~~~~~~~~~~
-The name of the *write* scope.
-
 REFRESH_TOKEN_EXPIRE_SECONDS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The number of seconds before a refresh token gets removed from the database by
@@ -119,3 +95,40 @@ REQUEST_APPROVAL_PROMPT
 ~~~~~~~~~~~~~~~~~~~~~~~
 Can be ``'force'`` or ``'auto'``.
 The strategy used to display the authorization form. Refer to :ref:`skip-auth-form`.
+
+SCOPES_BACKEND_CLASS
+~~~~~~~~~~~~~~~~~~~~
+**New in 0.12.0**. The import string for the scopes backend class.
+Defaults to , which reads scopes through the settings defined below.
+
+SCOPES
+~~~~~~
+.. note:: (0.12.0+) Only used if `SCOPES_BACKEND_CLASS` is set to the SettingsScopes default.
+
+A dictionary mapping each scope name to its human description.
+
+.. _settings_default_scopes:
+
+DEFAULT_SCOPES
+~~~~~~~~~~~~~~
+.. note:: (0.12.0+) Only used if `SCOPES_BACKEND_CLASS` is set to the SettingsScopes default.
+
+A list of scopes that should be returned by default.
+This is a subset of the keys of the SCOPES setting.
+By default this is set to '__all__' meaning that the whole set of SCOPES will be returned.
+
+.. code-block:: python
+
+  DEFAULT_SCOPES = ['read', 'write']
+
+READ_SCOPE
+~~~~~~~~~~
+.. note:: (0.12.0+) Only used if `SCOPES_BACKEND_CLASS` is set to the SettingsScopes default.
+
+The name of the *read* scope.
+
+WRITE_SCOPE
+~~~~~~~~~~~
+.. note:: (0.12.0+) Only used if `SCOPES_BACKEND_CLASS` is set to the SettingsScopes default.
+
+The name of the *write* scope.
