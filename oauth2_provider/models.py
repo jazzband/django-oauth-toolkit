@@ -129,6 +129,14 @@ class AbstractApplication(models.Model):
     def allows_grant_type(self, *grant_types):
         return self.authorization_grant_type in grant_types
 
+    def is_usable(self, request):
+        """
+        Determines whether the application can be used.
+
+        :param request: The HTTP request being processed.
+        """
+        return True
+
 
 class Application(AbstractApplication):
     class Meta(AbstractApplication.Meta):

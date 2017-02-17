@@ -131,9 +131,13 @@ class OAuth2Validator(RequestValidator):
         Application = get_application_model()
         try:
             request.client = request.client or Application.objects.get(client_id=client_id)
+            # Check that the application can be used (defaults to always True)
+            if not request.client.is_usable(request):
+                log.debug("Failed body authentication: Application %r is disabled" % (client_id))
+                return None
             return request.client
         except Application.DoesNotExist:
-            log.debug("Failed body authentication: Application %s does not exist" % client_id)
+            log.debug("Failed body authentication: Application %r does not exist" % (client_id))
             return None
 
     def client_authentication_required(self, request, *args, **kwargs):
@@ -192,7 +196,6 @@ class OAuth2Validator(RequestValidator):
         """
         If we are here, the client did not authenticate itself as in rfc:`3.2.1` and we can
         proceed only if the client exists and it's not of type 'Confidential'.
-        Also assign Application instance to request.client.
         """
         if self._load_application(client_id, request) is not None:
             log.debug("Application %s has type %s" % (client_id, request.client.client_type))

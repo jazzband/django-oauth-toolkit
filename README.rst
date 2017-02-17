@@ -107,6 +107,8 @@ Changelog
 * **Dropped support for Python 3.2 and Python 3.3**, added support for Python 3.6
 * Support for the `scopes` query parameter, deprecated in 0.6.1, has been dropped
 * #448: Added support for customizing applications' allowed grant types
+* #141: The `is_usable(request)` method on the Application model can be overridden to dynamically
+  enable or disable applications.
 
 0.11.0 [2016-12-1]
 ~~~~~~~~~~~~~~~~~~
