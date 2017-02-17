@@ -66,8 +66,6 @@ URL this view will respond to:
     urlpatterns = [
         # OAuth 2 endpoints:
         url(r'^o/', include(oauth2_endpoint_views, namespace="oauth2_provider")),
-
-        url(r'^admin/', include(admin.site.urls)),
         url(r'^api/hello', ApiEndpoint.as_view()),  # an example resource endpoint
     ]
 
