@@ -57,13 +57,15 @@ TEMPLATES = [
     },
 ]
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 )
+# Django < 1.10 compatibility
+MIDDLEWARE_CLASSES = MIDDLEWARE
 
 ROOT_URLCONF = 'oauth2_provider.tests.urls'
 
