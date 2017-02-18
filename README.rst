@@ -109,6 +109,7 @@ Changelog
 * #448: Added support for customizing applications' allowed grant types
 * #141: The `is_usable(request)` method on the Application model can be overridden to dynamically
   enable or disable applications.
+* #434: Relax URL patterns to allow for UUID primary keys
 
 0.11.0 [2016-12-1]
 ~~~~~~~~~~~~~~~~~~
