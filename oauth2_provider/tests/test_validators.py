@@ -25,6 +25,19 @@ class TestValidators(TestCase):
         # Check ValidationError not thrown
         validate_uris(good_uris)
 
+    def test_validate_wildcard_custom_uri_scheme(self):
+        oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES = ['*']
+        good_uris = 'my-scheme://example.com http://example.com'
+        # Check ValidationError not thrown
+        validate_uris(good_uris)
+
+    def test_validate_wildcard_bad_uris(self):
+        oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES = ['*']
+        bad_uri = 'http://example.com/#fragment'
+        self.assertRaises(ValidationError, validate_uris, bad_uri)
+        bad_uri = 'sdklfsjlfjljdflksjlkfjsdkl'
+        self.assertRaises(ValidationError, validate_uris, bad_uri)
+
     def test_validate_bad_uris(self):
         bad_uri = 'http://example.com/#fragment'
         self.assertRaises(ValidationError, validate_uris, bad_uri)

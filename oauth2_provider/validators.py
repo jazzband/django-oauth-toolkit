@@ -52,7 +52,7 @@ class RedirectURIValidator(URIValidator):
         if len(value.split('#')) > 1:
             raise ValidationError('Redirect URIs must not contain fragments')
         scheme, netloc, path, query, fragment = urlsplit(value)
-        if scheme.lower() not in self.allowed_schemes:
+        if scheme.lower() not in self.allowed_schemes and '*' not in self.allowed_schemes:
             raise ValidationError('Redirect URI scheme is not allowed.')
 
 
