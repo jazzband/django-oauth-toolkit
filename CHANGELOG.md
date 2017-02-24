@@ -1,4 +1,4 @@
-### 0.12.0 [Unreleased]
+### 0.12.0 [2017-02-24]
 
 * **New feature**: Class-based scopes backends. Listing scopes, available scopes and default scopes
   is now done through the class that the `SCOPES_BACKEND_CLASS` setting points to.
