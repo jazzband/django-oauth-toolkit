@@ -13,6 +13,11 @@ env:
   - TOXENV=py34-django19
   - TOXENV=py34-django110
   - TOXENV=py34-django111
+  - TOXENV=py35-django18
+  - TOXENV=py35-django19
+  - TOXENV=py35-django110
+  - TOXENV=py35-django111
+  - TOXENV=py35-djangomaster
   - TOXENV=py36-django111
   - TOXENV=py36-djangomaster
   - TOXENV=docs
