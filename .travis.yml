@@ -1,6 +1,6 @@
 language: python
 python:
-  - "3.6"
+  - "3.5"
 
 sudo: false
 
@@ -24,6 +24,17 @@ env:
 
 matrix:
   fast_finish: true
+  include:
+    - python: "3.6"
+      env: TOXENV=py36-django111
+    - python: "3.6"
+      env: TOXENV=py36-djangomaster
+  exclude:
+    - python: "3.5"
+      env: TOXENV=py36-django111
+    - python: "3.5"
+      env: TOXENV=py36-djangomaster
+
   allow_failures:
     - env: TOXENV=py35-djangomaster
     - env: TOXENV=py36-djangomaster
