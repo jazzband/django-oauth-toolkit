@@ -180,9 +180,11 @@ class JSONOAuthLibCore(OAuthLibCore):
         :return: provided POST parameters "urlencodable"
         """
         try:
-            body = json.loads(request.body.decode("utf-8")).items()
-        except AttributeError:
-            body = ""
+            data = json.loads(request.body.decode('utf-8'))
+            if isinstance(data, dict):
+                body = data.items()
+            else:
+                body = ""
         except ValueError:
             body = ""
 
