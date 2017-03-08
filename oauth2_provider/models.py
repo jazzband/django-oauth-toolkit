@@ -142,7 +142,6 @@ class Application(AbstractApplication):
     class Meta(AbstractApplication.Meta):
         swappable = 'OAUTH2_PROVIDER_APPLICATION_MODEL'
 
-
 @python_2_unicode_compatible
 class Grant(models.Model):
     """
@@ -159,7 +158,7 @@ class Grant(models.Model):
     * :attr:`redirect_uri` Self explained
     * :attr:`scope` Required scopes, optional
     """
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(oauth2_settings.RESOURCE_OWNER_MODEL, on_delete=models.CASCADE)
     code = models.CharField(max_length=255, unique=True)  # code comes from oauthlib
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL,
                                     on_delete=models.CASCADE)
@@ -197,7 +196,7 @@ class AccessToken(models.Model):
     * :attr:`expires` Date and time of token expiration, in DateTime format
     * :attr:`scope` Allowed scopes
     """
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True,
+    user = models.ForeignKey(oauth2_settings.RESOURCE_OWNER_MODEL, blank=True, null=True,
                              on_delete=models.CASCADE)
     token = models.CharField(max_length=255, unique=True)
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL,
@@ -270,7 +269,7 @@ class RefreshToken(models.Model):
     * :attr:`access_token` AccessToken instance this refresh token is
                            bounded to
     """
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(oauth2_settings.RESOURCE_OWNER_MODEL, on_delete=models.CASCADE)
     token = models.CharField(max_length=255, unique=True)
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL,
                                     on_delete=models.CASCADE)
@@ -287,6 +286,20 @@ class RefreshToken(models.Model):
 
     def __str__(self):
         return self.token
+
+
+def get_resource_owner_model():
+    """ Return the Resource Owner model that is active in this project. """
+    try:
+        app_label, model_name = oauth2_settings.RESOURCE_OWNER_MODEL.split('.')
+    except ValueError:
+        e = "RESOURCE_OWNER_MODEL must be of the form 'app_label.model_name'"
+        raise ImproperlyConfigured(e)
+    app_model = apps.get_model(app_label, model_name)
+    if app_model is None:
+        e = "RESOURCE_OWNER_MODEL refers to model {0} that has not been installed"
+        raise ImproperlyConfigured(e.format(oauth2_settings.RESOURCE_OWNER_MODEL))
+    return app_model
 
 
 def get_application_model():

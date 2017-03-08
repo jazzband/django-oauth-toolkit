@@ -43,6 +43,7 @@ DEFAULTS = {
     'REFRESH_TOKEN_EXPIRE_SECONDS': None,
     'ROTATE_REFRESH_TOKEN': True,
     'APPLICATION_MODEL': getattr(settings, 'OAUTH2_PROVIDER_APPLICATION_MODEL', 'oauth2_provider.Application'),
+    'RESOURCE_OWNER_MODEL': getattr(settings, 'OAUTH2_PROVIDER_RESOURCE_OWNER_MODEL', settings.AUTH_USER_MODEL),
     'REQUEST_APPROVAL_PROMPT': 'force',
     'ALLOWED_REDIRECT_URI_SCHEMES': ['http', 'https'],
 

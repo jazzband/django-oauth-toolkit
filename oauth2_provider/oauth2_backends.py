@@ -32,6 +32,15 @@ class OAuthLibCore(object):
 
         return urlunparse(parsed)
 
+    def _extract_resource_owner(self, request):
+        """
+        Extracts the resource owner object from the Django request object
+        :param request: The current django.http.HttpRequest object
+        :return: the Resource Owner object
+        """
+        return request.user
+
+
     def _get_extra_credentials(self, request):
         """
         Produce extra credentials for token response. This dictionary will be
@@ -106,14 +115,14 @@ class OAuthLibCore(object):
         :param scopes: A list of provided scopes
         :param credentials: Authorization credentials dictionary containing
                            `client_id`, `state`, `redirect_uri`, `response_type`
-        :param allow: True if the user authorize the client, otherwise False
+        :param allow: True if the resource owner authorize the client, otherwise False
         """
         try:
             if not allow:
                 raise oauth2.AccessDeniedError()
 
-            # add current user to credentials. this will be used by OAUTH2_VALIDATOR_CLASS
-            credentials['user'] = request.user
+            # add current resource owner to credentials. this will be used by OAUTH2_VALIDATOR_CLASS
+            credentials['user'] = self._extract_resource_owner(request)
 
             headers, body, status = self.server.create_authorization_response(
                 uri=credentials['redirect_uri'], scopes=scopes, credentials=credentials)

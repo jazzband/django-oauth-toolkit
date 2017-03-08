@@ -14,13 +14,15 @@ class AuthorizedTokensListView(LoginRequiredMixin, ListView):
     context_object_name = 'authorized_tokens'
     template_name = 'oauth2_provider/authorized-tokens.html'
     model = AccessToken
+    user_lookup_attr = 'user'
 
     def get_queryset(self):
         """
         Show only user's tokens
         """
         return super(AuthorizedTokensListView, self).get_queryset()\
-            .select_related('application').filter(user=self.request.user)
+            .select_related('application')\
+            .filter(**{self.user_lookup_attr:self.request.user})
 
 
 class AuthorizedTokenDeleteView(LoginRequiredMixin, DeleteView):
@@ -30,6 +32,8 @@ class AuthorizedTokenDeleteView(LoginRequiredMixin, DeleteView):
     template_name = 'oauth2_provider/authorized-token-delete.html'
     success_url = reverse_lazy('oauth2_provider:authorized-token-list')
     model = AccessToken
+    user_lookup_attr = 'user'
 
     def get_queryset(self):
-        return super(AuthorizedTokenDeleteView, self).get_queryset().filter(user=self.request.user)
+        return super(AuthorizedTokenDeleteView, self).get_queryset()\
+            .filter(**{self.user_lookup_attr:self.request.user})

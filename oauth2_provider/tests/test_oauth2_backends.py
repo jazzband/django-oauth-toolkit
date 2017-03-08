@@ -50,6 +50,9 @@ class TestCustomOAuthLibCoreBackend(TestCase):
         def _get_extra_credentials(self, request):
             return 1
 
+        def extract_resource_owner(self, request):
+            return request.organization_user
+
     def setUp(self):
         self.factory = RequestFactory()
 
