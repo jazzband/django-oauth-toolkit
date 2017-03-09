@@ -6,9 +6,9 @@ from django.test import TestCase, RequestFactory
 
 from oauthlib.oauth2 import Server
 
-from ..views.mixins import OAuthLibMixin, ScopedResourceMixin, ProtectedResourceMixin
-from ..oauth2_backends import OAuthLibCore
-from ..oauth2_validators import OAuth2Validator
+from oauth2_provider.views.mixins import OAuthLibMixin, ScopedResourceMixin, ProtectedResourceMixin
+from oauth2_provider.oauth2_backends import OAuthLibCore
+from oauth2_provider.oauth2_validators import OAuth2Validator
 
 
 class BaseTest(TestCase):

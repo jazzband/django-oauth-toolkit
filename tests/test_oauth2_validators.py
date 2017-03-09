@@ -7,9 +7,9 @@ from django.utils import timezone
 import mock
 from oauthlib.common import Request
 
-from ..exceptions import FatalClientError
-from ..oauth2_validators import OAuth2Validator
-from ..models import get_application_model, AccessToken, RefreshToken
+from oauth2_provider.exceptions import FatalClientError
+from oauth2_provider.oauth2_validators import OAuth2Validator
+from oauth2_provider.models import get_application_model, AccessToken, RefreshToken
 
 UserModel = get_user_model()
 AppModel = get_application_model()

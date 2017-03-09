@@ -9,8 +9,8 @@ from django.test.utils import override_settings
 from django.utils import timezone
 
 from .test_utils import TestCaseUtils
-from ..models import AccessToken, get_application_model
-from ..settings import oauth2_settings
+from oauth2_provider.models import AccessToken, get_application_model
+from oauth2_provider.settings import oauth2_settings
 
 
 Application = get_application_model()
@@ -21,8 +21,10 @@ try:
     from rest_framework import permissions
     from rest_framework.views import APIView
     from rest_framework.test import force_authenticate, APIRequestFactory
-    from ..ext.rest_framework import OAuth2Authentication, TokenHasScope, TokenHasReadWriteScope, TokenHasResourceScope
-    from ..ext.rest_framework import IsAuthenticatedOrTokenHasScope
+    from oauth2_provider.ext.rest_framework import (
+        IsAuthenticatedOrTokenHasScope, OAuth2Authentication, TokenHasScope,
+        TokenHasReadWriteScope, TokenHasResourceScope
+    )
 
     class MockView(APIView):
         permission_classes = (permissions.IsAuthenticated,)

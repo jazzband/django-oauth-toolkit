@@ -3,8 +3,8 @@ import mock
 
 from django.test import TestCase, RequestFactory
 
-from ..backends import get_oauthlib_core
-from ..oauth2_backends import OAuthLibCore, JSONOAuthLibCore
+from oauth2_provider.backends import get_oauthlib_core
+from oauth2_provider.oauth2_backends import OAuthLibCore, JSONOAuthLibCore
 
 
 class TestOAuthLibCoreBackend(TestCase):

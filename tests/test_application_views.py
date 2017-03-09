@@ -3,8 +3,12 @@ from __future__ import unicode_literals
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from ..compat import reverse
-from ..models import get_application_model
+from oauth2_provider.compat import reverse
+from oauth2_provider.models import get_application_model
+from oauth2_provider.views.application import ApplicationRegistration
+from oauth2_provider.settings import oauth2_settings
+
+from .models import TestApplication
 
 
 Application = get_application_model()
@@ -28,9 +32,6 @@ class TestApplicationRegistrationView(BaseTest):
         bound to custom application model defined in the
         'OAUTH2_PROVIDER_APPLICATION_MODEL' setting.
         """
-        from ..views.application import ApplicationRegistration
-        from .models import TestApplication
-        from ..settings import oauth2_settings
         # Patch oauth2 settings to use a custom Application model
         oauth2_settings.APPLICATION_MODEL = 'tests.TestApplication'
         # Create a registration view and tests that the model form is bound

@@ -7,10 +7,10 @@ from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase, RequestFactory
 
 from .test_utils import TestCaseUtils
-from ..compat import parse_qs, reverse, urlparse
-from ..models import get_application_model, Grant, AccessToken
-from ..settings import oauth2_settings
-from ..views import ScopedProtectedResourceView, ReadWriteScopedResourceView
+from oauth2_provider.compat import parse_qs, reverse, urlparse
+from oauth2_provider.models import get_application_model, Grant, AccessToken
+from oauth2_provider.settings import oauth2_settings
+from oauth2_provider.views import ScopedProtectedResourceView, ReadWriteScopedResourceView
 
 
 Application = get_application_model()

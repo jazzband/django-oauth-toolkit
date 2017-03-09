@@ -67,7 +67,7 @@ MIDDLEWARE = (
 # Django < 1.10 compatibility
 MIDDLEWARE_CLASSES = MIDDLEWARE
 
-ROOT_URLCONF = 'oauth2_provider.tests.urls'
+ROOT_URLCONF = 'tests.urls'
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -78,7 +78,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
 
     'oauth2_provider',
-    'oauth2_provider.tests',
+    'tests',
 )
 
 LOGGING = {

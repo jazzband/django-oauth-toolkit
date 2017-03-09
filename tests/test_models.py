@@ -7,7 +7,7 @@ from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils import timezone
 
-from ..models import get_application_model, Grant, AccessToken, RefreshToken
+from oauth2_provider.models import get_application_model, Grant, AccessToken, RefreshToken
 
 
 Application = get_application_model()

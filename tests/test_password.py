@@ -5,10 +5,10 @@ import json
 from django.contrib.auth import get_user_model
 from django.test import TestCase, RequestFactory
 
-from ..compat import reverse
-from ..models import get_application_model
-from ..settings import oauth2_settings
-from ..views import ProtectedResourceView
+from oauth2_provider.compat import reverse
+from oauth2_provider.models import get_application_model
+from oauth2_provider.settings import oauth2_settings
+from oauth2_provider.views import ProtectedResourceView
 from .test_utils import TestCaseUtils
 
 

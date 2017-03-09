@@ -6,9 +6,9 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase, RequestFactory
 from django.utils import timezone
 
-from ..compat import reverse, urlencode
-from ..models import get_application_model, AccessToken, RefreshToken
-from ..settings import oauth2_settings
+from oauth2_provider.compat import reverse, urlencode
+from oauth2_provider.models import get_application_model, AccessToken, RefreshToken
+from oauth2_provider.settings import oauth2_settings
 
 from .test_utils import TestCaseUtils
 

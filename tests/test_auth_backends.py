@@ -5,10 +5,10 @@ from django.test.utils import override_settings
 from django.utils.timezone import now, timedelta
 from django.http import HttpResponse
 
-from ..models import get_application_model
-from ..models import AccessToken
-from ..backends import OAuth2Backend
-from ..middleware import OAuth2TokenMiddleware
+from oauth2_provider.models import get_application_model
+from oauth2_provider.models import AccessToken
+from oauth2_provider.backends import OAuth2Backend
+from oauth2_provider.middleware import OAuth2TokenMiddleware
 try:
     # Django<1.10 compatibility
     from django.conf.global_settings import MIDDLEWARE_CLASSES as MIDDLEWARE

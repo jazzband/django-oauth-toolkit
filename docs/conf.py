@@ -20,7 +20,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here)
 sys.path.insert(0, os.path.dirname(here))
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'oauth2_provider.tests.settings'
+os.environ["DJANGO_SETTINGS_MODULE"] = "tests.settings"
 
 import django
 django.setup()
