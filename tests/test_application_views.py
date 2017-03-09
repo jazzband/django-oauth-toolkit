@@ -8,7 +8,7 @@ from oauth2_provider.models import get_application_model
 from oauth2_provider.views.application import ApplicationRegistration
 from oauth2_provider.settings import oauth2_settings
 
-from .models import TestApplication
+from .models import SampleApplication
 
 
 Application = get_application_model()
@@ -33,11 +33,11 @@ class TestApplicationRegistrationView(BaseTest):
         'OAUTH2_PROVIDER_APPLICATION_MODEL' setting.
         """
         # Patch oauth2 settings to use a custom Application model
-        oauth2_settings.APPLICATION_MODEL = 'tests.TestApplication'
+        oauth2_settings.APPLICATION_MODEL = "tests.SampleApplication"
         # Create a registration view and tests that the model form is bound
         # to the custom Application model
         application_form_class = ApplicationRegistration().get_form_class()
-        self.assertEqual(TestApplication, application_form_class._meta.model)
+        self.assertEqual(SampleApplication, application_form_class._meta.model)
         # Revert oauth2 settings
         oauth2_settings.APPLICATION_MODEL = 'oauth2_provider.Application'
 

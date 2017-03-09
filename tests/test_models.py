@@ -107,7 +107,7 @@ class TestModels(TestCase):
         self.assertEqual(access_token2.scopes, {'write': 'Writing scope'})
 
 
-@override_settings(OAUTH2_PROVIDER_APPLICATION_MODEL='tests.TestApplication')
+@override_settings(OAUTH2_PROVIDER_APPLICATION_MODEL="tests.SampleApplication")
 class TestCustomApplicationModel(TestCase):
     def setUp(self):
         self.user = UserModel.objects.create_user("test_user", "test@user.com", "123456")
@@ -131,8 +131,7 @@ class TestCustomApplicationModel(TestCase):
                 and f.auto_created and not f.concrete
             ]
         self.assertNotIn('oauth2_provider:application', related_object_names)
-        self.assertIn('tests%stestapplication' % (':' if django.VERSION < (1, 8) else '_'),
-                      related_object_names)
+        self.assertIn("tests_sampleapplication", related_object_names)
 
 
 class TestGrantModel(TestCase):
