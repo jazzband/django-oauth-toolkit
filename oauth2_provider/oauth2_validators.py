@@ -31,6 +31,13 @@ GRANT_TYPE_MAPPING = {
 
 
 class OAuth2Validator(RequestValidator):
+
+    def _extract_token_user(self, token):
+        return token.user
+
+    def _extract_resource_owner(self, request):
+        return request.user
+
     def _extract_basic_auth(self, request):
         """
         Return authentication string if request contains basic auth credentials,
@@ -238,7 +245,7 @@ class OAuth2Validator(RequestValidator):
                 token=token)
             if access_token.is_valid(scopes):
                 request.client = access_token.application
-                request.user = access_token.user
+                request.user = self._extract_token_user(access_token)
                 request.scopes = scopes
 
                 # this is needed by django rest framework
@@ -253,7 +260,7 @@ class OAuth2Validator(RequestValidator):
             grant = Grant.objects.get(code=code, application=client)
             if not grant.is_expired():
                 request.scopes = grant.scope.split(' ')
-                request.user = grant.user
+                request.user = self._extract_token_user(grant)
                 return True
             return False
 
@@ -296,7 +303,7 @@ class OAuth2Validator(RequestValidator):
     def save_authorization_code(self, client_id, code, request, *args, **kwargs):
         expires = timezone.now() + timedelta(
             seconds=oauth2_settings.AUTHORIZATION_CODE_EXPIRE_SECONDS)
-        g = Grant(application=request.client, user=request.user, code=code['code'],
+        g = Grant(application=request.client, user=self._extract_resource_owner(request), code=code['code'],
                   expires=expires, redirect_uri=request.redirect_uri,
                   scope=' '.join(request.scopes))
         g.save()
@@ -344,7 +351,7 @@ class OAuth2Validator(RequestValidator):
                 access_token = AccessToken.objects.select_for_update().get(
                     pk=refresh_token_instance.access_token.pk
                 )
-                access_token.user = request.user
+                access_token.user = self._extract_resource_owner(request)
                 access_token.scope = token['scope']
                 access_token.expires = expires
                 access_token.token = token['access_token']
@@ -365,7 +372,7 @@ class OAuth2Validator(RequestValidator):
                 access_token = self._create_access_token(expires, request, token)
 
                 refresh_token = RefreshToken(
-                    user=request.user,
+                    user=self._extract_resource_owner(request),
                     token=refresh_token_code,
                     application=request.client,
                     access_token=access_token
@@ -381,7 +388,7 @@ class OAuth2Validator(RequestValidator):
 
     def _create_access_token(self, expires, request, token):
         access_token = AccessToken(
-            user=request.user,
+            user=self._extract_resource_owner(request),
             scope=token['scope'],
             expires=expires,
             token=token['access_token'],
@@ -437,7 +444,7 @@ class OAuth2Validator(RequestValidator):
         """
         try:
             rt = RefreshToken.objects.get(token=refresh_token)
-            request.user = rt.user
+            request.user = self._extract_token_user(rt)
             request.refresh_token = rt.token
             # Temporary store RefreshToken instance to be reused by get_original_scopes.
             request.refresh_token_instance = rt

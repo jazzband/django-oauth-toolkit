@@ -126,3 +126,5 @@ LOGGING = {
         },
     }
 }
+
+OAUTH2_PROVIDER_RESOURCE_OWNER_MODEL = 'auth.User'

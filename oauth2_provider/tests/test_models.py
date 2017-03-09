@@ -7,16 +7,20 @@ from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils import timezone
 
-from ..models import get_application_model, Grant, AccessToken, RefreshToken
+from ..models import get_application_model, get_resource_owner_model
+from ..models import Grant, AccessToken, RefreshToken
 
 
 Application = get_application_model()
+ResourceOwnerModel = get_resource_owner_model()
 UserModel = get_user_model()
+
 
 
 class TestModels(TestCase):
     def setUp(self):
         self.user = UserModel.objects.create_user("test_user", "test@user.com", "123456")
+        self.resource_owner = self.user
 
     def test_allow_scopes(self):
         self.client.login(username="test_user", password="123456")
@@ -29,7 +33,7 @@ class TestModels(TestCase):
         )
 
         access_token = AccessToken(
-            user=self.user,
+            user=self.resource_owner,
             scope='read write',
             expires=0,
             token='',
@@ -88,7 +92,7 @@ class TestModels(TestCase):
         )
 
         access_token = AccessToken(
-            user=self.user,
+            user=self.resource_owner,
             scope='read write',
             expires=0,
             token='',
@@ -96,7 +100,7 @@ class TestModels(TestCase):
         )
 
         access_token2 = AccessToken(
-            user=self.user,
+            user=self.resource_owner,
             scope='write',
             expires=0,
             token='',
@@ -150,6 +154,7 @@ class TestGrantModel(TestCase):
 class TestAccessTokenModel(TestCase):
     def setUp(self):
         self.user = UserModel.objects.create_user("test_user", "test@user.com", "123456")
+        self.resource_owner = self.user
 
     def test_str(self):
         access_token = AccessToken(token="test_token")
@@ -177,3 +182,12 @@ class TestRefreshTokenModel(TestCase):
     def test_str(self):
         refresh_token = RefreshToken(token="test_token")
         self.assertEqual("%s" % refresh_token, refresh_token.token)
+
+
+@override_settings(OAUTH2_PROVIDER={'RESOURCE_OWNER_MODEL':'tests.TestResourceOwner'})
+class TestCustomResourceOwnerModel(TestCase):
+    def setUp(self):
+        self.user = UserModel.objects.create_user("test_user", "test@user.com", "123456")
+
+    def test_model(self):
+        self.user.resource_owners.all()
