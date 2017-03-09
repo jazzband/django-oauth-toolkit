@@ -40,7 +40,7 @@ matrix:
     - env: TOXENV=py36-djangomaster
 
 install:
-  - pip install coveralls tox "virtualenv<14"
+  - pip install coveralls tox
 
 script:
   - tox
