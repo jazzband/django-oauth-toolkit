@@ -1,7 +1,6 @@
-__version__ = '0.12.0'
+import pkg_resources
 
-__author__ = "Massimiliano Pippi & Federico Frenguelli"
 
-default_app_config = 'oauth2_provider.apps.DOTConfig'
+__version__ = pkg_resources.require("django-oauth-toolkit")[0].version
 
-VERSION = __version__  # synonym
+default_app_config = "oauth2_provider.apps.DOTConfig"

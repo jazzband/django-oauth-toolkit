@@ -53,20 +53,12 @@ project = u'Django OAuth Toolkit'
 copyright = u'2013, Evonove'
 
 
-def get_version(package):
-    """
-    Return package version as listed in `__version__` in `init.py`.
-    """
-    init_py = open(os.path.join(package, '__init__.py')).read()
-    return re.match("__version__ = ['\"]([^'\"]+)['\"]", init_py).group(1)
-
-
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-version = get_version(os.path.join("..", "oauth2_provider"))
+version = oauth2_provider.__version__
 # The full version, including alpha/beta/rc tags.
 release = version
 
