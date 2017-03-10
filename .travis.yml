@@ -39,6 +39,11 @@ matrix:
     - env: TOXENV=py35-djangomaster
     - env: TOXENV=py36-djangomaster
 
+cache:
+  directories:
+    - $HOME/.cache/pip
+    - $TRAVIS_BUILD_DIR/.tox
+
 install:
   - pip install coveralls tox
 
