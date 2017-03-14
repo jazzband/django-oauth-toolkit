@@ -14,7 +14,7 @@ from oauth2_provider.oauth2_validators import OAuth2Validator
 from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views import ProtectedResourceView
 from oauth2_provider.views.mixins import OAuthLibMixin
-from .test_utils import TestCaseUtils
+from .utils import get_basic_auth_header
 
 
 Application = get_application_model()
@@ -27,7 +27,7 @@ class ResourceView(ProtectedResourceView):
         return "This is a protected resource"
 
 
-class BaseTest(TestCaseUtils, TestCase):
+class BaseTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.test_user = UserModel.objects.create_user("test_user", "test@user.com", "123456")
@@ -58,7 +58,7 @@ class TestClientCredential(BaseTest):
         token_request_data = {
             'grant_type': 'client_credentials',
         }
-        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
@@ -81,7 +81,7 @@ class TestClientCredential(BaseTest):
         token_request_data = {
             'grant_type': 'client_credentials',
         }
-        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
@@ -91,7 +91,7 @@ class TestClientCredential(BaseTest):
 
     def test_client_credential_user_is_none_on_access_token(self):
         token_request_data = {'grant_type': 'client_credentials'}
-        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
@@ -119,7 +119,7 @@ class TestExtendedRequest(BaseTest):
         token_request_data = {
             'grant_type': 'client_credentials',
         }
-        auth_headers = self.get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
 
@@ -164,9 +164,9 @@ class TestClientResourcePasswordBased(BaseTest):
             'username': 'test_user',
             'password': '123456'
         }
-        auth_headers = self.get_basic_auth_header(
-            quote_plus(self.application.client_id),
-            quote_plus(self.application.client_secret))
+        auth_headers = get_basic_auth_header(
+            quote_plus(self.application.client_id), quote_plus(self.application.client_secret)
+        )
 
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)

@@ -10,7 +10,6 @@ from django.utils import timezone
 
 from oauth2_provider.models import AccessToken, get_application_model
 from oauth2_provider.settings import oauth2_settings
-from .test_utils import TestCaseUtils
 
 
 Application = get_application_model()
@@ -67,15 +66,8 @@ except ImportError:
     rest_framework_installed = False
 
 
-class BaseTest(TestCaseUtils, TestCase):
-    """
-    TODO: add docs
-    """
-    pass
-
-
 @override_settings(ROOT_URLCONF=__name__)
-class TestOAuth2Authentication(BaseTest):
+class TestOAuth2Authentication(TestCase):
     def setUp(self):
         oauth2_settings._SCOPES = ['read', 'write', 'scope1', 'scope2', 'resource1']
 
