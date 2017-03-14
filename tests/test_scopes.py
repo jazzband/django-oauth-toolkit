@@ -4,13 +4,14 @@ import json
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
-from django.test import TestCase, RequestFactory
+from django.test import RequestFactory, TestCase
+
+from oauth2_provider.compat import parse_qs, reverse, urlparse
+from oauth2_provider.models import AccessToken, get_application_model, Grant
+from oauth2_provider.settings import oauth2_settings
+from oauth2_provider.views import ReadWriteScopedResourceView, ScopedProtectedResourceView
 
 from .test_utils import TestCaseUtils
-from oauth2_provider.compat import parse_qs, reverse, urlparse
-from oauth2_provider.models import get_application_model, Grant, AccessToken
-from oauth2_provider.settings import oauth2_settings
-from oauth2_provider.views import ScopedProtectedResourceView, ReadWriteScopedResourceView
 
 
 Application = get_application_model()

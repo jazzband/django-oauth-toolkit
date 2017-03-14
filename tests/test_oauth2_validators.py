@@ -1,15 +1,16 @@
-from datetime import timedelta
+import datetime
+
+import mock
 
 from django.contrib.auth import get_user_model
 from django.test import TransactionTestCase
 from django.utils import timezone
-
-import mock
 from oauthlib.common import Request
 
 from oauth2_provider.exceptions import FatalClientError
+from oauth2_provider.models import AccessToken, get_application_model, RefreshToken
 from oauth2_provider.oauth2_validators import OAuth2Validator
-from oauth2_provider.models import get_application_model, AccessToken, RefreshToken
+
 
 UserModel = get_user_model()
 AppModel = get_application_model()
@@ -133,7 +134,7 @@ class TestOAuth2Validator(TransactionTestCase):
         access_token = AccessToken.objects.create(
             token="123",
             user=self.user,
-            expires=timezone.now() + timedelta(seconds=60),
+            expires=timezone.now() + datetime.timedelta(seconds=60),
             application=self.application
         )
         refresh_token = RefreshToken.objects.create(
@@ -166,7 +167,7 @@ class TestOAuth2Validator(TransactionTestCase):
         access_token = AccessToken.objects.create(
             token="123",
             user=self.user,
-            expires=timezone.now() + timedelta(seconds=60),
+            expires=timezone.now() + datetime.timedelta(seconds=60),
             application=self.application
         )
         refresh_token = RefreshToken.objects.create(
@@ -204,7 +205,7 @@ class TestOAuth2Validator(TransactionTestCase):
         access_token = AccessToken.objects.create(
             token="123",
             user=self.user,
-            expires=timezone.now() + timedelta(seconds=60),
+            expires=timezone.now() + datetime.timedelta(seconds=60),
             application=self.application
         )
         refresh_token = RefreshToken.objects.create(

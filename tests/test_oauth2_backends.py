@@ -1,10 +1,11 @@
 import json
+
 import mock
 
-from django.test import TestCase, RequestFactory
+from django.test import RequestFactory, TestCase
 
 from oauth2_provider.backends import get_oauthlib_core
-from oauth2_provider.oauth2_backends import OAuthLibCore, JSONOAuthLibCore
+from oauth2_provider.oauth2_backends import JSONOAuthLibCore, OAuthLibCore
 
 
 class TestOAuthLibCoreBackend(TestCase):

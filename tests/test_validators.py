@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
-from django.test import TestCase
 from django.core.validators import ValidationError
+from django.test import TestCase
 
 from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.validators import validate_uris

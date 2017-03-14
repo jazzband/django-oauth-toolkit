@@ -1,15 +1,15 @@
 from __future__ import unicode_literals
 
 import base64
-import json
 import datetime
+import json
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase, RequestFactory
+from django.test import RequestFactory, TestCase
 from django.utils import timezone
 
-from oauth2_provider.compat import parse_qs, reverse, urlparse, urlencode
-from oauth2_provider.models import get_application_model, Grant, AccessToken, RefreshToken
+from oauth2_provider.compat import parse_qs, reverse, urlencode, urlparse
+from oauth2_provider.models import AccessToken, get_application_model, Grant, RefreshToken
 from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views import ProtectedResourceView
 

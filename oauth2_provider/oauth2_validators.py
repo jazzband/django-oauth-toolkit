@@ -5,16 +5,16 @@ import binascii
 import logging
 from datetime import timedelta
 
-from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
+from django.utils import timezone
 from oauthlib.oauth2 import RequestValidator
 
 from .compat import unquote_plus
 from .exceptions import FatalClientError
-from .models import Grant, AccessToken, RefreshToken, get_application_model, AbstractApplication
+from .models import AbstractApplication, AccessToken, get_application_model, Grant, RefreshToken
 from .scopes import get_scopes_backend
 from .settings import oauth2_settings
 

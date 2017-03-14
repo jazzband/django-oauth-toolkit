@@ -3,10 +3,10 @@ from __future__ import unicode_literals
 import re
 
 from django.core.exceptions import ValidationError
-from django.utils.translation import ugettext_lazy as _
+from django.core.validators import RegexValidator
 from django.utils.encoding import force_text
 from django.utils.six.moves.urllib.parse import urlsplit, urlunsplit
-from django.core.validators import RegexValidator
+from django.utils.translation import ugettext_lazy as _
 
 from .settings import oauth2_settings
 

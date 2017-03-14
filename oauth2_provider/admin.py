@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Grant, AccessToken, RefreshToken, get_application_model
+from .models import AccessToken, get_application_model, Grant, RefreshToken
 
 
 class ApplicationAdmin(admin.ModelAdmin):

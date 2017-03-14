@@ -7,7 +7,7 @@ from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils import timezone
 
-from oauth2_provider.models import get_application_model, Grant, AccessToken, RefreshToken
+from oauth2_provider.models import AccessToken, get_application_model, Grant, RefreshToken
 
 
 Application = get_application_model()
@@ -127,8 +127,7 @@ class TestCustomApplicationModel(TestCase):
         else:
             related_object_names = [
                 f.name for f in UserModel._meta.get_fields()
-                if (f.one_to_many or f.one_to_one)
-                and f.auto_created and not f.concrete
+                if (f.one_to_many or f.one_to_one) and f.auto_created and not f.concrete
             ]
         self.assertNotIn('oauth2_provider:application', related_object_names)
         self.assertIn("tests_sampleapplication", related_object_names)

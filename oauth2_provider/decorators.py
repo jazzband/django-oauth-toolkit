@@ -1,11 +1,11 @@
 from functools import wraps
 
-from oauthlib.oauth2 import Server
-from django.http import HttpResponseForbidden
 from django.core.exceptions import ImproperlyConfigured
+from django.http import HttpResponseForbidden
+from oauthlib.oauth2 import Server
 
-from .oauth2_validators import OAuth2Validator
 from .oauth2_backends import OAuthLibCore
+from .oauth2_validators import OAuth2Validator
 from .scopes import get_scopes_backend
 from .settings import oauth2_settings
 

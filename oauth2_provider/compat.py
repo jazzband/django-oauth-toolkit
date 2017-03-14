@@ -12,9 +12,9 @@ except ImportError:
     from urllib.parse import urlparse, parse_qs, parse_qsl, urlunparse
 
 try:
-    from urllib import urlencode, unquote_plus
+    from urllib import urlencode, quote_plus, unquote_plus
 except ImportError:
-    from urllib.parse import urlencode, unquote_plus
+    from urllib.parse import urlencode, quote_plus, unquote_plus
 
 # changed in Django 1.10 (broken in Django 2.0)
 try:

@@ -3,11 +3,11 @@ from __future__ import unicode_literals
 import json
 
 from oauthlib import oauth2
-from oauthlib.common import urlencode, urlencoded, quote
+from oauthlib.common import quote, urlencode, urlencoded
 
-from .exceptions import OAuthToolkitError, FatalClientError
-from .settings import oauth2_settings
 from .compat import urlparse, urlunparse
+from .exceptions import FatalClientError, OAuthToolkitError
+from .settings import oauth2_settings
 
 
 class OAuthLibCore(object):

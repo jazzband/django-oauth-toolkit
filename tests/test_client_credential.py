@@ -2,19 +2,13 @@ from __future__ import unicode_literals
 
 import json
 
-try:
-    import urllib.parse as urllib
-except ImportError:
-    import urllib
-
 from django.contrib.auth import get_user_model
-from django.test import TestCase, RequestFactory
+from django.test import RequestFactory, TestCase
 from django.views.generic import View
-
 from oauthlib.oauth2 import BackendApplicationServer
 
-from oauth2_provider.compat import reverse
-from oauth2_provider.models import get_application_model, AccessToken
+from oauth2_provider.compat import quote_plus, reverse
+from oauth2_provider.models import AccessToken, get_application_model
 from oauth2_provider.oauth2_backends import OAuthLibCore
 from oauth2_provider.oauth2_validators import OAuth2Validator
 from oauth2_provider.settings import oauth2_settings
@@ -171,8 +165,8 @@ class TestClientResourcePasswordBased(BaseTest):
             'password': '123456'
         }
         auth_headers = self.get_basic_auth_header(
-            urllib.quote_plus(self.application.client_id),
-            urllib.quote_plus(self.application.client_secret))
+            quote_plus(self.application.client_id),
+            quote_plus(self.application.client_secret))
 
         response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)

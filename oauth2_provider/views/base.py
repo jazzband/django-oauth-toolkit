@@ -1,20 +1,19 @@
 import logging
 
+from braces.views import CsrfExemptMixin, LoginRequiredMixin
 from django.http import HttpResponse
-from django.views.decorators.debug import sensitive_post_parameters
-from django.views.generic import View, FormView
 from django.utils import timezone
 from django.utils.decorators import method_decorator
+from django.views.decorators.debug import sensitive_post_parameters
+from django.views.generic import FormView, View
 
-from braces.views import LoginRequiredMixin, CsrfExemptMixin
-
-from ..scopes import get_scopes_backend
-from ..settings import oauth2_settings
+from .mixins import OAuthLibMixin
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
 from ..http import HttpResponseUriRedirect
 from ..models import get_application_model
-from .mixins import OAuthLibMixin
+from ..scopes import get_scopes_backend
+from ..settings import oauth2_settings
 
 log = logging.getLogger('oauth2_provider')
 

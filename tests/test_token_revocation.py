@@ -3,11 +3,11 @@ from __future__ import unicode_literals
 import datetime
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase, RequestFactory
+from django.test import RequestFactory, TestCase
 from django.utils import timezone
 
 from oauth2_provider.compat import reverse, urlencode
-from oauth2_provider.models import get_application_model, AccessToken, RefreshToken
+from oauth2_provider.models import AccessToken, get_application_model, RefreshToken
 from oauth2_provider.settings import oauth2_settings
 
 from .test_utils import TestCaseUtils

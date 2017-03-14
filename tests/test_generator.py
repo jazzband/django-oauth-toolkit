@@ -2,11 +2,11 @@ from __future__ import unicode_literals
 
 from django.test import TestCase
 
-from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.generators import (
     BaseHashGenerator, ClientIdGenerator, ClientSecretGenerator,
     generate_client_id, generate_client_secret
 )
+from oauth2_provider.settings import oauth2_settings
 
 
 class MockHashGenerator(BaseHashGenerator):

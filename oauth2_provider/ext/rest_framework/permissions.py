@@ -1,10 +1,9 @@
 import logging
 
 from django.core.exceptions import ImproperlyConfigured
-
 from rest_framework.permissions import BasePermission, IsAuthenticated
-from .authentication import OAuth2Authentication
 
+from .authentication import OAuth2Authentication
 from ...settings import oauth2_settings
 
 

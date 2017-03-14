@@ -1,16 +1,16 @@
 import unittest
 from datetime import timedelta
 
-from django.conf.urls import url, include
+from django.conf.urls import include, url
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils import timezone
 
-from .test_utils import TestCaseUtils
 from oauth2_provider.models import AccessToken, get_application_model
 from oauth2_provider.settings import oauth2_settings
+from .test_utils import TestCaseUtils
 
 
 Application = get_application_model()

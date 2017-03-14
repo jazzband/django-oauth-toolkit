@@ -7,7 +7,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from oauth2_provider.compat import reverse
-from oauth2_provider.models import get_application_model, AccessToken
+from oauth2_provider.models import AccessToken, get_application_model
 
 
 Application = get_application_model()
