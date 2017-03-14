@@ -120,7 +120,8 @@ class TestAuthorizedTokenDeleteView(TestAuthorizedTokenViews):
                                                 expires=timezone.now() + datetime.timedelta(days=1),
                                                 scope='read write')
 
-        response = self.client.get(reverse('oauth2_provider:authorized-token-delete', kwargs={'pk': self.token.pk}))
+        url = reverse("oauth2_provider:authorized-token-delete", kwargs={"pk": self.token.pk})
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
         self.assertTrue('/accounts/login/?next=' in response['Location'])
 
@@ -134,7 +135,8 @@ class TestAuthorizedTokenDeleteView(TestAuthorizedTokenViews):
                                                 scope='read write')
 
         self.client.login(username="foo_user", password="123456")
-        response = self.client.get(reverse('oauth2_provider:authorized-token-delete', kwargs={'pk': self.token.pk}))
+        url = reverse("oauth2_provider:authorized-token-delete", kwargs={"pk": self.token.pk})
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
     def test_delete_view_token_belongs_to_user(self):
@@ -147,7 +149,8 @@ class TestAuthorizedTokenDeleteView(TestAuthorizedTokenViews):
                                                 scope='read write')
 
         self.client.login(username="bar_user", password="123456")
-        response = self.client.get(reverse('oauth2_provider:authorized-token-delete', kwargs={'pk': self.token.pk}))
+        url = reverse("oauth2_provider:authorized-token-delete", kwargs={"pk": self.token.pk})
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
 
     def test_delete_view_post_actually_deletes(self):
@@ -160,7 +163,8 @@ class TestAuthorizedTokenDeleteView(TestAuthorizedTokenViews):
                                                 scope='read write')
 
         self.client.login(username="foo_user", password="123456")
-        response = self.client.post(reverse('oauth2_provider:authorized-token-delete', kwargs={'pk': self.token.pk}))
+        url = reverse("oauth2_provider:authorized-token-delete", kwargs={"pk": self.token.pk})
+        response = self.client.post(url)
         self.assertFalse(AccessToken.objects.exists())
         self.assertRedirects(response, reverse('oauth2_provider:authorized-token-list'))
 
@@ -174,6 +178,7 @@ class TestAuthorizedTokenDeleteView(TestAuthorizedTokenViews):
                                                 scope='read write')
 
         self.client.login(username="bar_user", password="123456")
-        response = self.client.post(reverse('oauth2_provider:authorized-token-delete', kwargs={'pk': self.token.pk}))
+        url = reverse("oauth2_provider:authorized-token-delete", kwargs={"pk": self.token.pk})
+        response = self.client.post(url)
         self.assertTrue(AccessToken.objects.exists())
         self.assertEqual(response.status_code, 404)

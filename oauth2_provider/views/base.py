@@ -114,7 +114,10 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             kwargs["scopes_descriptions"] = [all_scopes[scope] for scope in scopes]
             kwargs['scopes'] = scopes
             # at this point we know an Application instance with such client_id exists in the database
-            application = get_application_model().objects.get(client_id=credentials['client_id'])  # TODO: cache it!
+
+            # TODO: Cache this!
+            application = get_application_model().objects.get(client_id=credentials["client_id"])
+
             kwargs['application'] = application
             kwargs['client_id'] = credentials['client_id']
             kwargs['redirect_uri'] = credentials['redirect_uri']

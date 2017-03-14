@@ -164,7 +164,7 @@ class OAuth2Validator(RequestValidator):
             if request.client_id and request.client_secret:
                 return True
         except AttributeError:
-            log.debug("Client id or client secret not provided, proceed evaluating if authentication is required...")
+            log.debug("Client ID or client secret not provided...")
             pass
 
         self._load_application(request.client_id, request)

@@ -64,8 +64,10 @@ class TestApplicationViews(BaseTest):
     def _create_application(self, name, user):
         app = Application.objects.create(
             name=name, redirect_uris="http://example.com",
-            client_type=Application.CLIENT_CONFIDENTIAL, authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
-            user=user)
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+            user=user
+        )
         return app
 
     def setUp(self):
