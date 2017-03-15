@@ -19,8 +19,6 @@ from __future__ import unicode_literals
 
 import importlib
 
-import six
-
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
@@ -81,11 +79,12 @@ def perform_import(val, setting_name):
     If the given setting is a string import notation,
     then perform the necessary import or imports.
     """
-    if isinstance(val, six.string_types):
-        return import_from_string(val, setting_name)
-    elif isinstance(val, (list, tuple)):
+    if isinstance(val, (list, tuple)):
         return [import_from_string(item, setting_name) for item in val]
-    return val
+    elif "." in val:
+        return import_from_string(val, setting_name)
+    else:
+        raise ImproperlyConfigured("Bad value for %r: %r" % (setting_name, val))
 
 
 def import_from_string(val, setting_name):
@@ -133,7 +132,7 @@ class OAuth2ProviderSettings(object):
 
         # Overriding special settings
         if attr == '_SCOPES':
-            val = list(six.iterkeys(self.SCOPES))
+            val = list(self.SCOPES.keys())
         if attr == '_DEFAULT_SCOPES':
             if '__all__' in self.DEFAULT_SCOPES:
                 # If DEFAULT_SCOPES is set to ['__all__'] the whole set of scopes is returned
