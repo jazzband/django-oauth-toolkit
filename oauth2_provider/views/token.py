@@ -1,9 +1,8 @@
 from __future__ import absolute_import, unicode_literals
 
-from braces.views import LoginRequiredMixin
 from django.views.generic import DeleteView, ListView
 
-from ..compat import reverse_lazy
+from ..compat import LoginRequiredMixin, reverse_lazy
 from ..models import AccessToken
 
 

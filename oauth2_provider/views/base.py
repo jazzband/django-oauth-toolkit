@@ -1,6 +1,6 @@
 import logging
 
-from braces.views import CsrfExemptMixin, LoginRequiredMixin
+from braces.views import CsrfExemptMixin
 from django.http import HttpResponse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -8,6 +8,7 @@ from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import FormView, View
 
 from .mixins import OAuthLibMixin
+from ..compat import LoginRequiredMixin
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
 from ..http import HttpResponseUriRedirect
