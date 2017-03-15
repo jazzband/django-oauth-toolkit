@@ -5,9 +5,9 @@ import re
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.utils.encoding import force_text
-from django.utils.six.moves.urllib.parse import urlsplit, urlunsplit
 from django.utils.translation import ugettext_lazy as _
 
+from .compat import urlsplit, urlunsplit
 from .settings import oauth2_settings
 
 

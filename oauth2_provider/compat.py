@@ -7,9 +7,9 @@ from __future__ import unicode_literals
 
 # urlparse in python3 has been renamed to urllib.parse
 try:
-    from urlparse import urlparse, parse_qs, parse_qsl, urlunparse
+    from urlparse import parse_qs, parse_qsl, urlparse, urlsplit, urlunparse, urlunsplit
 except ImportError:
-    from urllib.parse import urlparse, parse_qs, parse_qsl, urlunparse
+    from urllib.parse import parse_qs, parse_qsl, urlparse, urlsplit, urlunsplit, urlunparse
 
 try:
     from urllib import urlencode, quote_plus, unquote_plus
