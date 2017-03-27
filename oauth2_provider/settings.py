@@ -26,6 +26,9 @@ from django.core.exceptions import ImproperlyConfigured
 USER_SETTINGS = getattr(settings, 'OAUTH2_PROVIDER', None)
 
 APPLICATION_MODEL = getattr(settings, "OAUTH2_PROVIDER_APPLICATION_MODEL", "oauth2_provider.Application")
+ACCESS_TOKEN_MODEL = getattr(settings, "OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL", "oauth2_provider.AccessToken")
+GRANT_MODEL = getattr(settings, "OAUTH2_PROVIDER_GRANT_MODEL", "oauth2_provider.Grant")
+REFRESH_TOKEN_MODEL = getattr(settings, "OAUTH2_PROVIDER_REFRESH_MODEL", "oauth2_provider.RefreshToken")
 
 DEFAULTS = {
     'CLIENT_ID_GENERATOR_CLASS': 'oauth2_provider.generators.ClientIdGenerator',
@@ -44,6 +47,9 @@ DEFAULTS = {
     'REFRESH_TOKEN_EXPIRE_SECONDS': None,
     'ROTATE_REFRESH_TOKEN': True,
     'APPLICATION_MODEL': APPLICATION_MODEL,
+    'ACCESS_TOKEN_MODEL': ACCESS_TOKEN_MODEL,
+    'GRANT_MODEL': GRANT_MODEL,
+    'REFRESH_TOKEN_MODEL': REFRESH_TOKEN_MODEL,
     'REQUEST_APPROVAL_PROMPT': 'force',
     'ALLOWED_REDIRECT_URI_SCHEMES': ['http', 'https'],
 
