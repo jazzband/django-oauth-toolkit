@@ -4,7 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import DeleteView, ListView
 
-from ..models import AccessToken
+from ..models import get_access_token_model
 
 
 class AuthorizedTokensListView(LoginRequiredMixin, ListView):
@@ -13,7 +13,7 @@ class AuthorizedTokensListView(LoginRequiredMixin, ListView):
     """
     context_object_name = 'authorized_tokens'
     template_name = 'oauth2_provider/authorized-tokens.html'
-    model = AccessToken
+    model = get_access_token_model()
 
     def get_queryset(self):
         """
@@ -29,7 +29,7 @@ class AuthorizedTokenDeleteView(LoginRequiredMixin, DeleteView):
     """
     template_name = 'oauth2_provider/authorized-token-delete.html'
     success_url = reverse_lazy('oauth2_provider:authorized-token-list')
-    model = AccessToken
+    model = get_access_token_model()
 
     def get_queryset(self):
         return super(AuthorizedTokenDeleteView, self).get_queryset().filter(user=self.request.user)
