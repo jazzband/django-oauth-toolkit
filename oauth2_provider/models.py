@@ -273,7 +273,7 @@ class AccessToken(AbstractAccessToken):
 
 
 @python_2_unicode_compatible
-class RefreshToken(models.Model):
+class AbstractRefreshToken(models.Model):
     """
     A RefreshToken instance represents a token that can be swapped for a new
     access token when it expires.
@@ -303,6 +303,14 @@ class RefreshToken(models.Model):
 
     def __str__(self):
         return self.token
+
+    class Meta:
+        abstract = True
+
+
+class RefreshToken(AbstractRefreshToken):
+    class Meta(AbstractRefreshToken.Meta):
+        swappable = "OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL"
 
 
 def get_application_model():
