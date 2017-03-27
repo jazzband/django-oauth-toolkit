@@ -192,7 +192,7 @@ class Grant(AbstractGrant):
 
 
 @python_2_unicode_compatible
-class AccessToken(models.Model):
+class AbstractAccessToken(models.Model):
     """
     An AccessToken instance represents the actual access token to
     access user's resources, as in :rfc:`5`.
@@ -262,6 +262,14 @@ class AccessToken(models.Model):
 
     def __str__(self):
         return self.token
+
+    class Meta:
+        abstract = True
+
+
+class AccessToken(AbstractAccessToken):
+    class Meta(AbstractAccessToken.Meta):
+        swappable = "OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL"
 
 
 @python_2_unicode_compatible
