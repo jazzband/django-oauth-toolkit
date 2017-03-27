@@ -327,6 +327,20 @@ def get_application_model():
     return app_model
 
 
+def get_grant_model():
+    """ Return the Grant model that is active in this project. """
+    try:
+        app_label, model_name = oauth2_settings.GRANT_MODEL.split('.')
+    except ValueError:
+        e = "GRANT_MODEL must be of the form 'app_label.model_name'"
+        raise ImproperlyConfigured(e)
+    grant_model = apps.get_model(app_label, model_name)
+    if grant_model is None:
+        e = "GRANT_MODEL refers to model {0} that has not been installed"
+        raise ImproperlyConfigured(e.format(oauth2_settings.APPLICATION_MODEL))
+    return grant_model
+
+
 def clear_expired():
     now = timezone.now()
     refresh_expire_at = None
