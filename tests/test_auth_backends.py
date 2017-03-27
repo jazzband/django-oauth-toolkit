@@ -7,7 +7,10 @@ from django.utils.timezone import now, timedelta
 
 from oauth2_provider.backends import OAuth2Backend
 from oauth2_provider.middleware import OAuth2TokenMiddleware
-from oauth2_provider.models import AccessToken, get_application_model
+from oauth2_provider.models import (
+    get_access_token_model,
+    get_application_model,
+)
 try:
     # Django<1.10 compatibility
     from django.conf.global_settings import MIDDLEWARE_CLASSES as MIDDLEWARE
@@ -17,6 +20,7 @@ except ImportError:
 
 UserModel = get_user_model()
 ApplicationModel = get_application_model()
+AccessTokenModel = get_access_token_model()
 
 
 class BaseTest(TestCase):
@@ -31,7 +35,7 @@ class BaseTest(TestCase):
             authorization_grant_type=ApplicationModel.GRANT_CLIENT_CREDENTIALS,
             user=self.user
         )
-        self.token = AccessToken.objects.create(user=self.user,
+        self.token = AccessTokenModel.objects.create(user=self.user,
                                                 token='tokstr',
                                                 application=self.app,
                                                 expires=now() + timedelta(days=365))
