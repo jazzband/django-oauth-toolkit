@@ -8,12 +8,18 @@ from django.utils import timezone
 from oauthlib.common import Request
 
 from oauth2_provider.exceptions import FatalClientError
-from oauth2_provider.models import AccessToken, get_application_model, RefreshToken
+from oauth2_provider.models import (
+    get_access_token_model,
+    get_application_model,
+    get_refresh_token_model,
+)
 from oauth2_provider.oauth2_validators import OAuth2Validator
 
 
 UserModel = get_user_model()
-AppModel = get_application_model()
+Application = get_application_model()
+AccessToken = get_access_token_model()
+RefreshToken = get_refresh_token_model()
 
 
 class TestOAuth2Validator(TransactionTestCase):
@@ -23,9 +29,9 @@ class TestOAuth2Validator(TransactionTestCase):
         self.request.user = self.user
         self.request.grant_type = "not client"
         self.validator = OAuth2Validator()
-        self.application = AppModel.objects.create(
+        self.application = Application.objects.create(
             client_id='client_id', client_secret='client_secret', user=self.user,
-            client_type=AppModel.CLIENT_PUBLIC, authorization_grant_type=AppModel.GRANT_PASSWORD)
+            client_type=Application.CLIENT_PUBLIC, authorization_grant_type=Application.GRANT_PASSWORD)
         self.request.client = self.application
 
     def tearDown(self):
@@ -94,7 +100,7 @@ class TestOAuth2Validator(TransactionTestCase):
         self.assertTrue(self.validator.authenticate_client_id('client_id', self.request))
 
     def test_authenticate_client_id_fail(self):
-        self.application.client_type = AppModel.CLIENT_CONFIDENTIAL
+        self.application.client_type = Application.CLIENT_CONFIDENTIAL
         self.application.save()
         self.assertFalse(self.validator.authenticate_client_id('client_id', self.request))
         self.assertFalse(self.validator.authenticate_client_id('fake_client_id', self.request))
@@ -108,7 +114,7 @@ class TestOAuth2Validator(TransactionTestCase):
         self.assertTrue(self.validator.client_authentication_required(self.request))
         self.request.client_secret = ''
         self.assertFalse(self.validator.client_authentication_required(self.request))
-        self.application.client_type = AppModel.CLIENT_CONFIDENTIAL
+        self.application.client_type = Application.CLIENT_CONFIDENTIAL
         self.application.save()
         self.request.client = ''
         self.assertTrue(self.validator.client_authentication_required(self.request))
