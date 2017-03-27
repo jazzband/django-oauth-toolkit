@@ -290,7 +290,7 @@ class AbstractRefreshToken(models.Model):
     token = models.CharField(max_length=255, unique=True)
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL,
                                     on_delete=models.CASCADE)
-    access_token = models.OneToOneField(AccessToken,
+    access_token = models.OneToOneField(oauth2_settings.ACCESS_TOKEN_MODEL,
                                         related_name='refresh_token',
                                         on_delete=models.CASCADE)
 
@@ -298,7 +298,8 @@ class AbstractRefreshToken(models.Model):
         """
         Delete this refresh token along with related access token
         """
-        AccessToken.objects.get(id=self.access_token.id).revoke()
+        access_token_model = get_access_token_model()
+        access_token_model.objects.get(id=self.access_token.id).revoke()
         self.delete()
 
     def __str__(self):
