@@ -14,7 +14,13 @@ from oauthlib.oauth2 import RequestValidator
 
 from .compat import unquote_plus
 from .exceptions import FatalClientError
-from .models import AbstractApplication, AccessToken, get_application_model, Grant, RefreshToken
+from .models import (
+    AbstractApplication,
+    get_access_token_model,
+    get_application_model,
+    get_grant_model,
+    get_refresh_token_model,
+)
 from .scopes import get_scopes_backend
 from .settings import oauth2_settings
 
@@ -25,9 +31,15 @@ GRANT_TYPE_MAPPING = {
     'authorization_code': (AbstractApplication.GRANT_AUTHORIZATION_CODE,),
     'password': (AbstractApplication.GRANT_PASSWORD,),
     'client_credentials': (AbstractApplication.GRANT_CLIENT_CREDENTIALS,),
-    'refresh_token': (AbstractApplication.GRANT_AUTHORIZATION_CODE, AbstractApplication.GRANT_PASSWORD,
-                      AbstractApplication.GRANT_CLIENT_CREDENTIALS)
+    'refresh_token': (AbstractApplication.GRANT_AUTHORIZATION_CODE,
+                      AbstractApplication.GRANT_PASSWORD,
+                      AbstractApplication.GRANT_CLIENT_CREDENTIALS,)
 }
+
+Application = get_application_model()
+AccessToken = get_access_token_model()
+Grant = get_grant_model()
+RefreshToken = get_refresh_token_model()
 
 
 class OAuth2Validator(RequestValidator):
@@ -128,7 +140,6 @@ class OAuth2Validator(RequestValidator):
         # we want to be sure that request has the client attribute!
         assert hasattr(request, "client"), "'request' instance has no 'client' attribute"
 
-        Application = get_application_model()
         try:
             request.client = request.client or Application.objects.get(client_id=client_id)
             # Check that the application can be used (defaults to always True)
