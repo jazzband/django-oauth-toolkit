@@ -336,7 +336,9 @@ def get_refresh_token_model():
 def clear_expired():
     now = timezone.now()
     refresh_expire_at = None
-
+    access_token_model = get_access_token_model()
+    refresh_token_model = get_refresh_token_model()
+    grant_model = get_grant_model()
     REFRESH_TOKEN_EXPIRE_SECONDS = oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS
     if REFRESH_TOKEN_EXPIRE_SECONDS:
         if not isinstance(REFRESH_TOKEN_EXPIRE_SECONDS, timedelta):
@@ -349,6 +351,6 @@ def clear_expired():
 
     with transaction.atomic():
         if refresh_expire_at:
-            RefreshToken.objects.filter(access_token__expires__lt=refresh_expire_at).delete()
-        AccessToken.objects.filter(refresh_token__isnull=True, expires__lt=now).delete()
-        Grant.objects.filter(expires__lt=now).delete()
+            refresh_token_model.objects.filter(access_token__expires__lt=refresh_expire_at).delete()
+            access_token_model.objects.filter(refresh_token__isnull=True, expires__lt=now).delete()
+        grant_model.objects.filter(expires__lt=now).delete()
