@@ -355,6 +355,20 @@ def get_access_token_model():
     return access_token_model
 
 
+def get_refresh_token_model():
+    """ Return the RefreshToken model that is active in this project. """
+    try:
+        app_label, model_name = oauth2_settings.REFRESH_TOKEN_MODEL.split('.')
+    except ValueError:
+        e = "REFRESH_TOKEN_MODEL must be of the form 'app_label.model_name'"
+        raise ImproperlyConfigured(e)
+    refresh_token_model = apps.get_model(app_label, model_name)
+    if refresh_token_model is None:
+        e = "REFRESH_TOKEN_MODEL refers to model {0} that has not been installed"
+        raise ImproperlyConfigured(e.format(oauth2_settings.APPLICATION_MODEL))
+    return refresh_token_model
+
+
 def clear_expired():
     now = timezone.now()
     refresh_expire_at = None
