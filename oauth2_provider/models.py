@@ -144,7 +144,7 @@ class Application(AbstractApplication):
 
 
 @python_2_unicode_compatible
-class Grant(models.Model):
+class AbstractGrant(models.Model):
     """
     A Grant instance represents a token with a short lifetime that can
     be swapped for an access token, as described in :rfc:`4.1.2`
@@ -181,6 +181,14 @@ class Grant(models.Model):
 
     def __str__(self):
         return self.code
+
+    class Meta:
+        abstract = True
+
+
+class Grant(AbstractGrant):
+    class Meta(AbstractGrant.Meta):
+        swappable = "OAUTH2_PROVIDER_GRANT_MODEL"
 
 
 @python_2_unicode_compatible
