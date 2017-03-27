@@ -315,16 +315,22 @@ class RefreshToken(AbstractRefreshToken):
 
 def get_application_model():
     """ Return the Application model that is active in this project. """
-    try:
-        app_label, model_name = oauth2_settings.APPLICATION_MODEL.split('.')
-    except ValueError:
-        e = "APPLICATION_MODEL must be of the form 'app_label.model_name'"
-        raise ImproperlyConfigured(e)
-    app_model = apps.get_model(app_label, model_name)
-    if app_model is None:
-        e = "APPLICATION_MODEL refers to model {0} that has not been installed"
-        raise ImproperlyConfigured(e.format(oauth2_settings.APPLICATION_MODEL))
-    return app_model
+    return apps.get_model(oauth2_settings.APPLICATION_MODEL)
+
+
+def get_grant_model():
+    """ Return the Grant model that is active in this project. """
+    return apps.get_model(oauth2_settings.GRANT_MODEL)
+
+
+def get_access_token_model():
+    """ Return the AccessToken model that is active in this project. """
+    return apps.get_model(oauth2_settings.ACCESS_TOKEN_MODEL)
+
+
+def get_refresh_token_model():
+    """ Return the RefreshToken model that is active in this project. """
+    return apps.get_model(oauth2_settings.REFRESH_TOKEN_MODEL)
 
 
 def clear_expired():
