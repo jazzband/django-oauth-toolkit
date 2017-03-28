@@ -1,8 +1,9 @@
 Settings
 ========
 
-Our configurations are all namespaced under the `OAUTH2_PROVIDER` settings with the solely exception of
-`OAUTH2_PROVIDER_APPLICATION_MODEL`: this is because of the way Django currently implements
+Our configurations are all namespaced under the `OAUTH2_PROVIDER` settings with the exception of
+`OAUTH2_PROVIDER_APPLICATION_MODEL, OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL, OAUTH2_PROVIDER_GRANT_MODEL,
+OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL`: this is because of the way Django currently implements
 swappable models. See issue #90 (https://github.com/evonove/django-oauth-toolkit/issues/90) for details.
 
 For example:
@@ -31,6 +32,12 @@ ACCESS_TOKEN_EXPIRE_SECONDS
 The number of seconds an access token remains valid. Requesting a protected
 resource after this duration will fail. Keep this value high enough so clients
 can cache the token for a reasonable amount of time.
+
+ACCESS_TOKEN_MODEL
+~~~~~~~~~~~~~~~~~
+The import string of the class (model) representing your access tokens. Overwrite
+this value if you wrote your own implementation (subclass of
+``oauth2_provider.models.AccessToken``).
 
 ALLOWED_REDIRECT_URI_SCHEMES
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -67,6 +74,12 @@ CLIENT_SECRET_GENERATOR_LENGTH
 The length of the generated secrets, in characters. If this value is too low,
 secrets may become subject to bruteforce guessing.
 
+GRANT_MODEL
+~~~~~~~~~~~~~~~~~
+The import string of the class (model) representing your grants. Overwrite
+this value if you wrote your own implementation (subclass of
+``oauth2_provider.models.Grant``).
+
 OAUTH2_SERVER_CLASS
 ~~~~~~~~~~~~~~~~~~~
 The import string for the ``server_class`` (or ``oauthlib.oauth2.Server`` subclass)
@@ -86,6 +99,12 @@ REFRESH_TOKEN_EXPIRE_SECONDS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The number of seconds before a refresh token gets removed from the database by
 the ``cleartokens`` management command. Check :ref:`cleartokens` management command for further info.
+
+REFRESH_TOKEN_MODEL
+~~~~~~~~~~~~~~~~~
+The import string of the class (model) representing your refresh tokens. Overwrite
+this value if you wrote your own implementation (subclass of
+``oauth2_provider.models.RefreshToken``).
 
 ROTATE_REFRESH_TOKEN
 ~~~~~~~~~~~~~~~~~~~~
