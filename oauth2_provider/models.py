@@ -338,7 +338,7 @@ def get_grant_model():
     grant_model = apps.get_model(app_label, model_name)
     if grant_model is None:
         e = "GRANT_MODEL refers to model {0} that has not been installed"
-        raise ImproperlyConfigured(e.format(oauth2_settings.APPLICATION_MODEL))
+        raise ImproperlyConfigured(e.format(oauth2_settings.GRANT_MODEL))
     return grant_model
 
 
@@ -352,7 +352,7 @@ def get_access_token_model():
     access_token_model = apps.get_model(app_label, model_name)
     if access_token_model is None:
         e = "ACCESS_TOKEN_MODEL refers to model {0} that has not been installed"
-        raise ImproperlyConfigured(e.format(oauth2_settings.APPLICATION_MODEL))
+        raise ImproperlyConfigured(e.format(oauth2_settings.ACCESS_TOKEN_MODEL))
     return access_token_model
 
 
@@ -366,7 +366,7 @@ def get_refresh_token_model():
     refresh_token_model = apps.get_model(app_label, model_name)
     if refresh_token_model is None:
         e = "REFRESH_TOKEN_MODEL refers to model {0} that has not been installed"
-        raise ImproperlyConfigured(e.format(oauth2_settings.APPLICATION_MODEL))
+        raise ImproperlyConfigured(e.format(oauth2_settings.REFRESH_TOKEN_MODEL))
     return refresh_token_model
 
 
