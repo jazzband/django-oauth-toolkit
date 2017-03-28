@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 
 import django
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ImproperlyConfigured
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils import timezone
@@ -13,7 +13,7 @@ from oauth2_provider.models import (
     get_grant_model,
     get_refresh_token_model,
 )
-
+from oauth2_provider.settings import oauth2_settings
 
 Application = get_application_model()
 Grant = get_grant_model()
@@ -139,6 +139,15 @@ class TestCustomModels(TestCase):
         self.assertNotIn('oauth2_provider:application', related_object_names)
         self.assertIn("tests_sampleapplication", related_object_names)
 
+    def test_custom_application_model_incorrect_format(self):
+        # Patch oauth2 settings to use a custom Application model
+        oauth2_settings.APPLICATION_MODEL = "IncorrectApplicationFormat"
+
+        self.assertRaises(ImproperlyConfigured, get_application_model)
+
+        # Revert oauth2 settings
+        oauth2_settings.APPLICATION_MODEL = 'oauth2_provider.Application'
+
     def test_custom_access_token_model(self):
         """
         If a custom access token model is installed, it should be present in
@@ -151,6 +160,15 @@ class TestCustomModels(TestCase):
         ]
         self.assertNotIn('oauth2_provider:access_token', related_object_names)
         self.assertIn("tests_sampleaccesstoken", related_object_names)
+
+    def test_custom_access_token_model_incorrect_format(self):
+        # Patch oauth2 settings to use a custom AccessToken model
+        oauth2_settings.ACCESS_TOKEN_MODEL = "IncorrectAccessTokenFormat"
+
+        self.assertRaises(ImproperlyConfigured, get_access_token_model)
+
+        # Revert oauth2 settings
+        oauth2_settings.ACCESS_TOKEN_MODEL = 'oauth2_provider.AccessToken'
 
     def test_custom_refresh_token_model(self):
         """
@@ -165,6 +183,15 @@ class TestCustomModels(TestCase):
         self.assertNotIn('oauth2_provider:refresh_token', related_object_names)
         self.assertIn("tests_samplerefreshtoken", related_object_names)
 
+    def test_custom_refresh_token_model_incorrect_format(self):
+        # Patch oauth2 settings to use a custom RefreshToken model
+        oauth2_settings.REFRESH_TOKEN_MODEL = "IncorrectRefreshTokenFormat"
+
+        self.assertRaises(ImproperlyConfigured, get_refresh_token_model)
+
+        # Revert oauth2 settings
+        oauth2_settings.REFRESH_TOKEN_MODEL = 'oauth2_provider.RefreshToken'
+
     def test_custom_grant_model(self):
         """
         If a custom grant model is installed, it should be present in
@@ -177,6 +204,15 @@ class TestCustomModels(TestCase):
         ]
         self.assertNotIn('oauth2_provider:grant', related_object_names)
         self.assertIn("tests_samplegrant", related_object_names)
+
+    def test_custom_grant_model_incorrect_format(self):
+        # Patch oauth2 settings to use a custom Grant model
+        oauth2_settings.GRANT_MODEL = "IncorrectGrantFormat"
+
+        self.assertRaises(ImproperlyConfigured, get_grant_model)
+
+        # Revert oauth2 settings
+        oauth2_settings.GRANT_MODEL = 'oauth2_provider.Grant'
 
 
 class TestGrantModel(TestCase):
