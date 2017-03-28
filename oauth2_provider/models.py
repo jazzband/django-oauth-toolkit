@@ -59,7 +59,8 @@ class AbstractApplication(models.Model):
 
     client_id = models.CharField(max_length=100, unique=True,
                                  default=generate_client_id, db_index=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="%(app_label)s_%(class)s",
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             related_name="%(app_label)s_%(class)s",
                              null=True, blank=True, on_delete=models.CASCADE)
 
     help_text = _("Allowed URIs list, space separated")
@@ -159,7 +160,8 @@ class AbstractGrant(models.Model):
     * :attr:`redirect_uri` Self explained
     * :attr:`scope` Required scopes, optional
     """
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                             related_name="%(app_label)s_%(class)s")
     code = models.CharField(max_length=255, unique=True)  # code comes from oauthlib
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL,
                                     on_delete=models.CASCADE)
@@ -206,8 +208,9 @@ class AbstractAccessToken(models.Model):
     * :attr:`scope` Allowed scopes
     """
     user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True,
-                             on_delete=models.CASCADE)
-    token = models.CharField(max_length=255, unique=True)
+                             on_delete=models.CASCADE,
+                             related_name="%(app_label)s_%(class)s")
+    token = models.CharField(max_length=255, unique=True, )
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL,
                                     on_delete=models.CASCADE)
     expires = models.DateTimeField()
@@ -286,7 +289,8 @@ class AbstractRefreshToken(models.Model):
     * :attr:`access_token` AccessToken instance this refresh token is
                            bounded to
     """
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                             related_name="%(app_label)s_%(class)s")
     token = models.CharField(max_length=255, unique=True)
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL,
                                     on_delete=models.CASCADE)
