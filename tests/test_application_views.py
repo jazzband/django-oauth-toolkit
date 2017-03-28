@@ -26,6 +26,7 @@ class BaseTest(TestCase):
 
 
 class TestApplicationRegistrationView(BaseTest):
+
     def test_get_form_class(self):
         """
         Tests that the form class returned by the 'get_form_class' method is
@@ -56,7 +57,7 @@ class TestApplicationRegistrationView(BaseTest):
         response = self.client.post(reverse('oauth2_provider:register'), form_data)
         self.assertEqual(response.status_code, 302)
 
-        app = Application.objects.get(name="Foo app")
+        app = get_application_model().objects.get(name="Foo app")
         self.assertEqual(app.user.username, "foo_user")
 
 
@@ -81,7 +82,7 @@ class TestApplicationViews(BaseTest):
 
     def tearDown(self):
         super(TestApplicationViews, self).tearDown()
-        Application.objects.all().delete()
+        get_application_model().objects.all().delete()
 
     def test_application_list(self):
         self.client.login(username="foo_user", password="123456")
