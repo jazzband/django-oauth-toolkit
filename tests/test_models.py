@@ -143,7 +143,16 @@ class TestCustomModels(TestCase):
         # Patch oauth2 settings to use a custom Application model
         oauth2_settings.APPLICATION_MODEL = "IncorrectApplicationFormat"
 
-        self.assertRaises(ImproperlyConfigured, get_application_model)
+        self.assertRaises(ValueError, get_application_model)
+
+        # Revert oauth2 settings
+        oauth2_settings.APPLICATION_MODEL = 'oauth2_provider.Application'
+
+    def test_custom_application_model_not_installed(self):
+        # Patch oauth2 settings to use a custom Application model
+        oauth2_settings.APPLICATION_MODEL = "tests.ApplicationNotInstalled"
+
+        self.assertRaises(LookupError, get_application_model)
 
         # Revert oauth2 settings
         oauth2_settings.APPLICATION_MODEL = 'oauth2_provider.Application'
@@ -165,7 +174,16 @@ class TestCustomModels(TestCase):
         # Patch oauth2 settings to use a custom AccessToken model
         oauth2_settings.ACCESS_TOKEN_MODEL = "IncorrectAccessTokenFormat"
 
-        self.assertRaises(ImproperlyConfigured, get_access_token_model)
+        self.assertRaises(ValueError, get_access_token_model)
+
+        # Revert oauth2 settings
+        oauth2_settings.ACCESS_TOKEN_MODEL = 'oauth2_provider.AccessToken'
+
+    def test_custom_access_token_model_not_installed(self):
+        # Patch oauth2 settings to use a custom AccessToken model
+        oauth2_settings.ACCESS_TOKEN_MODEL = "tests.AccessTokenNotInstalled"
+
+        self.assertRaises(LookupError, get_access_token_model)
 
         # Revert oauth2 settings
         oauth2_settings.ACCESS_TOKEN_MODEL = 'oauth2_provider.AccessToken'
@@ -187,7 +205,16 @@ class TestCustomModels(TestCase):
         # Patch oauth2 settings to use a custom RefreshToken model
         oauth2_settings.REFRESH_TOKEN_MODEL = "IncorrectRefreshTokenFormat"
 
-        self.assertRaises(ImproperlyConfigured, get_refresh_token_model)
+        self.assertRaises(ValueError, get_refresh_token_model)
+
+        # Revert oauth2 settings
+        oauth2_settings.REFRESH_TOKEN_MODEL = 'oauth2_provider.RefreshToken'
+
+    def test_custom_refresh_token_model_not_installed(self):
+        # Patch oauth2 settings to use a custom AccessToken model
+        oauth2_settings.REFRESH_TOKEN_MODEL = "tests.RefreshTokenNotInstalled"
+
+        self.assertRaises(LookupError, get_refresh_token_model)
 
         # Revert oauth2 settings
         oauth2_settings.REFRESH_TOKEN_MODEL = 'oauth2_provider.RefreshToken'
@@ -209,7 +236,16 @@ class TestCustomModels(TestCase):
         # Patch oauth2 settings to use a custom Grant model
         oauth2_settings.GRANT_MODEL = "IncorrectGrantFormat"
 
-        self.assertRaises(ImproperlyConfigured, get_grant_model)
+        self.assertRaises(ValueError, get_grant_model)
+
+        # Revert oauth2 settings
+        oauth2_settings.GRANT_MODEL = 'oauth2_provider.Grant'
+
+    def test_custom_grant_model_not_installed(self):
+        # Patch oauth2 settings to use a custom AccessToken model
+        oauth2_settings.GRANT_MODEL = "tests.GrantNotInstalled"
+
+        self.assertRaises(LookupError, get_grant_model)
 
         # Revert oauth2 settings
         oauth2_settings.GRANT_MODEL = 'oauth2_provider.Grant'
