@@ -12,7 +12,7 @@ from .mixins import OAuthLibMixin
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
 from ..http import HttpResponseUriRedirect
-from ..models import get_application_model
+from ..models import get_access_token_model, get_application_model
 from ..scopes import get_scopes_backend
 from ..settings import oauth2_settings
 
@@ -146,8 +146,12 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                 return HttpResponseUriRedirect(uri)
 
             elif require_approval == 'auto':
-                tokens = request.user.accesstoken_set.filter(application=kwargs['application'],
-                                                             expires__gt=timezone.now()).all()
+                tokens = get_access_token_model().objects.filter(
+                    user=request.user,
+                    application=kwargs["application"],
+                    expires__gt=timezone.now()
+                ).all()
+
                 # check past authorizations regarded the same scopes as the current one
                 for token in tokens:
                     if token.allow_scopes(scopes):
