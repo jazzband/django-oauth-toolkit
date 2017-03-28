@@ -115,12 +115,17 @@ class TestModels(TestCase):
         self.assertEqual(access_token2.scopes, {'write': 'Writing scope'})
 
 
-@override_settings(OAUTH2_PROVIDER_APPLICATION_MODEL="tests.SampleApplication")
-class TestCustomApplicationModel(TestCase):
+@override_settings(
+    OAUTH2_PROVIDER_APPLICATION_MODEL="tests.SampleApplication",
+    OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL="tests.SampleAccessToken",
+    OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL="tests.SampleRefreshToken",
+    OAUTH2_PROVIDER_GRANT_MODEL="tests.SampleGrant"
+)
+class TestCustomModels(TestCase):
     def setUp(self):
         self.user = UserModel.objects.create_user("test_user", "test@user.com", "123456")
 
-    def test_related_objects(self):
+    def test_custom_application_model(self):
         """
         If a custom application model is installed, it should be present in
         the related objects and not the swapped out one.
@@ -133,6 +138,45 @@ class TestCustomApplicationModel(TestCase):
         ]
         self.assertNotIn('oauth2_provider:application', related_object_names)
         self.assertIn("tests_sampleapplication", related_object_names)
+
+    def test_custom_access_token_model(self):
+        """
+        If a custom access token model is installed, it should be present in
+        the related objects and not the swapped out one.
+        """
+        # Django internals caches the related objects.
+        related_object_names = [
+            f.name for f in UserModel._meta.get_fields()
+            if (f.one_to_many or f.one_to_one) and f.auto_created and not f.concrete
+        ]
+        self.assertNotIn('oauth2_provider:access_token', related_object_names)
+        self.assertIn("tests_sampleaccesstoken", related_object_names)
+
+    def test_custom_refresh_token_model(self):
+        """
+        If a custom refresh token model is installed, it should be present in
+        the related objects and not the swapped out one.
+        """
+        # Django internals caches the related objects.
+        related_object_names = [
+            f.name for f in UserModel._meta.get_fields()
+            if (f.one_to_many or f.one_to_one) and f.auto_created and not f.concrete
+        ]
+        self.assertNotIn('oauth2_provider:refresh_token', related_object_names)
+        self.assertIn("tests_samplerefreshtoken", related_object_names)
+
+    def test_custom_grant_model(self):
+        """
+        If a custom grant model is installed, it should be present in
+        the related objects and not the swapped out one.
+        """
+        # Django internals caches the related objects.
+        related_object_names = [
+            f.name for f in UserModel._meta.get_fields()
+            if (f.one_to_many or f.one_to_one) and f.auto_created and not f.concrete
+        ]
+        self.assertNotIn('oauth2_provider:grant', related_object_names)
+        self.assertIn("tests_samplegrant", related_object_names)
 
 
 class TestGrantModel(TestCase):
