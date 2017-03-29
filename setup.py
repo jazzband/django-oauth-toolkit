@@ -3,4 +3,6 @@
 from setuptools import setup
 
 
-setup(name='django-oauth-toolkit')
+setup(
+    name='django-oauth-toolkit',
+    version="0.12.0-alpha")
