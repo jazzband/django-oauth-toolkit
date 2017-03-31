@@ -62,11 +62,13 @@ Here's our project's root `urls.py` module:
     class UserSerializer(serializers.ModelSerializer):
         class Meta:
             model = User
+            fields = ("username", "email", "first_name", "last_name", )
 
 
     class GroupSerializer(serializers.ModelSerializer):
         class Meta:
             model = Group
+            fields = ("name", )
 
 
     # ViewSets define the view behavior.
