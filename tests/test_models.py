@@ -119,16 +119,10 @@ class TestCustomApplicationModel(TestCase):
 
         See issue #90 (https://github.com/evonove/django-oauth-toolkit/issues/90)
         """
-        # Django internals caches the related objects.
-        if django.VERSION < (1, 8):
-            del UserModel._meta._related_objects_cache
-        if django.VERSION < (1, 10):
-            related_object_names = [ro.name for ro in UserModel._meta.get_all_related_objects()]
-        else:
-            related_object_names = [
-                f.name for f in UserModel._meta.get_fields()
-                if (f.one_to_many or f.one_to_one) and f.auto_created and not f.concrete
-            ]
+        related_object_names = [
+            f.name for f in UserModel._meta.get_fields()
+            if (f.one_to_many or f.one_to_one) and f.auto_created and not f.concrete
+        ]
         self.assertNotIn('oauth2_provider:application', related_object_names)
         self.assertIn("tests_sampleapplication", related_object_names)
 

@@ -16,18 +16,6 @@ try:
 except ImportError:
     from urllib.parse import urlencode, quote_plus, unquote_plus
 
-# changed in Django 1.10 (broken in Django 2.0)
-try:
-    from django.urls import reverse, reverse_lazy
-except ImportError:
-    from django.core.urlresolvers import reverse, reverse_lazy
-
-# Added in Django 1.9, required as long as 1.8 is supported
-try:
-    from django.contrib.auth.mixins import LoginRequiredMixin
-except ImportError:
-    from braces.views import LoginRequiredMixin
-
 # bastb Django 1.10 has updated Middleware. This code imports the Mixin required to get old-style
 # middleware working again
 # More?

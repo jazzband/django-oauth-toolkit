@@ -1,5 +1,6 @@
 import logging
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -8,7 +9,6 @@ from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import FormView, View
 
 from .mixins import OAuthLibMixin
-from ..compat import LoginRequiredMixin
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
 from ..http import HttpResponseUriRedirect
@@ -162,6 +162,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             return self.error_response(error)
 
 
+@method_decorator(csrf_exempt, name="dispatch")
 class TokenView(OAuthLibMixin, View):
     """
     Implements an endpoint to provide access tokens
@@ -175,11 +176,6 @@ class TokenView(OAuthLibMixin, View):
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
     oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
 
-    # XXX: Django 1.8 compat
-    @method_decorator(csrf_exempt)
-    def dispatch(self, *args, **kwargs):
-        return super(TokenView, self).dispatch(*args, **kwargs)
-
     @method_decorator(sensitive_post_parameters('password'))
     def post(self, request, *args, **kwargs):
         url, headers, body, status = self.create_token_response(request)
@@ -190,6 +186,7 @@ class TokenView(OAuthLibMixin, View):
         return response
 
 
+@method_decorator(csrf_exempt, name="dispatch")
 class RevokeTokenView(OAuthLibMixin, View):
     """
     Implements an endpoint to revoke access or refresh tokens
@@ -197,10 +194,6 @@ class RevokeTokenView(OAuthLibMixin, View):
     server_class = oauth2_settings.OAUTH2_SERVER_CLASS
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
     oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
-
-    # XXX: Django 1.8 compat
-    def dispatch(self, *args, **kwargs):
-        return super(RevokeTokenView, self).dispatch(*args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         url, headers, body, status = self.create_revocation_response(request)

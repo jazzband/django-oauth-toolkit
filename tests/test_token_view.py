@@ -4,9 +4,9 @@ import datetime
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.urls import reverse
 from django.utils import timezone
 
-from oauth2_provider.compat import reverse
 from oauth2_provider.models import AccessToken, get_application_model
 
 

@@ -1,8 +1,9 @@
 from __future__ import absolute_import, unicode_literals
 
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
 from django.views.generic import DeleteView, ListView
 
-from ..compat import LoginRequiredMixin, reverse_lazy
 from ..models import AccessToken
 
 
