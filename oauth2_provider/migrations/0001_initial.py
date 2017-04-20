@@ -13,6 +13,9 @@ class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         migrations.swappable_dependency(oauth2_settings.APPLICATION_MODEL),
+        migrations.swappable_dependency(oauth2_settings.ACCESS_TOKEN_MODEL),
+        migrations.swappable_dependency(oauth2_settings.REFRESH_TOKEN_MODEL),
+        migrations.swappable_dependency(oauth2_settings.GRANT_MODEL),
     ]
 
     operations = [
@@ -43,6 +46,10 @@ class Migration(migrations.Migration):
                 ('application', models.ForeignKey(to=oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE)),
                 ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
+            options={
+                'abstract': False,
+                'swappable': 'OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL',
+            },
         ),
         migrations.CreateModel(
             name='Grant',
@@ -55,15 +62,23 @@ class Migration(migrations.Migration):
                 ('application', models.ForeignKey(to=oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE)),
                 ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
+            options={
+                'abstract': False,
+                'swappable': 'OAUTH2_PROVIDER_GRANT_MODEL',
+            },
         ),
         migrations.CreateModel(
             name='RefreshToken',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('token', models.CharField(max_length=255, db_index=True)),
-                ('access_token', models.OneToOneField(related_name='refresh_token', to='oauth2_provider.AccessToken', on_delete=models.CASCADE)),
+                ('access_token', models.OneToOneField(related_name='refresh_token', to=oauth2_settings.ACCESS_TOKEN_MODEL, on_delete=models.CASCADE)),
                 ('application', models.ForeignKey(to=oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE)),
                 ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
+            options={
+                'abstract': False,
+                'swappable': 'OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL',
+            },
         ),
     ]

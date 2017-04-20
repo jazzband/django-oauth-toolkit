@@ -5,11 +5,15 @@ from django.test import RequestFactory, TestCase
 from django.utils import timezone
 
 from oauth2_provider.decorators import protected_resource, rw_protected_resource
-from oauth2_provider.models import AccessToken, get_application_model
+from oauth2_provider.models import (
+    get_access_token_model,
+    get_application_model,
+)
 from oauth2_provider.settings import oauth2_settings
 
 
 Application = get_application_model()
+AccessToken = get_access_token_model()
 UserModel = get_user_model()
 
 

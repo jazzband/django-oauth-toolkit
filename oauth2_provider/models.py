@@ -59,7 +59,8 @@ class AbstractApplication(models.Model):
 
     client_id = models.CharField(max_length=100, unique=True,
                                  default=generate_client_id, db_index=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="%(app_label)s_%(class)s",
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             related_name="%(app_label)s_%(class)s",
                              null=True, blank=True, on_delete=models.CASCADE)
 
     help_text = _("Allowed URIs list, space separated")
@@ -144,7 +145,7 @@ class Application(AbstractApplication):
 
 
 @python_2_unicode_compatible
-class Grant(models.Model):
+class AbstractGrant(models.Model):
     """
     A Grant instance represents a token with a short lifetime that can
     be swapped for an access token, as described in :rfc:`4.1.2`
@@ -159,7 +160,8 @@ class Grant(models.Model):
     * :attr:`redirect_uri` Self explained
     * :attr:`scope` Required scopes, optional
     """
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                             related_name="%(app_label)s_%(class)s")
     code = models.CharField(max_length=255, unique=True)  # code comes from oauthlib
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL,
                                     on_delete=models.CASCADE)
@@ -182,9 +184,17 @@ class Grant(models.Model):
     def __str__(self):
         return self.code
 
+    class Meta:
+        abstract = True
+
+
+class Grant(AbstractGrant):
+    class Meta(AbstractGrant.Meta):
+        swappable = 'OAUTH2_PROVIDER_GRANT_MODEL'
+
 
 @python_2_unicode_compatible
-class AccessToken(models.Model):
+class AbstractAccessToken(models.Model):
     """
     An AccessToken instance represents the actual access token to
     access user's resources, as in :rfc:`5`.
@@ -198,8 +208,9 @@ class AccessToken(models.Model):
     * :attr:`scope` Allowed scopes
     """
     user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True,
-                             on_delete=models.CASCADE)
-    token = models.CharField(max_length=255, unique=True)
+                             on_delete=models.CASCADE,
+                             related_name="%(app_label)s_%(class)s")
+    token = models.CharField(max_length=255, unique=True, )
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL,
                                     on_delete=models.CASCADE)
     expires = models.DateTimeField()
@@ -255,9 +266,17 @@ class AccessToken(models.Model):
     def __str__(self):
         return self.token
 
+    class Meta:
+        abstract = True
+
+
+class AccessToken(AbstractAccessToken):
+    class Meta(AbstractAccessToken.Meta):
+        swappable = 'OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL'
+
 
 @python_2_unicode_compatible
-class RefreshToken(models.Model):
+class AbstractRefreshToken(models.Model):
     """
     A RefreshToken instance represents a token that can be swapped for a new
     access token when it expires.
@@ -270,11 +289,12 @@ class RefreshToken(models.Model):
     * :attr:`access_token` AccessToken instance this refresh token is
                            bounded to
     """
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                             related_name="%(app_label)s_%(class)s")
     token = models.CharField(max_length=255, unique=True)
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL,
                                     on_delete=models.CASCADE)
-    access_token = models.OneToOneField(AccessToken,
+    access_token = models.OneToOneField(oauth2_settings.ACCESS_TOKEN_MODEL,
                                         related_name='refresh_token',
                                         on_delete=models.CASCADE)
 
@@ -282,31 +302,48 @@ class RefreshToken(models.Model):
         """
         Delete this refresh token along with related access token
         """
-        AccessToken.objects.get(id=self.access_token.id).revoke()
+        access_token_model = get_access_token_model()
+        access_token_model.objects.get(id=self.access_token.id).revoke()
         self.delete()
 
     def __str__(self):
         return self.token
 
+    class Meta:
+        abstract = True
+
+
+class RefreshToken(AbstractRefreshToken):
+    class Meta(AbstractRefreshToken.Meta):
+        swappable = 'OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL'
+
 
 def get_application_model():
     """ Return the Application model that is active in this project. """
-    try:
-        app_label, model_name = oauth2_settings.APPLICATION_MODEL.split('.')
-    except ValueError:
-        e = "APPLICATION_MODEL must be of the form 'app_label.model_name'"
-        raise ImproperlyConfigured(e)
-    app_model = apps.get_model(app_label, model_name)
-    if app_model is None:
-        e = "APPLICATION_MODEL refers to model {0} that has not been installed"
-        raise ImproperlyConfigured(e.format(oauth2_settings.APPLICATION_MODEL))
-    return app_model
+    return apps.get_model(oauth2_settings.APPLICATION_MODEL)
+
+
+def get_grant_model():
+    """ Return the Grant model that is active in this project. """
+    return apps.get_model(oauth2_settings.GRANT_MODEL)
+
+
+def get_access_token_model():
+    """ Return the AccessToken model that is active in this project. """
+    return apps.get_model(oauth2_settings.ACCESS_TOKEN_MODEL)
+
+
+def get_refresh_token_model():
+    """ Return the RefreshToken model that is active in this project. """
+    return apps.get_model(oauth2_settings.REFRESH_TOKEN_MODEL)
 
 
 def clear_expired():
     now = timezone.now()
     refresh_expire_at = None
-
+    access_token_model = get_access_token_model()
+    refresh_token_model = get_refresh_token_model()
+    grant_model = get_grant_model()
     REFRESH_TOKEN_EXPIRE_SECONDS = oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS
     if REFRESH_TOKEN_EXPIRE_SECONDS:
         if not isinstance(REFRESH_TOKEN_EXPIRE_SECONDS, timedelta):
@@ -319,6 +356,6 @@ def clear_expired():
 
     with transaction.atomic():
         if refresh_expire_at:
-            RefreshToken.objects.filter(access_token__expires__lt=refresh_expire_at).delete()
-        AccessToken.objects.filter(refresh_token__isnull=True, expires__lt=now).delete()
-        Grant.objects.filter(expires__lt=now).delete()
+            refresh_token_model.objects.filter(access_token__expires__lt=refresh_expire_at).delete()
+            access_token_model.objects.filter(refresh_token__isnull=True, expires__lt=now).delete()
+        grant_model.objects.filter(expires__lt=now).delete()

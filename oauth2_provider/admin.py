@@ -1,6 +1,11 @@
 from django.contrib import admin
 
-from .models import AccessToken, get_application_model, Grant, RefreshToken
+from .models import (
+    get_access_token_model,
+    get_application_model,
+    get_grant_model,
+    get_refresh_token_model,
+)
 
 
 class ApplicationAdmin(admin.ModelAdmin):
@@ -29,6 +34,9 @@ class RefreshTokenAdmin(admin.ModelAdmin):
 
 
 Application = get_application_model()
+Grant = get_grant_model()
+AccessToken = get_access_token_model()
+RefreshToken = get_refresh_token_model()
 
 admin.site.register(Application, ApplicationAdmin)
 admin.site.register(Grant, GrantAdmin)

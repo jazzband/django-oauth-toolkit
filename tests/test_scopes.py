@@ -8,7 +8,11 @@ from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
 from oauth2_provider.compat import parse_qs, urlparse
-from oauth2_provider.models import AccessToken, get_application_model, Grant
+from oauth2_provider.models import (
+    get_access_token_model,
+    get_application_model,
+    get_grant_model,
+)
 from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views import ReadWriteScopedResourceView, ScopedProtectedResourceView
 
@@ -16,6 +20,8 @@ from .utils import get_basic_auth_header
 
 
 Application = get_application_model()
+AccessToken = get_access_token_model()
+Grant = get_grant_model()
 UserModel = get_user_model()
 
 
