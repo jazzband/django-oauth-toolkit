@@ -74,7 +74,7 @@ class AbstractApplication(models.Model):
     name = models.CharField(max_length=255, blank=True)
     skip_authorization = models.BooleanField(default=False)
 
-    class Meta:
+    class Meta(object):
         abstract = True
 
     @property
@@ -184,7 +184,7 @@ class AbstractGrant(models.Model):
     def __str__(self):
         return self.code
 
-    class Meta:
+    class Meta(object):
         abstract = True
 
 
@@ -266,7 +266,7 @@ class AbstractAccessToken(models.Model):
     def __str__(self):
         return self.token
 
-    class Meta:
+    class Meta(object):
         abstract = True
 
 
@@ -309,7 +309,7 @@ class AbstractRefreshToken(models.Model):
     def __str__(self):
         return self.token
 
-    class Meta:
+    class Meta(object):
         abstract = True
 
 
