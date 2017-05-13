@@ -211,7 +211,7 @@ class AbstractAccessToken(models.Model):
                              on_delete=models.CASCADE,
                              related_name="%(app_label)s_%(class)s")
     token = models.CharField(max_length=255, unique=True, )
-    application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL,
+    application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL, blank=True, null=True,
                                     on_delete=models.CASCADE)
     expires = models.DateTimeField()
     scope = models.TextField(blank=True)
