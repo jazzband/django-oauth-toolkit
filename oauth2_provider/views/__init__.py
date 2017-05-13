@@ -4,3 +4,4 @@ from .application import ApplicationRegistration, ApplicationDetail, Application
     ApplicationDelete, ApplicationUpdate
 from .generic import ProtectedResourceView, ScopedProtectedResourceView, ReadWriteScopedResourceView
 from .token import AuthorizedTokensListView, AuthorizedTokenDeleteView
+from .introspect import IntrospectTokenView
