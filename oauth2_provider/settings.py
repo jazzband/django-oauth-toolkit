@@ -56,6 +56,11 @@ DEFAULTS = {
     # Special settings that will be evaluated at runtime
     '_SCOPES': [],
     '_DEFAULT_SCOPES': [],
+
+    # Resource Server with Token Introspection
+    'RESOURCE_SERVER_INTROSPECTION_URL': None,
+    'RESOURCE_SERVER_AUTH_TOKEN': None,
+    'RESOURCE_SERVER_TOKEN_CACHING_SECONDS': 36000,
 }
 
 # List of settings that cannot be empty
