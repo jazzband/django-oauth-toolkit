@@ -151,3 +151,18 @@ WRITE_SCOPE
 .. note:: (0.12.0+) Only used if `SCOPES_BACKEND_CLASS` is set to the SettingsScopes default.
 
 The name of the *write* scope.
+
+RESOURCE_SERVER_INTROSPECTION_URL
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The introspection endpoint for validating token remotely (RFC7662).
+
+RESOURCE_SERVER_AUTH_TOKEN
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+The bearer token to authenticate the introspection request towards the introspection endpoint (RFC7662).
+
+
+RESOURCE_SERVER_TOKEN_CACHING_SECONDS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The number of seconds an authorization token received from the introspection endpoint remains valid.
+If the expire time of the received token is less than ``RESOURCE_SERVER_TOKEN_CACHING_SECONDS`` the expire time
+will be used.

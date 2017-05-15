@@ -39,6 +39,7 @@ Index
    models
    advanced_topics
    settings
+   resource_server
    management_commands
    glossary
 
