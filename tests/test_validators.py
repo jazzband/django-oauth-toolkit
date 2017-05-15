@@ -34,3 +34,7 @@ class TestValidators(TestCase):
         self.assertRaises(ValidationError, validate_uris, bad_uri)
         bad_uri = 'sdklfsjlfjljdflksjlkfjsdkl'
         self.assertRaises(ValidationError, validate_uris, bad_uri)
+        bad_uri = '     '
+        self.assertRaises(ValidationError, validate_uris, bad_uri)
+        bad_uri = ''
+        self.assertRaises(ValidationError, validate_uris, bad_uri)
