@@ -1,3 +1,16 @@
+### 0.13.0 [unreleased]
+
+* **New feature**: AccessToken, RefreshToken and Grant models are now swappable.
+* #477: **New feature**: Add support for RFC 7662 (IntrospectTokenView, introspect scope)
+* **Compatibility**: Django 1.10 is the new minimum required version
+* **Compatibility**: Django 1.11 is now supported
+* #177: Changed `id` field on Application, AccessToken, RefreshToken and Grant to BigAutoField (bigint/bigserial)
+* #476: Disallow empty redirect URIs
+* Fixed bad `url` parameter in some error responses.
+* Django 2.0 compatibility fixes.
+* The dependency on django-braces has been dropped.
+* The oauthlib dependency is no longer pinned.
+
 ### 0.12.0 [2017-02-24]
 
 * **New feature**: Class-based scopes backends. Listing scopes, available scopes and default scopes
