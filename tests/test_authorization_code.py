@@ -117,6 +117,10 @@ class TestAuthorizationCodeView(BaseTest):
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.context_data["url"],
+            "?error=invalid_request&error_description=Invalid+client_id+parameter+value."
+        )
 
     def test_pre_auth_valid_client(self):
         """
