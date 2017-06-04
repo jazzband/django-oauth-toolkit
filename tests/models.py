@@ -1,10 +1,8 @@
 from django.db import models
 
 from oauth2_provider.models import (
-    AbstractApplication,
-    AbstractAccessToken,
-    AbstractGrant,
-    AbstractRefreshToken,
+    AbstractAccessToken, AbstractApplication,
+    AbstractGrant, AbstractRefreshToken
 )
 
 

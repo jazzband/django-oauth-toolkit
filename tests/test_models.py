@@ -1,8 +1,7 @@
 from __future__ import unicode_literals
 
-import django
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError, ImproperlyConfigured
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils import timezone
@@ -38,17 +37,17 @@ class TestModels(TestCase):
 
         access_token = AccessToken(
             user=self.user,
-            scope='read write',
+            scope="read write",
             expires=0,
-            token='',
+            token="",
             application=app
         )
 
-        self.assertTrue(access_token.allow_scopes(['read', 'write']))
-        self.assertTrue(access_token.allow_scopes(['write', 'read']))
-        self.assertTrue(access_token.allow_scopes(['write', 'read', 'read']))
+        self.assertTrue(access_token.allow_scopes(["read", "write"]))
+        self.assertTrue(access_token.allow_scopes(["write", "read"]))
+        self.assertTrue(access_token.allow_scopes(["write", "read", "read"]))
         self.assertTrue(access_token.allow_scopes([]))
-        self.assertFalse(access_token.allow_scopes(['write', 'destroy']))
+        self.assertFalse(access_token.allow_scopes(["write", "destroy"]))
 
     def test_grant_authorization_code_redirect_uris(self):
         app = Application(
@@ -97,22 +96,22 @@ class TestModels(TestCase):
 
         access_token = AccessToken(
             user=self.user,
-            scope='read write',
+            scope="read write",
             expires=0,
-            token='',
+            token="",
             application=app
         )
 
         access_token2 = AccessToken(
             user=self.user,
-            scope='write',
+            scope="write",
             expires=0,
-            token='',
+            token="",
             application=app
         )
 
-        self.assertEqual(access_token.scopes, {'read': 'Reading scope', 'write': 'Writing scope'})
-        self.assertEqual(access_token2.scopes, {'write': 'Writing scope'})
+        self.assertEqual(access_token.scopes, {"read": "Reading scope", "write": "Writing scope"})
+        self.assertEqual(access_token2.scopes, {"write": "Writing scope"})
 
 
 @override_settings(
@@ -136,7 +135,7 @@ class TestCustomModels(TestCase):
             f.name for f in UserModel._meta.get_fields()
             if (f.one_to_many or f.one_to_one) and f.auto_created and not f.concrete
         ]
-        self.assertNotIn('oauth2_provider:application', related_object_names)
+        self.assertNotIn("oauth2_provider:application", related_object_names)
         self.assertIn("tests_sampleapplication", related_object_names)
 
     def test_custom_application_model_incorrect_format(self):
@@ -146,7 +145,7 @@ class TestCustomModels(TestCase):
         self.assertRaises(ValueError, get_application_model)
 
         # Revert oauth2 settings
-        oauth2_settings.APPLICATION_MODEL = 'oauth2_provider.Application'
+        oauth2_settings.APPLICATION_MODEL = "oauth2_provider.Application"
 
     def test_custom_application_model_not_installed(self):
         # Patch oauth2 settings to use a custom Application model
@@ -155,7 +154,7 @@ class TestCustomModels(TestCase):
         self.assertRaises(LookupError, get_application_model)
 
         # Revert oauth2 settings
-        oauth2_settings.APPLICATION_MODEL = 'oauth2_provider.Application'
+        oauth2_settings.APPLICATION_MODEL = "oauth2_provider.Application"
 
     def test_custom_access_token_model(self):
         """
@@ -167,7 +166,7 @@ class TestCustomModels(TestCase):
             f.name for f in UserModel._meta.get_fields()
             if (f.one_to_many or f.one_to_one) and f.auto_created and not f.concrete
         ]
-        self.assertNotIn('oauth2_provider:access_token', related_object_names)
+        self.assertNotIn("oauth2_provider:access_token", related_object_names)
         self.assertIn("tests_sampleaccesstoken", related_object_names)
 
     def test_custom_access_token_model_incorrect_format(self):
@@ -177,7 +176,7 @@ class TestCustomModels(TestCase):
         self.assertRaises(ValueError, get_access_token_model)
 
         # Revert oauth2 settings
-        oauth2_settings.ACCESS_TOKEN_MODEL = 'oauth2_provider.AccessToken'
+        oauth2_settings.ACCESS_TOKEN_MODEL = "oauth2_provider.AccessToken"
 
     def test_custom_access_token_model_not_installed(self):
         # Patch oauth2 settings to use a custom AccessToken model
@@ -186,7 +185,7 @@ class TestCustomModels(TestCase):
         self.assertRaises(LookupError, get_access_token_model)
 
         # Revert oauth2 settings
-        oauth2_settings.ACCESS_TOKEN_MODEL = 'oauth2_provider.AccessToken'
+        oauth2_settings.ACCESS_TOKEN_MODEL = "oauth2_provider.AccessToken"
 
     def test_custom_refresh_token_model(self):
         """
@@ -198,7 +197,7 @@ class TestCustomModels(TestCase):
             f.name for f in UserModel._meta.get_fields()
             if (f.one_to_many or f.one_to_one) and f.auto_created and not f.concrete
         ]
-        self.assertNotIn('oauth2_provider:refresh_token', related_object_names)
+        self.assertNotIn("oauth2_provider:refresh_token", related_object_names)
         self.assertIn("tests_samplerefreshtoken", related_object_names)
 
     def test_custom_refresh_token_model_incorrect_format(self):
@@ -208,7 +207,7 @@ class TestCustomModels(TestCase):
         self.assertRaises(ValueError, get_refresh_token_model)
 
         # Revert oauth2 settings
-        oauth2_settings.REFRESH_TOKEN_MODEL = 'oauth2_provider.RefreshToken'
+        oauth2_settings.REFRESH_TOKEN_MODEL = "oauth2_provider.RefreshToken"
 
     def test_custom_refresh_token_model_not_installed(self):
         # Patch oauth2 settings to use a custom AccessToken model
@@ -217,7 +216,7 @@ class TestCustomModels(TestCase):
         self.assertRaises(LookupError, get_refresh_token_model)
 
         # Revert oauth2 settings
-        oauth2_settings.REFRESH_TOKEN_MODEL = 'oauth2_provider.RefreshToken'
+        oauth2_settings.REFRESH_TOKEN_MODEL = "oauth2_provider.RefreshToken"
 
     def test_custom_grant_model(self):
         """
@@ -229,7 +228,7 @@ class TestCustomModels(TestCase):
             f.name for f in UserModel._meta.get_fields()
             if (f.one_to_many or f.one_to_one) and f.auto_created and not f.concrete
         ]
-        self.assertNotIn('oauth2_provider:grant', related_object_names)
+        self.assertNotIn("oauth2_provider:grant", related_object_names)
         self.assertIn("tests_samplegrant", related_object_names)
 
     def test_custom_grant_model_incorrect_format(self):
@@ -239,7 +238,7 @@ class TestCustomModels(TestCase):
         self.assertRaises(ValueError, get_grant_model)
 
         # Revert oauth2 settings
-        oauth2_settings.GRANT_MODEL = 'oauth2_provider.Grant'
+        oauth2_settings.GRANT_MODEL = "oauth2_provider.Grant"
 
     def test_custom_grant_model_not_installed(self):
         # Patch oauth2 settings to use a custom AccessToken model
@@ -248,7 +247,7 @@ class TestCustomModels(TestCase):
         self.assertRaises(LookupError, get_grant_model)
 
         # Revert oauth2 settings
-        oauth2_settings.GRANT_MODEL = 'oauth2_provider.Grant'
+        oauth2_settings.GRANT_MODEL = "oauth2_provider.Grant"
 
 
 class TestGrantModel(TestCase):

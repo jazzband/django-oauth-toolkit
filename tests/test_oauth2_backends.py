@@ -18,7 +18,7 @@ class TestOAuthLibCoreBackend(TestCase):
         self.oauthlib_core = OAuthLibCore()
 
     def test_swappable_server_class(self):
-        with mock.patch('oauth2_provider.oauth2_backends.oauth2_settings.OAUTH2_SERVER_CLASS'):
+        with mock.patch("oauth2_provider.oauth2_backends.oauth2_settings.OAUTH2_SERVER_CLASS"):
             oauthlib_core = OAuthLibCore()
             self.assertTrue(isinstance(oauthlib_core.server, mock.MagicMock))
 
@@ -64,7 +64,7 @@ class TestCustomOAuthLibCoreBackend(TestCase):
         payload = "grant_type=password&username=john&password=123456"
         request = self.factory.post("/o/token/", payload, content_type="application/x-www-form-urlencoded")
 
-        with mock.patch('oauthlib.oauth2.Server.create_token_response') as create_token_response:
+        with mock.patch("oauthlib.oauth2.Server.create_token_response") as create_token_response:
             mocked = mock.MagicMock()
             create_token_response.return_value = mocked, mocked, mocked
             core = self.MyOAuthLibCore()
@@ -97,7 +97,7 @@ class TestOAuthLibCore(TestCase):
 
     def test_validate_authorization_request_unsafe_query(self):
         auth_headers = {
-            'HTTP_AUTHORIZATION': 'Bearer ' + "a_casual_token",
+            "HTTP_AUTHORIZATION": "Bearer " + "a_casual_token",
         }
         request = self.factory.get("/fake-resource?next=/fake", **auth_headers)
 

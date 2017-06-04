@@ -35,8 +35,8 @@ class BaseTest(TestCase):
         )
         self.application.save()
 
-        oauth2_settings._SCOPES = ['read', 'write']
-        oauth2_settings._DEFAULT_SCOPES = ['read']
+        oauth2_settings._SCOPES = ["read", "write"]
+        oauth2_settings._DEFAULT_SCOPES = ["read"]
 
     def tearDown(self):
         self.application.delete()
@@ -51,19 +51,19 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         """
         self.client.login(username="test_user", password="123456")
         query_string = urlencode({
-            'client_id': self.application.client_id,
-            'response_type': 'token',
-            'state': 'random_state_string',
-            'redirect_uri': 'http://example.org',
+            "client_id": self.application.client_id,
+            "response_type": "token",
+            "state": "random_state_string",
+            "redirect_uri": "http://example.org",
         })
 
-        url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
+        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
         self.assertIn("form", response.context)
         form = response.context["form"]
-        self.assertEqual(form['scope'].value(), 'read')
+        self.assertEqual(form["scope"].value(), "read")
 
     def test_pre_auth_valid_client(self):
         """
@@ -72,13 +72,13 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         self.client.login(username="test_user", password="123456")
 
         query_string = urlencode({
-            'client_id': self.application.client_id,
-            'response_type': 'token',
-            'state': 'random_state_string',
-            'scope': 'read write',
-            'redirect_uri': 'http://example.org',
+            "client_id": self.application.client_id,
+            "response_type": "token",
+            "state": "random_state_string",
+            "scope": "read write",
+            "redirect_uri": "http://example.org",
         })
-        url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
+        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -87,10 +87,10 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         self.assertIn("form", response.context)
 
         form = response.context["form"]
-        self.assertEqual(form['redirect_uri'].value(), "http://example.org")
-        self.assertEqual(form['state'].value(), "random_state_string")
-        self.assertEqual(form['scope'].value(), "read write")
-        self.assertEqual(form['client_id'].value(), self.application.client_id)
+        self.assertEqual(form["redirect_uri"].value(), "http://example.org")
+        self.assertEqual(form["state"].value(), "random_state_string")
+        self.assertEqual(form["scope"].value(), "read write")
+        self.assertEqual(form["client_id"].value(), self.application.client_id)
 
     def test_pre_auth_invalid_client(self):
         """
@@ -99,10 +99,10 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         self.client.login(username="test_user", password="123456")
 
         query_string = urlencode({
-            'client_id': 'fakeclientid',
-            'response_type': 'token',
+            "client_id": "fakeclientid",
+            "response_type": "token",
         })
-        url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
+        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 400)
@@ -114,16 +114,16 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         self.client.login(username="test_user", password="123456")
 
         query_string = urlencode({
-            'client_id': self.application.client_id,
-            'response_type': 'token',
+            "client_id": self.application.client_id,
+            "response_type": "token",
         })
-        url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
+        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
         form = response.context["form"]
-        self.assertEqual(form['redirect_uri'].value(), "http://localhost")
+        self.assertEqual(form["redirect_uri"].value(), "http://localhost")
 
     def test_pre_auth_forbibben_redirect(self):
         """
@@ -132,11 +132,11 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         self.client.login(username="test_user", password="123456")
 
         query_string = urlencode({
-            'client_id': self.application.client_id,
-            'response_type': 'token',
-            'redirect_uri': 'http://forbidden.it',
+            "client_id": self.application.client_id,
+            "response_type": "token",
+            "redirect_uri": "http://forbidden.it",
         })
-        url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
+        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 400)
@@ -148,19 +148,19 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         self.client.login(username="test_user", password="123456")
 
         form_data = {
-            'client_id': self.application.client_id,
-            'state': 'random_state_string',
-            'scope': 'read write',
-            'redirect_uri': 'http://example.org',
-            'response_type': 'token',
-            'allow': True,
+            "client_id": self.application.client_id,
+            "state": "random_state_string",
+            "scope": "read write",
+            "redirect_uri": "http://example.org",
+            "response_type": "token",
+            "allow": True,
         }
 
-        response = self.client.post(reverse('oauth2_provider:authorize'), data=form_data)
+        response = self.client.post(reverse("oauth2_provider:authorize"), data=form_data)
         self.assertEqual(response.status_code, 302)
-        self.assertIn('http://example.org#', response['Location'])
-        self.assertIn('access_token=', response['Location'])
-        self.assertIn('state=random_state_string', response['Location'])
+        self.assertIn("http://example.org#", response["Location"])
+        self.assertIn("access_token=", response["Location"])
+        self.assertIn("state=random_state_string", response["Location"])
 
     def test_skip_authorization_completely(self):
         """
@@ -171,20 +171,20 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         self.application.save()
 
         query_string = urlencode({
-            'client_id': self.application.client_id,
-            'response_type': 'token',
-            'state': 'random_state_string',
-            'scope': 'read write',
-            'redirect_uri': 'http://example.org',
+            "client_id": self.application.client_id,
+            "response_type": "token",
+            "state": "random_state_string",
+            "scope": "read write",
+            "redirect_uri": "http://example.org",
         })
 
-        url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
+        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
-        self.assertIn('http://example.org#', response['Location'])
-        self.assertIn('access_token=', response['Location'])
-        self.assertIn('state=random_state_string', response['Location'])
+        self.assertIn("http://example.org#", response["Location"])
+        self.assertIn("access_token=", response["Location"])
+        self.assertIn("state=random_state_string", response["Location"])
 
     def test_token_post_auth_deny(self):
         """
@@ -193,17 +193,17 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         self.client.login(username="test_user", password="123456")
 
         form_data = {
-            'client_id': self.application.client_id,
-            'state': 'random_state_string',
-            'scope': 'read write',
-            'redirect_uri': 'http://example.org',
-            'response_type': 'token',
-            'allow': False,
+            "client_id": self.application.client_id,
+            "state": "random_state_string",
+            "scope": "read write",
+            "redirect_uri": "http://example.org",
+            "response_type": "token",
+            "allow": False,
         }
 
-        response = self.client.post(reverse('oauth2_provider:authorize'), data=form_data)
+        response = self.client.post(reverse("oauth2_provider:authorize"), data=form_data)
         self.assertEqual(response.status_code, 302)
-        self.assertIn("error=access_denied", response['Location'])
+        self.assertIn("error=access_denied", response["Location"])
 
     def test_implicit_redirection_uri_with_querystring(self):
         """
@@ -214,18 +214,18 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         self.client.login(username="test_user", password="123456")
 
         form_data = {
-            'client_id': self.application.client_id,
-            'state': 'random_state_string',
-            'scope': 'read write',
-            'redirect_uri': 'http://example.com?foo=bar',
-            'response_type': 'token',
-            'allow': True,
+            "client_id": self.application.client_id,
+            "state": "random_state_string",
+            "scope": "read write",
+            "redirect_uri": "http://example.com?foo=bar",
+            "response_type": "token",
+            "allow": True,
         }
 
-        response = self.client.post(reverse('oauth2_provider:authorize'), data=form_data)
+        response = self.client.post(reverse("oauth2_provider:authorize"), data=form_data)
         self.assertEqual(response.status_code, 302)
-        self.assertIn("http://example.com?foo=bar", response['Location'])
-        self.assertIn("access_token=", response['Location'])
+        self.assertIn("http://example.com?foo=bar", response["Location"])
+        self.assertIn("access_token=", response["Location"])
 
     def test_implicit_fails_when_redirect_uri_path_is_invalid(self):
         """
@@ -234,15 +234,15 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         self.client.login(username="test_user", password="123456")
 
         form_data = {
-            'client_id': self.application.client_id,
-            'state': 'random_state_string',
-            'scope': 'read write',
-            'redirect_uri': 'http://example.com/a?foo=bar',
-            'response_type': 'code',
-            'allow': True,
+            "client_id": self.application.client_id,
+            "state": "random_state_string",
+            "scope": "read write",
+            "redirect_uri": "http://example.com/a?foo=bar",
+            "response_type": "code",
+            "allow": True,
         }
 
-        response = self.client.post(reverse('oauth2_provider:authorize'), data=form_data)
+        response = self.client.post(reverse("oauth2_provider:authorize"), data=form_data)
         self.assertEqual(response.status_code, 400)
 
 
@@ -252,21 +252,21 @@ class TestImplicitTokenView(BaseTest):
 
         # retrieve a valid authorization code
         authcode_data = {
-            'client_id': self.application.client_id,
-            'state': 'random_state_string',
-            'scope': 'read write',
-            'redirect_uri': 'http://example.org',
-            'response_type': 'token',
-            'allow': True,
+            "client_id": self.application.client_id,
+            "state": "random_state_string",
+            "scope": "read write",
+            "redirect_uri": "http://example.org",
+            "response_type": "token",
+            "allow": True,
         }
-        response = self.client.post(reverse('oauth2_provider:authorize'), data=authcode_data)
+        response = self.client.post(reverse("oauth2_provider:authorize"), data=authcode_data)
         # within implicit grant, access token is in the url fragment
-        frag_dict = parse_qs(urlparse(response['Location']).fragment)
-        access_token = frag_dict['access_token'].pop()
+        frag_dict = parse_qs(urlparse(response["Location"]).fragment)
+        access_token = frag_dict["access_token"].pop()
 
         # use token to access the resource
         auth_headers = {
-            'HTTP_AUTHORIZATION': 'Bearer ' + access_token,
+            "HTTP_AUTHORIZATION": "Bearer " + access_token,
         }
         request = self.factory.get("/fake-resource", **auth_headers)
         request.user = self.test_user

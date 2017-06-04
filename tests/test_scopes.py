@@ -27,14 +27,14 @@ UserModel = get_user_model()
 
 # mocking a protected resource view
 class ScopeResourceView(ScopedProtectedResourceView):
-    required_scopes = ['scope1']
+    required_scopes = ["scope1"]
 
     def get(self, request, *args, **kwargs):
         return "This is a protected resource"
 
 
 class MultiScopeResourceView(ScopedProtectedResourceView):
-    required_scopes = ['scope1', 'scope2']
+    required_scopes = ["scope1", "scope2"]
 
     def get(self, request, *args, **kwargs):
         return "This is a protected resource"
@@ -63,9 +63,9 @@ class BaseTest(TestCase):
         )
         self.application.save()
 
-        oauth2_settings._SCOPES = ['read', 'write', 'scope1', 'scope2', 'scope3']
-        oauth2_settings.READ_SCOPE = 'read'
-        oauth2_settings.WRITE_SCOPE = 'write'
+        oauth2_settings._SCOPES = ["read", "write", "scope1", "scope2", "scope3"]
+        oauth2_settings.READ_SCOPE = "read"
+        oauth2_settings.WRITE_SCOPE = "write"
 
     def tearDown(self):
         oauth2_settings._SCOPES = ["read", "write"]
@@ -83,16 +83,16 @@ class TestScopesSave(BaseTest):
 
         # retrieve a valid authorization code
         authcode_data = {
-            'client_id': self.application.client_id,
-            'state': 'random_state_string',
-            'scope': 'scope1 scope2',
-            'redirect_uri': 'http://example.org',
-            'response_type': 'code',
-            'allow': True,
+            "client_id": self.application.client_id,
+            "state": "random_state_string",
+            "scope": "scope1 scope2",
+            "redirect_uri": "http://example.org",
+            "response_type": "code",
+            "allow": True,
         }
-        response = self.client.post(reverse('oauth2_provider:authorize'), data=authcode_data)
-        query_dict = parse_qs(urlparse(response['Location']).query)
-        authorization_code = query_dict['code'].pop()
+        response = self.client.post(reverse("oauth2_provider:authorize"), data=authcode_data)
+        query_dict = parse_qs(urlparse(response["Location"]).query)
+        authorization_code = query_dict["code"].pop()
 
         grant = Grant.objects.get(code=authorization_code)
         self.assertEqual(grant.scope, "scope1 scope2")
@@ -105,28 +105,28 @@ class TestScopesSave(BaseTest):
 
         # retrieve a valid authorization code
         authcode_data = {
-            'client_id': self.application.client_id,
-            'state': 'random_state_string',
-            'scope': 'scope1 scope2',
-            'redirect_uri': 'http://example.org',
-            'response_type': 'code',
-            'allow': True,
+            "client_id": self.application.client_id,
+            "state": "random_state_string",
+            "scope": "scope1 scope2",
+            "redirect_uri": "http://example.org",
+            "response_type": "code",
+            "allow": True,
         }
-        response = self.client.post(reverse('oauth2_provider:authorize'), data=authcode_data)
-        query_dict = parse_qs(urlparse(response['Location']).query)
-        authorization_code = query_dict['code'].pop()
+        response = self.client.post(reverse("oauth2_provider:authorize"), data=authcode_data)
+        query_dict = parse_qs(urlparse(response["Location"]).query)
+        authorization_code = query_dict["code"].pop()
 
         # exchange authorization code for a valid access token
         token_request_data = {
-            'grant_type': 'authorization_code',
-            'code': authorization_code,
-            'redirect_uri': 'http://example.org'
+            "grant_type": "authorization_code",
+            "code": authorization_code,
+            "redirect_uri": "http://example.org"
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
-        access_token = content['access_token']
+        access_token = content["access_token"]
 
         at = AccessToken.objects.get(token=access_token)
         self.assertEqual(at.scope, "scope1 scope2")
@@ -141,32 +141,32 @@ class TestScopesProtection(BaseTest):
 
         # retrieve a valid authorization code
         authcode_data = {
-            'client_id': self.application.client_id,
-            'state': 'random_state_string',
-            'scope': 'scope1 scope2',
-            'redirect_uri': 'http://example.org',
-            'response_type': 'code',
-            'allow': True,
+            "client_id": self.application.client_id,
+            "state": "random_state_string",
+            "scope": "scope1 scope2",
+            "redirect_uri": "http://example.org",
+            "response_type": "code",
+            "allow": True,
         }
-        response = self.client.post(reverse('oauth2_provider:authorize'), data=authcode_data)
-        query_dict = parse_qs(urlparse(response['Location']).query)
-        authorization_code = query_dict['code'].pop()
+        response = self.client.post(reverse("oauth2_provider:authorize"), data=authcode_data)
+        query_dict = parse_qs(urlparse(response["Location"]).query)
+        authorization_code = query_dict["code"].pop()
 
         # exchange authorization code for a valid access token
         token_request_data = {
-            'grant_type': 'authorization_code',
-            'code': authorization_code,
-            'redirect_uri': 'http://example.org'
+            "grant_type": "authorization_code",
+            "code": authorization_code,
+            "redirect_uri": "http://example.org"
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
-        access_token = content['access_token']
+        access_token = content["access_token"]
 
         # use token to access the resource
         auth_headers = {
-            'HTTP_AUTHORIZATION': 'Bearer ' + access_token,
+            "HTTP_AUTHORIZATION": "Bearer " + access_token,
         }
         request = self.factory.get("/fake-resource", **auth_headers)
         request.user = self.test_user
@@ -183,32 +183,32 @@ class TestScopesProtection(BaseTest):
 
         # retrieve a valid authorization code
         authcode_data = {
-            'client_id': self.application.client_id,
-            'state': 'random_state_string',
-            'scope': 'scope2',
-            'redirect_uri': 'http://example.org',
-            'response_type': 'code',
-            'allow': True,
+            "client_id": self.application.client_id,
+            "state": "random_state_string",
+            "scope": "scope2",
+            "redirect_uri": "http://example.org",
+            "response_type": "code",
+            "allow": True,
         }
-        response = self.client.post(reverse('oauth2_provider:authorize'), data=authcode_data)
-        query_dict = parse_qs(urlparse(response['Location']).query)
-        authorization_code = query_dict['code'].pop()
+        response = self.client.post(reverse("oauth2_provider:authorize"), data=authcode_data)
+        query_dict = parse_qs(urlparse(response["Location"]).query)
+        authorization_code = query_dict["code"].pop()
 
         # exchange authorization code for a valid access token
         token_request_data = {
-            'grant_type': 'authorization_code',
-            'code': authorization_code,
-            'redirect_uri': 'http://example.org'
+            "grant_type": "authorization_code",
+            "code": authorization_code,
+            "redirect_uri": "http://example.org"
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
-        access_token = content['access_token']
+        access_token = content["access_token"]
 
         # use token to access the resource
         auth_headers = {
-            'HTTP_AUTHORIZATION': 'Bearer ' + access_token,
+            "HTTP_AUTHORIZATION": "Bearer " + access_token,
         }
         request = self.factory.get("/fake-resource", **auth_headers)
         request.user = self.test_user
@@ -225,32 +225,32 @@ class TestScopesProtection(BaseTest):
 
         # retrieve a valid authorization code
         authcode_data = {
-            'client_id': self.application.client_id,
-            'state': 'random_state_string',
-            'scope': 'scope1 scope3',
-            'redirect_uri': 'http://example.org',
-            'response_type': 'code',
-            'allow': True,
+            "client_id": self.application.client_id,
+            "state": "random_state_string",
+            "scope": "scope1 scope3",
+            "redirect_uri": "http://example.org",
+            "response_type": "code",
+            "allow": True,
         }
-        response = self.client.post(reverse('oauth2_provider:authorize'), data=authcode_data)
-        query_dict = parse_qs(urlparse(response['Location']).query)
-        authorization_code = query_dict['code'].pop()
+        response = self.client.post(reverse("oauth2_provider:authorize"), data=authcode_data)
+        query_dict = parse_qs(urlparse(response["Location"]).query)
+        authorization_code = query_dict["code"].pop()
 
         # exchange authorization code for a valid access token
         token_request_data = {
-            'grant_type': 'authorization_code',
-            'code': authorization_code,
-            'redirect_uri': 'http://example.org'
+            "grant_type": "authorization_code",
+            "code": authorization_code,
+            "redirect_uri": "http://example.org"
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
-        access_token = content['access_token']
+        access_token = content["access_token"]
 
         # use token to access the resource
         auth_headers = {
-            'HTTP_AUTHORIZATION': 'Bearer ' + access_token,
+            "HTTP_AUTHORIZATION": "Bearer " + access_token,
         }
         request = self.factory.get("/fake-resource", **auth_headers)
         request.user = self.test_user
@@ -267,32 +267,32 @@ class TestScopesProtection(BaseTest):
 
         # retrieve a valid authorization code
         authcode_data = {
-            'client_id': self.application.client_id,
-            'state': 'random_state_string',
-            'scope': 'scope1 scope2',
-            'redirect_uri': 'http://example.org',
-            'response_type': 'code',
-            'allow': True,
+            "client_id": self.application.client_id,
+            "state": "random_state_string",
+            "scope": "scope1 scope2",
+            "redirect_uri": "http://example.org",
+            "response_type": "code",
+            "allow": True,
         }
-        response = self.client.post(reverse('oauth2_provider:authorize'), data=authcode_data)
-        query_dict = parse_qs(urlparse(response['Location']).query)
-        authorization_code = query_dict['code'].pop()
+        response = self.client.post(reverse("oauth2_provider:authorize"), data=authcode_data)
+        query_dict = parse_qs(urlparse(response["Location"]).query)
+        authorization_code = query_dict["code"].pop()
 
         # exchange authorization code for a valid access token
         token_request_data = {
-            'grant_type': 'authorization_code',
-            'code': authorization_code,
-            'redirect_uri': 'http://example.org'
+            "grant_type": "authorization_code",
+            "code": authorization_code,
+            "redirect_uri": "http://example.org"
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
-        access_token = content['access_token']
+        access_token = content["access_token"]
 
         # use token to access the resource
         auth_headers = {
-            'HTTP_AUTHORIZATION': 'Bearer ' + access_token,
+            "HTTP_AUTHORIZATION": "Bearer " + access_token,
         }
         request = self.factory.get("/fake-resource", **auth_headers)
         request.user = self.test_user
@@ -308,61 +308,61 @@ class TestReadWriteScope(BaseTest):
 
         # retrieve a valid authorization code
         authcode_data = {
-            'client_id': self.application.client_id,
-            'state': 'random_state_string',
-            'scope': scopes,
-            'redirect_uri': 'http://example.org',
-            'response_type': 'code',
-            'allow': True,
+            "client_id": self.application.client_id,
+            "state": "random_state_string",
+            "scope": scopes,
+            "redirect_uri": "http://example.org",
+            "response_type": "code",
+            "allow": True,
         }
-        response = self.client.post(reverse('oauth2_provider:authorize'), data=authcode_data)
-        query_dict = parse_qs(urlparse(response['Location']).query)
-        authorization_code = query_dict['code'].pop()
+        response = self.client.post(reverse("oauth2_provider:authorize"), data=authcode_data)
+        query_dict = parse_qs(urlparse(response["Location"]).query)
+        authorization_code = query_dict["code"].pop()
 
         # exchange authorization code for a valid access token
         token_request_data = {
-            'grant_type': 'authorization_code',
-            'code': authorization_code,
-            'redirect_uri': 'http://example.org'
+            "grant_type": "authorization_code",
+            "code": authorization_code,
+            "redirect_uri": "http://example.org"
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
-        return content['access_token']
+        return content["access_token"]
 
     def test_improperly_configured(self):
-        oauth2_settings.SCOPES = {'scope1': 'Scope 1'}
+        oauth2_settings.SCOPES = {"scope1": "Scope 1"}
 
         request = self.factory.get("/fake")
         view = ReadWriteResourceView.as_view()
         self.assertRaises(ImproperlyConfigured, view, request)
 
-        oauth2_settings.SCOPES = {'read': 'Read Scope', 'write': 'Write Scope'}
-        oauth2_settings.READ_SCOPE = 'ciccia'
+        oauth2_settings.SCOPES = {"read": "Read Scope", "write": "Write Scope"}
+        oauth2_settings.READ_SCOPE = "ciccia"
 
         view = ReadWriteResourceView.as_view()
         self.assertRaises(ImproperlyConfigured, view, request)
 
     def test_properly_configured(self):
-        oauth2_settings.SCOPES = {'scope1': 'Scope 1'}
+        oauth2_settings.SCOPES = {"scope1": "Scope 1"}
 
         request = self.factory.get("/fake")
         view = ReadWriteResourceView.as_view()
         self.assertRaises(ImproperlyConfigured, view, request)
 
-        oauth2_settings.SCOPES = {'read': 'Read Scope', 'write': 'Write Scope'}
-        oauth2_settings.READ_SCOPE = 'ciccia'
+        oauth2_settings.SCOPES = {"read": "Read Scope", "write": "Write Scope"}
+        oauth2_settings.READ_SCOPE = "ciccia"
 
         view = ReadWriteResourceView.as_view()
         self.assertRaises(ImproperlyConfigured, view, request)
 
     def test_has_read_scope(self):
-        access_token = self.get_access_token('read')
+        access_token = self.get_access_token("read")
 
         # use token to access the resource
         auth_headers = {
-            'HTTP_AUTHORIZATION': 'Bearer ' + access_token,
+            "HTTP_AUTHORIZATION": "Bearer " + access_token,
         }
         request = self.factory.get("/fake-resource", **auth_headers)
         request.user = self.test_user
@@ -372,11 +372,11 @@ class TestReadWriteScope(BaseTest):
         self.assertEqual(response, "This is a read protected resource")
 
     def test_no_read_scope(self):
-        access_token = self.get_access_token('scope1')
+        access_token = self.get_access_token("scope1")
 
         # use token to access the resource
         auth_headers = {
-            'HTTP_AUTHORIZATION': 'Bearer ' + access_token,
+            "HTTP_AUTHORIZATION": "Bearer " + access_token,
         }
         request = self.factory.get("/fake-resource", **auth_headers)
         request.user = self.test_user
@@ -386,11 +386,11 @@ class TestReadWriteScope(BaseTest):
         self.assertEqual(response.status_code, 403)
 
     def test_has_write_scope(self):
-        access_token = self.get_access_token('write')
+        access_token = self.get_access_token("write")
 
         # use token to access the resource
         auth_headers = {
-            'HTTP_AUTHORIZATION': 'Bearer ' + access_token,
+            "HTTP_AUTHORIZATION": "Bearer " + access_token,
         }
         request = self.factory.post("/fake-resource", **auth_headers)
         request.user = self.test_user
@@ -400,11 +400,11 @@ class TestReadWriteScope(BaseTest):
         self.assertEqual(response, "This is a write protected resource")
 
     def test_no_write_scope(self):
-        access_token = self.get_access_token('scope1')
+        access_token = self.get_access_token("scope1")
 
         # use token to access the resource
         auth_headers = {
-            'HTTP_AUTHORIZATION': 'Bearer ' + access_token,
+            "HTTP_AUTHORIZATION": "Bearer " + access_token,
         }
         request = self.factory.post("/fake-resource", **auth_headers)
         request.user = self.test_user

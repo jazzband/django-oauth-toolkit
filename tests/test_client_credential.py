@@ -46,8 +46,8 @@ class BaseTest(TestCase):
         )
         self.application.save()
 
-        oauth2_settings._SCOPES = ['read', 'write']
-        oauth2_settings._DEFAULT_SCOPES = ['read', 'write']
+        oauth2_settings._SCOPES = ["read", "write"]
+        oauth2_settings._DEFAULT_SCOPES = ["read", "write"]
 
     def tearDown(self):
         self.application.delete()
@@ -61,19 +61,19 @@ class TestClientCredential(BaseTest):
         Request an access token using Client Credential Flow
         """
         token_request_data = {
-            'grant_type': 'client_credentials',
+            "grant_type": "client_credentials",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
 
         content = json.loads(response.content.decode("utf-8"))
-        access_token = content['access_token']
+        access_token = content["access_token"]
 
         # use token to access the resource
         auth_headers = {
-            'HTTP_AUTHORIZATION': 'Bearer ' + access_token,
+            "HTTP_AUTHORIZATION": "Bearer " + access_token,
         }
         request = self.factory.get("/fake-resource", **auth_headers)
         request.user = self.test_user
@@ -84,21 +84,21 @@ class TestClientCredential(BaseTest):
 
     def test_client_credential_does_not_issue_refresh_token(self):
         token_request_data = {
-            'grant_type': 'client_credentials',
+            "grant_type": "client_credentials",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
 
         content = json.loads(response.content.decode("utf-8"))
         self.assertNotIn("refresh_token", content)
 
     def test_client_credential_user_is_none_on_access_token(self):
-        token_request_data = {'grant_type': 'client_credentials'}
+        token_request_data = {"grant_type": "client_credentials"}
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
 
         content = json.loads(response.content.decode("utf-8"))
@@ -119,21 +119,21 @@ class TestExtendedRequest(BaseTest):
             oauthlib_backend_class = OAuthLibCore
 
             def get_scopes(self):
-                return ['read', 'write']
+                return ["read", "write"]
 
         token_request_data = {
-            'grant_type': 'client_credentials',
+            "grant_type": "client_credentials",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
-        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
 
         content = json.loads(response.content.decode("utf-8"))
-        access_token = content['access_token']
+        access_token = content["access_token"]
 
         # use token to access the resource
         auth_headers = {
-            'HTTP_AUTHORIZATION': 'Bearer ' + access_token,
+            "HTTP_AUTHORIZATION": "Bearer " + access_token,
         }
 
         request = self.request_factory.get("/fake-req", **auth_headers)
@@ -146,7 +146,7 @@ class TestExtendedRequest(BaseTest):
         self.assertTrue(valid)
         self.assertIsNone(r.user)
         self.assertEqual(r.client, self.application)
-        self.assertEqual(r.scopes, ['read', 'write'])
+        self.assertEqual(r.scopes, ["read", "write"])
 
 
 class TestClientResourcePasswordBased(BaseTest):
@@ -165,23 +165,23 @@ class TestClientResourcePasswordBased(BaseTest):
         self.application.save()
 
         token_request_data = {
-            'grant_type': 'password',
-            'username': 'test_user',
-            'password': '123456'
+            "grant_type": "password",
+            "username": "test_user",
+            "password": "123456"
         }
         auth_headers = get_basic_auth_header(
             quote_plus(self.application.client_id), quote_plus(self.application.client_secret)
         )
 
-        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
 
         content = json.loads(response.content.decode("utf-8"))
-        access_token = content['access_token']
+        access_token = content["access_token"]
 
         # use token to access the resource
         auth_headers = {
-            'HTTP_AUTHORIZATION': 'Bearer ' + access_token,
+            "HTTP_AUTHORIZATION": "Bearer " + access_token,
         }
         request = self.factory.get("/fake-resource", **auth_headers)
         request.user = self.test_user

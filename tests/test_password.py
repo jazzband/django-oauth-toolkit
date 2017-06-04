@@ -36,8 +36,8 @@ class BaseTest(TestCase):
         )
         self.application.save()
 
-        oauth2_settings._SCOPES = ['read', 'write']
-        oauth2_settings._DEFAULT_SCOPES = ['read', 'write']
+        oauth2_settings._SCOPES = ["read", "write"]
+        oauth2_settings._DEFAULT_SCOPES = ["read", "write"]
 
     def tearDown(self):
         self.application.delete()
@@ -51,51 +51,51 @@ class TestPasswordTokenView(BaseTest):
         Request an access token using Resource Owner Password Flow
         """
         token_request_data = {
-            'grant_type': 'password',
-            'username': 'test_user',
-            'password': '123456',
+            "grant_type": "password",
+            "username": "test_user",
+            "password": "123456",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
 
         content = json.loads(response.content.decode("utf-8"))
-        self.assertEqual(content['token_type'], "Bearer")
-        self.assertEqual(content['scope'], "read write")
-        self.assertEqual(content['expires_in'], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
+        self.assertEqual(content["token_type"], "Bearer")
+        self.assertEqual(content["scope"], "read write")
+        self.assertEqual(content["expires_in"], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
 
     def test_bad_credentials(self):
         """
         Request an access token using Resource Owner Password Flow
         """
         token_request_data = {
-            'grant_type': 'password',
-            'username': 'test_user',
-            'password': 'NOT_MY_PASS',
+            "grant_type": "password",
+            "username": "test_user",
+            "password": "NOT_MY_PASS",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 401)
 
 
 class TestPasswordProtectedResource(BaseTest):
     def test_password_resource_access_allowed(self):
         token_request_data = {
-            'grant_type': 'password',
-            'username': 'test_user',
-            'password': '123456',
+            "grant_type": "password",
+            "username": "test_user",
+            "password": "123456",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
-        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
-        access_token = content['access_token']
+        access_token = content["access_token"]
 
         # use token to access the resource
         auth_headers = {
-            'HTTP_AUTHORIZATION': 'Bearer ' + access_token,
+            "HTTP_AUTHORIZATION": "Bearer " + access_token,
         }
         request = self.factory.get("/fake-resource", **auth_headers)
         request.user = self.test_user

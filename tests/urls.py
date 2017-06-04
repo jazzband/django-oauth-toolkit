@@ -5,7 +5,7 @@ admin.autodiscover()
 
 
 urlpatterns = [
-    url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+    url(r"^o/", include("oauth2_provider.urls", namespace="oauth2_provider")),
 ]
 
 

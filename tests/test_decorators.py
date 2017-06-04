@@ -34,18 +34,18 @@ class TestProtectedResourceDecorator(TestCase):
 
         self.access_token = AccessToken.objects.create(
             user=self.user,
-            scope='read write',
+            scope="read write",
             expires=timezone.now() + timedelta(seconds=300),
-            token='secret-access-token-key',
+            token="secret-access-token-key",
             application=self.application
         )
 
-        oauth2_settings._SCOPES = ['read', 'write']
+        oauth2_settings._SCOPES = ["read", "write"]
 
     def test_access_denied(self):
         @protected_resource()
         def view(request, *args, **kwargs):
-            return 'protected contents'
+            return "protected contents"
 
         request = self.request_factory.get("/fake-resource")
         response = view(request)
@@ -54,39 +54,39 @@ class TestProtectedResourceDecorator(TestCase):
     def test_access_allowed(self):
         @protected_resource()
         def view(request, *args, **kwargs):
-            return 'protected contents'
+            return "protected contents"
 
-        @protected_resource(scopes=['can_touch_this'])
+        @protected_resource(scopes=["can_touch_this"])
         def scoped_view(request, *args, **kwargs):
-            return 'moar protected contents'
+            return "moar protected contents"
 
         auth_headers = {
-            'HTTP_AUTHORIZATION': 'Bearer ' + self.access_token.token,
+            "HTTP_AUTHORIZATION": "Bearer " + self.access_token.token,
         }
         request = self.request_factory.get("/fake-resource", **auth_headers)
         response = view(request)
         self.assertEqual(response, "protected contents")
 
         # now with scopes
-        self.access_token.scope = 'can_touch_this'
+        self.access_token.scope = "can_touch_this"
         self.access_token.save()
         auth_headers = {
-            'HTTP_AUTHORIZATION': 'Bearer ' + self.access_token.token,
+            "HTTP_AUTHORIZATION": "Bearer " + self.access_token.token,
         }
         request = self.request_factory.get("/fake-resource", **auth_headers)
         response = scoped_view(request)
         self.assertEqual(response, "moar protected contents")
 
     def test_rw_protected(self):
-        self.access_token.scope = 'exotic_scope write'
+        self.access_token.scope = "exotic_scope write"
         self.access_token.save()
         auth_headers = {
-            'HTTP_AUTHORIZATION': 'Bearer ' + self.access_token.token,
+            "HTTP_AUTHORIZATION": "Bearer " + self.access_token.token,
         }
 
-        @rw_protected_resource(scopes=['exotic_scope'])
+        @rw_protected_resource(scopes=["exotic_scope"])
         def scoped_view(request, *args, **kwargs):
-            return 'other protected contents'
+            return "other protected contents"
 
         request = self.request_factory.post("/fake-resource", **auth_headers)
         response = scoped_view(request)

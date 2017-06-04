@@ -154,9 +154,15 @@ class TestTokenIntrospectionAuth(TestCase):
         # with token = None
         self.assertFalse(self.validator.validate_bearer_token(None, ["dolphin"], self.request))
         # with valid token and scope
-        self.assertTrue(self.validator.validate_bearer_token(self.resource_server_token.token, ["introspection"], self.request))
+        self.assertTrue(
+            self.validator.validate_bearer_token(
+                self.resource_server_token.token, ["introspection"], self.request
+            )
+        )
         # with initially invalid token, but validated through request
-        self.assertTrue(self.validator.validate_bearer_token(self.invalid_token.token, ["dolphin"], self.request))
+        self.assertTrue(
+            self.validator.validate_bearer_token(self.invalid_token.token, ["dolphin"], self.request)
+        )
         # with locally unavailable token, but validated through request
         self.assertTrue(self.validator.validate_bearer_token("butzi", ["dolphin"], self.request))
         # with valid token but invalid scope

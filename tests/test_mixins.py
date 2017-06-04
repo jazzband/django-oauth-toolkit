@@ -71,8 +71,9 @@ class TestOAuthLibMixin(BaseTest):
         request.user = "fake"
         test_view = TestView()
 
-        self.assertEqual(test_view.get_oauthlib_backend_class(),
-                         AnotherOauthLibBackend)
+        self.assertEqual(
+            test_view.get_oauthlib_backend_class(), AnotherOauthLibBackend
+        )
 
 
 class TestScopedResourceMixin(BaseTest):
@@ -86,11 +87,11 @@ class TestScopedResourceMixin(BaseTest):
 
     def test_correct_required_scopes(self):
         class TestView(ScopedResourceMixin, View):
-            required_scopes = ['scope1', 'scope2']
+            required_scopes = ["scope1", "scope2"]
 
         test_view = TestView()
 
-        self.assertEqual(test_view.get_scopes(), ['scope1', 'scope2'])
+        self.assertEqual(test_view.get_scopes(), ["scope1", "scope2"])
 
 
 class TestProtectedResourceMixin(BaseTest):
