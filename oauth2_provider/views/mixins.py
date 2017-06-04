@@ -12,7 +12,7 @@ from ..settings import oauth2_settings
 
 log = logging.getLogger("oauth2_provider")
 
-SAFE_HTTP_METHODS = ['GET', 'HEAD', 'OPTIONS']
+SAFE_HTTP_METHODS = ["GET", "HEAD", "OPTIONS"]
 
 
 class OAuthLibMixin(object):
@@ -83,7 +83,7 @@ class OAuthLibMixin(object):
         """
         Cache and return `OAuthlibCore` instance so it will be created only on first request
         """
-        if not hasattr(cls, '_oauthlib_core'):
+        if not hasattr(cls, "_oauthlib_core"):
             server = cls.get_server()
             core_class = cls.get_oauthlib_backend_class()
             cls._oauthlib_core = core_class(server)
@@ -203,7 +203,7 @@ class ProtectedResourceMixin(OAuthLibMixin):
     """
     def dispatch(self, request, *args, **kwargs):
         # let preflight OPTIONS requests pass
-        if request.method.upper() == 'OPTIONS':
+        if request.method.upper() == "OPTIONS":
             return super(ProtectedResourceMixin, self).dispatch(request, *args, **kwargs)
 
         # check if the request is valid and the protected resource may be accessed
@@ -228,8 +228,8 @@ class ReadWriteScopedResourceMixin(ScopedResourceMixin, OAuthLibMixin):
 
         if not set(read_write_scopes).issubset(set(provided_scopes)):
             raise ImproperlyConfigured(
-                "ReadWriteScopedResourceMixin requires following scopes {0}"
-                " to be in OAUTH2_PROVIDER['SCOPES'] list in settings".format(read_write_scopes)
+                "ReadWriteScopedResourceMixin requires following scopes {}"
+                ' to be in OAUTH2_PROVIDER["SCOPES"] list in settings'.format(read_write_scopes)
             )
 
         return super(ReadWriteScopedResourceMixin, cls).__new__(cls, *args, **kwargs)

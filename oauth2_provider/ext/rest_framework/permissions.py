@@ -7,9 +7,9 @@ from .authentication import OAuth2Authentication
 from ...settings import oauth2_settings
 
 
-log = logging.getLogger('oauth2_provider')
+log = logging.getLogger("oauth2_provider")
 
-SAFE_HTTP_METHODS = ['GET', 'HEAD', 'OPTIONS']
+SAFE_HTTP_METHODS = ["GET", "HEAD", "OPTIONS"]
 
 
 class TokenHasScope(BasePermission):
@@ -23,22 +23,23 @@ class TokenHasScope(BasePermission):
         if not token:
             return False
 
-        if hasattr(token, 'scope'):  # OAuth 2
+        if hasattr(token, "scope"):  # OAuth 2
             required_scopes = self.get_scopes(request, view)
             log.debug("Required scopes to access resource: {0}".format(required_scopes))
 
             return token.is_valid(required_scopes)
 
-        assert False, ('TokenHasScope requires the'
-                       '`oauth2_provider.rest_framework.OAuth2Authentication` authentication '
-                       'class to be used.')
+        assert False, ("TokenHasScope requires the"
+                       "`oauth2_provider.rest_framework.OAuth2Authentication` authentication "
+                       "class to be used.")
 
     def get_scopes(self, request, view):
         try:
-            return getattr(view, 'required_scopes')
+            return getattr(view, "required_scopes")
         except AttributeError:
             raise ImproperlyConfigured(
-                'TokenHasScope requires the view to define the required_scopes attribute')
+                "TokenHasScope requires the view to define the required_scopes attribute"
+            )
 
 
 class TokenHasReadWriteScope(TokenHasScope):
@@ -80,7 +81,7 @@ class TokenHasResourceScope(TokenHasScope):
             scope_type = oauth2_settings.WRITE_SCOPE
 
         required_scopes = [
-            '{0}:{1}'.format(scope, scope_type) for scope in view_scopes
+            "{}:{}".format(scope, scope_type) for scope in view_scopes
         ]
 
         return required_scopes

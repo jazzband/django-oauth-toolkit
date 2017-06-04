@@ -28,7 +28,7 @@ class OAuthLibCore(object):
         parsed = list(urlparse(request.get_full_path()))
         unsafe = set(c for c in parsed[4]).difference(urlencoded)
         for c in unsafe:
-            parsed[4] = parsed[4].replace(c, quote(c, safe=b''))
+            parsed[4] = parsed[4].replace(c, quote(c, safe=b""))
 
         return urlunparse(parsed)
 
@@ -62,12 +62,12 @@ class OAuthLibCore(object):
         :return: a dictionary with OAuthLib needed headers
         """
         headers = request.META.copy()
-        if 'wsgi.input' in headers:
-            del headers['wsgi.input']
-        if 'wsgi.errors' in headers:
-            del headers['wsgi.errors']
-        if 'HTTP_AUTHORIZATION' in headers:
-            headers['Authorization'] = headers['HTTP_AUTHORIZATION']
+        if "wsgi.input" in headers:
+            del headers["wsgi.input"]
+        if "wsgi.errors" in headers:
+            del headers["wsgi.errors"]
+        if "HTTP_AUTHORIZATION" in headers:
+            headers["Authorization"] = headers["HTTP_AUTHORIZATION"]
 
         return headers
 
@@ -113,18 +113,18 @@ class OAuthLibCore(object):
                 raise oauth2.AccessDeniedError()
 
             # add current user to credentials. this will be used by OAUTH2_VALIDATOR_CLASS
-            credentials['user'] = request.user
+            credentials["user"] = request.user
 
             headers, body, status = self.server.create_authorization_response(
-                uri=credentials['redirect_uri'], scopes=scopes, credentials=credentials)
+                uri=credentials["redirect_uri"], scopes=scopes, credentials=credentials)
             uri = headers.get("Location", None)
 
             return uri, headers, body, status
 
         except oauth2.FatalClientError as error:
-            raise FatalClientError(error=error, redirect_uri=credentials['redirect_uri'])
+            raise FatalClientError(error=error, redirect_uri=credentials["redirect_uri"])
         except oauth2.OAuth2Error as error:
-            raise OAuthToolkitError(error=error, redirect_uri=credentials['redirect_uri'])
+            raise OAuthToolkitError(error=error, redirect_uri=credentials["redirect_uri"])
 
     def create_token_response(self, request):
         """
@@ -180,7 +180,7 @@ class JSONOAuthLibCore(OAuthLibCore):
         :return: provided POST parameters "urlencodable"
         """
         try:
-            body = json.loads(request.body.decode('utf-8')).items()
+            body = json.loads(request.body.decode("utf-8")).items()
         except ValueError:
             body = ""
 

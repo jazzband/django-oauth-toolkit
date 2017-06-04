@@ -13,14 +13,14 @@ from .settings import oauth2_settings
 
 class URIValidator(RegexValidator):
     regex = re.compile(
-        r'^(?:[a-z][a-z0-9\.\-\+]*)://'  # scheme...
-        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
-        r'(?!-)[A-Z\d-]{1,63}(?<!-)|'  # also cover non-dotted domain
-        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|'  # ...or ipv4
-        r'\[?[A-F0-9]*:[A-F0-9:]+\]?)'  # ...or ipv6
-        r'(?::\d+)?'  # optional port
-        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
-    message = _('Enter a valid URL.')
+        r"^(?:[a-z][a-z0-9\.\-\+]*)://"  # scheme...
+        r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|"  # domain...
+        r"(?!-)[A-Z\d-]{1,63}(?<!-)|"  # also cover non-dotted domain
+        r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|"  # ...or ipv4
+        r"\[?[A-F0-9]*:[A-F0-9:]+\]?)"  # ...or ipv6
+        r"(?::\d+)?"  # optional port
+        r"(?:/?|[/?]\S+)$", re.IGNORECASE)
+    message = _("Enter a valid URL.")
 
     def __call__(self, value):
         try:
@@ -31,7 +31,7 @@ class URIValidator(RegexValidator):
                 value = force_text(value)
                 scheme, netloc, path, query, fragment = urlsplit(value)
                 try:
-                    netloc = netloc.encode('idna').decode('ascii')  # IDN -> ACE
+                    netloc = netloc.encode("idna").decode("ascii")  # IDN -> ACE
                 except UnicodeError:  # invalid domain part
                     raise e
                 url = urlunsplit((scheme, netloc, path, query, fragment))
@@ -49,11 +49,11 @@ class RedirectURIValidator(URIValidator):
     def __call__(self, value):
         super(RedirectURIValidator, self).__call__(value)
         value = force_text(value)
-        if len(value.split('#')) > 1:
-            raise ValidationError('Redirect URIs must not contain fragments')
+        if len(value.split("#")) > 1:
+            raise ValidationError("Redirect URIs must not contain fragments")
         scheme, netloc, path, query, fragment = urlsplit(value)
         if scheme.lower() not in self.allowed_schemes:
-            raise ValidationError('Redirect URI scheme is not allowed.')
+            raise ValidationError("Redirect URI scheme is not allowed.")
 
 
 def validate_uris(value):
@@ -63,6 +63,6 @@ def validate_uris(value):
     v = RedirectURIValidator(oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES)
     uris = value.split()
     if not uris:
-        raise ValidationError('Redirect URI cannot be empty')
+        raise ValidationError("Redirect URI cannot be empty")
     for uri in uris:
         v(uri)

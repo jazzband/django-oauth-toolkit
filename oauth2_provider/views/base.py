@@ -17,7 +17,7 @@ from ..scopes import get_scopes_backend
 from ..settings import oauth2_settings
 
 
-log = logging.getLogger('oauth2_provider')
+log = logging.getLogger("oauth2_provider")
 
 
 class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
@@ -42,9 +42,9 @@ class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
         redirect, error_response = super(BaseAuthorizationView, self).error_response(error, **kwargs)
 
         if redirect:
-            return HttpResponseUriRedirect(error_response['url'])
+            return HttpResponseUriRedirect(error_response["url"])
 
-        status = error_response['error'].status_code
+        status = error_response["error"].status_code
         return self.render_to_response(error_response, status=status)
 
 
@@ -68,7 +68,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
     * Authorization code
     * Implicit grant
     """
-    template_name = 'oauth2_provider/authorize.html'
+    template_name = "oauth2_provider/authorize.html"
     form_class = AllowForm
 
     server_class = oauth2_settings.OAUTH2_SERVER_CLASS
@@ -79,27 +79,27 @@ class AuthorizationView(BaseAuthorizationView, FormView):
 
     def get_initial(self):
         # TODO: move this scopes conversion from and to string into a utils function
-        scopes = self.oauth2_data.get('scope', self.oauth2_data.get('scopes', []))
+        scopes = self.oauth2_data.get("scope", self.oauth2_data.get("scopes", []))
         initial_data = {
-            'redirect_uri': self.oauth2_data.get('redirect_uri', None),
-            'scope': ' '.join(scopes),
-            'client_id': self.oauth2_data.get('client_id', None),
-            'state': self.oauth2_data.get('state', None),
-            'response_type': self.oauth2_data.get('response_type', None),
+            "redirect_uri": self.oauth2_data.get("redirect_uri", None),
+            "scope": " ".join(scopes),
+            "client_id": self.oauth2_data.get("client_id", None),
+            "state": self.oauth2_data.get("state", None),
+            "response_type": self.oauth2_data.get("response_type", None),
         }
         return initial_data
 
     def form_valid(self, form):
         try:
             credentials = {
-                'client_id': form.cleaned_data.get('client_id'),
-                'redirect_uri': form.cleaned_data.get('redirect_uri'),
-                'response_type': form.cleaned_data.get('response_type', None),
-                'state': form.cleaned_data.get('state', None),
+                "client_id": form.cleaned_data.get("client_id"),
+                "redirect_uri": form.cleaned_data.get("redirect_uri"),
+                "response_type": form.cleaned_data.get("response_type", None),
+                "state": form.cleaned_data.get("state", None),
             }
 
-            scopes = form.cleaned_data.get('scope')
-            allow = form.cleaned_data.get('allow')
+            scopes = form.cleaned_data.get("scope")
+            allow = form.cleaned_data.get("allow")
             uri, headers, body, status = self.create_authorization_response(
                 request=self.request, scopes=scopes, credentials=credentials, allow=allow)
             self.success_url = uri
@@ -114,26 +114,26 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             scopes, credentials = self.validate_authorization_request(request)
             all_scopes = get_scopes_backend().get_all_scopes()
             kwargs["scopes_descriptions"] = [all_scopes[scope] for scope in scopes]
-            kwargs['scopes'] = scopes
+            kwargs["scopes"] = scopes
             # at this point we know an Application instance with such client_id exists in the database
 
             # TODO: Cache this!
             application = get_application_model().objects.get(client_id=credentials["client_id"])
 
-            kwargs['application'] = application
-            kwargs['client_id'] = credentials['client_id']
-            kwargs['redirect_uri'] = credentials['redirect_uri']
-            kwargs['response_type'] = credentials['response_type']
-            kwargs['state'] = credentials['state']
+            kwargs["application"] = application
+            kwargs["client_id"] = credentials["client_id"]
+            kwargs["redirect_uri"] = credentials["redirect_uri"]
+            kwargs["response_type"] = credentials["response_type"]
+            kwargs["state"] = credentials["state"]
 
             self.oauth2_data = kwargs
             # following two loc are here only because of https://code.djangoproject.com/ticket/17795
             form = self.get_form(self.get_form_class())
-            kwargs['form'] = form
+            kwargs["form"] = form
 
             # Check to see if the user has already granted access and return
-            # a successful response depending on 'approval_prompt' url parameter
-            require_approval = request.GET.get('approval_prompt', oauth2_settings.REQUEST_APPROVAL_PROMPT)
+            # a successful response depending on "approval_prompt" url parameter
+            require_approval = request.GET.get("approval_prompt", oauth2_settings.REQUEST_APPROVAL_PROMPT)
 
             # If skip_authorization field is True, skip the authorization screen even
             # if this is the first use of the application and there was no previous authorization.
@@ -145,7 +145,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                     credentials=credentials, allow=True)
                 return HttpResponseUriRedirect(uri)
 
-            elif require_approval == 'auto':
+            elif require_approval == "auto":
                 tokens = get_access_token_model().objects.filter(
                     user=request.user,
                     application=kwargs["application"],
@@ -180,7 +180,7 @@ class TokenView(OAuthLibMixin, View):
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
     oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
 
-    @method_decorator(sensitive_post_parameters('password'))
+    @method_decorator(sensitive_post_parameters("password"))
     def post(self, request, *args, **kwargs):
         url, headers, body, status = self.create_token_response(request)
         response = HttpResponse(content=body, status=status)
@@ -201,7 +201,7 @@ class RevokeTokenView(OAuthLibMixin, View):
 
     def post(self, request, *args, **kwargs):
         url, headers, body, status = self.create_revocation_response(request)
-        response = HttpResponse(content=body or '', status=status)
+        response = HttpResponse(content=body or "", status=status)
 
         for k, v in headers.items():
             response[k] = v

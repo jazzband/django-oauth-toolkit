@@ -20,17 +20,17 @@ class OAuth2TokenMiddleware(MiddlewareMixin):
     also request._cached_user field makes AuthenticationMiddleware use that instead of the one from
     the session.
 
-    It also adds 'Authorization' to the 'Vary' header. So that django's cache middleware or a
-    reverse proxy can create proper cache keys
+    It also adds "Authorization" to the "Vary" header, so that django's cache middleware or a
+    reverse proxy can create proper cache keys.
     """
     def process_request(self, request):
         # do something only if request contains a Bearer token
-        if request.META.get('HTTP_AUTHORIZATION', '').startswith('Bearer'):
-            if not hasattr(request, 'user') or request.user.is_anonymous:
+        if request.META.get("HTTP_AUTHORIZATION", "").startswith("Bearer"):
+            if not hasattr(request, "user") or request.user.is_anonymous:
                 user = authenticate(request=request)
                 if user:
                     request.user = request._cached_user = user
 
     def process_response(self, request, response):
-        patch_vary_headers(response, ('Authorization',))
+        patch_vary_headers(response, ("Authorization",))
         return response

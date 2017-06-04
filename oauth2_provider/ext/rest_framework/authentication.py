@@ -7,7 +7,7 @@ class OAuth2Authentication(BaseAuthentication):
     """
     OAuth 2 authentication backend using `django-oauth-toolkit`
     """
-    www_authenticate_realm = 'api'
+    www_authenticate_realm = "api"
 
     def authenticate(self, request):
         """

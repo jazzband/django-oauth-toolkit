@@ -39,38 +39,44 @@ class AbstractApplication(models.Model):
                             the registration process as described in :rfc:`2.2`
     * :attr:`name` Friendly name for the Application
     """
-    CLIENT_CONFIDENTIAL = 'confidential'
-    CLIENT_PUBLIC = 'public'
+    CLIENT_CONFIDENTIAL = "confidential"
+    CLIENT_PUBLIC = "public"
     CLIENT_TYPES = (
-        (CLIENT_CONFIDENTIAL, _('Confidential')),
-        (CLIENT_PUBLIC, _('Public')),
+        (CLIENT_CONFIDENTIAL, _("Confidential")),
+        (CLIENT_PUBLIC, _("Public")),
     )
 
-    GRANT_AUTHORIZATION_CODE = 'authorization-code'
-    GRANT_IMPLICIT = 'implicit'
-    GRANT_PASSWORD = 'password'
-    GRANT_CLIENT_CREDENTIALS = 'client-credentials'
+    GRANT_AUTHORIZATION_CODE = "authorization-code"
+    GRANT_IMPLICIT = "implicit"
+    GRANT_PASSWORD = "password"
+    GRANT_CLIENT_CREDENTIALS = "client-credentials"
     GRANT_TYPES = (
-        (GRANT_AUTHORIZATION_CODE, _('Authorization code')),
-        (GRANT_IMPLICIT, _('Implicit')),
-        (GRANT_PASSWORD, _('Resource owner password-based')),
-        (GRANT_CLIENT_CREDENTIALS, _('Client credentials')),
+        (GRANT_AUTHORIZATION_CODE, _("Authorization code")),
+        (GRANT_IMPLICIT, _("Implicit")),
+        (GRANT_PASSWORD, _("Resource owner password-based")),
+        (GRANT_CLIENT_CREDENTIALS, _("Client credentials")),
     )
 
-    client_id = models.CharField(max_length=100, unique=True,
-                                 default=generate_client_id, db_index=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             related_name="%(app_label)s_%(class)s",
-                             null=True, blank=True, on_delete=models.CASCADE)
+    client_id = models.CharField(
+        max_length=100, unique=True, default=generate_client_id, db_index=True
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="%(app_label)s_%(class)s",
+        null=True, blank=True, on_delete=models.CASCADE
+    )
 
     help_text = _("Allowed URIs list, space separated")
-    redirect_uris = models.TextField(help_text=help_text,
-                                     validators=[validate_uris], blank=True)
+    redirect_uris = models.TextField(
+        blank=True, help_text=help_text, validators=[validate_uris]
+    )
     client_type = models.CharField(max_length=32, choices=CLIENT_TYPES)
-    authorization_grant_type = models.CharField(max_length=32,
-                                                choices=GRANT_TYPES)
-    client_secret = models.CharField(max_length=255, blank=True,
-                                     default=generate_client_secret, db_index=True)
+    authorization_grant_type = models.CharField(
+        max_length=32, choices=GRANT_TYPES
+    )
+    client_secret = models.CharField(
+        max_length=255, blank=True, default=generate_client_secret, db_index=True
+    )
     name = models.CharField(max_length=255, blank=True)
     skip_authorization = models.BooleanField(default=False)
 
@@ -86,9 +92,11 @@ class AbstractApplication(models.Model):
         if self.redirect_uris:
             return self.redirect_uris.split().pop(0)
 
-        assert False, "If you are using implicit, authorization_code" \
-                      "or all-in-one grant_type, you must define " \
-                      "redirect_uris field in your Application model"
+        assert False, (
+            "If you are using implicit, authorization_code"
+            "or all-in-one grant_type, you must define "
+            "redirect_uris field in your Application model"
+        )
 
     def redirect_uri_allowed(self, uri):
         """
@@ -118,11 +126,11 @@ class AbstractApplication(models.Model):
             and self.authorization_grant_type \
             in (AbstractApplication.GRANT_AUTHORIZATION_CODE,
                 AbstractApplication.GRANT_IMPLICIT):
-            error = _('Redirect_uris could not be empty with {0} grant_type')
-            raise ValidationError(error.format(self.authorization_grant_type))
+            error = _("Redirect_uris could not be empty with {grant_type} grant_type")
+            raise ValidationError(error.format(grant_type=self.authorization_grant_type))
 
     def get_absolute_url(self):
-        return reverse('oauth2_provider:detail', args=[str(self.id)])
+        return reverse("oauth2_provider:detail", args=[str(self.id)])
 
     def __str__(self):
         return self.name or self.client_id
@@ -141,7 +149,7 @@ class AbstractApplication(models.Model):
 
 class Application(AbstractApplication):
     class Meta(AbstractApplication.Meta):
-        swappable = 'OAUTH2_PROVIDER_APPLICATION_MODEL'
+        swappable = "OAUTH2_PROVIDER_APPLICATION_MODEL"
 
 
 @python_2_unicode_compatible
@@ -289,14 +297,17 @@ class AbstractRefreshToken(models.Model):
     * :attr:`access_token` AccessToken instance this refresh token is
                            bounded to
     """
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
-                             related_name="%(app_label)s_%(class)s")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        related_name="%(app_label)s_%(class)s"
+    )
     token = models.CharField(max_length=255, unique=True)
-    application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL,
-                                    on_delete=models.CASCADE)
-    access_token = models.OneToOneField(oauth2_settings.ACCESS_TOKEN_MODEL,
-                                        related_name='refresh_token',
-                                        on_delete=models.CASCADE)
+    application = models.ForeignKey(
+        oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE)
+    access_token = models.OneToOneField(
+        oauth2_settings.ACCESS_TOKEN_MODEL, on_delete=models.CASCADE,
+        related_name="refresh_token"
+    )
 
     def revoke(self):
         """

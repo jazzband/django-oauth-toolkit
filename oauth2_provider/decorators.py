@@ -67,7 +67,7 @@ def rw_protected_resource(scopes=None, validator_cls=OAuth2Validator, server_cls
                 )
 
             # Check if method is safe
-            if request.method.upper() in ['GET', 'HEAD', 'OPTIONS']:
+            if request.method.upper() in ["GET", "HEAD", "OPTIONS"]:
                 _scopes.append(oauth2_settings.READ_SCOPE)
             else:
                 _scopes.append(oauth2_settings.WRITE_SCOPE)
