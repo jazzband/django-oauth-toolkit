@@ -57,6 +57,7 @@ class AbstractApplication(models.Model):
         (GRANT_CLIENT_CREDENTIALS, _("Client credentials")),
     )
 
+    id = models.BigAutoField(primary_key=True)
     client_id = models.CharField(
         max_length=100, unique=True, default=generate_client_id, db_index=True
     )
@@ -168,11 +169,15 @@ class AbstractGrant(models.Model):
     * :attr:`redirect_uri` Self explained
     * :attr:`scope` Required scopes, optional
     """
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
-                             related_name="%(app_label)s_%(class)s")
+    id = models.BigAutoField(primary_key=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        related_name="%(app_label)s_%(class)s"
+    )
     code = models.CharField(max_length=255, unique=True)  # code comes from oauthlib
-    application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL,
-                                    on_delete=models.CASCADE)
+    application = models.ForeignKey(
+        oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE
+    )
     expires = models.DateTimeField()
     redirect_uri = models.CharField(max_length=255)
     scope = models.TextField(blank=True)
@@ -215,12 +220,15 @@ class AbstractAccessToken(models.Model):
     * :attr:`expires` Date and time of token expiration, in DateTime format
     * :attr:`scope` Allowed scopes
     """
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True,
-                             on_delete=models.CASCADE,
-                             related_name="%(app_label)s_%(class)s")
+    id = models.BigAutoField(primary_key=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True,
+        related_name="%(app_label)s_%(class)s"
+    )
     token = models.CharField(max_length=255, unique=True, )
-    application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL, blank=True, null=True,
-                                    on_delete=models.CASCADE)
+    application = models.ForeignKey(
+        oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE, blank=True, null=True,
+    )
     expires = models.DateTimeField()
     scope = models.TextField(blank=True)
 
@@ -297,6 +305,7 @@ class AbstractRefreshToken(models.Model):
     * :attr:`access_token` AccessToken instance this refresh token is
                            bounded to
     """
+    id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
         related_name="%(app_label)s_%(class)s"

@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 
 from oauth2_provider.settings import oauth2_settings
+from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
 
@@ -18,5 +19,40 @@ class Migration(migrations.Migration):
             model_name='accesstoken',
             name='application',
             field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=oauth2_settings.APPLICATION_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='accesstoken',
+            name='id',
+            field=models.BigAutoField(primary_key=True, serialize=False),
+        ),
+        migrations.AlterField(
+            model_name='accesstoken',
+            name='user',
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='oauth2_provider_accesstoken', to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='application',
+            name='id',
+            field=models.BigAutoField(primary_key=True, serialize=False),
+        ),
+        migrations.AlterField(
+            model_name='grant',
+            name='id',
+            field=models.BigAutoField(primary_key=True, serialize=False),
+        ),
+        migrations.AlterField(
+            model_name='grant',
+            name='user',
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='oauth2_provider_grant', to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='refreshtoken',
+            name='id',
+            field=models.BigAutoField(primary_key=True, serialize=False),
+        ),
+        migrations.AlterField(
+            model_name='refreshtoken',
+            name='user',
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='oauth2_provider_refreshtoken', to=settings.AUTH_USER_MODEL),
         ),
     ]
