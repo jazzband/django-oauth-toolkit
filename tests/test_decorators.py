@@ -24,7 +24,7 @@ class TestProtectedResourceDecorator(TestCase):
         super(TestProtectedResourceDecorator, cls).setUpClass()
 
     def setUp(self):
-        self.user = UserModel.objects.create_user("test_user", "test@user.com", "123456")
+        self.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
         self.application = Application.objects.create(
             name="test_client_credentials_app",
             user=self.user,

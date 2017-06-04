@@ -24,7 +24,7 @@ UserModel = get_user_model()
 
 class TestModels(TestCase):
     def setUp(self):
-        self.user = UserModel.objects.create_user("test_user", "test@user.com", "123456")
+        self.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
 
     def test_allow_scopes(self):
         self.client.login(username="test_user", password="123456")
@@ -123,7 +123,7 @@ class TestModels(TestCase):
 )
 class TestCustomModels(TestCase):
     def setUp(self):
-        self.user = UserModel.objects.create_user("test_user", "test@user.com", "123456")
+        self.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
 
     def test_custom_application_model(self):
         """
@@ -265,7 +265,7 @@ class TestGrantModel(TestCase):
 
 class TestAccessTokenModel(TestCase):
     def setUp(self):
-        self.user = UserModel.objects.create_user("test_user", "test@user.com", "123456")
+        self.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
 
     def test_str(self):
         access_token = AccessToken(token="test_token")

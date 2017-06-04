@@ -75,8 +75,8 @@ class TestOAuth2Authentication(TestCase):
     def setUp(self):
         oauth2_settings._SCOPES = ['read', 'write', 'scope1', 'scope2', 'resource1']
 
-        self.test_user = UserModel.objects.create_user("test_user", "test@user.com", "123456")
-        self.dev_user = UserModel.objects.create_user("dev_user", "dev@user.com", "123456")
+        self.test_user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
+        self.dev_user = UserModel.objects.create_user("dev_user", "dev@example.com", "123456")
 
         self.application = Application.objects.create(
             name="Test Application",

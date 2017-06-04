@@ -17,8 +17,8 @@ UserModel = get_user_model()
 
 class BaseTest(TestCase):
     def setUp(self):
-        self.foo_user = UserModel.objects.create_user("foo_user", "test@user.com", "123456")
-        self.bar_user = UserModel.objects.create_user("bar_user", "dev@user.com", "123456")
+        self.foo_user = UserModel.objects.create_user("foo_user", "test@example.com", "123456")
+        self.bar_user = UserModel.objects.create_user("bar_user", "dev@example.com", "123456")
 
     def tearDown(self):
         self.foo_user.delete()

@@ -28,7 +28,7 @@ class BaseTest(TestCase):
     Base class for cases in this module
     """
     def setUp(self):
-        self.user = UserModel.objects.create_user("user", "test@user.com", "123456")
+        self.user = UserModel.objects.create_user("user", "test@example.com", "123456")
         self.app = ApplicationModel.objects.create(
             name='app',
             client_type=ApplicationModel.CLIENT_CONFIDENTIAL,
