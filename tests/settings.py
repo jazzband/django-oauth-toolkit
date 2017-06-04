@@ -64,8 +64,6 @@ MIDDLEWARE = (
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
 )
-# Django < 1.10 compatibility
-MIDDLEWARE_CLASSES = MIDDLEWARE
 
 ROOT_URLCONF = "tests.urls"
 
