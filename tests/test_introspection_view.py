@@ -26,7 +26,7 @@ class TestTokenIntrospectionViews(TestCase):
 
         self.application = Application(
             name="Test Application",
-            redirect_uris="http://localhost http://example.com http://example.it",
+            redirect_uris="http://localhost http://example.com http://example.org",
             user=self.test_user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,

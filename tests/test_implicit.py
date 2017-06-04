@@ -28,7 +28,7 @@ class BaseTest(TestCase):
 
         self.application = Application(
             name="Test Implicit Application",
-            redirect_uris="http://localhost http://example.com http://example.it",
+            redirect_uris="http://localhost http://example.com http://example.org",
             user=self.dev_user,
             client_type=Application.CLIENT_PUBLIC,
             authorization_grant_type=Application.GRANT_IMPLICIT,
@@ -54,7 +54,7 @@ class TestImplicitAuthorizationCodeView(BaseTest):
             'client_id': self.application.client_id,
             'response_type': 'token',
             'state': 'random_state_string',
-            'redirect_uri': 'http://example.it',
+            'redirect_uri': 'http://example.org',
         })
 
         url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
@@ -76,7 +76,7 @@ class TestImplicitAuthorizationCodeView(BaseTest):
             'response_type': 'token',
             'state': 'random_state_string',
             'scope': 'read write',
-            'redirect_uri': 'http://example.it',
+            'redirect_uri': 'http://example.org',
         })
         url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
 
@@ -87,7 +87,7 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         self.assertIn("form", response.context)
 
         form = response.context["form"]
-        self.assertEqual(form['redirect_uri'].value(), "http://example.it")
+        self.assertEqual(form['redirect_uri'].value(), "http://example.org")
         self.assertEqual(form['state'].value(), "random_state_string")
         self.assertEqual(form['scope'].value(), "read write")
         self.assertEqual(form['client_id'].value(), self.application.client_id)
@@ -151,14 +151,14 @@ class TestImplicitAuthorizationCodeView(BaseTest):
             'client_id': self.application.client_id,
             'state': 'random_state_string',
             'scope': 'read write',
-            'redirect_uri': 'http://example.it',
+            'redirect_uri': 'http://example.org',
             'response_type': 'token',
             'allow': True,
         }
 
         response = self.client.post(reverse('oauth2_provider:authorize'), data=form_data)
         self.assertEqual(response.status_code, 302)
-        self.assertIn('http://example.it#', response['Location'])
+        self.assertIn('http://example.org#', response['Location'])
         self.assertIn('access_token=', response['Location'])
         self.assertIn('state=random_state_string', response['Location'])
 
@@ -175,14 +175,14 @@ class TestImplicitAuthorizationCodeView(BaseTest):
             'response_type': 'token',
             'state': 'random_state_string',
             'scope': 'read write',
-            'redirect_uri': 'http://example.it',
+            'redirect_uri': 'http://example.org',
         })
 
         url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
-        self.assertIn('http://example.it#', response['Location'])
+        self.assertIn('http://example.org#', response['Location'])
         self.assertIn('access_token=', response['Location'])
         self.assertIn('state=random_state_string', response['Location'])
 
@@ -196,7 +196,7 @@ class TestImplicitAuthorizationCodeView(BaseTest):
             'client_id': self.application.client_id,
             'state': 'random_state_string',
             'scope': 'read write',
-            'redirect_uri': 'http://example.it',
+            'redirect_uri': 'http://example.org',
             'response_type': 'token',
             'allow': False,
         }
@@ -255,7 +255,7 @@ class TestImplicitTokenView(BaseTest):
             'client_id': self.application.client_id,
             'state': 'random_state_string',
             'scope': 'read write',
-            'redirect_uri': 'http://example.it',
+            'redirect_uri': 'http://example.org',
             'response_type': 'token',
             'allow': True,
         }

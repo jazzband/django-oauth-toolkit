@@ -56,7 +56,7 @@ class BaseTest(TestCase):
 
         self.application = Application(
             name="Test Application",
-            redirect_uris="http://localhost http://example.com http://example.it",
+            redirect_uris="http://localhost http://example.com http://example.org",
             user=self.dev_user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
@@ -86,7 +86,7 @@ class TestScopesSave(BaseTest):
             'client_id': self.application.client_id,
             'state': 'random_state_string',
             'scope': 'scope1 scope2',
-            'redirect_uri': 'http://example.it',
+            'redirect_uri': 'http://example.org',
             'response_type': 'code',
             'allow': True,
         }
@@ -108,7 +108,7 @@ class TestScopesSave(BaseTest):
             'client_id': self.application.client_id,
             'state': 'random_state_string',
             'scope': 'scope1 scope2',
-            'redirect_uri': 'http://example.it',
+            'redirect_uri': 'http://example.org',
             'response_type': 'code',
             'allow': True,
         }
@@ -120,7 +120,7 @@ class TestScopesSave(BaseTest):
         token_request_data = {
             'grant_type': 'authorization_code',
             'code': authorization_code,
-            'redirect_uri': 'http://example.it'
+            'redirect_uri': 'http://example.org'
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
@@ -144,7 +144,7 @@ class TestScopesProtection(BaseTest):
             'client_id': self.application.client_id,
             'state': 'random_state_string',
             'scope': 'scope1 scope2',
-            'redirect_uri': 'http://example.it',
+            'redirect_uri': 'http://example.org',
             'response_type': 'code',
             'allow': True,
         }
@@ -156,7 +156,7 @@ class TestScopesProtection(BaseTest):
         token_request_data = {
             'grant_type': 'authorization_code',
             'code': authorization_code,
-            'redirect_uri': 'http://example.it'
+            'redirect_uri': 'http://example.org'
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
@@ -186,7 +186,7 @@ class TestScopesProtection(BaseTest):
             'client_id': self.application.client_id,
             'state': 'random_state_string',
             'scope': 'scope2',
-            'redirect_uri': 'http://example.it',
+            'redirect_uri': 'http://example.org',
             'response_type': 'code',
             'allow': True,
         }
@@ -198,7 +198,7 @@ class TestScopesProtection(BaseTest):
         token_request_data = {
             'grant_type': 'authorization_code',
             'code': authorization_code,
-            'redirect_uri': 'http://example.it'
+            'redirect_uri': 'http://example.org'
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
@@ -228,7 +228,7 @@ class TestScopesProtection(BaseTest):
             'client_id': self.application.client_id,
             'state': 'random_state_string',
             'scope': 'scope1 scope3',
-            'redirect_uri': 'http://example.it',
+            'redirect_uri': 'http://example.org',
             'response_type': 'code',
             'allow': True,
         }
@@ -240,7 +240,7 @@ class TestScopesProtection(BaseTest):
         token_request_data = {
             'grant_type': 'authorization_code',
             'code': authorization_code,
-            'redirect_uri': 'http://example.it'
+            'redirect_uri': 'http://example.org'
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
@@ -270,7 +270,7 @@ class TestScopesProtection(BaseTest):
             'client_id': self.application.client_id,
             'state': 'random_state_string',
             'scope': 'scope1 scope2',
-            'redirect_uri': 'http://example.it',
+            'redirect_uri': 'http://example.org',
             'response_type': 'code',
             'allow': True,
         }
@@ -282,7 +282,7 @@ class TestScopesProtection(BaseTest):
         token_request_data = {
             'grant_type': 'authorization_code',
             'code': authorization_code,
-            'redirect_uri': 'http://example.it'
+            'redirect_uri': 'http://example.org'
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
@@ -311,7 +311,7 @@ class TestReadWriteScope(BaseTest):
             'client_id': self.application.client_id,
             'state': 'random_state_string',
             'scope': scopes,
-            'redirect_uri': 'http://example.it',
+            'redirect_uri': 'http://example.org',
             'response_type': 'code',
             'allow': True,
         }
@@ -323,7 +323,7 @@ class TestReadWriteScope(BaseTest):
         token_request_data = {
             'grant_type': 'authorization_code',
             'code': authorization_code,
-            'redirect_uri': 'http://example.it'
+            'redirect_uri': 'http://example.org'
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 

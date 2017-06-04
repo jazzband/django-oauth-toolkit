@@ -30,7 +30,7 @@ class TestModels(TestCase):
         self.client.login(username="test_user", password="123456")
         app = Application.objects.create(
             name="test_app",
-            redirect_uris="http://localhost http://example.com http://example.it",
+            redirect_uris="http://localhost http://example.com http://example.org",
             user=self.user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
@@ -89,7 +89,7 @@ class TestModels(TestCase):
 
         app = Application.objects.create(
             name="test_app",
-            redirect_uris="http://localhost http://example.com http://example.it",
+            redirect_uris="http://localhost http://example.com http://example.org",
             user=self.user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
@@ -274,7 +274,7 @@ class TestAccessTokenModel(TestCase):
     def test_user_can_be_none(self):
         app = Application.objects.create(
             name="test_app",
-            redirect_uris="http://localhost http://example.com http://example.it",
+            redirect_uris="http://localhost http://example.com http://example.org",
             user=self.user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
