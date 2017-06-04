@@ -1,9 +1,8 @@
-from django.conf.global_settings import MIDDLEWARE
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpResponse
 from django.test import RequestFactory, TestCase
-from django.test.utils import override_settings
+from django.test.utils import modify_settings, override_settings
 from django.utils.timezone import now, timedelta
 
 from oauth2_provider.backends import OAuth2Backend
@@ -80,7 +79,11 @@ class TestOAuth2Backend(BaseTest):
         "oauth2_provider.backends.OAuth2Backend",
         "django.contrib.auth.backends.ModelBackend",
     ),
-    MIDDLEWARE=tuple(MIDDLEWARE) + ("oauth2_provider.middleware.OAuth2TokenMiddleware", ),
+)
+@modify_settings(
+    MIDDLEWARE={
+        "append": "oauth2_provider.middleware.OAuth2TokenMiddleware",
+    }
 )
 class TestOAuth2Middleware(BaseTest):
 
