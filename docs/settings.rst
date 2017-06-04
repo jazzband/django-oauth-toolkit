@@ -34,7 +34,7 @@ resource after this duration will fail. Keep this value high enough so clients
 can cache the token for a reasonable amount of time.
 
 ACCESS_TOKEN_MODEL
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 The import string of the class (model) representing your access tokens. Overwrite
 this value if you wrote your own implementation (subclass of
 ``oauth2_provider.models.AccessToken``).
@@ -101,7 +101,7 @@ The number of seconds before a refresh token gets removed from the database by
 the ``cleartokens`` management command. Check :ref:`cleartokens` management command for further info.
 
 REFRESH_TOKEN_MODEL
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 The import string of the class (model) representing your refresh tokens. Overwrite
 this value if you wrote your own implementation (subclass of
 ``oauth2_provider.models.RefreshToken``).
