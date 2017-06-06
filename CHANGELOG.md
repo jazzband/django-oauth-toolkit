@@ -1,4 +1,4 @@
-### 0.13.0 [unreleased]
+### 1.0.0 [2017-06-07]
 
 * **New feature**: AccessToken, RefreshToken and Grant models are now swappable.
 * #477: **New feature**: Add support for RFC 7662 (IntrospectTokenView, introspect scope)
@@ -7,6 +7,7 @@
 * **Backwards-incompatible**: The `oauth2_provider.ext.rest_framework` module
   has been moved to `oauth2_provider.contrib.rest_framework`
 * #177: Changed `id` field on Application, AccessToken, RefreshToken and Grant to BigAutoField (bigint/bigserial)
+* #321: Added `created` and `updated` auto fields to Application, AccessToken, RefreshToken and Grant
 * #476: Disallow empty redirect URIs
 * Fixed bad `url` parameter in some error responses.
 * Django 2.0 compatibility fixes.
