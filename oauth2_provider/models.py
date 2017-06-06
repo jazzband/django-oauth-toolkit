@@ -81,6 +81,9 @@ class AbstractApplication(models.Model):
     name = models.CharField(max_length=255, blank=True)
     skip_authorization = models.BooleanField(default=False)
 
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
     class Meta:
         abstract = True
 
@@ -182,6 +185,9 @@ class AbstractGrant(models.Model):
     redirect_uri = models.CharField(max_length=255)
     scope = models.TextField(blank=True)
 
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
     def is_expired(self):
         """
         Check token expiration with timezone awareness
@@ -231,6 +237,9 @@ class AbstractAccessToken(models.Model):
     )
     expires = models.DateTimeField()
     scope = models.TextField(blank=True)
+
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     def is_valid(self, scopes=None):
         """
@@ -317,6 +326,9 @@ class AbstractRefreshToken(models.Model):
         oauth2_settings.ACCESS_TOKEN_MODEL, on_delete=models.CASCADE,
         related_name="refresh_token"
     )
+
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     def revoke(self):
         """
