@@ -154,6 +154,8 @@ class AbstractApplication(models.Model):
 class Application(AbstractApplication):
     class Meta(AbstractApplication.Meta):
         swappable = "OAUTH2_PROVIDER_APPLICATION_MODEL"
+        verbose_name = _('Application')
+        verbose_name_plural = _('Applications')
 
 
 @python_2_unicode_compatible
@@ -172,18 +174,20 @@ class AbstractGrant(models.Model):
     * :attr:`redirect_uri` Self explained
     * :attr:`scope` Required scopes, optional
     """
-    id = models.BigAutoField(primary_key=True)
+    id = models.BigAutoField(_("ID"), primary_key=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
-        related_name="%(app_label)s_%(class)s"
+        related_name="%(app_label)s_%(class)s",
+        verbose_name=_("User"),
     )
-    code = models.CharField(max_length=255, unique=True)  # code comes from oauthlib
+    code = models.CharField(_("Code"), max_length=255, unique=True)  # code comes from oauthlib
     application = models.ForeignKey(
-        oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE
+        oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE,
+        verbose_name=_("Application"),
     )
-    expires = models.DateTimeField()
-    redirect_uri = models.CharField(max_length=255)
-    scope = models.TextField(blank=True)
+    expires = models.DateTimeField(_("Expires"))
+    redirect_uri = models.CharField(_("Redirect URI"), max_length=255)
+    scope = models.TextField(_("Scope"), blank=True)
 
     def is_expired(self):
         """
@@ -207,6 +211,8 @@ class AbstractGrant(models.Model):
 class Grant(AbstractGrant):
     class Meta(AbstractGrant.Meta):
         swappable = "OAUTH2_PROVIDER_GRANT_MODEL"
+        verbose_name = _('Grant')
+        verbose_name_plural = _('Grants')
 
 
 @python_2_unicode_compatible
@@ -223,17 +229,18 @@ class AbstractAccessToken(models.Model):
     * :attr:`expires` Date and time of token expiration, in DateTime format
     * :attr:`scope` Allowed scopes
     """
-    id = models.BigAutoField(primary_key=True)
+    id = models.BigAutoField(_('ID'), primary_key=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True,
-        related_name="%(app_label)s_%(class)s"
+        related_name="%(app_label)s_%(class)s", verbose_name=_("User"), 
     )
-    token = models.CharField(max_length=255, unique=True, )
+    token = models.CharField(_('Token'), max_length=255, unique=True, )
     application = models.ForeignKey(
-        oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE, blank=True, null=True,
+        oauth2_settings.APPLICATION_MODEL, verbose_name=_("Application"), 
+        on_delete=models.CASCADE, blank=True, null=True,
     )
-    expires = models.DateTimeField()
-    scope = models.TextField(blank=True)
+    expires = models.DateTimeField(_('Expires'), )
+    scope = models.TextField(_('Scope'), blank=True)
 
     def is_valid(self, scopes=None):
         """
@@ -292,6 +299,8 @@ class AbstractAccessToken(models.Model):
 class AccessToken(AbstractAccessToken):
     class Meta(AbstractAccessToken.Meta):
         swappable = "OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL"
+        verbose_name = _('Access token')
+        verbose_name_plural = _('Access tokens')
 
 
 @python_2_unicode_compatible
@@ -308,17 +317,20 @@ class AbstractRefreshToken(models.Model):
     * :attr:`access_token` AccessToken instance this refresh token is
                            bounded to
     """
-    id = models.BigAutoField(primary_key=True)
+    id = models.BigAutoField(_('ID'), primary_key=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
-        related_name="%(app_label)s_%(class)s"
+        related_name="%(app_label)s_%(class)s",
+        verbose_name=_("User"), 
     )
-    token = models.CharField(max_length=255, unique=True)
+    token = models.CharField(_('Token'), max_length=255, unique=True)
     application = models.ForeignKey(
-        oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE)
+        oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE,
+        verbose_name=_("Application"), )
     access_token = models.OneToOneField(
         oauth2_settings.ACCESS_TOKEN_MODEL, on_delete=models.CASCADE,
-        related_name="refresh_token"
+        related_name="refresh_token",
+        verbose_name=_("Access Token"),
     )
 
     def revoke(self):
@@ -339,6 +351,8 @@ class AbstractRefreshToken(models.Model):
 class RefreshToken(AbstractRefreshToken):
     class Meta(AbstractRefreshToken.Meta):
         swappable = "OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL"
+        verbose_name = _('Refresh token')
+        verbose_name_plural = _('Refresh tokens')
 
 
 def get_application_model():

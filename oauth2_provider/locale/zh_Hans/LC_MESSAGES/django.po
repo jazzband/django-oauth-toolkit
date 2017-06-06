@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: oauth2_provider\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-06-06 02:49+0000\n"
-"PO-Revision-Date: 2017-06-06 11:16+0800\n"
+"POT-Creation-Date: 2017-06-06 11:45+0800\n"
+"PO-Revision-Date: 2017-06-06 11:45+0800\n"
 "Last-Translator: \n"
 "Language-Team: lch@jfpal.com\n"
 "Language: zh_CN\n"
@@ -21,7 +21,7 @@ msgstr ""
 
 #: oauth2_provider/apps.py:6
 msgid "Django OAuth Toolkit"
-msgstr ""
+msgstr "Django OAuth工具集"
 
 #: oauth2_provider/models.py:45
 msgid "Confidential"
@@ -47,10 +47,6 @@ msgstr "密码模式"
 msgid "Client credentials"
 msgstr "客户端模式"
 
-#: oauth2_provider/models.py:60
-msgid "ID"
-msgstr "ID"
-
 #: oauth2_provider/models.py:62
 msgid "Client ID"
 msgstr "客户端ID"
@@ -60,40 +56,100 @@ msgid "Allowed URIs list, space separated"
 msgstr "允许的 Uri 列表，空格分隔"
 
 #: oauth2_provider/models.py:72
-msgid "Redirect uris"
-msgstr "重定向URI"
+msgid "Redirect URIs"
+msgstr "重定向URI列表"
 
-#: oauth2_provider/models.py:74
+#: oauth2_provider/models.py:75
 #: oauth2_provider/templates/oauth2_provider/application_detail.html:20
 msgid "Client type"
 msgstr "客户端类型"
 
-#: oauth2_provider/models.py:76
-#: oauth2_provider/templates/oauth2_provider/application_detail.html:25
-msgid "Authorization Grant Type"
-msgstr "授权类型"
+#: oauth2_provider/models.py:77
+msgid "Ref: https://tools.ietf.org/html/rfc6749#page-9"
+msgstr "参考: http://www.ruanyifeng.com/blog/2014/05/oauth_2_0.html"
 
 #: oauth2_provider/models.py:79
+msgid "Authorization grant type"
+msgstr "授权类型"
+
+#: oauth2_provider/models.py:82
 #: oauth2_provider/templates/oauth2_provider/application_detail.html:15
 msgid "Client secret"
 msgstr "客户端密码"
 
-#: oauth2_provider/models.py:81
+#: oauth2_provider/models.py:84
 msgid "Name"
 msgstr "名称"
 
-#: oauth2_provider/models.py:82
+#: oauth2_provider/models.py:85
 msgid "Skip authorization"
 msgstr "跳过用户认证"
 
-#: oauth2_provider/models.py:130
+#: oauth2_provider/models.py:133
 #, python-brace-format
 msgid "Redirect_uris could not be empty with {grant_type} grant_type"
 msgstr "Redirect_uris 不能空与 {grant_type} grant_type"
 
+#: oauth2_provider/models.py:157
+msgid "Application"
+msgstr "客户端"
+
+#: oauth2_provider/models.py:158
+msgid "Applications"
+msgstr "客户端"
+
+#: oauth2_provider/models.py:177 oauth2_provider/models.py:230
+#: oauth2_provider/models.py:317
+msgid "ID"
+msgstr "ID"
+
+#: oauth2_provider/models.py:182
+msgid "Code"
+msgstr "认证码"
+
+#: oauth2_provider/models.py:186 oauth2_provider/models.py:239
+msgid "Expires"
+msgstr "过期时间"
+
+#: oauth2_provider/models.py:187
+msgid "Redirect URI"
+msgstr "重定向URI列表"
+
+#: oauth2_provider/models.py:188 oauth2_provider/models.py:240
+msgid "Scope"
+msgstr "授权域"
+
+#: oauth2_provider/models.py:212
+msgid "Grant"
+msgstr "授权"
+
+#: oauth2_provider/models.py:213
+msgid "Grants"
+msgstr "授权"
+
+#: oauth2_provider/models.py:235 oauth2_provider/models.py:322
+msgid "Token"
+msgstr "Token"
+
+#: oauth2_provider/models.py:299
+msgid "Access token"
+msgstr "Access token"
+
+#: oauth2_provider/models.py:300
+msgid "Access tokens"
+msgstr "Access Tokens"
+
+#: oauth2_provider/models.py:348
+msgid "Refresh token"
+msgstr "Refresh token"
+
+#: oauth2_provider/models.py:349
+msgid "Refresh tokens"
+msgstr "Refresh tokens"
+
 #: oauth2_provider/templates/oauth2_provider/application_confirm_delete.html:6
 msgid "Are you sure to delete the application"
-msgstr "确定删除此应用"
+msgstr "确定删除此客户端"
 
 #: oauth2_provider/templates/oauth2_provider/application_confirm_delete.html:12
 msgid "Cancel"
@@ -108,6 +164,10 @@ msgstr "删除"
 #: oauth2_provider/templates/oauth2_provider/application_detail.html:10
 msgid "Client id"
 msgstr "客户端ID"
+
+#: oauth2_provider/templates/oauth2_provider/application_detail.html:25
+msgid "Authorization Grant Type"
+msgstr "授权类型"
 
 #: oauth2_provider/templates/oauth2_provider/application_detail.html:30
 msgid "Redirect Uris"
@@ -169,3 +229,6 @@ msgstr "没有已认证会话."
 #: oauth2_provider/validators.py:23
 msgid "Enter a valid URL."
 msgstr "请输入正确的URL."
+
+#~ msgid "Redirect uris"
+#~ msgstr "重定向URI"
