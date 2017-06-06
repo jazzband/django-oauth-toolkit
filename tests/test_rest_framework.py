@@ -24,7 +24,7 @@ try:
     from rest_framework import permissions
     from rest_framework.views import APIView
     from rest_framework.test import force_authenticate, APIRequestFactory
-    from oauth2_provider.ext.rest_framework import (
+    from oauth2_provider.contrib.rest_framework import (
         IsAuthenticatedOrTokenHasScope, OAuth2Authentication, TokenHasScope,
         TokenHasReadWriteScope, TokenHasResourceScope
     )

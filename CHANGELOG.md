@@ -4,6 +4,8 @@
 * #477: **New feature**: Add support for RFC 7662 (IntrospectTokenView, introspect scope)
 * **Compatibility**: Django 1.10 is the new minimum required version
 * **Compatibility**: Django 1.11 is now supported
+* **Backwards-incompatible**: The `oauth2_provider.ext.rest_framework` module
+  has been moved to `oauth2_provider.contrib.rest_framework`
 * #177: Changed `id` field on Application, AccessToken, RefreshToken and Grant to BigAutoField (bigint/bigserial)
 * #476: Disallow empty redirect URIs
 * Fixed bad `url` parameter in some error responses.

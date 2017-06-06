@@ -35,7 +35,7 @@ To do so add the following lines at the end of your `settings.py` module:
 
     REST_FRAMEWORK = {
         'DEFAULT_AUTHENTICATION_CLASSES': (
-            'oauth2_provider.ext.rest_framework.OAuth2Authentication',
+            'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
         )
     }
 
@@ -55,7 +55,7 @@ Here's our project's root `urls.py` module:
 
     from rest_framework import permissions, routers, serializers, viewsets
 
-    from oauth2_provider.ext.rest_framework import TokenHasReadWriteScope, TokenHasScope
+    from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope, TokenHasScope
 
 
     # first we define the serializers
