@@ -59,7 +59,7 @@ class AbstractApplication(models.Model):
 
     id = models.BigAutoField(primary_key=True)
     client_id = models.CharField(
-        max_length=100, unique=True, default=generate_client_id, db_index=True
+        _("Client ID"), max_length=100, unique=True, default=generate_client_id, db_index=True
     )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -69,17 +69,20 @@ class AbstractApplication(models.Model):
 
     help_text = _("Allowed URIs list, space separated")
     redirect_uris = models.TextField(
-        blank=True, help_text=help_text, validators=[validate_uris]
+        _("Redirect URIs"), blank=True, help_text=help_text, validators=[validate_uris]
     )
-    client_type = models.CharField(max_length=32, choices=CLIENT_TYPES)
+    client_type = models.CharField(
+        _("Client type"), max_length=32, choices=CLIENT_TYPES
+    )
+    help_text = _("Ref: https://tools.ietf.org/html/rfc6749#page-9")
     authorization_grant_type = models.CharField(
-        max_length=32, choices=GRANT_TYPES
+        _("Authorization grant type"), help_text=help_text, max_length=32, choices=GRANT_TYPES
     )
     client_secret = models.CharField(
-        max_length=255, blank=True, default=generate_client_secret, db_index=True
+        _("Client secret"), max_length=255, blank=True, default=generate_client_secret, db_index=True
     )
-    name = models.CharField(max_length=255, blank=True)
-    skip_authorization = models.BooleanField(default=False)
+    name = models.CharField(_("Name"), max_length=255, blank=True)
+    skip_authorization = models.BooleanField(_("Skip authorization"), default=False)
 
     class Meta:
         abstract = True
