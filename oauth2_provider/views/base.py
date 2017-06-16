@@ -1,3 +1,4 @@
+import json
 import logging
 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -8,6 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import FormView, View
 
+from ..signals import app_authorized
 from .mixins import OAuthLibMixin
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
@@ -183,6 +185,14 @@ class TokenView(OAuthLibMixin, View):
     @method_decorator(sensitive_post_parameters("password"))
     def post(self, request, *args, **kwargs):
         url, headers, body, status = self.create_token_response(request)
+        if status == 200:
+            access_token = json.loads(body).get('access_token')
+            if access_token is not None:
+                token = get_access_token_model().objects.get(
+                    token=access_token)
+                app_authorized.send(
+                    sender=self, request=request,
+                    application=token.application)
         response = HttpResponse(content=body, status=status)
 
         for k, v in headers.items():
