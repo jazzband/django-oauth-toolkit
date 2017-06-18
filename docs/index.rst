@@ -38,6 +38,7 @@ Index
    views/details
    models
    advanced_topics
+   signals
    settings
    resource_server
    management_commands
