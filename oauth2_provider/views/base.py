@@ -192,7 +192,7 @@ class TokenView(OAuthLibMixin, View):
                     token=access_token)
                 app_authorized.send(
                     sender=self, request=request,
-                    application=token.application)
+                    token=token)
         response = HttpResponse(content=body, status=status)
 
         for k, v in headers.items():
