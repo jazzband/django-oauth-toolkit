@@ -41,6 +41,8 @@ Include the Django OAuth Toolkit urls in your `urls.py`, choosing the urlspace y
 
 Include the CORS middleware in your `settings.py`:
 
+CorsMiddleware should be placed as high as possible, especially before any middleware that can generate responses such as Django's CommonMiddleware or Whitenoise's WhiteNoiseMiddleware. If it is not before, it will not be able to add the CORS headers to these responses.
+
 .. code-block:: python
 
     MIDDLEWARE = (
