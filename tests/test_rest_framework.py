@@ -12,6 +12,12 @@ from oauth2_provider.models import get_access_token_model, get_application_model
 from oauth2_provider.settings import oauth2_settings
 
 
+try:
+    from unittest import mock
+except ImportError:
+    import mock
+
+
 Application = get_application_model()
 AccessToken = get_access_token_model()
 UserModel = get_user_model()
@@ -243,3 +249,24 @@ class TestOAuth2Authentication(TestCase):
         auth = self._create_authorization_header(self.access_token.token)
         response = self.client.post("/oauth2-resource-scoped-test/", HTTP_AUTHORIZATION=auth)
         self.assertEqual(response.status_code, 403)
+
+    @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
+    @mock.patch.object(oauth2_settings, "ERROR_RESPONSE_WITH_SCOPES", new=True)
+    def test_required_scope_in_response(self):
+        self.access_token.scope = "scope2"
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.get("/oauth2-scoped-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.data["required_scopes"], ["scope1"])
+
+    @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
+    def test_required_scope_not_in_response_by_default(self):
+        self.access_token.scope = "scope2"
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.get("/oauth2-scoped-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 403)
+        self.assertNotIn("required_scopes", response.data)

@@ -1,6 +1,7 @@
 import logging
 
 from django.core.exceptions import ImproperlyConfigured
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission, IsAuthenticated, SAFE_METHODS
 
 from ...settings import oauth2_settings
@@ -25,7 +26,24 @@ class TokenHasScope(BasePermission):
             required_scopes = self.get_scopes(request, view)
             log.debug("Required scopes to access resource: {0}".format(required_scopes))
 
-            return token.is_valid(required_scopes)
+            if token.is_valid(required_scopes):
+                return True
+
+            # Provide information about required scope?
+            include_required_scope = (
+                oauth2_settings.ERROR_RESPONSE_WITH_SCOPES and
+                required_scopes and
+                not token.is_expired() and
+                not token.allow_scopes(required_scopes)
+            )
+
+            if include_required_scope:
+                self.message = {
+                    "detail": PermissionDenied.default_detail,
+                    "required_scopes": list(required_scopes),
+                }
+
+            return False
 
         assert False, ("TokenHasScope requires the"
                        "`oauth2_provider.rest_framework.OAuth2Authentication` authentication "
