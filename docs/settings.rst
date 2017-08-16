@@ -152,6 +152,11 @@ WRITE_SCOPE
 
 The name of the *write* scope.
 
+ERROR_RESPONSE_WITH_SCOPES
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+When authorization fails due to insufficient scopes include the required scopes in the response.
+Only applicable when used with `Django REST Framework <http://django-rest-framework.org/>`_
+
 RESOURCE_SERVER_INTROSPECTION_URL
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The introspection endpoint for validating token remotely (RFC7662).
