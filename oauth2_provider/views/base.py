@@ -44,10 +44,14 @@ class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
         redirect, error_response = super(BaseAuthorizationView, self).error_response(error, **kwargs)
 
         if redirect:
-            return HttpResponseUriRedirect(error_response["url"])
+            return self.redirect(error_response["url"])
 
         status = error_response["error"].status_code
         return self.render_to_response(error_response, status=status)
+
+    def redirect(self, redirect_to):
+        allowed_schemes = oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES
+        return HttpResponseUriRedirect(redirect_to, allowed_schemes)
 
 
 class AuthorizationView(BaseAuthorizationView, FormView):
@@ -106,7 +110,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                 request=self.request, scopes=scopes, credentials=credentials, allow=allow)
             self.success_url = uri
             log.debug("Success url for the request: {0}".format(self.success_url))
-            return HttpResponseUriRedirect(self.success_url)
+            return self.redirect(self.success_url)
 
         except OAuthToolkitError as error:
             return self.error_response(error)
@@ -145,7 +149,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                 uri, headers, body, status = self.create_authorization_response(
                     request=self.request, scopes=" ".join(scopes),
                     credentials=credentials, allow=True)
-                return HttpResponseUriRedirect(uri)
+                return self.redirect(uri)
 
             elif require_approval == "auto":
                 tokens = get_access_token_model().objects.filter(
@@ -160,7 +164,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                         uri, headers, body, status = self.create_authorization_response(
                             request=self.request, scopes=" ".join(scopes),
                             credentials=credentials, allow=True)
-                        return HttpResponseUriRedirect(uri)
+                        return self.redirect(uri)
 
             return self.render_to_response(self.get_context_data(**kwargs))
 
