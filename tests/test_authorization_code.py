@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 from django.utils import timezone
+from oauthlib.oauth2.rfc6749 import errors as oauthlib_errors
 
 from oauth2_provider.compat import parse_qs, urlencode, urlparse
 from oauth2_provider.models import (
@@ -883,7 +884,10 @@ class TestAuthorizationCodeTokenView(BaseTest):
         }
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data)
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertEqual(data["error"], "invalid_request")
+        self.assertEqual(data["error_description"], oauthlib_errors.MismatchingRedirectURIError.description)
 
     def test_code_exchange_succeed_when_redirect_uri_match(self):
         """
@@ -948,7 +952,10 @@ class TestAuthorizationCodeTokenView(BaseTest):
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertEqual(data["error"], "invalid_request")
+        self.assertEqual(data["error_description"], oauthlib_errors.MismatchingRedirectURIError.description)
 
     def test_code_exchange_succeed_when_redirect_uri_match_with_multiple_query_params(self):
         """
