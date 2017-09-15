@@ -190,7 +190,7 @@ class TokenView(OAuthLibMixin, View):
     def post(self, request, *args, **kwargs):
         url, headers, body, status = self.create_token_response(request)
         if status == 200:
-            access_token = json.loads(body).get('access_token')
+            access_token = json.loads(body).get("access_token")
             if access_token is not None:
                 token = get_access_token_model().objects.get(
                     token=access_token)

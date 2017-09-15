@@ -15,6 +15,7 @@ env:
   - TOXENV=py36-django111
   - TOXENV=py36-djangomaster
   - TOXENV=docs
+  - TOXENV=flake8
 
 matrix:
   fast_finish: true
