@@ -1,10 +1,8 @@
 from django.contrib import admin
 
 from .models import (
-    get_access_token_model,
-    get_application_model,
-    get_grant_model,
-    get_refresh_token_model,
+    get_access_token_model, get_application_model,
+    get_grant_model, get_refresh_token_model
 )
 
 

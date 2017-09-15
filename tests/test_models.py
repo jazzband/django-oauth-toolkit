@@ -7,12 +7,11 @@ from django.test.utils import override_settings
 from django.utils import timezone
 
 from oauth2_provider.models import (
-    get_access_token_model,
-    get_application_model,
-    get_grant_model,
-    get_refresh_token_model,
+    get_access_token_model, get_application_model,
+    get_grant_model, get_refresh_token_model
 )
 from oauth2_provider.settings import oauth2_settings
+
 
 Application = get_application_model()
 Grant = get_grant_model()

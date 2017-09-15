@@ -1,10 +1,5 @@
 import datetime
 
-try:
-    from unittest import mock
-except ImportError:
-    import mock
-
 from django.contrib.auth import get_user_model
 from django.test import TransactionTestCase
 from django.utils import timezone
@@ -12,11 +7,15 @@ from oauthlib.common import Request
 
 from oauth2_provider.exceptions import FatalClientError
 from oauth2_provider.models import (
-    get_access_token_model,
-    get_application_model,
-    get_refresh_token_model,
+    get_access_token_model, get_application_model, get_refresh_token_model
 )
 from oauth2_provider.oauth2_validators import OAuth2Validator
+
+
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 
 UserModel = get_user_model()

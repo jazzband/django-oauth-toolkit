@@ -9,15 +9,13 @@ from django.views.generic import View
 from oauthlib.oauth2 import BackendApplicationServer
 
 from oauth2_provider.compat import quote_plus
-from oauth2_provider.models import (
-    get_access_token_model,
-    get_application_model,
-)
+from oauth2_provider.models import get_access_token_model, get_application_model
 from oauth2_provider.oauth2_backends import OAuthLibCore
 from oauth2_provider.oauth2_validators import OAuth2Validator
 from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views import ProtectedResourceView
 from oauth2_provider.views.mixins import OAuthLibMixin
+
 from .utils import get_basic_auth_header
 
 

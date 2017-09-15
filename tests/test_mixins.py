@@ -3,12 +3,13 @@ from __future__ import unicode_literals
 from django.core.exceptions import ImproperlyConfigured
 from django.test import RequestFactory, TestCase
 from django.views.generic import View
-
 from oauthlib.oauth2 import Server
 
 from oauth2_provider.oauth2_backends import OAuthLibCore
 from oauth2_provider.oauth2_validators import OAuth2Validator
-from oauth2_provider.views.mixins import OAuthLibMixin, ProtectedResourceMixin, ScopedResourceMixin
+from oauth2_provider.views.mixins import (
+    OAuthLibMixin, ProtectedResourceMixin, ScopedResourceMixin
+)
 
 
 class BaseTest(TestCase):

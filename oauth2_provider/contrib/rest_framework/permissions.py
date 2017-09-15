@@ -3,8 +3,8 @@ import logging
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework.permissions import BasePermission, IsAuthenticated
 
-from .authentication import OAuth2Authentication
 from ...settings import oauth2_settings
+from .authentication import OAuth2Authentication
 
 
 log = logging.getLogger("oauth2_provider")

@@ -11,7 +11,14 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os, re
+import os
+import re
+import sys
+
+import django
+
+import oauth2_provider
+
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -22,10 +29,8 @@ sys.path.insert(0, os.path.dirname(here))
 
 os.environ["DJANGO_SETTINGS_MODULE"] = "tests.settings"
 
-import django
 django.setup()
 
-import oauth2_provider
 
 # -- General configuration -----------------------------------------------------
 

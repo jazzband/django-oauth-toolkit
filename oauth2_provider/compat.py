@@ -5,6 +5,7 @@ versions of django and python.
 # flake8: noqa
 from __future__ import unicode_literals
 
+
 # urlparse in python3 has been renamed to urllib.parse
 try:
     from urlparse import parse_qs, parse_qsl, urlparse, urlsplit, urlunparse, urlunsplit
