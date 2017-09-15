@@ -1,15 +1,13 @@
 import logging
 
 from django.core.exceptions import ImproperlyConfigured
-from rest_framework.permissions import BasePermission, IsAuthenticated
+from rest_framework.permissions import BasePermission, IsAuthenticated, SAFE_METHODS
 
 from ...settings import oauth2_settings
 from .authentication import OAuth2Authentication
 
 
 log = logging.getLogger("oauth2_provider")
-
-SAFE_HTTP_METHODS = ["GET", "HEAD", "OPTIONS"]
 
 
 class TokenHasScope(BasePermission):
@@ -54,7 +52,7 @@ class TokenHasReadWriteScope(TokenHasScope):
             required_scopes = []
 
         # TODO: code duplication!! see dispatch in ReadWriteScopedResourceMixin
-        if request.method.upper() in SAFE_HTTP_METHODS:
+        if request.method.upper() in SAFE_METHODS:
             read_write_scope = oauth2_settings.READ_SCOPE
         else:
             read_write_scope = oauth2_settings.WRITE_SCOPE
@@ -75,7 +73,7 @@ class TokenHasResourceScope(TokenHasScope):
         except ImproperlyConfigured:
             view_scopes = []
 
-        if request.method.upper() in SAFE_HTTP_METHODS:
+        if request.method.upper() in SAFE_METHODS:
             scope_type = oauth2_settings.READ_SCOPE
         else:
             scope_type = oauth2_settings.WRITE_SCOPE
