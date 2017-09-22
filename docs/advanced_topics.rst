@@ -66,7 +66,7 @@ to support the authorization code *and* client credentials grants, you might do 
     class MyApplication(AbstractApplication):
         def allows_grant_type(self, *grant_types):
             # Assume, for this example, that self.authorization_grant_type is set to self.GRANT_AUTHORIZATION_CODE
-            return bool( set(self.authorization_grant_type, self.GRANT_CLIENT_CREDENTIALS) & grant_types )
+            return bool( set([self.authorization_grant_type, self.GRANT_CLIENT_CREDENTIALS]) & grant_types )
 
 .. _skip-auth-form:
 
