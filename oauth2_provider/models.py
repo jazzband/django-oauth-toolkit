@@ -151,9 +151,19 @@ class AbstractApplication(models.Model):
         return True
 
 
+class ApplicationManager(models.Manager):
+    def get_by_natural_key(self, client_id):
+        return self.get(client_id=client_id)
+
+
 class Application(AbstractApplication):
+    objects = ApplicationManager()
+
     class Meta(AbstractApplication.Meta):
         swappable = "OAUTH2_PROVIDER_APPLICATION_MODEL"
+
+    def natural_key(self):
+        return (self.client_id,)
 
 
 @python_2_unicode_compatible
