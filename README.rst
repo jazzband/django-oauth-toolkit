@@ -32,7 +32,7 @@ Contributing
 ------------
 
 We love contributions, so please feel free to fix bugs, improve things, provide documentation. Just `follow the
-guidelines <https://django-oauth-toolkit.readthedocs.io/en/latest/contributing.html>`_ and submit a PR.
+guidelines <http://django-oauth-toolkit-latest.readthedocs.io/en/latest/contributing.html>`_ and submit a PR.
 
 Reporting security issues
 -------------------------
@@ -86,7 +86,7 @@ See `CHANGELOG.md <https://github.com/evonove/django-oauth-toolkit/blob/master/C
 Documentation
 --------------
 
-The `full documentation <https://django-oauth-toolkit.readthedocs.io/>`_ is on *Read the Docs*.
+The `full documentation <http://django-oauth-toolkit-latest.readthedocs.io>`_ is on *Read the Docs*.
 
 License
 -------
