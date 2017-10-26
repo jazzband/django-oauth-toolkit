@@ -76,7 +76,7 @@ class AbstractApplication(models.Model):
         max_length=32, choices=GRANT_TYPES
     )
     client_secret = models.CharField(
-        max_length=255, blank=True, default=generate_client_secret, db_index=True
+        max_length=191, blank=True, default=generate_client_secret, db_index=True
     )
     name = models.CharField(max_length=255, blank=True)
     skip_authorization = models.BooleanField(default=False)
@@ -177,7 +177,7 @@ class AbstractGrant(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
         related_name="%(app_label)s_%(class)s"
     )
-    code = models.CharField(max_length=255, unique=True)  # code comes from oauthlib
+    code = models.CharField(max_length=191, unique=True)  # code comes from oauthlib
     application = models.ForeignKey(
         oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE
     )
@@ -231,7 +231,7 @@ class AbstractAccessToken(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True,
         related_name="%(app_label)s_%(class)s"
     )
-    token = models.CharField(max_length=255, unique=True, )
+    token = models.CharField(max_length=191, unique=True, )
     application = models.ForeignKey(
         oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE, blank=True, null=True,
     )
@@ -319,7 +319,7 @@ class AbstractRefreshToken(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
         related_name="%(app_label)s_%(class)s"
     )
-    token = models.CharField(max_length=255, unique=True)
+    token = models.CharField(max_length=191, unique=True)
     application = models.ForeignKey(
         oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE)
     access_token = models.OneToOneField(
