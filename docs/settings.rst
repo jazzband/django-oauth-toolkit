@@ -118,7 +118,7 @@ The strategy used to display the authorization form. Refer to :ref:`skip-auth-fo
 SCOPES_BACKEND_CLASS
 ~~~~~~~~~~~~~~~~~~~~
 **New in 0.12.0**. The import string for the scopes backend class.
-Defaults to , which reads scopes through the settings defined below.
+Defaults to ``oauth2_provider.scopes.SettingsScopes``, which reads scopes through the settings defined below.
 
 SCOPES
 ~~~~~~
