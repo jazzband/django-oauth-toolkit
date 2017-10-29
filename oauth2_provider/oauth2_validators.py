@@ -421,6 +421,16 @@ class OAuth2Validator(RequestValidator):
             return client.allows_grant_type(AbstractApplication.GRANT_AUTHORIZATION_CODE)
         elif response_type == "token":
             return client.allows_grant_type(AbstractApplication.GRANT_IMPLICIT)
+        elif response_type == "id_token":
+            return client.allows_grant_type(AbstractApplication.GRANT_IMPLICIT)
+        elif response_type == "id_token token":
+            return client.allows_grant_type(AbstractApplication.GRANT_IMPLICIT)
+        elif response_type == "code id_token":
+            return client.allows_grant_type(AbstractApplication.GRANT_OPENID_HYBRID)
+        elif response_type == "code token":
+            return client.allows_grant_type(AbstractApplication.GRANT_OPENID_HYBRID)
+        elif response_type == "code id_token token":
+            return client.allows_grant_type(AbstractApplication.GRANT_OPENID_HYBRID)
         else:
             return False
 
