@@ -97,7 +97,7 @@ class OAuthLibMixin(object):
         core = self.get_oauthlib_core()
         return core.validate_authorization_request(request)
 
-    def create_authorization_response(self, request, scopes, credentials, allow):
+    def create_authorization_response(self, uri, request, scopes, credentials, allow, body=None):
         """
         A wrapper method that calls create_authorization_response on `server_class`
         instance.
@@ -105,14 +105,15 @@ class OAuthLibMixin(object):
         :param request: The current django.http.HttpRequest object
         :param scopes: A space-separated string of provided scopes
         :param credentials: Authorization credentials dictionary containing
-                           `client_id`, `state`, `redirect_uri`, `response_type`
+                           `client_id`, `state`, `redirect_uri` and `response_type`
         :param allow: True if the user authorize the client, otherwise False
+        :param body: Other body parameters not used in credentials dictionary
         """
         # TODO: move this scopes conversion from and to string into a utils function
         scopes = scopes.split(" ") if scopes else []
 
         core = self.get_oauthlib_core()
-        return core.create_authorization_response(request, scopes, credentials, allow)
+        return core.create_authorization_response(uri, request, scopes, credentials, body, allow)
 
     def create_token_response(self, request):
         """
