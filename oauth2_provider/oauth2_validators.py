@@ -28,14 +28,14 @@ from .settings import oauth2_settings
 log = logging.getLogger("oauth2_provider")
 
 GRANT_TYPE_MAPPING = {
-    "authorization_code": (AbstractApplication.GRANT_AUTHORIZATION_CODE, ),
+    "authorization_code": (AbstractApplication.GRANT_AUTHORIZATION_CODE, AbstractApplication.GRANT_OPENID_HYBRID),
     "password": (AbstractApplication.GRANT_PASSWORD, ),
     "client_credentials": (AbstractApplication.GRANT_CLIENT_CREDENTIALS, ),
     "refresh_token": (
         AbstractApplication.GRANT_AUTHORIZATION_CODE,
         AbstractApplication.GRANT_PASSWORD,
         AbstractApplication.GRANT_CLIENT_CREDENTIALS,
-    )
+    ),
 }
 
 Application = get_application_model()
