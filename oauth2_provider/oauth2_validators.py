@@ -1,5 +1,7 @@
 import base64
 import binascii
+import json
+import hashlib
 import logging
 from collections import OrderedDict
 from datetime import datetime, timedelta
@@ -11,15 +13,24 @@ from django.contrib.auth import authenticate, get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.db.models import Q
-from django.utils import timezone
+from django.utils import dateformat, timezone
 from django.utils.timezone import make_aware
 from django.utils.translation import gettext_lazy as _
 from oauthlib.oauth2 import RequestValidator
+from oauthlib.oauth2.rfc6749 import utils
+
+from jwcrypto.common import JWException
+from jwcrypto import jwk, jwt
+from jwcrypto.jwt import JWTExpired
 
 from .exceptions import FatalClientError
 from .models import (
-    AbstractApplication, get_access_token_model,
-    get_application_model, get_grant_model, get_refresh_token_model
+    AbstractApplication,
+    get_access_token_model,
+    get_id_token_model,
+    get_application_model,
+    get_grant_model,
+    get_refresh_token_model,
 )
 from .scopes import get_scopes_backend
 from .settings import oauth2_settings
@@ -40,6 +51,7 @@ GRANT_TYPE_MAPPING = {
 
 Application = get_application_model()
 AccessToken = get_access_token_model()
+IDToken = get_id_token_model()
 Grant = get_grant_model()
 RefreshToken = get_refresh_token_model()
 UserModel = get_user_model()
@@ -459,6 +471,24 @@ class OAuth2Validator(RequestValidator):
             code_challenge_method=request.code_challenge_method or ""
         )
 
+    def get_authorization_code_scopes(self, client_id, code, redirect_uri, request):
+        scopes = []
+        fields = {
+            "code": code,
+        }
+
+        if client_id:
+            fields["application__client_id"] = client_id
+
+        if redirect_uri:
+            fields["redirect_uri"] = redirect_uri
+
+        grant = Grant.objects.filter(**fields).values()
+        if grant.exists():
+            grant_dict = dict(grant[0])
+            scopes = utils.scope_to_list(grant_dict["scope"])
+        return scopes
+
     def rotate_refresh_token(self, request):
         """
         Checks if rotate refresh token is enabled
@@ -644,3 +674,99 @@ class OAuth2Validator(RequestValidator):
         # Temporary store RefreshToken instance to be reused by get_original_scopes and save_bearer_token.
         request.refresh_token_instance = rt
         return rt.application == client
+
+    @transaction.atomic
+    def _save_id_token(self, token, request, expires, *args, **kwargs):
+
+        scopes = request.scope or " ".join(request.scopes)
+
+        if request.grant_type == "client_credentials":
+            request.user = None
+
+        id_token = IDToken.objects.create(
+            user=request.user,
+            scope=scopes,
+            expires=expires,
+            token=token.serialize(),
+            application=request.client,
+        )
+        return id_token
+
+    def get_id_token(self, token, token_handler, request):
+
+        key = jwk.JWK.from_pem(oauth2_settings.RSA_PRIVATE_KEY.encode("utf8"))
+
+        # TODO: http://openid.net/specs/openid-connect-core-1_0.html#HybridIDToken2
+        # Save the id_token on database bound to code when the request come to
+        # Authorization Endpoint and return the same one when request come to
+        # Token Endpoint
+
+        # TODO: Check if at this point this request parameters are alredy validated
+
+        expiration_time = timezone.now() + timedelta(seconds=oauth2_settings.ID_TOKEN_EXPIRE_SECONDS)
+        # Required ID Token claims
+        claims = {
+            "iss": 'https://id.olist.com',   # HTTPS URL
+            "sub": str(request.user.id),
+            "aud": request.client_id,
+            "exp": int(dateformat.format(expiration_time, "U")),
+            "iat": int(dateformat.format(datetime.utcnow(), "U")),
+            "auth_time": int(dateformat.format(request.user.last_login, "U"))
+        }
+
+        nonce = getattr(request, "nonce", None)
+        if nonce:
+            claims["nonce"] = nonce
+
+        # TODO: create a function to check if we should add at_hash
+        # http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken
+        # http://openid.net/specs/openid-connect-core-1_0.html#ImplicitIDToken
+        # if request.grant_type in 'authorization_code' and 'access_token' in token:
+        if (request.grant_type is "authorization_code" and "access_token" in token) or request.response_type == "code id_token token" or (request.response_type == "id_token token" and "access_token" in token):
+            acess_token = token["access_token"]
+            sha256 = hashlib.sha256(acess_token.encode("ascii"))
+            bits128 = sha256.hexdigest()[:16]
+            at_hash = base64.urlsafe_b64encode(bytes(bits128, "ascii"))
+            claims['at_hash'] = at_hash.decode("utf8")
+
+        # TODO: create a function to check if we should include c_hash
+        # http://openid.net/specs/openid-connect-core-1_0.html#HybridIDToken
+        if request.response_type in ("code id_token", "code id_token token"):
+            code = token["code"]
+            sha256 = hashlib.sha256(code.encode("ascii"))
+            bits256 = sha256.hexdigest()[:32]
+            c_hash = base64.urlsafe_b64encode(bytes(bits256, "ascii"))
+            claims["c_hash"] = c_hash.decode("utf8")
+
+        jwt_token = jwt.JWT(header=json.dumps({"alg": "RS256"}, default=str), claims=json.dumps(claims, default=str))
+        jwt_token.make_signed_token(key)
+
+        id_token = self._save_id_token(jwt_token, request, expiration_time)
+        # this is needed by django rest framework
+        request.access_token = id_token
+        request.id_token = id_token
+        return jwt_token.serialize()
+
+    def validate_id_token(self, token, scopes, request):
+        """
+        When users try to access resources, check that provided id_token is valid
+        """
+        if not token:
+            return False
+
+        key = jwk.JWK.from_pem(oauth2_settings.RSA_PRIVATE_KEY.encode("utf8"))
+
+        try:
+            jwt_token = jwt.JWT(key=key, jwt=token)
+        except (JWException, JWTExpired):
+            # TODO: This is the base exception of all jwcrypto
+            return False
+
+        id_token = IDToken.objects.get(token=jwt_token.serialize())
+        request.client = id_token.application
+        request.user = id_token.user
+        request.scopes = scopes
+        # this is needed by django rest framework
+        request.access_token = id_token
+
+        return True
