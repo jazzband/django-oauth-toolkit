@@ -59,6 +59,13 @@ class AbstractApplication(models.Model):
         (GRANT_OPENID_HYBRID, _("OpenID connect hybrid")),
     )
 
+    RS256_ALGORITHM = "RS256"
+    HS256_ALGORITHM = "HS256"
+    ALGORITHM_TYPES = (
+        ("RS256", _("RSA with SHA-2 256")),
+        ("HS256", _("HMAC with SHA-2 256")),
+    )
+
     id = models.BigAutoField(primary_key=True)
     client_id = models.CharField(
         max_length=100, unique=True, default=generate_client_id, db_index=True
@@ -84,6 +91,7 @@ class AbstractApplication(models.Model):
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+    algorithm = models.CharField(max_length=5, choices=ALGORITHM_TYPES, default="RS256")
 
     class Meta:
         abstract = True
