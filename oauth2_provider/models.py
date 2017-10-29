@@ -50,11 +50,13 @@ class AbstractApplication(models.Model):
     GRANT_IMPLICIT = "implicit"
     GRANT_PASSWORD = "password"
     GRANT_CLIENT_CREDENTIALS = "client-credentials"
+    GRANT_OPENID_HYBRID = "openid-hybrid"
     GRANT_TYPES = (
         (GRANT_AUTHORIZATION_CODE, _("Authorization code")),
         (GRANT_IMPLICIT, _("Implicit")),
         (GRANT_PASSWORD, _("Resource owner password-based")),
         (GRANT_CLIENT_CREDENTIALS, _("Client credentials")),
+        (GRANT_OPENID_HYBRID, _("OpenID connect hybrid")),
     )
 
     id = models.BigAutoField(primary_key=True)
