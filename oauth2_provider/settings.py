@@ -58,6 +58,7 @@ DEFAULTS = {
     "REFRESH_TOKEN_MODEL": REFRESH_TOKEN_MODEL,
     "REQUEST_APPROVAL_PROMPT": "force",
     "ALLOWED_REDIRECT_URI_SCHEMES": ["http", "https"],
+    "RSA_PRIVATE_KEY": "",
 
     # Special settings that will be evaluated at runtime
     "_SCOPES": [],
