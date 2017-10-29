@@ -795,3 +795,9 @@ class OAuth2Validator(RequestValidator):
         request.access_token = id_token
 
         return True
+
+    def validate_user_match(self, id_token_hint, scopes, claims, request):
+        # TODO: Fix to validate when necessary acording
+        # https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/request_validator.py#L556
+        # http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest id_token_hint section
+        return True
