@@ -5,25 +5,23 @@ language: python
 python: "3.6"
 
 env:
-  - TOXENV=py27-django110
   - TOXENV=py27-django111
-  - TOXENV=py34-django110
   - TOXENV=py34-django111
   - TOXENV=py36-django111
   - TOXENV=py36-djangomaster
   - TOXENV=docs
   - TOXENV=flake8
 
+cache:
+  directories:
+    - $HOME/.cache/pip
+    - $TRAVIS_BUILD_DIR/.tox
+
 matrix:
   fast_finish: true
 
   allow_failures:
     - env: TOXENV=py36-djangomaster
-
-cache:
-  directories:
-    - $HOME/.cache/pip
-    - $TRAVIS_BUILD_DIR/.tox
 
 install:
   - pip install coveralls tox
