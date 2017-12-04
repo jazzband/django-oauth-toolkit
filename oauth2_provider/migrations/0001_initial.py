@@ -11,11 +11,7 @@ from django.conf import settings
 class Migration(migrations.Migration):
 
     dependencies = [
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        migrations.swappable_dependency(oauth2_settings.APPLICATION_MODEL),
-        migrations.swappable_dependency(oauth2_settings.ACCESS_TOKEN_MODEL),
-        migrations.swappable_dependency(oauth2_settings.REFRESH_TOKEN_MODEL),
-        migrations.swappable_dependency(oauth2_settings.GRANT_MODEL),
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL)
     ]
 
     operations = [
