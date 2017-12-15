@@ -580,6 +580,54 @@ class TestAuthorizationCodeTokenView(BaseTest):
         content = json.loads(response.content.decode("utf-8"))
         self.assertTrue("invalid_grant" in content.values())
 
+    def test_refresh_with_grace_period(self):
+        """
+        Request an access token using a refresh token
+        """
+        oauth2_settings.REFRESH_TOKEN_GRACE_PERIOD_SECONDS = 120
+        self.client.login(username="test_user", password="123456")
+        authorization_code = self.get_auth()
+
+        token_request_data = {
+            "grant_type": "authorization_code",
+            "code": authorization_code,
+            "redirect_uri": "http://example.org"
+        }
+        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+        content = json.loads(response.content.decode("utf-8"))
+        self.assertTrue("refresh_token" in content)
+
+        # make a second token request to be sure the previous refresh token remains valid, see #65
+        authorization_code = self.get_auth()
+        token_request_data = {
+            "grant_type": "authorization_code",
+            "code": authorization_code,
+            "redirect_uri": "http://example.org"
+        }
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+
+        token_request_data = {
+            "grant_type": "refresh_token",
+            "refresh_token": content["refresh_token"],
+            "scope": content["scope"],
+        }
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 200)
+
+        content = json.loads(response.content.decode("utf-8"))
+        self.assertTrue("access_token" in content)
+        first_access_token = content["access_token"]
+
+        # check refresh token returns same data if used twice, see #497
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 200)
+        content = json.loads(response.content.decode("utf-8"))
+        self.assertTrue("access_token" in content)
+        self.assertEqual(content["access_token"], first_access_token)
+        oauth2_settings.REFRESH_TOKEN_GRACE_PERIOD_SECONDS = 0
+
     def test_refresh_invalidates_old_tokens(self):
         """
         Ensure existing refresh tokens are cleaned up when issuing new ones
@@ -608,7 +656,8 @@ class TestAuthorizationCodeTokenView(BaseTest):
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
 
-        self.assertFalse(RefreshToken.objects.filter(token=rt).exists())
+        refresh_token = RefreshToken.objects.filter(token=rt).first()
+        self.assertIsNotNone(refresh_token.revoked)
         self.assertFalse(AccessToken.objects.filter(token=at).exists())
 
     def test_refresh_no_scopes(self):
@@ -692,6 +741,46 @@ class TestAuthorizationCodeTokenView(BaseTest):
         self.assertEqual(response.status_code, 200)
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 401)
+
+    def test_refresh_repeating_requests(self):
+        """
+        Trying to refresh an access token with the same refresh token more than
+        once succeeds in the grace period and fails outside
+        """
+        oauth2_settings.REFRESH_TOKEN_GRACE_PERIOD_SECONDS = 120
+        self.client.login(username="test_user", password="123456")
+        authorization_code = self.get_auth()
+
+        token_request_data = {
+            "grant_type": "authorization_code",
+            "code": authorization_code,
+            "redirect_uri": "http://example.org"
+        }
+        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+        content = json.loads(response.content.decode("utf-8"))
+        self.assertTrue("refresh_token" in content)
+
+        token_request_data = {
+            "grant_type": "refresh_token",
+            "refresh_token": content["refresh_token"],
+            "scope": content["scope"],
+        }
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 200)
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 200)
+
+        # try refreshing outside the refresh window, see #497
+        rt = RefreshToken.objects.get(token=content["refresh_token"])
+        self.assertIsNotNone(rt.revoked)
+        rt.revoked = timezone.now() - datetime.timedelta(minutes=10)  # instead of mocking out datetime
+        rt.save()
+
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 401)
+        oauth2_settings.REFRESH_TOKEN_GRACE_PERIOD_SECONDS = 0
 
     def test_refresh_repeating_requests_non_rotating_tokens(self):
         """

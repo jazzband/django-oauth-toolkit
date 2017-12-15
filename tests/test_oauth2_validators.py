@@ -236,7 +236,7 @@ class TestOAuth2Validator(TransactionTestCase):
 
         self.validator.save_bearer_token(token, self.request)
 
-        self.assertEqual(1, RefreshToken.objects.count())
+        self.assertEqual(1, RefreshToken.objects.filter(revoked__isnull=True).count())
         self.assertEqual(1, AccessToken.objects.count())
 
     def test_save_bearer_token__with_no_refresh_token__creates_new_access_token_only(self):

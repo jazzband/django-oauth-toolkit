@@ -149,7 +149,8 @@ class TestRevocationView(BaseTest):
         url = "{url}?{qs}".format(url=reverse("oauth2_provider:revoke-token"), qs=query_string)
         response = self.client.post(url)
         self.assertEqual(response.status_code, 200)
-        self.assertFalse(RefreshToken.objects.filter(id=rtok.id).exists())
+        refresh_token = RefreshToken.objects.filter(id=rtok.id).first()
+        self.assertIsNotNone(refresh_token.revoked)
         self.assertFalse(AccessToken.objects.filter(id=rtok.access_token.id).exists())
 
     def test_revoke_token_with_wrong_hint(self):
