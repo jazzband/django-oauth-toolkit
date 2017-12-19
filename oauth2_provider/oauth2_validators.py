@@ -717,6 +717,9 @@ class OAuth2Validator(RequestValidator):
         )
         return id_token
 
+    def get_jwt_bearer_token(self, token, token_handler, request):
+        return self.get_id_token(token, token_handler, request)
+
     def get_id_token(self, token, token_handler, request):
 
         key = jwk.JWK.from_pem(oauth2_settings.RSA_PRIVATE_KEY.encode("utf8"))
