@@ -789,18 +789,18 @@ class OAuth2Validator(RequestValidator):
 
         try:
             jwt_token = jwt.JWT(key=key, jwt=token)
+            id_token = IDToken.objects.get(token=jwt_token.serialize())
+            request.client = id_token.application
+            request.user = id_token.user
+            request.scopes = scopes
+            # this is needed by django rest framework
+            request.access_token = id_token
+            return True
         except (JWException, JWTExpired):
             # TODO: This is the base exception of all jwcrypto
             return False
 
-        id_token = IDToken.objects.get(token=jwt_token.serialize())
-        request.client = id_token.application
-        request.user = id_token.user
-        request.scopes = scopes
-        # this is needed by django rest framework
-        request.access_token = id_token
-
-        return True
+        return False
 
     def validate_user_match(self, id_token_hint, scopes, claims, request):
         # TODO: Fix to validate when necessary acording
