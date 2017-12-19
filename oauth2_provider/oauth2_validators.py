@@ -760,6 +760,9 @@ class OAuth2Validator(RequestValidator):
         request.id_token = id_token
         return jwt_token.serialize()
 
+    def validate_jwt_bearer_token(self, token, scopes, request):
+        return self.validate_id_token(token, scopes, request)
+
     def validate_id_token(self, token, scopes, request):
         """
         When users try to access resources, check that provided id_token is valid
