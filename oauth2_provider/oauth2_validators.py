@@ -739,7 +739,7 @@ class OAuth2Validator(RequestValidator):
             acess_token = token["access_token"]
             sha256 = hashlib.sha256(acess_token.encode("ascii"))
             bits128 = sha256.hexdigest()[:16]
-            at_hash = base64.urlsafe_b64encode(bytes(bits128, "ascii"))
+            at_hash = base64.urlsafe_b64encode(bits128.encode("ascii"))
             claims['at_hash'] = at_hash.decode("utf8")
 
         # TODO: create a function to check if we should include c_hash
