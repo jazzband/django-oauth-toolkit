@@ -748,7 +748,7 @@ class OAuth2Validator(RequestValidator):
             code = token["code"]
             sha256 = hashlib.sha256(code.encode("ascii"))
             bits256 = sha256.hexdigest()[:32]
-            c_hash = base64.urlsafe_b64encode(bytes(bits256, "ascii"))
+            c_hash = base64.urlsafe_b64encode(bits256.encode("ascii"))
             claims["c_hash"] = c_hash.decode("utf8")
 
         jwt_token = jwt.JWT(header=json.dumps({"alg": "RS256"}, default=str), claims=json.dumps(claims, default=str))
