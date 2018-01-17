@@ -335,8 +335,10 @@ class AbstractRefreshToken(models.Model):
         Delete this refresh token along with related access token
         """
         access_token_model = get_access_token_model()
-        access_token_model.objects.get(id=self.access_token.id).revoke()
+        token = access_token_model.objects.get(id=self.access_token.id)
+        # Avoid cascade by deleting self first.
         self.delete()
+        token.revoke()
 
     def __str__(self):
         return self.token
