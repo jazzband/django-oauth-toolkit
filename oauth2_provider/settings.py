@@ -83,6 +83,7 @@ MANDATORY = (
     "OAUTH2_BACKEND_CLASS",
     "SCOPES",
     "ALLOWED_REDIRECT_URI_SCHEMES",
+    "RSA_PRIVATE_KEY",
 )
 
 # List of settings that may be in string import notation.
