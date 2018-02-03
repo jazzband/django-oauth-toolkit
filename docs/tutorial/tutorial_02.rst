@@ -3,7 +3,7 @@ Part 2 - protect your APIs
 
 Scenario
 --------
-It's very common for an :term:`Authorization Server` being also the :term:`Resource Server`, usually exposing an API to
+It's very common for an :term:`Authorization Server` to also be the :term:`Resource Server`, usually exposing an API to
 let others access its own resources. Django OAuth Toolkit implements an easy way to protect the views of a Django
 application with OAuth2, in this tutorial we will see how to do it.
 
