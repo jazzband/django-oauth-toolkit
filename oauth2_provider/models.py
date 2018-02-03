@@ -389,5 +389,5 @@ def clear_expired():
     with transaction.atomic():
         if refresh_expire_at:
             refresh_token_model.objects.filter(access_token__expires__lt=refresh_expire_at).delete()
-            access_token_model.objects.filter(refresh_token__isnull=True, expires__lt=now).delete()
+        access_token_model.objects.filter(refresh_token__isnull=True, expires__lt=now).delete()
         grant_model.objects.filter(expires__lt=now).delete()
