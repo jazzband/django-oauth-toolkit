@@ -1,0 +1,234 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: oauth2_provider\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-06-06 11:45+0800\n"
+"PO-Revision-Date: 2017-06-06 11:45+0800\n"
+"Last-Translator: \n"
+"Language-Team: lch@jfpal.com\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Poedit 2.0.2\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+
+#: oauth2_provider/apps.py:6
+msgid "Django OAuth Toolkit"
+msgstr "Django OAuth工具集"
+
+#: oauth2_provider/models.py:45
+msgid "Confidential"
+msgstr "内部应用"
+
+#: oauth2_provider/models.py:46
+msgid "Public"
+msgstr "开放应用"
+
+#: oauth2_provider/models.py:54
+msgid "Authorization code"
+msgstr "授权码模式"
+
+#: oauth2_provider/models.py:55
+msgid "Implicit"
+msgstr "简化模式"
+
+#: oauth2_provider/models.py:56
+msgid "Resource owner password-based"
+msgstr "密码模式"
+
+#: oauth2_provider/models.py:57
+msgid "Client credentials"
+msgstr "客户端模式"
+
+#: oauth2_provider/models.py:62
+msgid "Client ID"
+msgstr "客户端ID"
+
+#: oauth2_provider/models.py:70
+msgid "Allowed URIs list, space separated"
+msgstr "允许的 Uri 列表，空格分隔"
+
+#: oauth2_provider/models.py:72
+msgid "Redirect URIs"
+msgstr "重定向URI列表"
+
+#: oauth2_provider/models.py:75
+#: oauth2_provider/templates/oauth2_provider/application_detail.html:20
+msgid "Client type"
+msgstr "客户端类型"
+
+#: oauth2_provider/models.py:77
+msgid "Ref: https://tools.ietf.org/html/rfc6749#page-9"
+msgstr "参考: http://www.ruanyifeng.com/blog/2014/05/oauth_2_0.html"
+
+#: oauth2_provider/models.py:79
+msgid "Authorization grant type"
+msgstr "授权类型"
+
+#: oauth2_provider/models.py:82
+#: oauth2_provider/templates/oauth2_provider/application_detail.html:15
+msgid "Client secret"
+msgstr "客户端密码"
+
+#: oauth2_provider/models.py:84
+msgid "Name"
+msgstr "名称"
+
+#: oauth2_provider/models.py:85
+msgid "Skip authorization"
+msgstr "跳过用户认证"
+
+#: oauth2_provider/models.py:133
+#, python-brace-format
+msgid "Redirect_uris could not be empty with {grant_type} grant_type"
+msgstr "Redirect_uris 不能空与 {grant_type} grant_type"
+
+#: oauth2_provider/models.py:157
+msgid "Application"
+msgstr "客户端"
+
+#: oauth2_provider/models.py:158
+msgid "Applications"
+msgstr "客户端"
+
+#: oauth2_provider/models.py:177 oauth2_provider/models.py:230
+#: oauth2_provider/models.py:317
+msgid "ID"
+msgstr "ID"
+
+#: oauth2_provider/models.py:182
+msgid "Code"
+msgstr "认证码"
+
+#: oauth2_provider/models.py:186 oauth2_provider/models.py:239
+msgid "Expires"
+msgstr "过期时间"
+
+#: oauth2_provider/models.py:187
+msgid "Redirect URI"
+msgstr "重定向URI列表"
+
+#: oauth2_provider/models.py:188 oauth2_provider/models.py:240
+msgid "Scope"
+msgstr "授权域"
+
+#: oauth2_provider/models.py:212
+msgid "Grant"
+msgstr "授权"
+
+#: oauth2_provider/models.py:213
+msgid "Grants"
+msgstr "授权"
+
+#: oauth2_provider/models.py:235 oauth2_provider/models.py:322
+msgid "Token"
+msgstr "Token"
+
+#: oauth2_provider/models.py:299
+msgid "Access token"
+msgstr "Access token"
+
+#: oauth2_provider/models.py:300
+msgid "Access tokens"
+msgstr "Access Tokens"
+
+#: oauth2_provider/models.py:348
+msgid "Refresh token"
+msgstr "Refresh token"
+
+#: oauth2_provider/models.py:349
+msgid "Refresh tokens"
+msgstr "Refresh tokens"
+
+#: oauth2_provider/templates/oauth2_provider/application_confirm_delete.html:6
+msgid "Are you sure to delete the application"
+msgstr "确定删除此客户端"
+
+#: oauth2_provider/templates/oauth2_provider/application_confirm_delete.html:12
+msgid "Cancel"
+msgstr "取消"
+
+#: oauth2_provider/templates/oauth2_provider/application_confirm_delete.html:13
+#: oauth2_provider/templates/oauth2_provider/application_detail.html:38
+#: oauth2_provider/templates/oauth2_provider/authorized-token-delete.html:7
+msgid "Delete"
+msgstr "删除"
+
+#: oauth2_provider/templates/oauth2_provider/application_detail.html:10
+msgid "Client id"
+msgstr "客户端ID"
+
+#: oauth2_provider/templates/oauth2_provider/application_detail.html:25
+msgid "Authorization Grant Type"
+msgstr "授权类型"
+
+#: oauth2_provider/templates/oauth2_provider/application_detail.html:30
+msgid "Redirect Uris"
+msgstr "重定向用户至"
+
+#: oauth2_provider/templates/oauth2_provider/application_detail.html:36
+#: oauth2_provider/templates/oauth2_provider/application_form.html:35
+msgid "Go Back"
+msgstr "返回"
+
+#: oauth2_provider/templates/oauth2_provider/application_detail.html:37
+msgid "Edit"
+msgstr "编辑"
+
+#: oauth2_provider/templates/oauth2_provider/application_form.html:9
+msgid "Edit application"
+msgstr "应用/软件"
+
+#: oauth2_provider/templates/oauth2_provider/application_list.html:6
+msgid "Your applications"
+msgstr "您在%s的订单"
+
+#: oauth2_provider/templates/oauth2_provider/application_list.html:16
+msgid "No applications defined"
+msgstr "未定义"
+
+#: oauth2_provider/templates/oauth2_provider/application_list.html:16
+msgid "Click here"
+msgstr "点这里"
+
+#: oauth2_provider/templates/oauth2_provider/application_list.html:16
+msgid "if you want to register a new one"
+msgstr "注册新用户"
+
+#: oauth2_provider/templates/oauth2_provider/application_registration_form.html:5
+msgid "Register a new application"
+msgstr "注册新应用"
+
+#: oauth2_provider/templates/oauth2_provider/authorize.html:8
+msgid "Authorize"
+msgstr "授权"
+
+#: oauth2_provider/templates/oauth2_provider/authorize.html:17
+msgid "Application requires following permissions"
+msgstr "应用将获得如下授权"
+
+#: oauth2_provider/templates/oauth2_provider/authorized-token-delete.html:6
+msgid "Are you sure you want to delete this token?"
+msgstr "您确定要删除这个会话吗？"
+
+#: oauth2_provider/templates/oauth2_provider/authorized-tokens.html:6
+msgid "Tokens"
+msgstr "会话"
+
+#: oauth2_provider/templates/oauth2_provider/authorized-tokens.html:19
+msgid "There are no authorized tokens yet."
+msgstr "没有已认证会话."
+
+#: oauth2_provider/validators.py:23
+msgid "Enter a valid URL."
+msgstr "请输入正确的URL."
+
+#~ msgid "Redirect uris"
+#~ msgstr "重定向URI"
