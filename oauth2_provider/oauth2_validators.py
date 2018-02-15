@@ -240,13 +240,21 @@ class OAuth2Validator(RequestValidator):
     def get_default_redirect_uri(self, client_id, request, *args, **kwargs):
         return request.client.default_redirect_uri
 
-    def _get_token_from_authentication_server(self, token, introspection_url, introspection_token):
-        bearer = "Bearer {}".format(introspection_token)
+    def _get_token_from_authentication_server(self, token, introspection_url, introspection_token, introspection_credentials):
+        # some rfc7662 implementations use a Bearer token while others use Basic Auth
+        headers = None
+        if introspection_token:
+            headers = {"Authorization": "Bearer {}".format(introspection_token)}
+        elif introspection_credentials and len(introspection_credentials) == 2:
+            basic = base64.b64encode(introspection_credentials[0].encode('utf-8')
+                                     + b':'
+                                     + introspection_credentials[1].encode('utf-8'))
+            headers = {"Authorization": "Basic {}".format(str(basic,'utf-8'))}
 
         try:
             response = requests.post(
                 introspection_url,
-                data={"token": token}, headers={"Authorization": bearer}
+                data={"token": token}, headers=headers
             )
         except requests.exceptions.RequestException:
             log.exception("Introspection: Failed POST to %r in token lookup", introspection_url)
@@ -258,6 +266,7 @@ class OAuth2Validator(RequestValidator):
             log.exception("Introspection: Failed to parse response as json")
             return None
 
+        # will user@email work here?
         if "active" in content and content["active"] is True:
             if "username" in content:
                 user, _created = UserModel.objects.get_or_create(
@@ -306,16 +315,18 @@ class OAuth2Validator(RequestValidator):
 
         introspection_url = oauth2_settings.RESOURCE_SERVER_INTROSPECTION_URL
         introspection_token = oauth2_settings.RESOURCE_SERVER_AUTH_TOKEN
+        introspection_credentials = oauth2_settings.RESOURCE_SERVER_INTROSPECTION_CREDENTIALS
 
         try:
             access_token = AccessToken.objects.select_related("application", "user").get(token=token)
             # if there is a token but invalid then look up the token
-            if introspection_url and introspection_token:
+            if introspection_url and (introspection_token or introspection_credentials):
                 if not access_token.is_valid(scopes):
                     access_token = self._get_token_from_authentication_server(
                         token,
                         introspection_url,
-                        introspection_token
+                        introspection_token,
+                        introspection_credentials
                     )
             if access_token and access_token.is_valid(scopes):
                 request.client = access_token.application
@@ -328,11 +339,12 @@ class OAuth2Validator(RequestValidator):
             return False
         except AccessToken.DoesNotExist:
             # there is no initial token, look up the token
-            if introspection_url and introspection_token:
+            if introspection_url and (introspection_token or introspection_credentials):
                 access_token = self._get_token_from_authentication_server(
                     token,
                     introspection_url,
-                    introspection_token
+                    introspection_token,
+                    introspection_credentials
                 )
                 if access_token and access_token.is_valid(scopes):
                     request.client = access_token.application
