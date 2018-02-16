@@ -100,6 +100,16 @@ REFRESH_TOKEN_EXPIRE_SECONDS
 The number of seconds before a refresh token gets removed from the database by
 the ``cleartokens`` management command. Check :ref:`cleartokens` management command for further info.
 
+REFRESH_TOKEN_GRACE_PERIOD_SECONDS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The number of seconds between when a refresh token is first used when it is
+expired. The most common case of this for this is native mobile applications
+that run into issues of network connectivity during the refresh cycle and are
+unable to complete the full request/response life cycle. Without a grace
+period the application, the app then has only a consumed refresh token and the
+only recourse is to have the user re-authenticate. A suggested value, if this
+is enabled, is 2 minutes.
+
 REFRESH_TOKEN_MODEL
 ~~~~~~~~~~~~~~~~~~~
 The import string of the class (model) representing your refresh tokens. Overwrite
