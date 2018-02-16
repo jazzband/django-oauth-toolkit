@@ -343,10 +343,18 @@ class AbstractRefreshToken(models.Model):
         Mark this refresh token revoked and revoke related access token
         """
         access_token_model = get_access_token_model()
-        access_token_model.objects.get(id=self.access_token_id).revoke()
-        self.access_token = None
-        self.revoked = timezone.now()
-        self.save()
+        refresh_token_model = get_refresh_token_model()
+        with transaction.atomic():
+            self = refresh_token_model.objects.filter(
+                pk=self.pk, revoked__isnull=True
+            ).select_for_update().first()
+            if not self:
+                return
+
+            access_token_model.objects.get(id=self.access_token_id).revoke()
+            self.access_token = None
+            self.revoked = timezone.now()
+            self.save()
 
     def __str__(self):
         return self.token
