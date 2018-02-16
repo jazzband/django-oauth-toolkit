@@ -240,7 +240,11 @@ class OAuth2Validator(RequestValidator):
     def get_default_redirect_uri(self, client_id, request, *args, **kwargs):
         return request.client.default_redirect_uri
 
-    def _get_token_from_authentication_server(self, token, introspection_url, introspection_token, introspection_credentials):
+    def _get_token_from_authentication_server(self,
+                                              token,
+                                              introspection_url,
+                                              introspection_token,
+                                              introspection_credentials):
         # some rfc7662 implementations use a Bearer token while others use Basic Auth
         headers = None
         if introspection_token:
@@ -249,7 +253,7 @@ class OAuth2Validator(RequestValidator):
             basic = base64.b64encode(introspection_credentials[0].encode('utf-8')
                                      + b':'
                                      + introspection_credentials[1].encode('utf-8'))
-            headers = {"Authorization": "Basic {}".format(str(basic,'utf-8'))}
+            headers = {"Authorization": "Basic {}".format(str(basic, 'utf-8'))}
 
         try:
             response = requests.post(
