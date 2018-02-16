@@ -240,20 +240,34 @@ class OAuth2Validator(RequestValidator):
     def get_default_redirect_uri(self, client_id, request, *args, **kwargs):
         return request.client.default_redirect_uri
 
-    def _get_token_from_authentication_server(self,
-                                              token,
-                                              introspection_url,
-                                              introspection_token,
-                                              introspection_credentials):
-        # some rfc7662 implementations use a Bearer token while others use Basic Auth
+    def _get_token_from_authentication_server(
+            self, token, introspection_url, introspection_token, introspection_credentials
+    ):
+        """Use external introspection endpoint to "crack open" the token.
+        :param introspection_url: introspection endpoint URL
+        :param introspection_token: Bearer token
+        :param introspection_credentials: Basic Auth credentials (id,secret)
+        :return: :class:`models.AccessToken`
+
+        Some RFC 7662 implementations (including this one) use a Bearer token while others use Basic
+        Auth. Depending on the external AS's implementation, provide either the introspection_token
+        or the introspection_credentials.
+
+        If the resulting access_token identifies a username (e.g. Authorization Code grant), add
+        that user to the UserModel. Also cache the access_token up until its expiry time or a
+        configured maximum time.
+
+        """
         headers = None
         if introspection_token:
             headers = {"Authorization": "Bearer {}".format(introspection_token)}
-        elif introspection_credentials and len(introspection_credentials) == 2:
-            basic = base64.b64encode(introspection_credentials[0].encode("utf-8")
-                                     + b":"
-                                     + introspection_credentials[1].encode("utf-8"))
-            headers = {"Authorization": "Basic {}".format(str(basic, "utf-8"))}
+        elif (introspection_credentials and
+              isinstance(introspection_credentials, (tuple, list))
+              and len(introspection_credentials) == 2):
+            client_id = introspection_credentials[0].encode("utf-8")
+            client_secret = introspection_credentials[1].encode("utf-8")
+            basic_auth = base64.b64encode(client_id + b":" + client_secret)
+            headers = {"Authorization": "Basic {}".format(basic_auth.decode("utf-8"))}
 
         try:
             response = requests.post(
@@ -270,7 +284,6 @@ class OAuth2Validator(RequestValidator):
             log.exception("Introspection: Failed to parse response as json")
             return None
 
-        # will user@email work here?
         if "active" in content and content["active"] is True:
             if "username" in content:
                 user, _created = UserModel.objects.get_or_create(

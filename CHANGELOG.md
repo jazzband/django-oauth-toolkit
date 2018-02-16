@@ -1,3 +1,7 @@
+### 1.1.0 [unreleased]
+
+* **New feature**: Option for RFC 7662 external AS that uses HTTP Basic Auth.
+
 ### 1.0.0 [2017-06-07]
 
 * **New feature**: AccessToken, RefreshToken and Grant models are now swappable.
