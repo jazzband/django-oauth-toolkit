@@ -250,10 +250,10 @@ class OAuth2Validator(RequestValidator):
         if introspection_token:
             headers = {"Authorization": "Bearer {}".format(introspection_token)}
         elif introspection_credentials and len(introspection_credentials) == 2:
-            basic = base64.b64encode(introspection_credentials[0].encode('utf-8')
-                                     + b':'
-                                     + introspection_credentials[1].encode('utf-8'))
-            headers = {"Authorization": "Basic {}".format(str(basic, 'utf-8'))}
+            basic = base64.b64encode(introspection_credentials[0].encode("utf-8")
+                                     + b":"
+                                     + introspection_credentials[1].encode("utf-8"))
+            headers = {"Authorization": "Basic {}".format(str(basic, "utf-8"))}
 
         try:
             response = requests.post(
