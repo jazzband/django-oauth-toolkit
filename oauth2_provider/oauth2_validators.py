@@ -261,9 +261,7 @@ class OAuth2Validator(RequestValidator):
         headers = None
         if introspection_token:
             headers = {"Authorization": "Bearer {}".format(introspection_token)}
-        elif (introspection_credentials and
-              isinstance(introspection_credentials, (tuple, list))
-              and len(introspection_credentials) == 2):
+        elif introspection_credentials:
             client_id = introspection_credentials[0].encode("utf-8")
             client_secret = introspection_credentials[1].encode("utf-8")
             basic_auth = base64.b64encode(client_id + b":" + client_secret)
