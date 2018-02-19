@@ -1,7 +1,7 @@
 Separate Resource Server
 ========================
 Django OAuth Toolkit allows to separate the :term:`Authentication Server` and the :term:`Resource Server.`
-Based one the `RFC 7662 <https://tools.ietf.org/html/rfc7662>`_ Django OAuth Toolkit provides
+Based on the `RFC 7662 <https://tools.ietf.org/html/rfc7662>`_ Django OAuth Toolkit provides
 a rfc-compliant introspection endpoint.
 As well the Django OAuth Toolkit allows to verify access tokens by the use of an introspection endpoint.
 
@@ -50,7 +50,8 @@ Example Response::
 Setup the Resource Server
 -------------------------
 Setup the :term:`Resource Server` like the :term:`Authentication Server` as described in the :ref:`tutorial`.
-Add ``RESOURCE_SERVER_INTROSPECTION_URL`` and ``RESOURCE_SERVER_AUTH_TOKEN`` to your settings.
+Add ``RESOURCE_SERVER_INTROSPECTION_URL`` and **either** ``RESOURCE_SERVER_AUTH_TOKEN``
+**or** ``RESOURCE_SERVER_INTROSPECTION_CREDENTIALS`` as a ``(id,secret)`` tuple to your settings.
 The :term:`Resource Server` will try to verify its requests on the :term:`Authentication Server`.
 
 .. code-block:: python
@@ -58,11 +59,15 @@ The :term:`Resource Server` will try to verify its requests on the :term:`Authen
     OAUTH2_PROVIDER = {
         ...
         'RESOURCE_SERVER_INTROSPECTION_URL': 'https://example.org/o/introspect/',
-        'RESOURCE_SERVER_AUTH_TOKEN': '3yUqsWtwKYKHnfivFcJu',
+        'RESOURCE_SERVER_AUTH_TOKEN': '3yUqsWtwKYKHnfivFcJu', # OR this but not both:
+        # 'RESOURCE_SERVER_INTROSPECTION_CREDENTIALS': ('rs_client_id','rs_client_secret'),
         ...
     }
 
 ``RESOURCE_SERVER_INTROSPECTION_URL`` defines the introspection endpoint and
 ``RESOURCE_SERVER_AUTH_TOKEN`` an authentication token to authenticate against the
 :term:`Authentication Server`.
-
+As allowed by RFC 7662, some external OAuth 2.0 servers support HTTP Basic Authentication.
+For these, use:
+``RESOURCE_SERVER_INTROSPECTION_CREDENTIALS=('client_id','client_secret')`` instead
+of ``RESOURCE_SERVER_AUTH_TOKEN``.

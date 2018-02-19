@@ -129,7 +129,8 @@ class TestTokenIntrospectionAuth(TestCase):
         token = self.validator._get_token_from_authentication_server(
             self.resource_server_token.token,
             oauth2_settings.RESOURCE_SERVER_INTROSPECTION_URL,
-            oauth2_settings.RESOURCE_SERVER_AUTH_TOKEN
+            oauth2_settings.RESOURCE_SERVER_AUTH_TOKEN,
+            oauth2_settings.RESOURCE_SERVER_INTROSPECTION_CREDENTIALS
         )
         self.assertIsNone(token)
 
@@ -141,7 +142,8 @@ class TestTokenIntrospectionAuth(TestCase):
         token = self.validator._get_token_from_authentication_server(
             "foo",
             oauth2_settings.RESOURCE_SERVER_INTROSPECTION_URL,
-            oauth2_settings.RESOURCE_SERVER_AUTH_TOKEN
+            oauth2_settings.RESOURCE_SERVER_AUTH_TOKEN,
+            oauth2_settings.RESOURCE_SERVER_INTROSPECTION_CREDENTIALS
         )
         self.assertIsInstance(token, AccessToken)
         self.assertEqual(token.user.username, "foo_user")

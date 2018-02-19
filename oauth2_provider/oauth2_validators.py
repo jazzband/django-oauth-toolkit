@@ -241,13 +241,37 @@ class OAuth2Validator(RequestValidator):
     def get_default_redirect_uri(self, client_id, request, *args, **kwargs):
         return request.client.default_redirect_uri
 
-    def _get_token_from_authentication_server(self, token, introspection_url, introspection_token):
-        bearer = "Bearer {}".format(introspection_token)
+    def _get_token_from_authentication_server(
+            self, token, introspection_url, introspection_token, introspection_credentials
+    ):
+        """Use external introspection endpoint to "crack open" the token.
+        :param introspection_url: introspection endpoint URL
+        :param introspection_token: Bearer token
+        :param introspection_credentials: Basic Auth credentials (id,secret)
+        :return: :class:`models.AccessToken`
+
+        Some RFC 7662 implementations (including this one) use a Bearer token while others use Basic
+        Auth. Depending on the external AS's implementation, provide either the introspection_token
+        or the introspection_credentials.
+
+        If the resulting access_token identifies a username (e.g. Authorization Code grant), add
+        that user to the UserModel. Also cache the access_token up until its expiry time or a
+        configured maximum time.
+
+        """
+        headers = None
+        if introspection_token:
+            headers = {"Authorization": "Bearer {}".format(introspection_token)}
+        elif introspection_credentials:
+            client_id = introspection_credentials[0].encode("utf-8")
+            client_secret = introspection_credentials[1].encode("utf-8")
+            basic_auth = base64.b64encode(client_id + b":" + client_secret)
+            headers = {"Authorization": "Basic {}".format(basic_auth.decode("utf-8"))}
 
         try:
             response = requests.post(
                 introspection_url,
-                data={"token": token}, headers={"Authorization": bearer}
+                data={"token": token}, headers=headers
             )
         except requests.exceptions.RequestException:
             log.exception("Introspection: Failed POST to %r in token lookup", introspection_url)
@@ -307,16 +331,18 @@ class OAuth2Validator(RequestValidator):
 
         introspection_url = oauth2_settings.RESOURCE_SERVER_INTROSPECTION_URL
         introspection_token = oauth2_settings.RESOURCE_SERVER_AUTH_TOKEN
+        introspection_credentials = oauth2_settings.RESOURCE_SERVER_INTROSPECTION_CREDENTIALS
 
         try:
             access_token = AccessToken.objects.select_related("application", "user").get(token=token)
             # if there is a token but invalid then look up the token
-            if introspection_url and introspection_token:
+            if introspection_url and (introspection_token or introspection_credentials):
                 if not access_token.is_valid(scopes):
                     access_token = self._get_token_from_authentication_server(
                         token,
                         introspection_url,
-                        introspection_token
+                        introspection_token,
+                        introspection_credentials
                     )
             if access_token and access_token.is_valid(scopes):
                 request.client = access_token.application
@@ -329,11 +355,12 @@ class OAuth2Validator(RequestValidator):
             return False
         except AccessToken.DoesNotExist:
             # there is no initial token, look up the token
-            if introspection_url and introspection_token:
+            if introspection_url and (introspection_token or introspection_credentials):
                 access_token = self._get_token_from_authentication_server(
                     token,
                     introspection_url,
-                    introspection_token
+                    introspection_token,
+                    introspection_credentials
                 )
                 if access_token and access_token.is_valid(scopes):
                     request.client = access_token.application
