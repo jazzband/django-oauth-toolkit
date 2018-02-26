@@ -28,7 +28,7 @@ logo, acceptance of some user agreement and so on.
 Django OAuth Toolkit lets you extend the AbstractApplication model in a fashion like Django's
 custom user models.
 
-If you need, let's say, application logo and user agreement acceptance field, you can to this in
+If you need, let's say, application logo and user agreement acceptance field, you can do this in
 your Django app (provided that your app is in the list of the INSTALLED_APPS in your settings
 module)::
 
