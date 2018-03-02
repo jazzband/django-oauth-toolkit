@@ -48,6 +48,7 @@ For example:
 
 When a request is performed both the `READ_SCOPE` \\ `WRITE_SCOPE` and 'music' scopes are required to be authorized for the current access token.
 
+
 TokenHasResourceScope
 ----------------------
 The `TokenHasResourceScope` permission class allows the access only when the current access token has been authorized for **all** the scopes listed in the `required_scopes` field of the view but according of request's method.
@@ -81,3 +82,61 @@ For example:
         required_scopes = ['music']
 
 The `required_scopes` attribute is mandatory.
+
+
+TokenHasMethodScope
+-------------------
+
+The `TokenHasMethodScope` permission class allows the access based on a per-method map.
+
+The `required_scopes_map` attribute is a required map of methods and required scopes for each method.
+
+For example:
+
+.. code-block:: python
+
+    class SongView(views.APIView):
+        authentication_classes = [OAuth2Authentication]
+        permission_classes = [TokenHasMethodScope]
+        required_scopes_map = {
+            "GET": ["read"],
+            "POST": ["create"],
+            "PUT": ["update", "put"],
+            "DELETE": ["delete"],
+        }
+
+When a `GET` request is performed the 'read' scope is required to be authorized
+for the current access token. When a `PUT` is performed, 'update' and 'put' are required
+and when a `DELETE` is performed, the 'delete' scope is required.
+
+TokenHasMethodPathScope
+-----------------------
+
+The `TokenHasMethodPathScope` permission class allows the access based on a per-method and resource regex
+map and allows for alternative lists of required scopes. This permission provides full functionality
+required by REST API specifications like the
+`OpenAPI Specification's security requirement object <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#securityRequirementObject>`_.
+
+The `required_scopes_map_list` attribute is a required list of `RequiredMethodScopes` instances.
+
+For example:
+
+.. code-block:: python
+
+    class SongView(views.APIView):
+        authentication_classes = [OAuth2Authentication]
+        permission_classes = [TokenHasMethodPathScope]
+        required_scopes_map_list = [
+            RequiredMethodScopes("GET", r"^/widgets/?[^/]*/?$", ["read", "get widget"]),
+            RequiredMethodScopes("POST", r"^/widgets/?$", ["create", "post widget"]),
+            RequiredMethodScopes("PUT", r"^/widgets/[^/]+/?$", ["update", "put widget"]),
+            RequiredMethodScopes("DELETE", r"^/widgets/[^/]+/?$", ["delete", "scope2 scope3"]),
+            RequiredMethodScopes("GET", r"^/gadgets/?[^/]*/?$", ["read gadget", "get scope1"]),
+            RequiredMethodScopes("POST", r"^/gadgets/?$", ["create scope1", "post scope2"]),
+            RequiredMethodScopes("PUT", r"^/gadgets/[^/]+/?$", ["update scope2 scope3", "put gadget"]),
+            RequiredMethodScopes("DELETE", r"^/gadgets/[^/]+/?$", ["delete scope1", "scope2 scope3"]),
+        ]
+
+For each listed method and the regex resource path, any matching list of possible alternative required scopes is required to succeed. For the above example, `GET /widgets/1234` will be permitted if either
+'read' _or_ 'get' and  'widget' scopes are authorized. `POST /gadgets/` will be permitted if 'create' and
+'scope1' _or_ 'post' and 'scope2' are authorized.

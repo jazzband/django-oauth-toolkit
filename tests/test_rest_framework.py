@@ -29,7 +29,8 @@ try:
     from rest_framework.test import force_authenticate, APIRequestFactory
     from oauth2_provider.contrib.rest_framework import (
         IsAuthenticatedOrTokenHasScope, OAuth2Authentication, TokenHasScope,
-        TokenHasReadWriteScope, TokenHasResourceScope
+        TokenHasReadWriteScope, TokenHasMethodScope, RequiredMethodScopes,
+        TokenHasMethodPathScope, TokenHasResourceScope
     )
 
     class MockView(APIView):
@@ -55,6 +56,24 @@ try:
     class ReadWriteScopedView(OAuth2View):
         permission_classes = [permissions.IsAuthenticated, TokenHasReadWriteScope]
 
+    class MethodScopeView(OAuth2View):
+        permission_classes = [TokenHasMethodScope]
+        required_scopes_map = {
+            "GET": ["read"],
+            "POST": ["create"],
+            "PUT": ["update", "put"],
+            "DELETE": ["delete"],
+        }
+
+    class MethodPathScopeView(OAuth2View):
+        permission_classes = [TokenHasMethodPathScope]
+        required_scopes_map_list = [
+            RequiredMethodScopes("GET", r"^/oauth2-method-path-scope-test/$", ["read", "get scope2"]),
+            RequiredMethodScopes("POST", r"^/oauth2-method-path-scope-test/$", ["create", "post scope2"]),
+            RequiredMethodScopes("PUT", r"^/oauth2-method-path-scope-test/$", ["update", "put scope2"]),
+            RequiredMethodScopes("DELETE", r"^/oauth2-method-path-scope-test/$", ["delete", "scope2 scope3"]),
+        ]
+
     class ResourceScopedView(OAuth2View):
         permission_classes = [permissions.IsAuthenticated, TokenHasResourceScope]
         required_scopes = ["resource1"]
@@ -64,6 +83,8 @@ try:
         url(r"^oauth2-test/$", OAuth2View.as_view()),
         url(r"^oauth2-scoped-test/$", ScopedView.as_view()),
         url(r"^oauth2-read-write-test/$", ReadWriteScopedView.as_view()),
+        url(r"^oauth2-method-scope-test/$", MethodScopeView.as_view()),
+        url(r"^oauth2-method-path-scope-test/$", MethodPathScopeView.as_view()),
         url(r"^oauth2-resource-scoped-test/$", ResourceScopedView.as_view()),
         url(r"^oauth2-authenticated-or-scoped-test/$", AuthenticatedOrScopedView.as_view()),
     ]
@@ -213,60 +234,93 @@ class TestOAuth2Authentication(TestCase):
         auth = self._create_authorization_header(self.access_token.token)
         response = self.client.post("/oauth2-read-write-test/", HTTP_AUTHORIZATION=auth)
         self.assertEqual(response.status_code, 403)
-
+ 
     @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
-    def test_resource_scoped_permission_get_allow(self):
-        self.access_token.scope = "resource1:read"
+    def test_method_scope_permission_get_allow(self):
+        self.access_token.scope = "read"
         self.access_token.save()
 
         auth = self._create_authorization_header(self.access_token.token)
-        response = self.client.get("/oauth2-resource-scoped-test/", HTTP_AUTHORIZATION=auth)
+        response = self.client.get("/oauth2-method-scope-test/", HTTP_AUTHORIZATION=auth)
         self.assertEqual(response.status_code, 200)
 
     @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
-    def test_resource_scoped_permission_post_allow(self):
-        self.access_token.scope = "resource1:write"
+    def test_method_scope_permission_post_allow(self):
+        self.access_token.scope = "create"
         self.access_token.save()
 
         auth = self._create_authorization_header(self.access_token.token)
-        response = self.client.post("/oauth2-resource-scoped-test/", HTTP_AUTHORIZATION=auth)
+        response = self.client.post("/oauth2-method-scope-test/", HTTP_AUTHORIZATION=auth)
         self.assertEqual(response.status_code, 200)
 
     @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
-    def test_resource_scoped_permission_get_denied(self):
-        self.access_token.scope = "resource1:write"
+    def test_method_scope_permission_get_deny(self):
+        self.access_token.scope = "write"
         self.access_token.save()
 
         auth = self._create_authorization_header(self.access_token.token)
-        response = self.client.get("/oauth2-resource-scoped-test/", HTTP_AUTHORIZATION=auth)
+        response = self.client.get("/oauth2-method-scope-test/", HTTP_AUTHORIZATION=auth)
         self.assertEqual(response.status_code, 403)
 
     @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
-    def test_resource_scoped_permission_post_denied(self):
-        self.access_token.scope = "resource1:read"
+    def test_method_scope_permission_post_deny(self):
+        self.access_token.scope = "read"
         self.access_token.save()
 
         auth = self._create_authorization_header(self.access_token.token)
-        response = self.client.post("/oauth2-resource-scoped-test/", HTTP_AUTHORIZATION=auth)
+        response = self.client.post("/oauth2-method-scope-test/", HTTP_AUTHORIZATION=auth)
         self.assertEqual(response.status_code, 403)
 
     @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
-    @mock.patch.object(oauth2_settings, "ERROR_RESPONSE_WITH_SCOPES", new=True)
-    def test_required_scope_in_response(self):
-        self.access_token.scope = "scope2"
+    def test_method_path_scope_permission_get_allow_1(self):
+        self.access_token.scope = "read"
         self.access_token.save()
 
         auth = self._create_authorization_header(self.access_token.token)
-        response = self.client.get("/oauth2-scoped-test/", HTTP_AUTHORIZATION=auth)
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(response.data["required_scopes"], ["scope1"])
+        response = self.client.get("/oauth2-method-path-scope-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 200)
 
     @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
-    def test_required_scope_not_in_response_by_default(self):
-        self.access_token.scope = "scope2"
+    def test_method_path_scope_permission_get_allow_2(self):
+        self.access_token.scope = "get scope2"
         self.access_token.save()
 
         auth = self._create_authorization_header(self.access_token.token)
-        response = self.client.get("/oauth2-scoped-test/", HTTP_AUTHORIZATION=auth)
+        response = self.client.get("/oauth2-method-path-scope-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 200)
+
+    @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
+    def test_method_path_scope_permission_post_allow_1(self):
+        self.access_token.scope = "create"
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.post("/oauth2-method-path-scope-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 200)
+
+    @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
+    def test_method_path_scope_permission_post_allow_2(self):
+        self.access_token.scope = "post scope2"
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.post("/oauth2-method-path-scope-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 200)
+
+    @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
+    def test_method_path_scope_permission_get_deny(self):
+        self.access_token.scope = "write"
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.get("/oauth2-method-path-scope-test/", HTTP_AUTHORIZATION=auth)
         self.assertEqual(response.status_code, 403)
-        self.assertNotIn("required_scopes", response.data)
+
+    @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
+    def test_method_path_scope_permission_post_deny(self):
+        self.access_token.scope = "read"
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.post("/oauth2-method-path-scope-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 403)
