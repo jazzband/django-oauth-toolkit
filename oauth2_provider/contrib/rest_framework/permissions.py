@@ -170,44 +170,43 @@ class RequiredMethodScopes(object):
     Each instance keyed by HTTP method and path-matching regex with a list of alternative
     required scopes lists.
     For example:
-    ('POST', r'^/api/v1/widgets/+.*$', ['auth-none create','auth-columbia create demo-netphone-admin'])
+    ("POST", r"^/api/v1/widgets/+.*$", ["auth-none create","auth-columbia create demo-netphone-admin"])
     """
-    def __init__(self,method,pathpattern,scopesalternatives):
+    def __init__(self, method, pathpattern, scopesalternatives):
         """
-        :param method: HTTP method, one of 'GET', 'OPTIONS', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE'
+        :param method: HTTP method, one of "GET", "OPTIONS", "HEAD", "POST", "PUT", "PATCH", "DELETE"
         :param pathpattern: regex pattern for resource
         :param scopesalternatives:  list of alternative scope strings
         """
         self.method = method.upper()
-        if self.method not in ['GET', 'OPTIONS', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE']:
+        if self.method not in ["GET", "OPTIONS", "HEAD", "POST", "PUT", "PATCH", "DELETE"]:
             raise ValueError
         self.path = pathpattern
         self.pathregex = re.compile(self.path)
         self.scopesalternatives = [s.split() for s in scopesalternatives]
 
     def __str__(self):
-        return "{}:{}:{}".format(self.method,self.path,self.scopesalternatives)
+        return "{}:{}:{}".format(self.method, self.path, self.scopesalternatives)
 
     @classmethod
-    def find_alt_scopes(cls,maplist,method,path):
+    def find_alt_scopes(cls, maplist, method, path):
         """
         Find a matching RequiredMethodScopes instance and return list of alternate required scopes
 
         :param maplist:class RequiredMethodScopes[]: iterable of instances to search
-        :param method: method to search for ('GET', 'POST', etc.)
+        :param method: method to search for ("GET", "POST", etc.)
         :param path: path to search for a match
         :return: iterable of alternative scope lists or None
         """
         for m in maplist:
-            if m.method == method and re.match(m.pathregex,path):
-                log.debug("found a match for {}:{}".format(method,path))
+            if m.method == method and re.match(m.pathregex, path):
                 return m.scopesalternatives
         return None
 
 
 class TokenHasMethodPathScope(BasePermission):
     """
-    Token's scope list is checked against a map of possible alternative methods and paths.
+    Token"s scope list is checked against a map of possible alternative methods and paths.
 
     :attr:class RequiredMethodScopes[]: required_method_scopes_map_list
     :return: True if a scopes match, else False.
@@ -224,17 +223,16 @@ class TokenHasMethodPathScope(BasePermission):
 
             m = request.method.upper()
             p = request.path
-            required_scopes_list = RequiredMethodScopes.find_alt_scopes(required_scopes_map_list,m,p)
+            required_scopes_list = RequiredMethodScopes.find_alt_scopes(required_scopes_map_list, m, p)
             if required_scopes_list:
-                log.debug('method: {} path: {} token scope: {}'.format(m, p, token.scope))
-                log.debug("Alternative required scopes to access resource: {}".format(required_scopes_list))
+                log.debug("Alternative required scopes to access resource: {0}".format(required_scopes_list))
                 for scopelist in required_scopes_list:
                     r = token.is_valid(scopelist)
                     if r:
                         return r
                 return False
             else:
-                log.warning("no scopes defined for method: {} path: {}".format(m,p))
+                log.warning("no scopes defined for method: {} path: {}".format(m, p))
                 return False
 
         assert False, ("TokenHasMethodPathScope requires the"
