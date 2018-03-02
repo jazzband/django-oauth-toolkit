@@ -277,6 +277,11 @@ class OAuth2Validator(RequestValidator):
             log.exception("Introspection: Failed POST to %r in token lookup", introspection_url)
             return None
 
+        if response.status_code == 403:
+            log.exception("Introspection: Failed to authenticate to %r",
+                          introspection_url)
+            return None
+
         try:
             content = response.json()
         except ValueError:
