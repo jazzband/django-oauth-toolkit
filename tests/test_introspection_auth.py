@@ -39,6 +39,17 @@ class ScopeResourceView(ScopedProtectedResourceView):
         return HttpResponse("This is a protected resource", 200)
 
 
+def mocked_requests_post_wrong_status_code(url, data, *args, **kwargs):
+    """
+    Mock the response from the authentication server
+    """
+    class MockResponse:
+        def __init__(self, status_code):
+            self.status_code = status_code
+
+    return MockResponse(403)
+
+
 def mocked_requests_post(url, data, *args, **kwargs):
     """
     Mock the response from the authentication server
@@ -196,3 +207,16 @@ class TestTokenIntrospectionAuth(TestCase):
         }
         response = self.client.post("/oauth2-test-resource/", **auth_headers)
         self.assertEqual(response.content.decode("utf-8"), "This is a protected resource")
+
+    @mock.patch("requests.post", side_effect=mocked_requests_post_wrong_status_code)
+    def test_get_token_from_authentication_server_bad_credentials(self, mock_get):
+        """
+        Test method _get_token_from_authentication_server with existing token
+        """
+        token = self.validator._get_token_from_authentication_server(
+            "foo",
+            oauth2_settings.RESOURCE_SERVER_INTROSPECTION_URL,
+            oauth2_settings.RESOURCE_SERVER_AUTH_TOKEN,
+            oauth2_settings.RESOURCE_SERVER_INTROSPECTION_CREDENTIALS
+        )
+        self.assertIsNone(token)
