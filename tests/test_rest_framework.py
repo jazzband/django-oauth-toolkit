@@ -234,7 +234,7 @@ class TestOAuth2Authentication(TestCase):
         auth = self._create_authorization_header(self.access_token.token)
         response = self.client.post("/oauth2-read-write-test/", HTTP_AUTHORIZATION=auth)
         self.assertEqual(response.status_code, 403)
- 
+
     @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
     def test_method_scope_permission_get_allow(self):
         self.access_token.scope = "read"
