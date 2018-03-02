@@ -83,10 +83,10 @@ try:
         url(r"^oauth2-test/$", OAuth2View.as_view()),
         url(r"^oauth2-scoped-test/$", ScopedView.as_view()),
         url(r"^oauth2-read-write-test/$", ReadWriteScopedView.as_view()),
-        url(r"^oauth2-method-scope-test/$", MethodScopeView.as_view()),
-        url(r"^oauth2-method-path-scope-test/$", MethodPathScopeView.as_view()),
         url(r"^oauth2-resource-scoped-test/$", ResourceScopedView.as_view()),
         url(r"^oauth2-authenticated-or-scoped-test/$", AuthenticatedOrScopedView.as_view()),
+        url(r"^oauth2-method-scope-test/$", MethodScopeView.as_view()),
+        url(r"^oauth2-method-path-scope-test/$", MethodPathScopeView.as_view()),
     ]
 
     rest_framework_installed = True
@@ -234,6 +234,63 @@ class TestOAuth2Authentication(TestCase):
         auth = self._create_authorization_header(self.access_token.token)
         response = self.client.post("/oauth2-read-write-test/", HTTP_AUTHORIZATION=auth)
         self.assertEqual(response.status_code, 403)
+
+    @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
+    def test_resource_scoped_permission_get_allow(self):
+        self.access_token.scope = "resource1:read"
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.get("/oauth2-resource-scoped-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 200)
+
+    @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
+    def test_resource_scoped_permission_post_allow(self):
+        self.access_token.scope = "resource1:write"
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.post("/oauth2-resource-scoped-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 200)
+
+    @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
+    def test_resource_scoped_permission_get_denied(self):
+        self.access_token.scope = "resource1:write"
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.get("/oauth2-resource-scoped-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 403)
+
+    @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
+    def test_resource_scoped_permission_post_denied(self):
+        self.access_token.scope = "resource1:read"
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.post("/oauth2-resource-scoped-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 403)
+
+    @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
+    @mock.patch.object(oauth2_settings, "ERROR_RESPONSE_WITH_SCOPES", new=True)
+    def test_required_scope_in_response(self):
+        self.access_token.scope = "scope2"
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.get("/oauth2-scoped-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.data["required_scopes"], ["scope1"])
+
+    @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
+    def test_required_scope_not_in_response_by_default(self):
+        self.access_token.scope = "scope2"
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.get("/oauth2-scoped-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 403)
+        self.assertNotIn("required_scopes", response.data)
 
     @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
     def test_method_scope_permission_get_allow(self):
