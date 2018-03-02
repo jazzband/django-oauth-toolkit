@@ -1,6 +1,7 @@
 ### 1.1.0 [unreleased]
 
 * **New feature**: Option for RFC 7662 external AS that uses HTTP Basic Auth.
+* **New feature**: Added TokenHasMethodScope and TokenHasMethodPathScope Permissions.
 
 ### 1.0.0 [2017-06-07]
 
