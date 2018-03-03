@@ -7,6 +7,7 @@ from django.http import HttpResponse
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils import timezone
+from django.core.exceptions import ImproperlyConfigured
 
 from oauth2_provider.models import get_access_token_model, get_application_model
 from oauth2_provider.settings import oauth2_settings
@@ -65,6 +66,9 @@ try:
             "DELETE": ["delete"],
         }
 
+    class BadMethodScopeView(OAuth2View):
+        permission_classes = [TokenHasMethodScope]
+
     class MethodPathScopeView(OAuth2View):
         permission_classes = [TokenHasMethodPathScope]
         required_scopes_map_list = [
@@ -73,6 +77,9 @@ try:
             RequiredMethodScopes("PUT", r"^/oauth2-method-path-scope-test/$", ["update", "put scope2"]),
             RequiredMethodScopes("DELETE", r"^/oauth2-method-path-scope-test/$", ["delete", "scope2 scope3"]),
         ]
+
+    class BadMethodPathScopeView(OAuth2View):
+        permission_classes = [TokenHasMethodPathScope]
 
     class ResourceScopedView(OAuth2View):
         permission_classes = [permissions.IsAuthenticated, TokenHasResourceScope]
@@ -85,8 +92,10 @@ try:
         url(r"^oauth2-read-write-test/$", ReadWriteScopedView.as_view()),
         url(r"^oauth2-resource-scoped-test/$", ResourceScopedView.as_view()),
         url(r"^oauth2-authenticated-or-scoped-test/$", AuthenticatedOrScopedView.as_view()),
-        url(r"^oauth2-method-scope-test/$", MethodScopeView.as_view()),
+        url(r"^oauth2-method-scope-test/.*$", MethodScopeView.as_view()),
+        url(r"^oauth2-method-scope-fail/$", BadMethodScopeView.as_view()),
         url(r"^oauth2-method-path-scope-test/$", MethodPathScopeView.as_view()),
+        url(r"^oauth2-method-path-scope-fail/$", BadMethodPathScopeView.as_view()),
     ]
 
     rest_framework_installed = True
@@ -329,6 +338,52 @@ class TestOAuth2Authentication(TestCase):
         self.assertEqual(response.status_code, 403)
 
     @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
+    def test_method_scope_no_token(self):
+        self.access_token.scope = ""
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        self.access_token = None
+        response = self.client.post("/oauth2-method-scope-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 403)
+
+    @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
+    def test_method_scope_missing_attr(self):
+        self.access_token.scope = "read"
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        with self.assertRaises(ImproperlyConfigured):
+            self.client.post("/oauth2-method-scope-fail/", HTTP_AUTHORIZATION=auth)
+
+    @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
+    def test_method_scope_missing_patch_method(self):
+        self.access_token.scope = "update"
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.patch("/oauth2-method-scope-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 403)
+
+    @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
+    def test_required_method_scopes_bad(self):
+        with self.assertRaises(ValueError):
+            RequiredMethodScopes("FOO", "/*", "a b c")
+
+    @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
+    def test_required_method_scopes_retval(self):
+        self.assertEqual(str(RequiredMethodScopes("GET", r"BAR", ["baz"])), "GET:BAR:[['baz']]")
+
+    @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
+    def test_method_path_scope_missing_path_regex(self):
+        self.access_token.scope = "read"
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.get("/oauth2-method-path-scope-test/foo/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 404)
+
+    @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
     def test_method_path_scope_permission_get_allow_1(self):
         self.access_token.scope = "read"
         self.access_token.save()
@@ -381,3 +436,22 @@ class TestOAuth2Authentication(TestCase):
         auth = self._create_authorization_header(self.access_token.token)
         response = self.client.post("/oauth2-method-path-scope-test/", HTTP_AUTHORIZATION=auth)
         self.assertEqual(response.status_code, 403)
+
+    @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
+    def test_method_path_scope_no_token(self):
+        self.access_token.scope = ""
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        self.access_token = None
+        response = self.client.post("/oauth2-method-path-scope-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 403)
+
+    @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
+    def test_method_path_scope_missing_attr(self):
+        self.access_token.scope = "read"
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        with self.assertRaises(ImproperlyConfigured):
+            self.client.post("/oauth2-method-path-scope-fail/", HTTP_AUTHORIZATION=auth)
