@@ -44,7 +44,7 @@ class BaseTest(TestCase):
             "write": "Writing scope",
             "openid": "OpenID connect"
         }
-        self.key = jwk.JWK.from_pem(oauth2_settings.RSA_PRIVATE_KEY.encode("utf8"))
+        self.key = jwk.JWK.from_pem(oauth2_settings.OIDC_RSA_PRIVATE_KEY.encode("utf8"))
 
     def tearDown(self):
         self.application.delete()

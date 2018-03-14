@@ -27,5 +27,10 @@ management_urlpatterns = [
         name="authorized-token-delete"),
 ]
 
+oidc_urlpatterns = [
+    url(r"^\.well-known/openid-configuration/$", views.ConnectDiscoveryInfoView.as_view(), name="oidc-connect-discovery-info"),
+    url(r"^jwks/$", views.JwksInfoView.as_view(), name="jwks-info")
+]
 
-urlpatterns = base_urlpatterns + management_urlpatterns
+
+urlpatterns = base_urlpatterns + management_urlpatterns + oidc_urlpatterns
