@@ -722,7 +722,7 @@ class OAuth2Validator(RequestValidator):
 
     def get_id_token(self, token, token_handler, request):
 
-        key = jwk.JWK.from_pem(oauth2_settings.RSA_PRIVATE_KEY.encode("utf8"))
+        key = jwk.JWK.from_pem(oauth2_settings.OIDC_RSA_PRIVATE_KEY.encode("utf8"))
 
         # TODO: http://openid.net/specs/openid-connect-core-1_0.html#HybridIDToken2
         # Save the id_token on database bound to code when the request come to
@@ -785,7 +785,7 @@ class OAuth2Validator(RequestValidator):
         if not token:
             return False
 
-        key = jwk.JWK.from_pem(oauth2_settings.RSA_PRIVATE_KEY.encode("utf8"))
+        key = jwk.JWK.from_pem(oauth2_settings.OIDC_RSA_PRIVATE_KEY.encode("utf8"))
 
         try:
             jwt_token = jwt.JWT(key=key, jwt=token)

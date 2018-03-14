@@ -58,7 +58,21 @@ DEFAULTS = {
     "REFRESH_TOKEN_MODEL": REFRESH_TOKEN_MODEL,
     "REQUEST_APPROVAL_PROMPT": "force",
     "ALLOWED_REDIRECT_URI_SCHEMES": ["http", "https"],
-    "RSA_PRIVATE_KEY": "",
+    "OIDC_ISS_ENDPOINT": "",
+    "OIDC_USERINFO_ENDPOINT": "",
+    "OIDC_RSA_PRIVATE_KEY": "",
+    "OIDC_RESPONSE_TYPES_SUPPORTED": [
+        "code",
+        "token",
+        "id_token",
+        "id_token token",
+        "code token",
+        "code id_token",
+        "code id_token token",
+    ],
+    "OIDC_SUBJECT_TYPES_SUPPORTED": ["public"],
+    "OIDC_ID_TOKEN_SIGNING_ALG_VALUES_SUPPORTED": ["RS256", "HS256"],
+    "OIDC_TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED": ["client_secret_post", "client_secret_basic"],
 
     # Special settings that will be evaluated at runtime
     "_SCOPES": [],
@@ -83,7 +97,13 @@ MANDATORY = (
     "OAUTH2_BACKEND_CLASS",
     "SCOPES",
     "ALLOWED_REDIRECT_URI_SCHEMES",
-    "RSA_PRIVATE_KEY",
+    "OIDC_ISS_ENDPOINT",
+    "OIDC_USERINFO_ENDPOINT",
+    "OIDC_RSA_PRIVATE_KEY",
+    "OIDC_RESPONSE_TYPES_SUPPORTED",
+    "OIDC_SUBJECT_TYPES_SUPPORTED",
+    "OIDC_ID_TOKEN_SIGNING_ALG_VALUES_SUPPORTED",
+    "OIDC_TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED"
 )
 
 # List of settings that may be in string import notation.
