@@ -74,6 +74,14 @@ CLIENT_SECRET_GENERATOR_LENGTH
 The length of the generated secrets, in characters. If this value is too low,
 secrets may become subject to bruteforce guessing.
 
+ENABLE_APPLICATION_MANAGEMENT_VIEWS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+When is set to `True` (default) loads application management views.
+
+ENABLE_TOKEN_MANAGEMENT_VIEWS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+When is set to `True` (default) loads token management views.
+
 GRANT_MODEL
 ~~~~~~~~~~~~~~~~~
 The import string of the class (model) representing your grants. Overwrite
