@@ -54,6 +54,8 @@ DEFAULTS = {
     "REFRESH_TOKEN_MODEL": REFRESH_TOKEN_MODEL,
     "REQUEST_APPROVAL_PROMPT": "force",
     "ALLOWED_REDIRECT_URI_SCHEMES": ["http", "https"],
+    "ENABLE_APPLICATION_MANAGEMENT_VIEWS": True,
+    "ENABLE_TOKEN_MANAGEMENT_VIEWS": True,
 
     # Special settings that will be evaluated at runtime
     "_SCOPES": [],
