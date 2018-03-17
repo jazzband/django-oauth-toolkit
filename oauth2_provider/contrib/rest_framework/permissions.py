@@ -1,5 +1,4 @@
 import logging
-import re
 
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework.exceptions import PermissionDenied
@@ -128,7 +127,7 @@ class IsAuthenticatedOrTokenHasScope(BasePermission):
 
 class TokenHasMethodScopeAlternative(BasePermission):
     """
-    :attr:alternate_required_scopes: dict keyed by HTTP method name with value: iterable alternate scope lists.
+    :attr:alternate_required_scopes: dict keyed by HTTP method name with value: iterable alternate scope lists
 
     This fulfills the [Open API Specification (OAS; formerly Swagger)](https://www.openapis.org/)
     list of alternative Security Requirements Objects for oauth2 or openIdConnect:
@@ -158,7 +157,8 @@ class TokenHasMethodScopeAlternative(BasePermission):
 
             m = request.method.upper()
             if m in required_alternate_scopes:
-                log.debug("Required scopes alternatives to access resource: {0}".format(required_alternate_scopes[m]))
+                log.debug("Required scopes alternatives to access resource: {0}"
+                          .format(required_alternate_scopes[m]))
                 for alt in required_alternate_scopes[m]:
                     if token.is_valid(alt):
                         return True
@@ -176,5 +176,5 @@ class TokenHasMethodScopeAlternative(BasePermission):
             return getattr(view, "required_alternate_scopes")
         except AttributeError:
             raise ImproperlyConfigured(
-                "TokenHasMethodScopeAlternative requires the view to define the required_alternate_scopes attribute"
-            )
+                "TokenHasMethodScopeAlternative requires the view to"
+                " define the required_alternate_scopes attribute")
