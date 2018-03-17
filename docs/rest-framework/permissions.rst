@@ -102,7 +102,7 @@ etc.
 
     class SongView(views.APIView):
         authentication_classes = [OAuth2Authentication]
-        permission_classes = [TokenHasMethodPathScope]
+        permission_classes = [TokenHasMethodScopeAlternative]
         required_alternate_scopes = {
             "GET": [["read"]],
             "POST": [["create"], ["post", "widget"]],
