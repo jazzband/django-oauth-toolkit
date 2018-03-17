@@ -84,59 +84,34 @@ For example:
 The `required_scopes` attribute is mandatory.
 
 
-TokenHasMethodScope
--------------------
+TokenHasMethodScopeAlternative
+------------------------------
 
-The `TokenHasMethodScope` permission class allows the access based on a per-method map.
-
-The `required_scopes_map` attribute is a required map of methods and required scopes for each method.
-
-For example:
-
-.. code-block:: python
-
-    class SongView(views.APIView):
-        authentication_classes = [OAuth2Authentication]
-        permission_classes = [TokenHasMethodScope]
-        required_scopes_map = {
-            "GET": ["read"],
-            "POST": ["create"],
-            "PUT": ["update", "put"],
-            "DELETE": ["delete"],
-        }
-
-When a `GET` request is performed the 'read' scope is required to be authorized
-for the current access token. When a `PUT` is performed, 'update' and 'put' are required
-and when a `DELETE` is performed, the 'delete' scope is required.
-
-TokenHasMethodPathScope
------------------------
-
-The `TokenHasMethodPathScope` permission class allows the access based on a per-method and resource regex
-map and allows for alternative lists of required scopes. This permission provides full functionality
+The `TokenHasMethodScopeAlternative` permission class allows the access based on a per-method basis
+and with alternative lists of required scopes. This permission provides full functionality
 required by REST API specifications like the
-`OpenAPI Specification's security requirement object <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#securityRequirementObject>`_.
+`OpenAPI Specification (OAS) security requirement object <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#securityRequirementObject>`_.
 
-The `required_scopes_map_list` attribute is a required list of `RequiredMethodScopes` instances.
+The `required_alternate_scopes` attribute is a required map keyed by HTTP method name where each value is
+a list of alternative lists of required scopes.
 
-For example:
+In the follow example GET requires "read" scope, POST requires either "create" scope **OR** "post" and "widget" scopes,
+etc.
 
 .. code-block:: python
 
     class SongView(views.APIView):
         authentication_classes = [OAuth2Authentication]
         permission_classes = [TokenHasMethodPathScope]
-        required_scopes_map_list = [
-            RequiredMethodScopes("GET", r"^/widgets/?[^/]*/?$", ["read", "get widget"]),
-            RequiredMethodScopes("POST", r"^/widgets/?$", ["create", "post widget"]),
-            RequiredMethodScopes("PUT", r"^/widgets/[^/]+/?$", ["update", "put widget"]),
-            RequiredMethodScopes("DELETE", r"^/widgets/[^/]+/?$", ["delete", "scope2 scope3"]),
-            RequiredMethodScopes("GET", r"^/gadgets/?[^/]*/?$", ["read gadget", "get scope1"]),
-            RequiredMethodScopes("POST", r"^/gadgets/?$", ["create scope1", "post scope2"]),
-            RequiredMethodScopes("PUT", r"^/gadgets/[^/]+/?$", ["update scope2 scope3", "put gadget"]),
-            RequiredMethodScopes("DELETE", r"^/gadgets/[^/]+/?$", ["delete scope1", "scope2 scope3"]),
-        ]
+        required_alternate_scopes = {
+            "GET": [["read"]],
+            "POST": [["create"], ["post", "widget"]],
+            "PUT":  [["update"], ["put", "widget"]],
+            "DELETE": [["delete"], ["scope2", "scope3"]],
+        }
 
-For each listed method and the regex resource path, any matching list of possible alternative required scopes is required to succeed. For the above example, `GET /widgets/1234` will be permitted if either
-'read' _or_ 'get' and  'widget' scopes are authorized. `POST /gadgets/` will be permitted if 'create' and
-'scope1' _or_ 'post' and 'scope2' are authorized.
+The following is a minimal OAS declaration that shows the same required alternate scopes. It is complete enough
+to try it in the `swagger editor <https://editor.swagger.io>`_.
+
+.. literalinclude:: openapi.yaml
+  :language: YAML

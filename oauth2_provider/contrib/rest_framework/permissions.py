@@ -3,7 +3,9 @@ import re
 
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import BasePermission, IsAuthenticated, SAFE_METHODS
+from rest_framework.permissions import (
+    SAFE_METHODS, BasePermission, IsAuthenticated
+)
 
 from ...settings import oauth2_settings
 from .authentication import OAuth2Authentication
@@ -124,15 +126,25 @@ class IsAuthenticatedOrTokenHasScope(BasePermission):
         return (is_authenticated and not oauth2authenticated) or token_has_scope.has_permission(request, view)
 
 
-class TokenHasMethodScope(BasePermission):
+class TokenHasMethodScopeAlternative(BasePermission):
     """
-    Similar to TokenHasReadWriteScope but require separate scopes for each HTTP method.
-    :attr:required_scopes_map: dict keyed by HTTP method name with value: iterable scope list
-    Example:
-    required_scopes_map = {
-       'GET': ['scope1','scope2'],
-       'POST': ['scope3','scope4'],
+    :attr:alternate_required_scopes: dict keyed by HTTP method name with value: iterable alternate scope lists.
+
+    This fulfills the [Open API Specification (OAS; formerly Swagger)](https://www.openapis.org/)
+    list of alternative Security Requirements Objects for oauth2 or openIdConnect:
+      When a list of Security Requirement Objects is defined on the Open API object or Operation Object,
+      only one of Security Requirement Objects in the list needs to be satisfied to authorize the request.
+    [1](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#securityRequirementObject)
+
+    For each method, a list of lists of allowed scopes is tried in order and the first to match succeeds.
+
+    @example
+    required_alternate_scopes = {
+       'GET': [['read']],
+       'POST': [['create1','scope2'], ['alt-scope3'], ['alt-scope4','alt-scope5']],
     }
+
+    TODO: DRY: subclass TokenHasScope and iterate over values of required_scope?
     """
 
     def has_permission(self, request, view):
@@ -142,107 +154,27 @@ class TokenHasMethodScope(BasePermission):
             return False
 
         if hasattr(token, "scope"):  # OAuth 2
-            required_scopes_map = self.get_scopes_map(request, view)
+            required_alternate_scopes = self.get_required_alternate_scopes(request, view)
 
             m = request.method.upper()
-            if m in required_scopes_map:
-                log.debug("Required scopes to access resource: {0}".format(required_scopes_map[m]))
-                return token.is_valid(required_scopes_map[m])
+            if m in required_alternate_scopes:
+                log.debug("Required scopes alternatives to access resource: {0}".format(required_alternate_scopes[m]))
+                for alt in required_alternate_scopes[m]:
+                    if token.is_valid(alt):
+                        return True
+                return False
             else:
-                log.warning("no scopes defined for method {}".format(m))
+                log.warning("no scope alternates defined for method {0}".format(m))
                 return False
 
         assert False, ("TokenHasMethodScope requires the"
                        "`oauth2_provider.rest_framework.OAuth2Authentication` authentication "
                        "class to be used.")
 
-    def get_scopes_map(self, request, view):
+    def get_required_alternate_scopes(self, request, view):
         try:
-            return getattr(view, "required_scopes_map")
+            return getattr(view, "required_alternate_scopes")
         except AttributeError:
             raise ImproperlyConfigured(
-                "TokenHasMethodScope requires the view to define the required_scopes_map attribute"
-            )
-
-
-class RequiredMethodScopes(object):
-    """
-    Each instance keyed by HTTP method and path-matching regex with a list of alternative
-    required scopes lists.
-    For example:
-    ("POST", r"^/api/v1/widgets/+.*$", ["auth-none create","auth-columbia create demo-netphone-admin"])
-    """
-    def __init__(self, method, pathpattern, scopesalternatives):
-        """
-        :param method: HTTP method, one of "GET", "OPTIONS", "HEAD", "POST", "PUT", "PATCH", "DELETE"
-        :param pathpattern: regex pattern for resource
-        :param scopesalternatives:  list of alternative scope strings
-        """
-        self.method = method.upper()
-        if self.method not in ["GET", "OPTIONS", "HEAD", "POST", "PUT", "PATCH", "DELETE"]:
-            raise ValueError
-        self.path = pathpattern
-        self.pathregex = re.compile(self.path)
-        self.scopesalternatives = [s.split() for s in scopesalternatives]
-
-    def __str__(self):
-        return "{}:{}:{}".format(self.method, self.path, self.scopesalternatives)
-
-    @classmethod
-    def find_alt_scopes(cls, maplist, method, path):
-        """
-        Find a matching RequiredMethodScopes instance and return list of alternate required scopes
-
-        :param maplist:class RequiredMethodScopes[]: iterable of instances to search
-        :param method: method to search for ("GET", "POST", etc.)
-        :param path: path to search for a match
-        :return: iterable of alternative scope lists or None
-        """
-        for m in maplist:
-            if m.method == method and re.match(m.pathregex, path):
-                return m.scopesalternatives
-        return None
-
-
-class TokenHasMethodPathScope(BasePermission):
-    """
-    Token"s scope list is checked against a map of possible alternative methods and paths.
-
-    :attr:class RequiredMethodScopes[]: required_method_scopes_map_list
-    :return: True if a scopes match, else False.
-    """
-
-    def has_permission(self, request, view):
-        token = request.auth
-
-        if not token:
-            return False
-
-        if hasattr(token, "scope"):  # OAuth 2
-            required_scopes_map_list = self.get_scopes_map_list(request, view)
-
-            m = request.method.upper()
-            p = request.path
-            required_scopes_list = RequiredMethodScopes.find_alt_scopes(required_scopes_map_list, m, p)
-            if required_scopes_list:
-                log.debug("Alternative required scopes to access resource: {0}".format(required_scopes_list))
-                for scopelist in required_scopes_list:
-                    r = token.is_valid(scopelist)
-                    if r:
-                        return r
-                return False
-            else:
-                log.warning("no scopes defined for method: {} path: {}".format(m, p))
-                return False
-
-        assert False, ("TokenHasMethodPathScope requires the"
-                       "`oauth2_provider.rest_framework.OAuth2Authentication` authentication "
-                       "class to be used.")
-
-    def get_scopes_map_list(self, request, view):
-        try:
-            return getattr(view, "required_scopes_map_list")
-        except AttributeError:
-            raise ImproperlyConfigured(
-                "TokenHasMethodPathScope requires the view to define the required_scopes_map_list attribute"
+                "TokenHasMethodScopeAlternative requires the view to define the required_alternate_scopes attribute"
             )
