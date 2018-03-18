@@ -9,11 +9,11 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
 from oauth2_provider.models import get_access_token_model
-from oauth2_provider.views import ReadWriteScopedResourceView
+from oauth2_provider.views import ScopedProtectedResourceView
 
 
 @method_decorator(csrf_exempt, name="dispatch")
-class IntrospectTokenView(ReadWriteScopedResourceView):
+class IntrospectTokenView(ScopedProtectedResourceView):
     """
     Implements an endpoint for token introspection based
     on RFC 7662 https://tools.ietf.org/html/rfc7662
