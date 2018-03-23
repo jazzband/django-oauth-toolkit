@@ -57,39 +57,30 @@ Here's our project's root `urls.py` module:
 
     from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope, TokenHasScope
 
-
     # first we define the serializers
     class UserSerializer(serializers.ModelSerializer):
-        class Metaclass UserList(generics.ListAPIView):                                                                                                                                                                           
-       permission_classes = [permissions.IsAuthenticated, TokenHasReadWriteScope]                                                                                                                                  
-       queryset = User.objects.all()                                                                                                                                                                               
-       serializer_class = UserSerializer:
+        class Meta:
             model = User
-            fields = ("username", "email", "first_name", "last_name", )
-
+            fields = ('username', 'email', "first_name", "last_name")
 
     class GroupSerializer(serializers.ModelSerializer):
         class Meta:
             model = Group
             fields = ("name", )
 
-
     # Create the API views
     class UserList(generics.ListAPIView):
-       permission_classes = [permissions.IsAuthenticated, TokenHasReadWriteScope]
-       queryset = User.objects.all()
-       serializer_class = UserSerializer
-
+        permission_classes = [permissions.IsAuthenticated, TokenHasReadWriteScope]
+        queryset = User.objects.all()
+        serializer_class = UserSerializer
 
     class GroupList(generics.ListAPIView):
-       permission_classes = [permissions.IsAuthenticated, TokenHasScope]
-       required_scopes = ['groups']
-       queryset = Group.objects.all()
-       serializer_class = GroupSerializer
+        permission_classes = [permissions.IsAuthenticated, TokenHasScope]
+        required_scopes = ['groups']
+        queryset = Group.objects.all()
+        serializer_class = GroupSerializer
 
-    
-    # Wire up our API using automatic URL routing.
-    # Additionally, we include login URLs for the browseable API.
+    # Setup the URLs and include login URLs for the browsable API.
     urlpatterns = [
         path('admin/', admin.site.urls),
         path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
