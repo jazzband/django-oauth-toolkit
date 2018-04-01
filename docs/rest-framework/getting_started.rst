@@ -69,7 +69,12 @@ Here's our project's root `urls.py` module:
             fields = ("name", )
 
     # Create the API views
-    class UserList(generics.ListAPIView):
+    class UserList(generics.ListCreateAPIView):
+        permission_classes = [permissions.IsAuthenticated, TokenHasReadWriteScope]
+        queryset = User.objects.all()
+        serializer_class = UserSerializer
+
+    class UserDetails(generics.RetrieveAPIView):
         permission_classes = [permissions.IsAuthenticated, TokenHasReadWriteScope]
         queryset = User.objects.all()
         serializer_class = UserSerializer
@@ -85,6 +90,7 @@ Here's our project's root `urls.py` module:
         path('admin/', admin.site.urls),
         path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
         path('users/', UserList.as_view()),
+        path('users/<pk>/', UserDetails.as_view()),
         path('groups/', GroupList.as_view()),
         # ...
     ]
