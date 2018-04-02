@@ -9,7 +9,6 @@ Fork `django-oauth-toolkit` repository on `GitHub <https://github.com/evonove/dj
 
  * Create a virtualenv and activate it
  * Clone your repository locally
- * cd into the repository and type `pip install -r requirements/optional.txt` (this will install both optional and base requirements, useful during development)
 
 Issues
 ======
