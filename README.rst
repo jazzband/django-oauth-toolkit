@@ -1,6 +1,8 @@
 Django OAuth Toolkit
 ====================
 
+[![Jazzband](https://jazzband.co/static/img/badge.svg)](https://jazzband.co/)
+
 *OAuth2 goodies for the Djangonauts!*
 
 .. image:: https://badge.fury.io/py/django-oauth-toolkit.png
