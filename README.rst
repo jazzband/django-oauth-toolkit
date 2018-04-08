@@ -1,7 +1,9 @@
 Django OAuth Toolkit
 ====================
 
-[![Jazzband](https://jazzband.co/static/img/badge.svg)](https://jazzband.co/)
+.. image:: https://jazzband.co/static/img/badge.svg
+   :target: https://jazzband.co/
+   :alt: Jazzband
 
 *OAuth2 goodies for the Djangonauts!*
 
