@@ -1,7 +1,37 @@
-from django.http import HttpResponseRedirect
+from django.core.exceptions import DisallowedRedirect
+from django.http import HttpResponse
+from django.utils.encoding import iri_to_uri
+
+from .compat import urlparse
 
 
-class HttpResponseUriRedirect(HttpResponseRedirect):
+class OAuth2ResponseRedirect(HttpResponse):
+    """
+    An HTTP 302 redirect with an explicit list of allowed schemes.
+    Works like django.http.HttpResponseRedirect but we customize it
+    to give us more flexibility on allowed scheme validation.
+    """
+    status_code = 302
+
     def __init__(self, redirect_to, allowed_schemes, *args, **kwargs):
+        super(OAuth2ResponseRedirect, self).__init__(*args, **kwargs)
+        self["Location"] = iri_to_uri(redirect_to)
         self.allowed_schemes = allowed_schemes
-        super(HttpResponseUriRedirect, self).__init__(redirect_to, *args, **kwargs)
+        self.validate_redirect(redirect_to)
+
+    @property
+    def url(self):
+        return self["Location"]
+
+    def validate_redirect(self, redirect_to):
+        parsed = urlparse(str(redirect_to))
+        if not parsed.scheme:
+            raise DisallowedRedirect("OAuth2 redirects require a URI scheme.")
+        if parsed.scheme not in self.allowed_schemes:
+            raise DisallowedRedirect(
+                "Redirect to scheme {!r} is not permitted".format(parsed.scheme)
+            )
+
+
+# Backwards compatibility (as of 1.0.0)
+HttpResponseUriRedirect = OAuth2ResponseRedirect

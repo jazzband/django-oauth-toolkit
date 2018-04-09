@@ -1,6 +1,8 @@
 ### 1.1.0 [unreleased]
 
 * **New feature**: Option for RFC 7662 external AS that uses HTTP Basic Auth.
+* **New feature**: Individual applications may now override the `ALLOWED_REDIRECT_URI_SCHEMES`
+  setting by returning a list of allowed redirect uri schemes in `Application.get_allowed_schemes()`.
 
 ### 1.0.0 [2017-06-07]
 

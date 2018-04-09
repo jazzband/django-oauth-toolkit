@@ -11,7 +11,7 @@ from django.views.generic import FormView, View
 
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
-from ..http import HttpResponseUriRedirect
+from ..http import OAuth2ResponseRedirect
 from ..models import get_access_token_model, get_application_model
 from ..scopes import get_scopes_backend
 from ..settings import oauth2_settings
@@ -36,7 +36,7 @@ class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
         self.oauth2_data = {}
         return super(BaseAuthorizationView, self).dispatch(request, *args, **kwargs)
 
-    def error_response(self, error, **kwargs):
+    def error_response(self, error, application, **kwargs):
         """
         Handle errors either by redirecting to redirect_uri with a json in the body containing
         error details or providing an error response
@@ -44,14 +44,19 @@ class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
         redirect, error_response = super(BaseAuthorizationView, self).error_response(error, **kwargs)
 
         if redirect:
-            return self.redirect(error_response["url"])
+            return self.redirect(error_response["url"], application)
 
         status = error_response["error"].status_code
         return self.render_to_response(error_response, status=status)
 
-    def redirect(self, redirect_to):
-        allowed_schemes = oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES
-        return HttpResponseUriRedirect(redirect_to, allowed_schemes)
+    def redirect(self, redirect_to, application):
+        if application is None:
+            # The application can be None in case of an error during app validation
+            # In such cases, fall back to default ALLOWED_REDIRECT_URI_SCHEMES
+            allowed_schemes = oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES
+        else:
+            allowed_schemes = application.get_allowed_schemes()
+        return OAuth2ResponseRedirect(redirect_to, allowed_schemes)
 
 
 class AuthorizationView(BaseAuthorizationView, FormView):
@@ -96,51 +101,59 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         return initial_data
 
     def form_valid(self, form):
+        client_id = form.cleaned_data["client_id"]
+        application = get_application_model().objects.get(client_id=client_id)
+        credentials = {
+            "client_id": form.cleaned_data.get("client_id"),
+            "redirect_uri": form.cleaned_data.get("redirect_uri"),
+            "response_type": form.cleaned_data.get("response_type", None),
+            "state": form.cleaned_data.get("state", None),
+        }
+        scopes = form.cleaned_data.get("scope")
+        allow = form.cleaned_data.get("allow")
+
         try:
-            credentials = {
-                "client_id": form.cleaned_data.get("client_id"),
-                "redirect_uri": form.cleaned_data.get("redirect_uri"),
-                "response_type": form.cleaned_data.get("response_type", None),
-                "state": form.cleaned_data.get("state", None),
-            }
-
-            scopes = form.cleaned_data.get("scope")
-            allow = form.cleaned_data.get("allow")
             uri, headers, body, status = self.create_authorization_response(
-                request=self.request, scopes=scopes, credentials=credentials, allow=allow)
-            self.success_url = uri
-            log.debug("Success url for the request: {0}".format(self.success_url))
-            return self.redirect(self.success_url)
-
+                request=self.request, scopes=scopes, credentials=credentials, allow=allow
+            )
         except OAuthToolkitError as error:
-            return self.error_response(error)
+            return self.error_response(error, application)
+
+        self.success_url = uri
+        log.debug("Success url for the request: {0}".format(self.success_url))
+        return self.redirect(self.success_url, application)
 
     def get(self, request, *args, **kwargs):
         try:
             scopes, credentials = self.validate_authorization_request(request)
-            all_scopes = get_scopes_backend().get_all_scopes()
-            kwargs["scopes_descriptions"] = [all_scopes[scope] for scope in scopes]
-            kwargs["scopes"] = scopes
-            # at this point we know an Application instance with such client_id exists in the database
+        except OAuthToolkitError as error:
+            # Application is not available at this time.
+            return self.error_response(error, application=None)
 
-            # TODO: Cache this!
-            application = get_application_model().objects.get(client_id=credentials["client_id"])
+        all_scopes = get_scopes_backend().get_all_scopes()
+        kwargs["scopes_descriptions"] = [all_scopes[scope] for scope in scopes]
+        kwargs["scopes"] = scopes
+        # at this point we know an Application instance with such client_id exists in the database
 
-            kwargs["application"] = application
-            kwargs["client_id"] = credentials["client_id"]
-            kwargs["redirect_uri"] = credentials["redirect_uri"]
-            kwargs["response_type"] = credentials["response_type"]
-            kwargs["state"] = credentials["state"]
+        # TODO: Cache this!
+        application = get_application_model().objects.get(client_id=credentials["client_id"])
 
-            self.oauth2_data = kwargs
-            # following two loc are here only because of https://code.djangoproject.com/ticket/17795
-            form = self.get_form(self.get_form_class())
-            kwargs["form"] = form
+        kwargs["application"] = application
+        kwargs["client_id"] = credentials["client_id"]
+        kwargs["redirect_uri"] = credentials["redirect_uri"]
+        kwargs["response_type"] = credentials["response_type"]
+        kwargs["state"] = credentials["state"]
 
-            # Check to see if the user has already granted access and return
-            # a successful response depending on "approval_prompt" url parameter
-            require_approval = request.GET.get("approval_prompt", oauth2_settings.REQUEST_APPROVAL_PROMPT)
+        self.oauth2_data = kwargs
+        # following two loc are here only because of https://code.djangoproject.com/ticket/17795
+        form = self.get_form(self.get_form_class())
+        kwargs["form"] = form
 
+        # Check to see if the user has already granted access and return
+        # a successful response depending on "approval_prompt" url parameter
+        require_approval = request.GET.get("approval_prompt", oauth2_settings.REQUEST_APPROVAL_PROMPT)
+
+        try:
             # If skip_authorization field is True, skip the authorization screen even
             # if this is the first use of the application and there was no previous authorization.
             # This is useful for in-house applications-> assume an in-house applications
@@ -148,8 +161,9 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             if application.skip_authorization:
                 uri, headers, body, status = self.create_authorization_response(
                     request=self.request, scopes=" ".join(scopes),
-                    credentials=credentials, allow=True)
-                return self.redirect(uri)
+                    credentials=credentials, allow=True
+                )
+                return self.redirect(uri, application)
 
             elif require_approval == "auto":
                 tokens = get_access_token_model().objects.filter(
@@ -163,13 +177,14 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                     if token.allow_scopes(scopes):
                         uri, headers, body, status = self.create_authorization_response(
                             request=self.request, scopes=" ".join(scopes),
-                            credentials=credentials, allow=True)
-                        return self.redirect(uri)
-
-            return self.render_to_response(self.get_context_data(**kwargs))
+                            credentials=credentials, allow=True
+                        )
+                        return self.redirect(uri, application)
 
         except OAuthToolkitError as error:
-            return self.error_response(error)
+            return self.error_response(error, application)
+
+        return self.render_to_response(self.get_context_data(**kwargs))
 
 
 @method_decorator(csrf_exempt, name="dispatch")

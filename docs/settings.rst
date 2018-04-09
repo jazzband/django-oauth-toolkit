@@ -47,6 +47,10 @@ Default: ``["http", "https"]``
 A list of schemes that the ``redirect_uri`` field will be validated against.
 Setting this to ``["https"]`` only in production is strongly recommended.
 
+Note that you may override ``Application.get_allowed_schemes()`` to set this on
+a per-application basis.
+
+
 APPLICATION_MODEL
 ~~~~~~~~~~~~~~~~~
 The import string of the class (model) representing your applications. Overwrite

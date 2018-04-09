@@ -6,6 +6,15 @@ from oauth2_provider.models import (
 )
 
 
+class BaseTestApplication(AbstractApplication):
+    allowed_schemes = models.TextField(blank=True)
+
+    def get_allowed_schemes(self):
+        if self.allowed_schemes:
+            return self.allowed_schemes.split()
+        return super(BaseTestApplication, self).get_allowed_schemes()
+
+
 class SampleApplication(AbstractApplication):
     custom_field = models.CharField(max_length=255)
 

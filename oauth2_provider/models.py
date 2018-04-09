@@ -87,6 +87,9 @@ class AbstractApplication(models.Model):
     class Meta:
         abstract = True
 
+    def __str__(self):
+        return self.name or self.client_id
+
     @property
     def default_redirect_uri(self):
         """
@@ -136,8 +139,12 @@ class AbstractApplication(models.Model):
     def get_absolute_url(self):
         return reverse("oauth2_provider:detail", args=[str(self.id)])
 
-    def __str__(self):
-        return self.name or self.client_id
+    def get_allowed_schemes(self):
+        """
+        Returns the list of redirect schemes allowed by the Application.
+        By default, returns `ALLOWED_REDIRECT_URI_SCHEMES`.
+        """
+        return oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES
 
     def allows_grant_type(self, *grant_types):
         return self.authorization_grant_type in grant_types
