@@ -10,9 +10,9 @@ Django OAuth Toolkit
 .. image:: https://badge.fury.io/py/django-oauth-toolkit.png
     :target: http://badge.fury.io/py/django-oauth-toolkit
 
-.. image:: https://travis-ci.org/evonove/django-oauth-toolkit.png
+.. image:: https://travis-ci.org/jazzband/django-oauth-toolkit.png
    :alt: Build Status
-   :target: https://travis-ci.org/evonove/django-oauth-toolkit
+   :target: https://travis-ci.org/jazzband/django-oauth-toolkit
 
 .. image:: https://coveralls.io/repos/evonove/django-oauth-toolkit/badge.png
    :alt: Coverage Status
@@ -74,7 +74,7 @@ Notice that `oauth2_provider` namespace is mandatory.
 Changelog
 ---------
 
-See `CHANGELOG.md <https://github.com/evonove/django-oauth-toolkit/blob/master/CHANGELOG.md>`_.
+See `CHANGELOG.md <https://github.com/jazzband/django-oauth-toolkit/blob/master/CHANGELOG.md>`_.
 
 
 Documentation
