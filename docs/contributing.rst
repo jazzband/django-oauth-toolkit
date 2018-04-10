@@ -5,7 +5,7 @@ Contributing
 Setup
 =====
 
-Fork `django-oauth-toolkit` repository on `GitHub <https://github.com/evonove/django-oauth-toolkit>`_ and follow these steps:
+Fork `django-oauth-toolkit` repository on `GitHub <https://github.com/jazzband/django-oauth-toolkit>`_ and follow these steps:
 
  * Create a virtualenv and activate it
  * Clone your repository locally
@@ -14,7 +14,7 @@ Issues
 ======
 
 You can find the list of bugs, enhancements and feature requests on the
-`issue tracker <https://github.com/evonove/django-oauth-toolkit/issues>`_. If you want to fix an issue, pick up one and
+`issue tracker <https://github.com/jazzband/django-oauth-toolkit/issues>`_. If you want to fix an issue, pick up one and
 add a comment stating you're working on it. If the resolution implies a discussion or if you realize the comments on the
 issue are growing pretty fast, move the discussion to the `Google Group <http://groups.google.com/group/django-oauth-toolkit>`_.
 
@@ -51,7 +51,7 @@ outdated code and your changes diverge too far from master, the pull request has
 
 To pull in upstream changes::
 
-    git remote add upstream https://github.com/evonove/django-oauth-toolkit.git
+    git remote add upstream https://github.com/jazzband/django-oauth-toolkit.git
     git fetch upstream
 
 Then merge the changes that you fetched::

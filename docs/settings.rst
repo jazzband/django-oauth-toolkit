@@ -4,7 +4,7 @@ Settings
 Our configurations are all namespaced under the `OAUTH2_PROVIDER` settings with the exception of
 `OAUTH2_PROVIDER_APPLICATION_MODEL, OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL, OAUTH2_PROVIDER_GRANT_MODEL,
 OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL`: this is because of the way Django currently implements
-swappable models. See issue #90 (https://github.com/evonove/django-oauth-toolkit/issues/90) for details.
+swappable models. See issue #90 (https://github.com/jazzband/django-oauth-toolkit/issues/90) for details.
 
 For example:
 

@@ -14,9 +14,10 @@ Django OAuth Toolkit
    :alt: Build Status
    :target: https://travis-ci.org/jazzband/django-oauth-toolkit
 
-.. image:: https://coveralls.io/repos/evonove/django-oauth-toolkit/badge.png
+.. image:: https://coveralls.io/repos/github/jazzband/django-oauth-toolkit/badge.svg?branch=master
    :alt: Coverage Status
-   :target: https://coveralls.io/r/evonove/django-oauth-toolkit
+   :target: https://coveralls.io/github/jazzband/django-oauth-toolkit?branch=master
+
 
 If you are facing one or more of the following:
  * Your Django app exposes a web API you want to protect with OAuth2 authentication,
