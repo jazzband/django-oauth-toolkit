@@ -111,9 +111,22 @@ class TestOAuth2Authentication(TestCase):
 
     @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
     def test_authentication_denied(self):
+        response = self.client.get("/oauth2-test/")
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(
+            response["WWW-Authenticate"],
+            'Bearer realm="api"',
+        )
+
+    @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
+    def test_authentication_denied_because_of_invalid_token(self):
         auth = self._create_authorization_header("fake-token")
         response = self.client.get("/oauth2-test/", HTTP_AUTHORIZATION=auth)
         self.assertEqual(response.status_code, 401)
+        self.assertEqual(
+            response["WWW-Authenticate"],
+            'Bearer realm="api",error="invalid_token",error_description="The access token is invalid."',
+        )
 
     @unittest.skipUnless(rest_framework_installed, "djangorestframework not installed")
     def test_authentication_or_scope_denied(self):
