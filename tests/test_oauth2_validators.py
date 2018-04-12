@@ -1,4 +1,5 @@
 import datetime
+import contextlib
 
 from django.contrib.auth import get_user_model
 from django.test import TransactionTestCase
@@ -22,6 +23,19 @@ UserModel = get_user_model()
 Application = get_application_model()
 AccessToken = get_access_token_model()
 RefreshToken = get_refresh_token_model()
+
+
+@contextlib.contextmanager
+def always_invalid_token():
+    # NOTE: This can happen if someone swaps the AccessToken model and
+    # updates `is_valid` such that it has some criteria on top of
+    # `is_expired` and `allow_scopes`.
+    original_is_valid = AccessToken.is_valid
+    AccessToken.is_valid = mock.MagicMock(return_value=False)
+    try:
+        yield
+    finally:
+        AccessToken.is_valid = original_is_valid
 
 
 class TestOAuth2Validator(TransactionTestCase):
@@ -249,3 +263,109 @@ class TestOAuth2Validator(TransactionTestCase):
 
         self.assertEqual(0, RefreshToken.objects.count())
         self.assertEqual(1, AccessToken.objects.count())
+
+
+class TestOAuth2ValidatorProvidesErrorData(TransactionTestCase):
+    """These test cases check that the recommended error codes are returned
+    when token authentication fails.
+
+    RFC-6750: https://tools.ietf.org/html/rfc6750
+
+    > If the protected resource request does not include authentication
+    > credentials or does not contain an access token that enables access
+    > to the protected resource, the resource server MUST include the HTTP
+    > "WWW-Authenticate" response header field[.]
+    >
+    > ...
+    >
+    > If the request lacks any authentication information..., the
+    > resource server SHOULD NOT include an error code or other error
+    > information.
+    >
+    > ...
+    >
+    > If the protected resource request included an access token and failed
+    > authentication, the resource server SHOULD include the "error"
+    > attribute to provide the client with the reason why the access
+    > request was declined.
+
+    See https://tools.ietf.org/html/rfc6750#section-3.1 for the allowed error
+    codes.
+    """
+
+    def setUp(self):
+        self.user = UserModel.objects.create_user(
+            "user", "test@example.com", "123456",
+        )
+        self.request = mock.MagicMock(wraps=Request)
+        self.request.user = self.user
+        self.request.grant_type = "not client"
+        self.validator = OAuth2Validator()
+        self.application = Application.objects.create(
+            client_id="client_id",
+            client_secret="client_secret",
+            user=self.user,
+            client_type=Application.CLIENT_PUBLIC,
+            authorization_grant_type=Application.GRANT_PASSWORD,
+        )
+        self.request.client = self.application
+
+    def test_validate_bearer_token_does_not_add_error_when_no_token_is_provided(self):
+        self.assertFalse(self.validator.validate_bearer_token(None, ["dolphin"], self.request))
+        with self.assertRaises(AttributeError):
+            self.request.oauth2_error
+
+    def test_validate_bearer_token_adds_error_to_the_request_when_an_invalid_token_is_provided(self):
+        access_token = mock.MagicMock(token="some_invalid_token")
+        self.assertFalse(self.validator.validate_bearer_token(
+            access_token.token, [], self.request,
+        ))
+        self.assertDictEqual(self.request.oauth2_error, {
+            "error": "invalid_token",
+            "error_description": "The access token is invalid.",
+        })
+
+    def test_validate_bearer_token_adds_error_to_the_request_when_an_expired_token_is_provided(self):
+        access_token = AccessToken.objects.create(
+            token="some_valid_token",
+            user=self.user,
+            expires=timezone.now() - datetime.timedelta(seconds=1),
+            application=self.application,
+        )
+        self.assertFalse(self.validator.validate_bearer_token(
+            access_token.token, [], self.request,
+        ))
+        self.assertDictEqual(self.request.oauth2_error, {
+            "error": "invalid_token",
+            "error_description": "The access token has expired.",
+        })
+
+    def test_validate_bearer_token_adds_error_to_the_request_when_a_valid_token_has_insufficient_scope(self):
+        access_token = AccessToken.objects.create(
+            token="some_valid_token",
+            user=self.user,
+            expires=timezone.now() + datetime.timedelta(seconds=1),
+            application=self.application,
+        )
+        self.assertFalse(self.validator.validate_bearer_token(
+            access_token.token, ["some_extra_scope"], self.request,
+        ))
+        self.assertDictEqual(self.request.oauth2_error, {
+            "error": "insufficient_scope",
+            "error_description": "The access token is valid but does not have enough scope.",
+        })
+
+    def test_validate_bearer_token_adds_error_to_the_request_when_a_invalid_custom_token_is_provided(self):
+        access_token = AccessToken.objects.create(
+            token="some_valid_token",
+            user=self.user,
+            expires=timezone.now() + datetime.timedelta(seconds=1),
+            application=self.application,
+        )
+        with always_invalid_token():
+            self.assertFalse(self.validator.validate_bearer_token(
+                access_token.token, [], self.request,
+            ))
+        self.assertDictEqual(self.request.oauth2_error, {
+            "error": "invalid_token",
+        })
