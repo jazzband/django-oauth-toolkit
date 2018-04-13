@@ -1,8 +1,16 @@
 ### 1.1.0 [unreleased]
 
+* **Notice**: The Django OAuth Toolkit project is now hosted by JazzBand.
+* **Compatibility**: Django 1.11 is the new minimum required version. Django 1.10 is no longer supported.
+* **Compatibility**: This will be the last release to support Django 1.11 and Python 2.7.
 * **New feature**: Option for RFC 7662 external AS that uses HTTP Basic Auth.
 * **New feature**: Individual applications may now override the `ALLOWED_REDIRECT_URI_SCHEMES`
   setting by returning a list of allowed redirect uri schemes in `Application.get_allowed_schemes()`.
+* **New feature**: The new setting `ERROR_RESPONSE_WITH_SCOPES` can now be set to True to include required
+  scopes when DRF authorization fails due to improper scopes.
+* **New feature**: The new setting `REFRESH_TOKEN_GRACE_PERIOD_SECONDS` controls a grace period during which
+  refresh tokens may be re-used.
+* An `app_authorized` signal is fired when a token is generated.
 
 ### 1.0.0 [2017-06-07]
 
