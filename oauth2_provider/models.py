@@ -67,9 +67,9 @@ class AbstractApplication(models.Model):
         null=True, blank=True, on_delete=models.CASCADE
     )
 
-    help_text = _("Allowed URIs list, space separated")
     redirect_uris = models.TextField(
-        blank=True, help_text=help_text, validators=[validate_uris]
+        blank=True, help_text=_("Allowed URIs list, space separated"),
+        validators=[validate_uris]
     )
     client_type = models.CharField(max_length=32, choices=CLIENT_TYPES)
     authorization_grant_type = models.CharField(
