@@ -1,13 +1,11 @@
-from __future__ import unicode_literals
-
 import datetime
+from urllib.parse import urlencode
 
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from oauth2_provider.compat import urlencode
 from oauth2_provider.models import (
     get_access_token_model, get_application_model, get_refresh_token_model
 )

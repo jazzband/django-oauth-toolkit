@@ -34,14 +34,14 @@ class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
     """
     def dispatch(self, request, *args, **kwargs):
         self.oauth2_data = {}
-        return super(BaseAuthorizationView, self).dispatch(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
     def error_response(self, error, application, **kwargs):
         """
         Handle errors either by redirecting to redirect_uri with a json in the body containing
         error details or providing an error response
         """
-        redirect, error_response = super(BaseAuthorizationView, self).error_response(error, **kwargs)
+        redirect, error_response = super().error_response(error, **kwargs)
 
         if redirect:
             return self.redirect(error_response["url"], application)

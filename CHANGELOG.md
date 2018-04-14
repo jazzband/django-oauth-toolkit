@@ -1,4 +1,9 @@
-### 1.1.0 [unreleased]
+### 1.2.0 [unreleased]
+
+* **Compatibility**: Python 3.4 is the new minimum required version.
+* **Compatibility**: Django 2.0 is the new minimum required version.
+
+### 1.1.0 [2018-04-13]
 
 * **Notice**: The Django OAuth Toolkit project is now hosted by JazzBand.
 * **Compatibility**: Django 1.11 is the new minimum required version. Django 1.10 is no longer supported.

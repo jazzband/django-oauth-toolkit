@@ -1,10 +1,9 @@
-from __future__ import unicode_literals
-
 import base64
 import binascii
 import logging
-from datetime import datetime, timedelta
 from collections import OrderedDict
+from datetime import datetime, timedelta
+from urllib.parse import unquote_plus
 
 import requests
 from django.conf import settings
@@ -17,7 +16,6 @@ from django.utils.timezone import make_aware
 from django.utils.translation import ugettext_lazy as _
 from oauthlib.oauth2 import RequestValidator
 
-from .compat import unquote_plus
 from .exceptions import FatalClientError
 from .models import (
     AbstractApplication, get_access_token_model,
@@ -212,8 +210,7 @@ class OAuth2Validator(RequestValidator):
         if request.client:
             return request.client.client_type == AbstractApplication.CLIENT_CONFIDENTIAL
 
-        return super(OAuth2Validator, self).client_authentication_required(request,
-                                                                           *args, **kwargs)
+        return super().client_authentication_required(request, *args, **kwargs)
 
     def authenticate_client(self, request, *args, **kwargs):
         """

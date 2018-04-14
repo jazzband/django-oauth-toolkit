@@ -1,8 +1,8 @@
+from urllib.parse import urlparse
+
 from django.core.exceptions import DisallowedRedirect
 from django.http import HttpResponse
 from django.utils.encoding import iri_to_uri
-
-from .compat import urlparse
 
 
 class OAuth2ResponseRedirect(HttpResponse):
@@ -14,7 +14,7 @@ class OAuth2ResponseRedirect(HttpResponse):
     status_code = 302
 
     def __init__(self, redirect_to, allowed_schemes, *args, **kwargs):
-        super(OAuth2ResponseRedirect, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self["Location"] = iri_to_uri(redirect_to)
         self.allowed_schemes = allowed_schemes
         self.validate_redirect(redirect_to)

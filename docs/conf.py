@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Django OAuth Toolkit documentation build configuration file, created by
 # sphinx-quickstart on Mon May 20 19:40:43 2013.
 #
@@ -12,7 +10,6 @@
 # serve to show the default.
 
 import os
-import re
 import sys
 
 import django

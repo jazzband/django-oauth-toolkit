@@ -1,10 +1,9 @@
-from __future__ import unicode_literals
+from urllib.parse import parse_qs, urlencode, urlparse
 
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
-from oauth2_provider.compat import parse_qs, urlencode, urlparse
 from oauth2_provider.models import get_application_model
 from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views import ProtectedResourceView

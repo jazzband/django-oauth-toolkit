@@ -2,7 +2,9 @@ import logging
 
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import BasePermission, IsAuthenticated, SAFE_METHODS
+from rest_framework.permissions import (
+    SAFE_METHODS, BasePermission, IsAuthenticated
+)
 
 from ...settings import oauth2_settings
 from .authentication import OAuth2Authentication
@@ -65,7 +67,7 @@ class TokenHasReadWriteScope(TokenHasScope):
 
     def get_scopes(self, request, view):
         try:
-            required_scopes = super(TokenHasReadWriteScope, self).get_scopes(request, view)
+            required_scopes = super().get_scopes(request, view)
         except ImproperlyConfigured:
             required_scopes = []
 
@@ -85,9 +87,7 @@ class TokenHasResourceScope(TokenHasScope):
 
     def get_scopes(self, request, view):
         try:
-            view_scopes = (
-                super(TokenHasResourceScope, self).get_scopes(request, view)
-            )
+            view_scopes = super().get_scopes(request, view)
         except ImproperlyConfigured:
             view_scopes = []
 

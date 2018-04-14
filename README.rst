@@ -42,8 +42,8 @@ Please report any security issues to the JazzBand security team at <security@jaz
 Requirements
 ------------
 
-* Python 2.7, 3.4, 3.5, 3.6
-* Django 1.11, 2.0
+* Python 3.5+
+* Django 2.0+
 
 Installation
 ------------

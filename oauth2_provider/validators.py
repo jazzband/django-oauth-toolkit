@@ -1,13 +1,11 @@
-from __future__ import unicode_literals
-
 import re
+from urllib.parse import urlsplit, urlunsplit
 
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 
-from .compat import urlsplit, urlunsplit
 from .settings import oauth2_settings
 
 
@@ -24,7 +22,7 @@ class URIValidator(RegexValidator):
 
     def __call__(self, value):
         try:
-            super(URIValidator, self).__call__(value)
+            super().__call__(value)
         except ValidationError as e:
             # Trivial case failed. Try for possible IDN domain
             if value:
@@ -35,7 +33,7 @@ class URIValidator(RegexValidator):
                 except UnicodeError:  # invalid domain part
                     raise e
                 url = urlunsplit((scheme, netloc, path, query, fragment))
-                super(URIValidator, self).__call__(url)
+                super().__call__(url)
             else:
                 raise
         else:
@@ -47,7 +45,7 @@ class RedirectURIValidator(URIValidator):
         self.allowed_schemes = allowed_schemes
 
     def __call__(self, value):
-        super(RedirectURIValidator, self).__call__(value)
+        super().__call__(value)
         value = force_text(value)
         if len(value.split("#")) > 1:
             raise ValidationError("Redirect URIs must not contain fragments")
