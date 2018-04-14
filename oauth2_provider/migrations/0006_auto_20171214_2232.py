@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="refreshtoken",
             name="revoked",
-            field=models.DateTimeField(null=True, default=django.utils.timezone.now),
+            field=models.DateTimeField(null=True, default=None),
             preserve_default=False,
         ),
         migrations.AlterField(
