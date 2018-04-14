@@ -31,7 +31,3 @@ class OAuth2ResponseRedirect(HttpResponse):
             raise DisallowedRedirect(
                 "Redirect to scheme {!r} is not permitted".format(parsed.scheme)
             )
-
-
-# Backwards compatibility (as of 1.0.0)
-HttpResponseUriRedirect = OAuth2ResponseRedirect
