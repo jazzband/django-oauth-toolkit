@@ -84,7 +84,7 @@ class MethodScopeAltViewBad(OAuth2View):
 
 class MissingAuthentication(BaseAuthentication):
     def authenticate(self, request):
-        return ('junk', 'junk',)
+        return ("junk", "junk",)
 
 
 class BrokenOAuth2View(MockView):
