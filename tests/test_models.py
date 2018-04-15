@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.test import TestCase
@@ -128,7 +126,7 @@ class TestCustomModels(TestCase):
         If a custom application model is installed, it should be present in
         the related objects and not the swapped out one.
 
-        See issue #90 (https://github.com/evonove/django-oauth-toolkit/issues/90)
+        See issue #90 (https://github.com/jazzband/django-oauth-toolkit/issues/90)
         """
         related_object_names = [
             f.name for f in UserModel._meta.get_fields()

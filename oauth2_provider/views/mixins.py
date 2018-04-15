@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import logging
 
 from django.core.exceptions import ImproperlyConfigured
@@ -204,13 +202,13 @@ class ProtectedResourceMixin(OAuthLibMixin):
     def dispatch(self, request, *args, **kwargs):
         # let preflight OPTIONS requests pass
         if request.method.upper() == "OPTIONS":
-            return super(ProtectedResourceMixin, self).dispatch(request, *args, **kwargs)
+            return super().dispatch(request, *args, **kwargs)
 
         # check if the request is valid and the protected resource may be accessed
         valid, r = self.verify_request(request)
         if valid:
             request.resource_owner = r.user
-            return super(ProtectedResourceMixin, self).dispatch(request, *args, **kwargs)
+            return super().dispatch(request, *args, **kwargs)
         else:
             return HttpResponseForbidden()
 
@@ -232,7 +230,7 @@ class ReadWriteScopedResourceMixin(ScopedResourceMixin, OAuthLibMixin):
                 ' to be in OAUTH2_PROVIDER["SCOPES"] list in settings'.format(read_write_scopes)
             )
 
-        return super(ReadWriteScopedResourceMixin, cls).__new__(cls, *args, **kwargs)
+        return super().__new__(cls, *args, **kwargs)
 
     def dispatch(self, request, *args, **kwargs):
         if request.method.upper() in SAFE_HTTP_METHODS:
@@ -240,10 +238,10 @@ class ReadWriteScopedResourceMixin(ScopedResourceMixin, OAuthLibMixin):
         else:
             self.read_write_scope = oauth2_settings.WRITE_SCOPE
 
-        return super(ReadWriteScopedResourceMixin, self).dispatch(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
     def get_scopes(self, *args, **kwargs):
-        scopes = super(ReadWriteScopedResourceMixin, self).get_scopes(*args, **kwargs)
+        scopes = super().get_scopes(*args, **kwargs)
 
         # this returns a copy so that self.required_scopes is not modified
         return scopes + [self.read_write_scope]

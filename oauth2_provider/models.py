@@ -1,6 +1,5 @@
-from __future__ import unicode_literals
-
 from datetime import timedelta
+from urllib.parse import parse_qsl, urlparse
 
 from django.apps import apps
 from django.conf import settings
@@ -8,17 +7,14 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db import models, transaction
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 
-from .compat import parse_qsl, urlparse
 from .generators import generate_client_id, generate_client_secret
 from .scopes import get_scopes_backend
 from .settings import oauth2_settings
 from .validators import validate_uris
 
 
-@python_2_unicode_compatible
 class AbstractApplication(models.Model):
     """
     An Application instance represents a Client on the Authorization server.
@@ -67,9 +63,9 @@ class AbstractApplication(models.Model):
         null=True, blank=True, on_delete=models.CASCADE
     )
 
-    help_text = _("Allowed URIs list, space separated")
     redirect_uris = models.TextField(
-        blank=True, help_text=help_text, validators=[validate_uris]
+        blank=True, help_text=_("Allowed URIs list, space separated"),
+        validators=[validate_uris]
     )
     client_type = models.CharField(max_length=32, choices=CLIENT_TYPES)
     authorization_grant_type = models.CharField(
@@ -86,6 +82,9 @@ class AbstractApplication(models.Model):
 
     class Meta:
         abstract = True
+
+    def __str__(self):
+        return self.name or self.client_id
 
     @property
     def default_redirect_uri(self):
@@ -136,8 +135,12 @@ class AbstractApplication(models.Model):
     def get_absolute_url(self):
         return reverse("oauth2_provider:detail", args=[str(self.id)])
 
-    def __str__(self):
-        return self.name or self.client_id
+    def get_allowed_schemes(self):
+        """
+        Returns the list of redirect schemes allowed by the Application.
+        By default, returns `ALLOWED_REDIRECT_URI_SCHEMES`.
+        """
+        return oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES
 
     def allows_grant_type(self, *grant_types):
         return self.authorization_grant_type in grant_types
@@ -151,12 +154,21 @@ class AbstractApplication(models.Model):
         return True
 
 
+class ApplicationManager(models.Manager):
+    def get_by_natural_key(self, client_id):
+        return self.get(client_id=client_id)
+
+
 class Application(AbstractApplication):
+    objects = ApplicationManager()
+
     class Meta(AbstractApplication.Meta):
         swappable = "OAUTH2_PROVIDER_APPLICATION_MODEL"
 
+    def natural_key(self):
+        return (self.client_id,)
 
-@python_2_unicode_compatible
+
 class AbstractGrant(models.Model):
     """
     A Grant instance represents a token with a short lifetime that can
@@ -212,7 +224,6 @@ class Grant(AbstractGrant):
         swappable = "OAUTH2_PROVIDER_GRANT_MODEL"
 
 
-@python_2_unicode_compatible
 class AbstractAccessToken(models.Model):
     """
     An AccessToken instance represents the actual access token to
@@ -306,7 +317,6 @@ class AccessToken(AbstractAccessToken):
         swappable = "OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL"
 
 
-@python_2_unicode_compatible
 class AbstractRefreshToken(models.Model):
     """
     A RefreshToken instance represents a token that can be swapped for a new

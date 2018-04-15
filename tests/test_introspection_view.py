@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import calendar
 import datetime
 
@@ -38,7 +36,7 @@ class TestTokenIntrospectionViews(TestCase):
             user=self.resource_server_user, token="12345678900",
             application=self.application,
             expires=timezone.now() + datetime.timedelta(days=1),
-            scope="read write introspection"
+            scope="introspection"
         )
 
         self.valid_token = AccessToken.objects.create(

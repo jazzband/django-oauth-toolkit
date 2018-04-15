@@ -4,7 +4,7 @@ Settings
 Our configurations are all namespaced under the `OAUTH2_PROVIDER` settings with the exception of
 `OAUTH2_PROVIDER_APPLICATION_MODEL, OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL, OAUTH2_PROVIDER_GRANT_MODEL,
 OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL`: this is because of the way Django currently implements
-swappable models. See issue #90 (https://github.com/evonove/django-oauth-toolkit/issues/90) for details.
+swappable models. See issue #90 (https://github.com/jazzband/django-oauth-toolkit/issues/90) for details.
 
 For example:
 
@@ -46,6 +46,10 @@ Default: ``["http", "https"]``
 
 A list of schemes that the ``redirect_uri`` field will be validated against.
 Setting this to ``["https"]`` only in production is strongly recommended.
+
+Note that you may override ``Application.get_allowed_schemes()`` to set this on
+a per-application basis.
+
 
 APPLICATION_MODEL
 ~~~~~~~~~~~~~~~~~

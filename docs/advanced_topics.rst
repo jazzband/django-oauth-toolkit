@@ -28,7 +28,7 @@ logo, acceptance of some user agreement and so on.
 Django OAuth Toolkit lets you extend the AbstractApplication model in a fashion like Django's
 custom user models.
 
-If you need, let's say, application logo and user agreement acceptance field, you can to this in
+If you need, let's say, application logo and user agreement acceptance field, you can do this in
 your Django app (provided that your app is in the list of the INSTALLED_APPS in your settings
 module)::
 
@@ -44,15 +44,15 @@ Write something like this in your settings module::
 
     OAUTH2_PROVIDER_APPLICATION_MODEL='your_app_name.MyApplication'
 
-Be aware that, when you intend to swap the application model, you should create and run the 
-migration defining the swapped application model prior to setting OAUTH2_PROVIDER_APPLICATION_MODEL. 
+Be aware that, when you intend to swap the application model, you should create and run the
+migration defining the swapped application model prior to setting OAUTH2_PROVIDER_APPLICATION_MODEL.
 You'll run into models.E022 in Core system checks if you don't get the order right.
 
 That's all, now Django OAuth Toolkit will use your model wherever an Application instance is needed.
 
     **Notice:** `OAUTH2_PROVIDER_APPLICATION_MODEL` is the only setting variable that is not namespaced, this
     is because of the way Django currently implements swappable models.
-    See issue #90 (https://github.com/evonove/django-oauth-toolkit/issues/90) for details
+    See issue #90 (https://github.com/jazzband/django-oauth-toolkit/issues/90) for details
 
 Multiple Grants
 ~~~~~~~~~~~~~~~

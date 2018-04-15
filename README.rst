@@ -1,18 +1,23 @@
 Django OAuth Toolkit
 ====================
 
+.. image:: https://jazzband.co/static/img/badge.svg
+   :target: https://jazzband.co/
+   :alt: Jazzband
+
 *OAuth2 goodies for the Djangonauts!*
 
 .. image:: https://badge.fury.io/py/django-oauth-toolkit.png
     :target: http://badge.fury.io/py/django-oauth-toolkit
 
-.. image:: https://travis-ci.org/evonove/django-oauth-toolkit.png
+.. image:: https://travis-ci.org/jazzband/django-oauth-toolkit.png
    :alt: Build Status
-   :target: https://travis-ci.org/evonove/django-oauth-toolkit
+   :target: https://travis-ci.org/jazzband/django-oauth-toolkit
 
-.. image:: https://coveralls.io/repos/evonove/django-oauth-toolkit/badge.png
+.. image:: https://coveralls.io/repos/github/jazzband/django-oauth-toolkit/badge.svg?branch=master
    :alt: Coverage Status
-   :target: https://coveralls.io/r/evonove/django-oauth-toolkit
+   :target: https://coveralls.io/github/jazzband/django-oauth-toolkit?branch=master
+
 
 If you are facing one or more of the following:
  * Your Django app exposes a web API you want to protect with OAuth2 authentication,
@@ -23,11 +28,6 @@ capabilities to your Django projects. Django OAuth Toolkit makes extensive use o
 `OAuthLib <https://github.com/idan/oauthlib>`_, so that everything is
 `rfc-compliant <http://tools.ietf.org/html/rfc6749>`_.
 
-Support
--------
-
-If you need support please send a message to the `Django OAuth Toolkit Google Group <http://groups.google.com/group/django-oauth-toolkit>`_
-
 Contributing
 ------------
 
@@ -37,18 +37,13 @@ guidelines <https://django-oauth-toolkit.readthedocs.io/en/latest/contributing.h
 Reporting security issues
 -------------------------
 
-If you believe you've found an issue with security implications, please send a detailed description via email to **security@evonove.it**.
-Mail sent to that address reaches the Django OAuth Toolkit core team, who can solve (or forward) the security issue as soon as possible. After
-our acknowledge, we may decide to open a public discussion in our mailing list or issues tracker.
-
-Once you’ve submitted an issue via email, you should receive a response from the core team within 48 hours, and depending on the action to be
-taken, you may receive further followup emails.
+Please report any security issues to the JazzBand security team at <security@jazzband.co>. Do not file an issue on the tracker.
 
 Requirements
 ------------
 
-* Python 2.7, 3.4, 3.5, 3.6
-* Django 1.10, 1.11
+* Python 3.5+
+* Django 2.0+
 
 Installation
 ------------
@@ -80,7 +75,7 @@ Notice that `oauth2_provider` namespace is mandatory.
 Changelog
 ---------
 
-See `CHANGELOG.md <https://github.com/evonove/django-oauth-toolkit/blob/master/CHANGELOG.md>`_.
+See `CHANGELOG.md <https://github.com/jazzband/django-oauth-toolkit/blob/master/CHANGELOG.md>`_.
 
 
 Documentation

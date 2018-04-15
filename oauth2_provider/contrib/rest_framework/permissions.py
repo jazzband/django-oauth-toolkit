@@ -67,7 +67,7 @@ class TokenHasReadWriteScope(TokenHasScope):
 
     def get_scopes(self, request, view):
         try:
-            required_scopes = super(TokenHasReadWriteScope, self).get_scopes(request, view)
+            required_scopes = super().get_scopes(request, view)
         except ImproperlyConfigured:
             required_scopes = []
 
@@ -87,9 +87,7 @@ class TokenHasResourceScope(TokenHasScope):
 
     def get_scopes(self, request, view):
         try:
-            view_scopes = (
-                super(TokenHasResourceScope, self).get_scopes(request, view)
-            )
+            view_scopes = super().get_scopes(request, view)
         except ImproperlyConfigured:
             view_scopes = []
 

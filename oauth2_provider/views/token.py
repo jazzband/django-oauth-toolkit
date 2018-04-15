@@ -1,5 +1,3 @@
-from __future__ import absolute_import, unicode_literals
-
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import DeleteView, ListView
@@ -19,8 +17,9 @@ class AuthorizedTokensListView(LoginRequiredMixin, ListView):
         """
         Show only user"s tokens
         """
-        return super(AuthorizedTokensListView, self).get_queryset()\
-            .select_related("application").filter(user=self.request.user)
+        return super().get_queryset().select_related("application").filter(
+            user=self.request.user
+        )
 
 
 class AuthorizedTokenDeleteView(LoginRequiredMixin, DeleteView):
@@ -32,4 +31,4 @@ class AuthorizedTokenDeleteView(LoginRequiredMixin, DeleteView):
     model = get_access_token_model()
 
     def get_queryset(self):
-        return super(AuthorizedTokenDeleteView, self).get_queryset().filter(user=self.request.user)
+        return super().get_queryset().filter(user=self.request.user)

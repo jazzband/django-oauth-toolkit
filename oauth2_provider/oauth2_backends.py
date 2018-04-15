@@ -1,11 +1,9 @@
-from __future__ import unicode_literals
-
 import json
+from urllib.parse import urlparse, urlunparse
 
 from oauthlib import oauth2
 from oauthlib.common import quote, urlencode, urlencoded
 
-from .compat import urlparse, urlunparse
 from .exceptions import FatalClientError, OAuthToolkitError
 from .settings import oauth2_settings
 

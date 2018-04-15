@@ -1,9 +1,9 @@
-from __future__ import unicode_literals
-
 import base64
 import binascii
 import logging
+from collections import OrderedDict
 from datetime import datetime, timedelta
+from urllib.parse import unquote_plus
 
 import requests
 from django.conf import settings
@@ -13,9 +13,9 @@ from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.timezone import make_aware
+from django.utils.translation import ugettext_lazy as _
 from oauthlib.oauth2 import RequestValidator
 
-from .compat import unquote_plus
 from .exceptions import FatalClientError
 from .models import (
     AbstractApplication, get_access_token_model,
@@ -155,6 +155,30 @@ class OAuth2Validator(RequestValidator):
             log.debug("Failed body authentication: Application %r does not exist" % (client_id))
             return None
 
+    def _set_oauth2_error_on_request(self, request, access_token, scopes):
+        if access_token is None:
+            error = OrderedDict([
+                ("error", "invalid_token", ),
+                ("error_description", _("The access token is invalid."), ),
+            ])
+        elif access_token.is_expired():
+            error = OrderedDict([
+                ("error", "invalid_token", ),
+                ("error_description", _("The access token has expired."), ),
+            ])
+        elif not access_token.allow_scopes(scopes):
+            error = OrderedDict([
+                ("error", "insufficient_scope", ),
+                ("error_description", _("The access token is valid but does not have enough scope."), ),
+            ])
+        else:
+            log.warning("OAuth2 access token is invalid for an unknown reason.")
+            error = OrderedDict([
+                ("error", "invalid_token", ),
+            ])
+        request.oauth2_error = error
+        return request
+
     def client_authentication_required(self, request, *args, **kwargs):
         """
         Determine if the client has to be authenticated
@@ -186,8 +210,7 @@ class OAuth2Validator(RequestValidator):
         if request.client:
             return request.client.client_type == AbstractApplication.CLIENT_CONFIDENTIAL
 
-        return super(OAuth2Validator, self).client_authentication_required(request,
-                                                                           *args, **kwargs)
+        return super().client_authentication_required(request, *args, **kwargs)
 
     def authenticate_client(self, request, *args, **kwargs):
         """
@@ -352,6 +375,7 @@ class OAuth2Validator(RequestValidator):
                 # this is needed by django rest framework
                 request.access_token = access_token
                 return True
+            self._set_oauth2_error_on_request(request, access_token, scopes)
             return False
         except AccessToken.DoesNotExist:
             # there is no initial token, look up the token
@@ -370,6 +394,7 @@ class OAuth2Validator(RequestValidator):
                     # this is needed by django rest framework
                     request.access_token = access_token
                     return True
+            self._set_oauth2_error_on_request(request, None, scopes)
             return False
 
     def validate_code(self, client_id, code, client, request, *args, **kwargs):

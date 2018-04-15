@@ -15,8 +15,6 @@ This module provides the `oauth2_settings` object, that is used to access
 OAuth2 Provider settings, checking for user settings first, then falling
 back to the defaults.
 """
-from __future__ import unicode_literals
-
 import importlib
 
 from django.conf import settings
