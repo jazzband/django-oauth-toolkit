@@ -2,19 +2,19 @@ from datetime import timedelta
 
 from django.conf.urls import include, url
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponse
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils import timezone
-from django.core.exceptions import ImproperlyConfigured
 from rest_framework import permissions
 from rest_framework.test import APIRequestFactory, force_authenticate
 from rest_framework.views import APIView
 
 from oauth2_provider.contrib.rest_framework import (
     IsAuthenticatedOrTokenHasScope, OAuth2Authentication,
-    TokenHasReadWriteScope, TokenHasResourceScope, TokenHasScope,
-    TokenHasMethodScopeAlternative
+    TokenHasMethodScopeAlternative, TokenHasReadWriteScope,
+    TokenHasResourceScope, TokenHasScope
 )
 from oauth2_provider.models import get_access_token_model, get_application_model
 from oauth2_provider.settings import oauth2_settings
