@@ -333,6 +333,26 @@ class TestAuthorizationCodeView(BaseTest):
         response = self.client.post(reverse("oauth2_provider:authorize"), data=form_data)
         self.assertEqual(response.status_code, 302)
         self.assertIn("error=access_denied", response["Location"])
+        self.assertIn("state=random_state_string", response["Location"])
+
+    def test_code_post_auth_deny_no_state(self):
+        """
+        Test optional state when resource owner deny access
+        """
+        self.client.login(username="test_user", password="123456")
+
+        form_data = {
+            "client_id": self.application.client_id,
+            "scope": "read write",
+            "redirect_uri": "http://example.org",
+            "response_type": "code",
+            "allow": False,
+        }
+
+        response = self.client.post(reverse("oauth2_provider:authorize"), data=form_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("error=access_denied", response["Location"])
+        self.assertNotIn("state", response["Location"])
 
     def test_code_post_auth_bad_responsetype(self):
         """
@@ -431,6 +451,7 @@ class TestAuthorizationCodeView(BaseTest):
         self.assertEqual(response.status_code, 302)
         self.assertIn("custom-scheme://example.com?", response["Location"])
         self.assertIn("error=access_denied", response["Location"])
+        self.assertIn("state=random_state_string", response["Location"])
 
     def test_code_post_auth_redirection_uri_with_querystring(self):
         """
@@ -453,6 +474,7 @@ class TestAuthorizationCodeView(BaseTest):
         self.assertEqual(response.status_code, 302)
         self.assertIn("http://example.com?foo=bar", response["Location"])
         self.assertIn("code=", response["Location"])
+        self.assertIn("state=random_state_string", response["Location"])
 
     def test_code_post_auth_failing_redirection_uri_with_querystring(self):
         """
@@ -473,7 +495,10 @@ class TestAuthorizationCodeView(BaseTest):
 
         response = self.client.post(reverse("oauth2_provider:authorize"), data=form_data)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual("http://example.com?foo=bar&error=access_denied", response["Location"])
+        self.assertIn("http://example.com?", response["Location"])
+        self.assertIn("error=access_denied", response["Location"])
+        self.assertIn("state=random_state_string", response["Location"])
+        self.assertIn("foo=bar", response["Location"])
 
     def test_code_post_auth_fails_when_redirect_uri_path_is_invalid(self):
         """
