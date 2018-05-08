@@ -5,6 +5,7 @@
 
 ### 1.1.0 [2018-04-13]
 
+* **Backwards-incompatible**: All existing RefreshTokens will be invalidated when you run the `0006_auto_20171214_2232` migration. To correct this, run `RefreshToken.objects.update(revoked=None)`. ([#586](https://github.com/jazzband/django-oauth-toolkit/issues/589))
 * **Notice**: The Django OAuth Toolkit project is now hosted by JazzBand.
 * **Compatibility**: Django 1.11 is the new minimum required version. Django 1.10 is no longer supported.
 * **Compatibility**: This will be the last release to support Django 1.11 and Python 2.7.
