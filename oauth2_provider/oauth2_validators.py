@@ -96,7 +96,11 @@ class OAuth2Validator(RequestValidator):
             )
             return False
 
-        client_id, client_secret = map(unquote_plus, auth_string_decoded.split(":", 1))
+        try:
+            client_id, client_secret = map(unquote_plus, auth_string_decoded.split(":", 1))
+        except ValueError:
+            log.debug("Failed basic auth, Invalid base64 encoding.")
+            return False
 
         if self._load_application(client_id, request) is None:
             log.debug("Failed basic auth: Application %s does not exist" % client_id)
