@@ -106,6 +106,12 @@ class TestOAuth2Validator(TransactionTestCase):
         self.request.headers = {"HTTP_AUTHORIZATION": "Basic not_base64"}
         self.assertFalse(self.validator._authenticate_basic_auth(self.request))
 
+    def test_authenticate_basic_auth_invalid_b64_string(self):
+        self.request.encoding = "utf-8"
+        # client_id:wrong_secret
+        self.request.headers = {"HTTP_AUTHORIZATION": "Basic ZHVtbXk=:ZHVtbXk=\n"}
+        self.assertFalse(self.validator._authenticate_basic_auth(self.request))
+
     def test_authenticate_basic_auth_not_utf8(self):
         self.request.encoding = "utf-8"
         # b64decode("test") will become b"\xb5\xeb-", it can"t be decoded as utf-8
