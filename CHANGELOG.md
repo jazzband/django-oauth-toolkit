@@ -3,6 +3,14 @@
 * **Compatibility**: Python 3.4 is the new minimum required version.
 * **Compatibility**: Django 2.0 is the new minimum required version.
 
+### 1.1.1 [2018-05-08]
+
+* **Critical**: Django OAuth Toolkit 1.1.0 contained a migration that would revoke all existing
+  RefreshTokens (`0006_auto_20171214_2232`). This release corrects the migration.
+  If you have already ran it in production, please see the following issue for more details:
+  https://github.com/jazzband/django-oauth-toolkit/issues/589
+
+
 ### 1.1.0 [2018-04-13]
 
 * **Notice**: The Django OAuth Toolkit project is now hosted by JazzBand.
