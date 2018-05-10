@@ -27,7 +27,10 @@ class URIValidator(RegexValidator):
             # Trivial case failed. Try for possible IDN domain
             if value:
                 value = force_text(value)
-                scheme, netloc, path, query, fragment = urlsplit(value)
+                try:
+                    scheme, netloc, path, query, fragment = urlsplit(value)
+                except ValueError as e:
+                    raise ValidationError("Cannot parse Redirect URI. Error: {}".format(e))
                 try:
                     netloc = netloc.encode("idna").decode("ascii")  # IDN -> ACE
                 except UnicodeError:  # invalid domain part
