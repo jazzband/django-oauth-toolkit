@@ -28,6 +28,9 @@ class TestValidators(TestCase):
         self.assertRaises(ValidationError, validate_uris, bad_uri)
         bad_uri = "http:/example.com"
         self.assertRaises(ValidationError, validate_uris, bad_uri)
+        # Bad IPv6 URL, urlparse behaves differently for these
+        bad_uri = "https://[\"><script>alert()</script>"
+        self.assertRaises(ValidationError, validate_uris, bad_uri)
         bad_uri = "my-scheme://example.com"
         self.assertRaises(ValidationError, validate_uris, bad_uri)
         bad_uri = "sdklfsjlfjljdflksjlkfjsdkl"
