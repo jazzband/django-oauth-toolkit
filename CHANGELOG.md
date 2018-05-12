@@ -1,4 +1,18 @@
-### 1.1.0 [unreleased]
+### 1.1.2 [2018-05-12]
+
+* Return state with Authorization Denied error (RFC6749 section 4.1.2.1)
+* Fix a crash with malformed base64 authentication headers
+* Fix a crash with malformed IPv6 redirect URIs
+
+### 1.1.1 [2018-05-08]
+
+* **Critical**: Django OAuth Toolkit 1.1.0 contained a migration that would revoke all existing
+  RefreshTokens (`0006_auto_20171214_2232`). This release corrects the migration.
+  If you have already ran it in production, please see the following issue for more details:
+  https://github.com/jazzband/django-oauth-toolkit/issues/589
+
+
+### 1.1.0 [2018-04-13]
 
 * **Notice**: The Django OAuth Toolkit project is now hosted by JazzBand.
 * **Compatibility**: Django 1.11 is the new minimum required version. Django 1.10 is no longer supported.
