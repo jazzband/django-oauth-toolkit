@@ -14,8 +14,8 @@ from rest_framework.views import APIView
 
 from oauth2_provider.contrib.rest_framework import (
     IsAuthenticatedOrTokenHasScope, OAuth2Authentication,
-    TokenMatchesOASRequirements, TokenHasReadWriteScope,
-    TokenHasResourceScope, TokenHasScope
+    TokenHasReadWriteScope, TokenHasResourceScope,
+    TokenHasScope, TokenMatchesOASRequirements
 )
 from oauth2_provider.models import get_access_token_model, get_application_model
 from oauth2_provider.settings import oauth2_settings
