@@ -108,7 +108,8 @@ class OAuthLibCore(object):
         """
         try:
             if not allow:
-                raise oauth2.AccessDeniedError()
+                raise oauth2.AccessDeniedError(
+                    state=credentials.get("state", None))
 
             # add current user to credentials. this will be used by OAUTH2_VALIDATOR_CLASS
             credentials["user"] = request.user
