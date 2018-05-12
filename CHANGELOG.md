@@ -2,6 +2,7 @@
 
 * **Compatibility**: Python 3.4 is the new minimum required version.
 * **Compatibility**: Django 2.0 is the new minimum required version.
+* **New feature**: Added TokenHasMethodScopeAlternative Permissions.
 
 ### 1.1.1 [2018-05-08]
 
@@ -24,6 +25,7 @@
 * **New feature**: The new setting `REFRESH_TOKEN_GRACE_PERIOD_SECONDS` controls a grace period during which
   refresh tokens may be re-used.
 * An `app_authorized` signal is fired when a token is generated.
+
 
 ### 1.0.0 [2017-06-07]
 

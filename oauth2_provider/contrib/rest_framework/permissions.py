@@ -121,3 +121,58 @@ class IsAuthenticatedOrTokenHasScope(BasePermission):
 
         token_has_scope = TokenHasScope()
         return (is_authenticated and not oauth2authenticated) or token_has_scope.has_permission(request, view)
+
+
+class TokenHasMethodScopeAlternative(BasePermission):
+    """
+    :attr:alternate_required_scopes: dict keyed by HTTP method name with value: iterable alternate scope lists
+
+    This fulfills the [Open API Specification (OAS; formerly Swagger)](https://www.openapis.org/)
+    list of alternative Security Requirements Objects for oauth2 or openIdConnect:
+      When a list of Security Requirement Objects is defined on the Open API object or Operation Object,
+      only one of Security Requirement Objects in the list needs to be satisfied to authorize the request.
+    [1](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#securityRequirementObject)
+
+    For each method, a list of lists of allowed scopes is tried in order and the first to match succeeds.
+
+    @example
+    required_alternate_scopes = {
+       'GET': [['read']],
+       'POST': [['create1','scope2'], ['alt-scope3'], ['alt-scope4','alt-scope5']],
+    }
+
+    TODO: DRY: subclass TokenHasScope and iterate over values of required_scope?
+    """
+
+    def has_permission(self, request, view):
+        token = request.auth
+
+        if not token:
+            return False
+
+        if hasattr(token, "scope"):  # OAuth 2
+            required_alternate_scopes = self.get_required_alternate_scopes(request, view)
+
+            m = request.method.upper()
+            if m in required_alternate_scopes:
+                log.debug("Required scopes alternatives to access resource: {0}"
+                          .format(required_alternate_scopes[m]))
+                for alt in required_alternate_scopes[m]:
+                    if token.is_valid(alt):
+                        return True
+                return False
+            else:
+                log.warning("no scope alternates defined for method {0}".format(m))
+                return False
+
+        assert False, ("TokenHasMethodScope requires the"
+                       "`oauth2_provider.rest_framework.OAuth2Authentication` authentication "
+                       "class to be used.")
+
+    def get_required_alternate_scopes(self, request, view):
+        try:
+            return getattr(view, "required_alternate_scopes")
+        except AttributeError:
+            raise ImproperlyConfigured(
+                "TokenHasMethodScopeAlternative requires the view to"
+                " define the required_alternate_scopes attribute")

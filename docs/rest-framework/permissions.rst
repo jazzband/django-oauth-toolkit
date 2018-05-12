@@ -48,6 +48,7 @@ For example:
 
 When a request is performed both the `READ_SCOPE` \\ `WRITE_SCOPE` and 'music' scopes are required to be authorized for the current access token.
 
+
 TokenHasResourceScope
 ----------------------
 The `TokenHasResourceScope` permission class allows access only when the current access token has been authorized for **all** the scopes listed in the `required_scopes` field of the view but according of request's method.
@@ -81,3 +82,36 @@ For example:
         required_scopes = ['music']
 
 The `required_scopes` attribute is mandatory.
+
+
+TokenHasMethodScopeAlternative
+------------------------------
+
+The `TokenHasMethodScopeAlternative` permission class allows the access based on a per-method basis
+and with alternative lists of required scopes. This permission provides full functionality
+required by REST API specifications like the
+`OpenAPI Specification (OAS) security requirement object <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#securityRequirementObject>`_.
+
+The `required_alternate_scopes` attribute is a required map keyed by HTTP method name where each value is
+a list of alternative lists of required scopes.
+
+In the follow example GET requires "read" scope, POST requires either "create" scope **OR** "post" and "widget" scopes,
+etc.
+
+.. code-block:: python
+
+    class SongView(views.APIView):
+        authentication_classes = [OAuth2Authentication]
+        permission_classes = [TokenHasMethodScopeAlternative]
+        required_alternate_scopes = {
+            "GET": [["read"]],
+            "POST": [["create"], ["post", "widget"]],
+            "PUT":  [["update"], ["put", "widget"]],
+            "DELETE": [["delete"], ["scope2", "scope3"]],
+        }
+
+The following is a minimal OAS declaration that shows the same required alternate scopes. It is complete enough
+to try it in the `swagger editor <https://editor.swagger.io>`_.
+
+.. literalinclude:: openapi.yaml
+  :language: YAML

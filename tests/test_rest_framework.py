@@ -2,17 +2,20 @@ from datetime import timedelta
 
 from django.conf.urls import include, url
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponse
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils import timezone
 from rest_framework import permissions
+from rest_framework.authentication import BaseAuthentication
 from rest_framework.test import APIRequestFactory, force_authenticate
 from rest_framework.views import APIView
 
 from oauth2_provider.contrib.rest_framework import (
     IsAuthenticatedOrTokenHasScope, OAuth2Authentication,
-    TokenHasReadWriteScope, TokenHasResourceScope, TokenHasScope
+    TokenHasMethodScopeAlternative, TokenHasReadWriteScope,
+    TokenHasResourceScope, TokenHasScope
 )
 from oauth2_provider.models import get_access_token_model, get_application_model
 from oauth2_provider.settings import oauth2_settings
@@ -38,6 +41,9 @@ class MockView(APIView):
     def post(self, request):
         return HttpResponse({"a": 1, "b": 2, "c": 3})
 
+    def put(self, request):
+        return HttpResponse({"a": 1, "b": 2, "c": 3})
+
 
 class OAuth2View(MockView):
     authentication_classes = [OAuth2Authentication]
@@ -45,7 +51,7 @@ class OAuth2View(MockView):
 
 class ScopedView(OAuth2View):
     permission_classes = [permissions.IsAuthenticated, TokenHasScope]
-    required_scopes = ["scope1"]
+    required_scopes = ["scope1", "another"]
 
 
 class AuthenticatedOrScopedView(OAuth2View):
@@ -62,13 +68,48 @@ class ResourceScopedView(OAuth2View):
     required_scopes = ["resource1"]
 
 
+class MethodScopeAltView(OAuth2View):
+    permission_classes = [TokenHasMethodScopeAlternative]
+    required_alternate_scopes = {
+        "GET": [["read"]],
+        "POST": [["create"]],
+        "PUT": [["update", "put"], ["update", "edit"]],
+        "DELETE": [["delete"], ["deleter", "write"]],
+    }
+
+
+class MethodScopeAltViewBad(OAuth2View):
+    permission_classes = [TokenHasMethodScopeAlternative]
+
+
+class MissingAuthentication(BaseAuthentication):
+    def authenticate(self, request):
+        return ("junk", "junk",)
+
+
+class BrokenOAuth2View(MockView):
+    authentication_classes = [MissingAuthentication]
+
+
+class TokenHasScopeViewWrongAuth(BrokenOAuth2View):
+    permission_classes = [TokenHasScope]
+
+
+class MethodScopeAltViewWrongAuth(BrokenOAuth2View):
+    permission_classes = [TokenHasMethodScopeAlternative]
+
+
 urlpatterns = [
     url(r"^oauth2/", include("oauth2_provider.urls")),
     url(r"^oauth2-test/$", OAuth2View.as_view()),
     url(r"^oauth2-scoped-test/$", ScopedView.as_view()),
+    url(r"^oauth2-scoped-missing-auth/$", TokenHasScopeViewWrongAuth.as_view()),
     url(r"^oauth2-read-write-test/$", ReadWriteScopedView.as_view()),
     url(r"^oauth2-resource-scoped-test/$", ResourceScopedView.as_view()),
     url(r"^oauth2-authenticated-or-scoped-test/$", AuthenticatedOrScopedView.as_view()),
+    url(r"^oauth2-method-scope-test/.*$", MethodScopeAltView.as_view()),
+    url(r"^oauth2-method-scope-fail/$", MethodScopeAltViewBad.as_view()),
+    url(r"^oauth2-method-scope-missing-auth/$", MethodScopeAltViewWrongAuth.as_view()),
 ]
 
 
@@ -142,12 +183,18 @@ class TestOAuth2Authentication(TestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_scoped_permission_allow(self):
-        self.access_token.scope = "scope1"
+        self.access_token.scope = "scope1 another"
         self.access_token.save()
 
         auth = self._create_authorization_header(self.access_token.token)
         response = self.client.get("/oauth2-scoped-test/", HTTP_AUTHORIZATION=auth)
         self.assertEqual(response.status_code, 200)
+
+    def test_scope_missing_scope_attr(self):
+        auth = self._create_authorization_header("fake-token")
+        with self.assertRaises(AssertionError) as e:
+            self.client.get("/oauth2-scoped-missing-auth/", HTTP_AUTHORIZATION=auth)
+        self.assertTrue("`oauth2_provider.rest_framework.OAuth2Authentication`" in str(e.exception))
 
     def test_authenticated_or_scoped_permission_allow(self):
         self.access_token.scope = "scope1"
@@ -255,7 +302,7 @@ class TestOAuth2Authentication(TestCase):
         auth = self._create_authorization_header(self.access_token.token)
         response = self.client.get("/oauth2-scoped-test/", HTTP_AUTHORIZATION=auth)
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(response.data["required_scopes"], ["scope1"])
+        self.assertEqual(response.data["required_scopes"], ["scope1", "another"])
 
     def test_required_scope_not_in_response_by_default(self):
         self.access_token.scope = "scope2"
@@ -265,3 +312,90 @@ class TestOAuth2Authentication(TestCase):
         response = self.client.get("/oauth2-scoped-test/", HTTP_AUTHORIZATION=auth)
         self.assertEqual(response.status_code, 403)
         self.assertNotIn("required_scopes", response.data)
+
+    def test_method_scope_alt_permission_get_allow(self):
+        self.access_token.scope = "read"
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.get("/oauth2-method-scope-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 200)
+
+    def test_method_scope_alt_permission_post_allow(self):
+        self.access_token.scope = "create"
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.post("/oauth2-method-scope-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 200)
+
+    def test_method_scope_alt_permission_put_allow(self):
+        self.access_token.scope = "edit update"
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.put("/oauth2-method-scope-test/123", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 200)
+
+    def test_method_scope_alt_permission_put_fail(self):
+        self.access_token.scope = "edit"
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.put("/oauth2-method-scope-test/123", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 403)
+
+    def test_method_scope_alt_permission_get_deny(self):
+        self.access_token.scope = "write"
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.get("/oauth2-method-scope-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 403)
+
+    def test_method_scope_alt_permission_post_deny(self):
+        self.access_token.scope = "read"
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.post("/oauth2-method-scope-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 403)
+
+    def test_method_scope_alt_no_token(self):
+        self.access_token.scope = ""
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        self.access_token = None
+        response = self.client.post("/oauth2-method-scope-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 403)
+
+    def test_method_scope_alt_missing_attr(self):
+        self.access_token.scope = "read"
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        with self.assertRaises(ImproperlyConfigured):
+            self.client.post("/oauth2-method-scope-fail/", HTTP_AUTHORIZATION=auth)
+
+    def test_method_scope_alt_missing_patch_method(self):
+        self.access_token.scope = "update"
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.patch("/oauth2-method-scope-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 403)
+
+    def test_method_scope_alt_empty_scope(self):
+        self.access_token.scope = ""
+        self.access_token.save()
+
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.patch("/oauth2-method-scope-test/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 403)
+
+    def test_method_scope_alt_missing_scope_attr(self):
+        auth = self._create_authorization_header("fake-token")
+        with self.assertRaises(AssertionError) as e:
+            self.client.get("/oauth2-method-scope-missing-auth/", HTTP_AUTHORIZATION=auth)
+        self.assertTrue("`oauth2_provider.rest_framework.OAuth2Authentication`" in str(e.exception))
