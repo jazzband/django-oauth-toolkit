@@ -84,10 +84,10 @@ For example:
 The `required_scopes` attribute is mandatory.
 
 
-TokenHasMethodScopeAlternative
+TokenMatchesOASRequirements
 ------------------------------
 
-The `TokenHasMethodScopeAlternative` permission class allows the access based on a per-method basis
+The `TokenMatchesOASRequirements` permission class allows the access based on a per-method basis
 and with alternative lists of required scopes. This permission provides full functionality
 required by REST API specifications like the
 `OpenAPI Specification (OAS) security requirement object <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#securityRequirementObject>`_.
@@ -102,7 +102,7 @@ etc.
 
     class SongView(views.APIView):
         authentication_classes = [OAuth2Authentication]
-        permission_classes = [TokenHasMethodScopeAlternative]
+        permission_classes = [TokenMatchesOASRequirements]
         required_alternate_scopes = {
             "GET": [["read"]],
             "POST": [["create"], ["post", "widget"]],
