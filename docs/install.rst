@@ -24,7 +24,7 @@ Update your projects' `urls.py` to include this when you need an OAuth2 provider
         url(r'^o/', include(('oauth2_provider.urls', 'oauth2_provider_app', ), namespace='oauth2_provider'), ),
     )
 
-The example code-block uses the `oauth2_provider` namespace, but feel free to pick another name.
+The example code-block uses the ``oauth2_provider`` namespace, but feel free to pick another name. The same applies to the ``oauth2_provider_app``.
     
 
 Sync your database
