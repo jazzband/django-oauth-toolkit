@@ -15,16 +15,7 @@ Add `oauth2_provider` to your `INSTALLED_APPS`
     )
 
 
-If you're using a **Django version before 2** and you need an OAuth2 provider you'll want to add the following to your urls.py
-
-.. code-block:: python
-
-    urlpatterns = patterns(
-        ...
-        url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
-    )
-    
-Update the urls.py to include this when you're using **Django version 2** or later and you need an OAuth2 provider:
+Update your projects' `urls.py` to include this when you need an OAuth2 provider:
 
 .. code-block:: python
 
@@ -32,6 +23,8 @@ Update the urls.py to include this when you're using **Django version 2** or lat
         ...
         url(r'^o/', include(('oauth2_provider.urls', 'oauth2_provider_app', ), namespace='oauth2_provider'), ),
     )
+
+The example code-block uses the `oauth2_provider` namespace, but feel free to pick another name.
     
 
 Sync your database
