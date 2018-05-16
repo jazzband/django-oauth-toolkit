@@ -14,8 +14,8 @@ from rest_framework.views import APIView
 
 from oauth2_provider.contrib.rest_framework import (
     IsAuthenticatedOrTokenHasScope, OAuth2Authentication,
-    TokenHasMethodScopeAlternative, TokenHasReadWriteScope,
-    TokenHasResourceScope, TokenHasScope
+    TokenHasReadWriteScope, TokenHasResourceScope,
+    TokenHasScope, TokenMatchesOASRequirements
 )
 from oauth2_provider.models import get_access_token_model, get_application_model
 from oauth2_provider.settings import oauth2_settings
@@ -69,7 +69,7 @@ class ResourceScopedView(OAuth2View):
 
 
 class MethodScopeAltView(OAuth2View):
-    permission_classes = [TokenHasMethodScopeAlternative]
+    permission_classes = [TokenMatchesOASRequirements]
     required_alternate_scopes = {
         "GET": [["read"]],
         "POST": [["create"]],
@@ -79,7 +79,7 @@ class MethodScopeAltView(OAuth2View):
 
 
 class MethodScopeAltViewBad(OAuth2View):
-    permission_classes = [TokenHasMethodScopeAlternative]
+    permission_classes = [TokenMatchesOASRequirements]
 
 
 class MissingAuthentication(BaseAuthentication):
@@ -96,7 +96,7 @@ class TokenHasScopeViewWrongAuth(BrokenOAuth2View):
 
 
 class MethodScopeAltViewWrongAuth(BrokenOAuth2View):
-    permission_classes = [TokenHasMethodScopeAlternative]
+    permission_classes = [TokenMatchesOASRequirements]
 
 
 urlpatterns = [

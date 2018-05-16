@@ -123,7 +123,7 @@ class IsAuthenticatedOrTokenHasScope(BasePermission):
         return (is_authenticated and not oauth2authenticated) or token_has_scope.has_permission(request, view)
 
 
-class TokenHasMethodScopeAlternative(BasePermission):
+class TokenMatchesOASRequirements(BasePermission):
     """
     :attr:alternate_required_scopes: dict keyed by HTTP method name with value: iterable alternate scope lists
 
@@ -165,7 +165,7 @@ class TokenHasMethodScopeAlternative(BasePermission):
                 log.warning("no scope alternates defined for method {0}".format(m))
                 return False
 
-        assert False, ("TokenHasMethodScope requires the"
+        assert False, ("TokenMatchesOASRequirements requires the"
                        "`oauth2_provider.rest_framework.OAuth2Authentication` authentication "
                        "class to be used.")
 
@@ -174,5 +174,5 @@ class TokenHasMethodScopeAlternative(BasePermission):
             return getattr(view, "required_alternate_scopes")
         except AttributeError:
             raise ImproperlyConfigured(
-                "TokenHasMethodScopeAlternative requires the view to"
+                "TokenMatchesOASRequirements requires the view to"
                 " define the required_alternate_scopes attribute")

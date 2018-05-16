@@ -2,7 +2,7 @@
 
 * **Compatibility**: Python 3.4 is the new minimum required version.
 * **Compatibility**: Django 2.0 is the new minimum required version.
-* **New feature**: Added TokenHasMethodScopeAlternative Permissions.
+* **New feature**: Added TokenMatchesOASRequirements Permissions.
 
 ### 1.1.1 [2018-05-08]
 
