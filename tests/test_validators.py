@@ -2,7 +2,7 @@ from django.core.validators import ValidationError
 from django.test import TestCase
 
 from oauth2_provider.settings import oauth2_settings
-from oauth2_provider.validators import RedirectURIValidator, validate_uris
+from oauth2_provider.validators import RedirectURIValidator
 
 
 class TestValidators(TestCase):
@@ -34,12 +34,6 @@ class TestValidators(TestCase):
         for uri in good_uris:
             # Check ValidationError not thrown
             validator(uri)
-
-    def test_validate_whitespace_separators(self):
-        # Check that whitespace can be used as a separator
-        good_uris = "https://example.com\r\nhttps://example.com\thttps://example.com"
-        # Check ValidationError not thrown
-        validate_uris(good_uris)
 
     def test_validate_bad_uris(self):
         validator = RedirectURIValidator(allowed_schemes=["https"])

@@ -4,6 +4,7 @@
 * **Compatibility**: Django 2.0 is the new minimum required version.
 * **New feature**: Added TokenMatchesOASRequirements Permissions.
 * validators.URIValidator has been updated to match URLValidator behaviour more closely.
+* Moved `redirect_uris` validation to the application clean() method.
 
 
 ### 1.1.2 [2018-05-12]

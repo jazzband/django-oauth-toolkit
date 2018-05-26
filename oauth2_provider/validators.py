@@ -1,12 +1,9 @@
 import re
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import urlsplit
 
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.utils.encoding import force_text
-from django.utils.translation import ugettext_lazy as _
-
-from .settings import oauth2_settings
 
 
 class URIValidator(URLValidator):
@@ -14,7 +11,7 @@ class URIValidator(URLValidator):
 
     dotless_domain_re = r"(?!-)[A-Z\d-]{1,63}(?<!-)"
     host_re = "|".join((
-        r"(?:"+ URLValidator.host_re,
+        r"(?:" + URLValidator.host_re,
         URLValidator.ipv4_re,
         URLValidator.ipv6_re,
         dotless_domain_re + ")"
@@ -35,17 +32,16 @@ class RedirectURIValidator(URIValidator):
         scheme, netloc, path, query, fragment = urlsplit(value)
         if fragment and not self.allow_fragments:
             raise ValidationError("Redirect URIs must not contain fragments")
-        if scheme.lower() not in self.schemes:
-            raise ValidationError("Redirect URI scheme is not allowed.")
 
 
-def validate_uris(value):
+##
+# WildcardSet is a special set that contains everything.
+# This is required in order to move validation of the scheme from
+# URLValidator (the base class of URIValidator), to OAuth2Application.clean().
+
+class WildcardSet(set):
     """
-    This validator ensures that `value` contains valid blank-separated URIs"
+    A set that always returns True on `in`.
     """
-    v = RedirectURIValidator(oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES)
-    uris = value.split()
-    if not uris:
-        raise ValidationError("Redirect URI cannot be empty")
-    for uri in uris:
-        v(uri)
+    def __contains__(self, item):
+        return True
