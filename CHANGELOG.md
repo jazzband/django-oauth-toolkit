@@ -3,6 +3,7 @@
 * **Compatibility**: Python 3.4 is the new minimum required version.
 * **Compatibility**: Django 2.0 is the new minimum required version.
 * **New feature**: Added TokenMatchesOASRequirements Permissions.
+* validators.URIValidator has been updated to match URLValidator behaviour more closely.
 
 
 ### 1.1.2 [2018-05-12]
