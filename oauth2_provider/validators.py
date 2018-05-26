@@ -25,15 +25,16 @@ class URIValidator(URLValidator):
 
 
 class RedirectURIValidator(URIValidator):
-    def __init__(self, allowed_schemes):
+    def __init__(self, allowed_schemes, allow_fragments=False):
         super().__init__(schemes=allowed_schemes)
+        self.allow_fragments = allow_fragments
 
     def __call__(self, value):
         super().__call__(value)
         value = force_text(value)
-        if len(value.split("#")) > 1:
-            raise ValidationError("Redirect URIs must not contain fragments")
         scheme, netloc, path, query, fragment = urlsplit(value)
+        if fragment and not self.allow_fragments:
+            raise ValidationError("Redirect URIs must not contain fragments")
         if scheme.lower() not in self.schemes:
             raise ValidationError("Redirect URI scheme is not allowed.")
 
