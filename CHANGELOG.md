@@ -1,4 +1,4 @@
-### 1.2.0 [unreleased]
+### 1.2.0 [2018-06-03]
 
 * **Compatibility**: Python 3.4 is the new minimum required version.
 * **Compatibility**: Django 2.0 is the new minimum required version.
