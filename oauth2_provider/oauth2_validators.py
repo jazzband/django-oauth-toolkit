@@ -335,7 +335,7 @@ class OAuth2Validator(RequestValidator):
             try:
                 access_token = AccessToken.objects.select_related("application", "user").get(token=token)
             except AccessToken.DoesNotExist:
-                access_token = AccessToken.objects.create(
+                access_token, _created = AccessToken.objects.get_or_create(
                     token=token,
                     user=user,
                     application=None,
