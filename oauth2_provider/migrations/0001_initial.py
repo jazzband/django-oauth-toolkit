@@ -1,12 +1,23 @@
+import logging
 from django.conf import settings
 from django.db import migrations, models
-
 import oauth2_provider.generators
 import oauth2_provider.validators
 from oauth2_provider.settings import oauth2_settings
 
+log = logging.getLogger(__name__)
+
 
 class Migration(migrations.Migration):
+    # Workaround for `pyodbc NotImplementedError: the backend doesn't support altering from/to AutoField.`
+    # in a later migration (0005), AutoField is altered to BigAutoField so just do it now and hope for the best.
+    if 'ENGINE' in settings.DATABASES['default'] and 'pyodbc' in settings.DATABASES['default']['ENGINE']:
+        log.warning('database is pyodbc: creating initial BigAutoField primary keys')
+        class AutoField(models.BigAutoField):
+            pass
+    else:
+        class AutoField(models.AutoField):
+            pass
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL)
@@ -16,7 +27,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Application',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('id', AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('client_id', models.CharField(default=oauth2_provider.generators.generate_client_id, unique=True, max_length=100, db_index=True)),
                 ('redirect_uris', models.TextField(help_text='Allowed URIs list, space separated', blank=True)),
                 ('client_type', models.CharField(max_length=32, choices=[('confidential', 'Confidential'), ('public', 'Public')])),
@@ -33,7 +44,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='AccessToken',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('id', AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('token', models.CharField(max_length=255, db_index=True)),
                 ('expires', models.DateTimeField()),
                 ('scope', models.TextField(blank=True)),
@@ -48,7 +59,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Grant',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('id', AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('code', models.CharField(max_length=255, db_index=True)),
                 ('expires', models.DateTimeField()),
                 ('redirect_uri', models.CharField(max_length=255)),
@@ -64,7 +75,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='RefreshToken',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('id', AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('token', models.CharField(max_length=255, db_index=True)),
                 ('access_token', models.OneToOneField(related_name='refresh_token', to=oauth2_settings.ACCESS_TOKEN_MODEL, on_delete=models.CASCADE)),
                 ('application', models.ForeignKey(to=oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE)),
