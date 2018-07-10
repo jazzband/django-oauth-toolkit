@@ -270,6 +270,43 @@ class TestOAuth2Validator(TransactionTestCase):
         self.assertEqual(0, RefreshToken.objects.count())
         self.assertEqual(1, AccessToken.objects.count())
 
+    def test_validate_refresh_token__with_valid_access_token__returns_true(self):
+        access_token = AccessToken.objects.create(
+            token="123",
+            user=self.user,
+            expires=timezone.now() + datetime.timedelta(seconds=60),
+            application=self.application
+        )
+        refresh_token = RefreshToken.objects.create(
+            access_token=access_token,
+            token="abc",
+            user=self.user,
+            application=self.application
+        )
+        is_refresh_token_valid = self.validator.validate_refresh_token(
+            refresh_token=refresh_token, client=self.request.client, request=self.request
+        )
+        self.assertTrue(is_refresh_token_valid)
+
+    def test_validate_refresh_token__with_revoked_access_token__returns_false(self):
+        access_token = AccessToken.objects.create(
+            token="123",
+            user=self.user,
+            expires=timezone.now() + datetime.timedelta(seconds=60),
+            application=self.application
+        )
+        refresh_token = RefreshToken.objects.create(
+            access_token=access_token,
+            token="abc",
+            user=self.user,
+            application=self.application
+        )
+        self.validator.revoke_token(token=access_token, token_type_hint="access_token", request=self.request)
+        is_refresh_token_valid = self.validator.validate_refresh_token(
+            refresh_token=refresh_token, client=self.request.client, request=self.request
+        )
+        self.assertFalse(is_refresh_token_valid)
+
 
 class TestOAuth2ValidatorProvidesErrorData(TransactionTestCase):
     """These test cases check that the recommended error codes are returned
