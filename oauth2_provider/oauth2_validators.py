@@ -625,6 +625,14 @@ class OAuth2Validator(RequestValidator):
         if not rt:
             return False
 
+        try:
+            # ensure access token was not revoked and later calls to get_original_scopes
+            # will not raise AccessToken.DoesNotExist.
+            if not rt.access_token_id:
+                AccessToken.objects.get(source_refresh_token_id=rt.id)
+        except AccessToken.DoesNotExist:
+            return False
+
         request.user = rt.user
         request.refresh_token = rt.token
         # Temporary store RefreshToken instance to be reused by get_original_scopes and save_bearer_token.
