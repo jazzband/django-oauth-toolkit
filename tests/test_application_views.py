@@ -100,3 +100,9 @@ class TestApplicationViews(BaseTest):
 
         response = self.client.get(reverse("oauth2_provider:detail", args=(self.app_bar_1.pk,)))
         self.assertEqual(response.status_code, 404)
+
+    def test_application_detail_pk_is_not_digit(self):
+        self.client.login(username="foo_user", password="123456")
+
+        response = self.client.get(reverse("oauth2_provider:detail", args=('abcdef',)))
+        self.assertEqual(response.status_code, 404)
