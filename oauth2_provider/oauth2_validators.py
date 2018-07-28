@@ -332,20 +332,21 @@ class OAuth2Validator(RequestValidator):
             scope = content.get("scope", "")
             expires = make_aware(expires)
 
-            try:
-                access_token = AccessToken.objects.select_related("application", "user").get(token=token)
-            except AccessToken.DoesNotExist:
-                access_token = AccessToken.objects.create(
-                    token=token,
-                    user=user,
-                    application=None,
-                    scope=scope,
-                    expires=expires
-                )
-            else:
-                access_token.expires = expires
-                access_token.scope = scope
-                access_token.save()
+            with transaction.atomic():
+                access_token, _created = AccessToken\
+                    .objects.select_related("application", "user")\
+                    .select_for_update()\
+                    .get_or_create(token=token,
+                                   defaults={
+                                       "user": user,
+                                       "application": None,
+                                       "scope": scope,
+                                       "expires": expires,
+                                   })
+                if not _created:
+                    access_token.scope = scope
+                    access_token.expires = expires
+                    access_token.save()
 
             return access_token
 
