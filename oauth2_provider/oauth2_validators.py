@@ -335,12 +335,12 @@ class OAuth2Validator(RequestValidator):
             access_token, _created = AccessToken\
                 .objects.select_related("application", "user")\
                 .update_or_create(token=token,
-                               defaults={
-                                   "user": user,
-                                   "application": None,
-                                   "scope": scope,
-                                   "expires": expires,
-                               })
+                                  defaults={
+                                      "user": user,
+                                      "application": None,
+                                      "scope": scope,
+                                      "expires": expires,
+                                  })
 
             return access_token
 
@@ -381,7 +381,6 @@ class OAuth2Validator(RequestValidator):
         else:
             self._set_oauth2_error_on_request(request, access_token, scopes)
             return False
-
 
     def validate_code(self, client_id, code, client, request, *args, **kwargs):
         try:
