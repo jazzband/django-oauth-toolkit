@@ -332,20 +332,15 @@ class OAuth2Validator(RequestValidator):
             scope = content.get("scope", "")
             expires = make_aware(expires)
 
-            try:
-                access_token = AccessToken.objects.select_related("application", "user").get(token=token)
-            except AccessToken.DoesNotExist:
-                access_token = AccessToken.objects.create(
-                    token=token,
-                    user=user,
-                    application=None,
-                    scope=scope,
-                    expires=expires
-                )
-            else:
-                access_token.expires = expires
-                access_token.scope = scope
-                access_token.save()
+            access_token, _created = AccessToken\
+                .objects.select_related("application", "user")\
+                .update_or_create(token=token,
+                                  defaults={
+                                      "user": user,
+                                      "application": None,
+                                      "scope": scope,
+                                      "expires": expires,
+                                  })
 
             return access_token
 
@@ -362,27 +357,11 @@ class OAuth2Validator(RequestValidator):
 
         try:
             access_token = AccessToken.objects.select_related("application", "user").get(token=token)
-            # if there is a token but invalid then look up the token
-            if introspection_url and (introspection_token or introspection_credentials):
-                if not access_token.is_valid(scopes):
-                    access_token = self._get_token_from_authentication_server(
-                        token,
-                        introspection_url,
-                        introspection_token,
-                        introspection_credentials
-                    )
-            if access_token and access_token.is_valid(scopes):
-                request.client = access_token.application
-                request.user = access_token.user
-                request.scopes = scopes
-
-                # this is needed by django rest framework
-                request.access_token = access_token
-                return True
-            self._set_oauth2_error_on_request(request, access_token, scopes)
-            return False
         except AccessToken.DoesNotExist:
-            # there is no initial token, look up the token
+            access_token = None
+
+        # if there is no token or it's invalid then introspect the token if there's an external OAuth server
+        if not access_token or not access_token.is_valid(scopes):
             if introspection_url and (introspection_token or introspection_credentials):
                 access_token = self._get_token_from_authentication_server(
                     token,
@@ -390,15 +369,17 @@ class OAuth2Validator(RequestValidator):
                     introspection_token,
                     introspection_credentials
                 )
-                if access_token and access_token.is_valid(scopes):
-                    request.client = access_token.application
-                    request.user = access_token.user
-                    request.scopes = scopes
 
-                    # this is needed by django rest framework
-                    request.access_token = access_token
-                    return True
-            self._set_oauth2_error_on_request(request, None, scopes)
+        if access_token and access_token.is_valid(scopes):
+            request.client = access_token.application
+            request.user = access_token.user
+            request.scopes = scopes
+
+            # this is needed by django rest framework
+            request.access_token = access_token
+            return True
+        else:
+            self._set_oauth2_error_on_request(request, access_token, scopes)
             return False
 
     def validate_code(self, client_id, code, client, request, *args, **kwargs):

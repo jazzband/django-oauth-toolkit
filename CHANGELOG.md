@@ -1,3 +1,7 @@
+### 1.2.x [unrealeased]
+
+* Fix a race condition in creation of AccessToken with external oauth2 server.
+
 ### 1.2.0 [2018-06-03]
 
 * **Compatibility**: Python 3.4 is the new minimum required version.
