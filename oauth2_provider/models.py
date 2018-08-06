@@ -377,7 +377,10 @@ class AbstractRefreshToken(models.Model):
             if not self:
                 return
 
-            access_token_model.objects.get(id=self.access_token_id).revoke()
+            try:
+                access_token_model.objects.get(id=self.access_token_id).revoke()
+            except access_token_model.DoesNotExist:
+                pass
             self.access_token = None
             self.revoked = timezone.now()
             self.save()
