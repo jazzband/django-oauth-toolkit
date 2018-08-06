@@ -151,6 +151,31 @@ class TestRevocationView(BaseTest):
         self.assertIsNotNone(refresh_token.revoked)
         self.assertFalse(AccessToken.objects.filter(id=rtok.access_token.id).exists())
 
+    def test_revoke_refresh_token_with_revoked_access_token(self):
+        tok = AccessToken.objects.create(
+            user=self.test_user, token="1234567890",
+            application=self.application,
+            expires=timezone.now() + datetime.timedelta(days=1),
+            scope="read write"
+        )
+        rtok = RefreshToken.objects.create(
+            user=self.test_user, token="999999999",
+            application=self.application, access_token=tok
+        )
+        for token in (tok.token, rtok.token):
+            query_string = urlencode({
+                "client_id": self.application.client_id,
+                "client_secret": self.application.client_secret,
+                "token": token,
+            })
+            url = "{url}?{qs}".format(url=reverse("oauth2_provider:revoke-token"), qs=query_string)
+            response = self.client.post(url)
+            self.assertEqual(response.status_code, 200)
+
+        self.assertFalse(AccessToken.objects.filter(id=tok.id).exists())
+        refresh_token = RefreshToken.objects.filter(id=rtok.id).first()
+        self.assertIsNotNone(refresh_token.revoked)
+
     def test_revoke_token_with_wrong_hint(self):
         """
         From the revocation rfc, `Section 4.1.2`_ :
