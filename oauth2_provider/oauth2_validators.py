@@ -489,6 +489,12 @@ class OAuth2Validator(RequestValidator):
             else:
                 # revoke existing tokens if possible to allow reuse of grant
                 if isinstance(refresh_token_instance, RefreshToken):
+                    # First, to ensure we don't have concurrency issues, we refresh the refresth token
+                    # from the db while acquiring a lock on it
+                    refresh_token_instance = RefreshToken.objects.select_for_update().get(
+                        id=refresh_token_instance.id
+                    )
+
                     previous_access_token = AccessToken.objects.filter(
                         source_refresh_token=refresh_token_instance
                     ).first()
