@@ -7,6 +7,7 @@ python: "3.6"
 env:
   - TOXENV=py34-django20
   - TOXENV=py36-django20
+  - TOXENV=py36-django21
   - TOXENV=py36-djangomaster
   - TOXENV=docs
   - TOXENV=flake8
