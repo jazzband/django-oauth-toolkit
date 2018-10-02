@@ -4,7 +4,7 @@ from datetime import timedelta
 
 from django.apps import apps
 from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured, ObjectDoesNotExist
 from django.db import models, transaction
 from django.urls import reverse
 from django.utils import timezone
@@ -368,7 +368,10 @@ class AbstractRefreshToken(models.Model):
             if not self:
                 return
 
-            access_token_model.objects.get(id=self.access_token_id).revoke()
+            try:
+                access_token_model.objects.get(id=self.access_token_id).revoke()
+            except ObjectDoesNotExist:
+                pass
             self.access_token = None
             self.revoked = timezone.now()
             self.save()
