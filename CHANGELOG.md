@@ -1,3 +1,8 @@
+### 1.1.3 [2018-10-12]
+
+* Fix a concurrency issue with Refresh Tokens (#638)
+* Fix Refresh Token revocation when the Access Token does not exist (#625)
+
 ### 1.1.2 [2018-05-12]
 
 * Return state with Authorization Denied error (RFC6749 section 4.1.2.1)
