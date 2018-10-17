@@ -48,6 +48,15 @@ Be aware that, when you intend to swap the application model, you should create 
 migration defining the swapped application model prior to setting OAUTH2_PROVIDER_APPLICATION_MODEL.
 You'll run into models.E022 in Core system checks if you don't get the order right.
 
+You can force your migration providing the custom model to run in the right order by
+adding::
+
+    run_before = [
+        ('oauth2_provider', '0001_initial'),
+    ]
+
+to the migration class.
+
 That's all, now Django OAuth Toolkit will use your model wherever an Application instance is needed.
 
     **Notice:** `OAUTH2_PROVIDER_APPLICATION_MODEL` is the only setting variable that is not namespaced, this
