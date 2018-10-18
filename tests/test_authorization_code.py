@@ -1148,7 +1148,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
-        self.assertIn("error=invalid_request", response['Location'])
+        self.assertIn("error=invalid_request", response["Location"])
 
     def test_public_pkce_invalid_code_challenge_length_min(self):
         """
@@ -1176,7 +1176,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
-        self.assertIn("error=invalid_request", response['Location'])
+        self.assertIn("error=invalid_request", response["Location"])
 
     def test_public_pkce_invalid_code_challenge_length_max(self):
         """
@@ -1204,7 +1204,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
-        self.assertIn("error=invalid_request", response['Location'])
+        self.assertIn("error=invalid_request", response["Location"])
 
     def test_public_pkce_missing_code_challenge(self):
         """
@@ -1230,7 +1230,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
-        self.assertIn("error=invalid_request", response['Location'])
+        self.assertIn("error=invalid_request", response["Location"])
 
     def test_public_pkce_missing_code_challenge_method(self):
         """
@@ -1256,7 +1256,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
-        self.assertIn("error=invalid_request", response['Location'])
+        self.assertIn("error=invalid_request", response["Location"])
 
     def test_public_pkce_S256_invalid_code_verifier(self):
         """
