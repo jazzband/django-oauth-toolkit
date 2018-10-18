@@ -1134,7 +1134,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         self.application.save()
         code_verifier, code_challenge = self.generate_pkce_codes("invalid")
 
-        query_string = {
+        query_string = urlencode({
             "client_id": self.application.client_id,
             "state": "random_state_string",
             "scope": "read write",
@@ -1143,11 +1143,12 @@ class TestAuthorizationCodeTokenView(BaseTest):
             "allow": True,
             "code_challenge": code_challenge,
             "code_challenge_method": "invalid",
-        }
+        })
         url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
 
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("error=invalid_request", response['Location'])
 
     def test_public_pkce_invalid_code_challenge_length_min(self):
         """
