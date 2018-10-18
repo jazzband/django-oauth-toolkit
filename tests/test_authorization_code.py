@@ -1013,7 +1013,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
     def test_public_pkce_S256(self):
         """
         Request an access token using client_type: public
-        and PKCE enabled
+        and PKCE enabled with the S256 algorithm
         """
         self.client.login(username="test_user", password="123456")
 
@@ -1041,7 +1041,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
     def test_public_pkce_plain(self):
         """
         Request an access token using client_type: public
-        and PKCE enabled
+        and PKCE enabled with the plain algorithm
         """
         self.client.login(username="test_user", password="123456")
 
@@ -1069,7 +1069,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
     def test_public_pkce_invalid_algorithm(self):
         """
         Request an access token using client_type: public
-        and PKCE enabled
+        and PKCE enabled with an invalid algorithm
         """
         self.client.login(username="test_user", password="123456")
 
@@ -1095,7 +1095,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
     def test_public_pkce_S256_invalid_code_verifier(self):
         """
         Request an access token using client_type: public
-        and PKCE enabled
+        and PKCE enabled with the S256 algorithm and an invalid code_verifier
         """
         self.client.login(username="test_user", password="123456")
 
@@ -1118,7 +1118,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
     def test_public_pkce_plain_invalid_code_verifier(self):
         """
         Request an access token using client_type: public
-        and PKCE enabled
+        and PKCE enabled with the plain algorithm and an invalid code_verifier
         """
         self.client.login(username="test_user", password="123456")
 
@@ -1141,7 +1141,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
     def test_public_pkce_S256_missing_code_verifier(self):
         """
         Request an access token using client_type: public
-        and PKCE enabled
+        and PKCE enabled with the S256 algorithm and the code_verifier missing
         """
         self.client.login(username="test_user", password="123456")
 
@@ -1163,7 +1163,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
     def test_public_pkce_plain_missing_code_verifier(self):
         """
         Request an access token using client_type: public
-        and PKCE enabled
+        and PKCE enabled with the plain algorithm and the code_verifier missing
         """
         self.client.login(username="test_user", password="123456")
 
