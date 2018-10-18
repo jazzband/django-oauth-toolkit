@@ -1,8 +1,10 @@
 import base64
+import hashlib
 import datetime
 import json
 from urllib.parse import parse_qs, urlencode, urlparse
 
+from django.utils.crypto import get_random_string
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
@@ -537,6 +539,38 @@ class TestAuthorizationCodeTokenView(BaseTest):
         query_dict = parse_qs(urlparse(response["Location"]).query)
         return query_dict["code"].pop()
 
+    def generate_pkce_codes(self, algorithm):
+        """
+        Helper method to generate pkce codes
+        """
+        code_verifier = get_random_string(32)
+        if algorithm == 'S256':
+            code_challenge = base64.urlsafe_b64encode(
+                hashlib.sha256(code_verifier.encode('utf-8')).hexdigest().encode('utf-8')
+            ).decode('utf-8').replace('=', '')
+        else:
+            code_challenge = code_verifier
+        return code_verifier, code_challenge
+
+    def get_pkce_auth(self, code_challenge, code_challenge_method):
+        """
+        Helper method to retrieve a valid authorization code using pkce
+        """
+        authcode_data = {
+            "client_id": self.application.client_id,
+            "state": "random_state_string",
+            "scope": "read write",
+            "redirect_uri": "http://example.org",
+            "response_type": "code",
+            "allow": True,
+            "code_challenge": code_challenge,
+            "code_challenge_method": code_challenge_method,
+        }
+
+        response = self.client.post(reverse("oauth2_provider:authorize"), data=authcode_data)
+        query_dict = parse_qs(urlparse(response["Location"]).query)
+        return query_dict["code"].pop()
+
     def test_basic_auth(self):
         """
         Request an access token using basic authentication for client authentication
@@ -975,6 +1009,178 @@ class TestAuthorizationCodeTokenView(BaseTest):
         self.assertEqual(content["token_type"], "Bearer")
         self.assertEqual(content["scope"], "read write")
         self.assertEqual(content["expires_in"], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
+
+    def test_public_pkce_S256(self):
+        """
+        Request an access token using client_type: public
+        and PKCE enabled
+        """
+        self.client.login(username="test_user", password="123456")
+
+        self.application.client_type = Application.CLIENT_PUBLIC
+        self.application.save()
+        code_verifier, code_challenge = self.generate_pkce_codes('S256')
+        authorization_code = self.get_pkce_auth(code_challenge, 'S256')
+        print(code_verifier, code_challenge)
+        token_request_data = {
+            "grant_type": "authorization_code",
+            "code": authorization_code,
+            "redirect_uri": "http://example.org",
+            "client_id": self.application.client_id,
+            "code_verifier": code_verifier
+        }
+
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data)
+        self.assertEqual(response.status_code, 200)
+
+        content = json.loads(response.content.decode("utf-8"))
+        self.assertEqual(content["token_type"], "Bearer")
+        self.assertEqual(content["scope"], "read write")
+        self.assertEqual(content["expires_in"], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
+
+    def test_public_pkce_plain(self):
+        """
+        Request an access token using client_type: public
+        and PKCE enabled
+        """
+        self.client.login(username="test_user", password="123456")
+
+        self.application.client_type = Application.CLIENT_PUBLIC
+        self.application.save()
+        code_verifier, code_challenge = self.generate_pkce_codes('plain')
+        authorization_code = self.get_pkce_auth(code_challenge, 'plain')
+
+        token_request_data = {
+            "grant_type": "authorization_code",
+            "code": authorization_code,
+            "redirect_uri": "http://example.org",
+            "client_id": self.application.client_id,
+            "code_verifier": code_verifier
+        }
+
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data)
+        self.assertEqual(response.status_code, 200)
+
+        content = json.loads(response.content.decode("utf-8"))
+        self.assertEqual(content["token_type"], "Bearer")
+        self.assertEqual(content["scope"], "read write")
+        self.assertEqual(content["expires_in"], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
+
+    def test_public_pkce_invalid_algorithm(self):
+        """
+        Request an access token using client_type: public
+        and PKCE enabled
+        """
+        self.client.login(username="test_user", password="123456")
+
+        self.application.client_type = Application.CLIENT_PUBLIC
+        self.application.save()
+        code_verifier, code_challenge = self.generate_pkce_codes('invalid')
+
+        query_string = {
+            "client_id": self.application.client_id,
+            "state": "random_state_string",
+            "scope": "read write",
+            "redirect_uri": "http://example.org",
+            "response_type": "code",
+            "allow": True,
+            "code_challenge": code_challenge,
+            "code_challenge_method": 'invalid',
+        }
+        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 400)
+
+    def test_public_pkce_S256_invalid_code_verifier(self):
+        """
+        Request an access token using client_type: public
+        and PKCE enabled
+        """
+        self.client.login(username="test_user", password="123456")
+
+        self.application.client_type = Application.CLIENT_PUBLIC
+        self.application.save()
+        code_verifier, code_challenge = self.generate_pkce_codes('S256')
+        authorization_code = self.get_pkce_auth(code_challenge, 'S256')
+
+        token_request_data = {
+            "grant_type": "authorization_code",
+            "code": authorization_code,
+            "redirect_uri": "http://example.org",
+            "client_id": self.application.client_id,
+            "code_verifier": 'invalid'
+        }
+
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data)
+        self.assertEqual(response.status_code, 401)
+
+    def test_public_pkce_plain_invalid_code_verifier(self):
+        """
+        Request an access token using client_type: public
+        and PKCE enabled
+        """
+        self.client.login(username="test_user", password="123456")
+
+        self.application.client_type = Application.CLIENT_PUBLIC
+        self.application.save()
+        code_verifier, code_challenge = self.generate_pkce_codes('plain')
+        authorization_code = self.get_pkce_auth(code_challenge, 'plain')
+
+        token_request_data = {
+            "grant_type": "authorization_code",
+            "code": authorization_code,
+            "redirect_uri": "http://example.org",
+            "client_id": self.application.client_id,
+            "code_verifier": 'invalid'
+        }
+
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data)
+        self.assertEqual(response.status_code, 401)
+
+    def test_public_pkce_S256_missing_code_verifier(self):
+        """
+        Request an access token using client_type: public
+        and PKCE enabled
+        """
+        self.client.login(username="test_user", password="123456")
+
+        self.application.client_type = Application.CLIENT_PUBLIC
+        self.application.save()
+        code_verifier, code_challenge = self.generate_pkce_codes('S256')
+        authorization_code = self.get_pkce_auth(code_challenge, 'S256')
+
+        token_request_data = {
+            "grant_type": "authorization_code",
+            "code": authorization_code,
+            "redirect_uri": "http://example.org",
+            "client_id": self.application.client_id
+        }
+
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data)
+        self.assertEqual(response.status_code, 401)
+
+    def test_public_pkce_plain_missing_code_verifier(self):
+        """
+        Request an access token using client_type: public
+        and PKCE enabled
+        """
+        self.client.login(username="test_user", password="123456")
+
+        self.application.client_type = Application.CLIENT_PUBLIC
+        self.application.save()
+        code_verifier, code_challenge = self.generate_pkce_codes('plain')
+        authorization_code = self.get_pkce_auth(code_challenge, 'plain')
+
+        token_request_data = {
+            "grant_type": "authorization_code",
+            "code": authorization_code,
+            "redirect_uri": "http://example.org",
+            "client_id": self.application.client_id
+        }
+
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data)
+        self.assertEqual(response.status_code, 401)
 
     def test_malicious_redirect_uri(self):
         """

@@ -1,4 +1,6 @@
+import hashlib
 from datetime import timedelta
+from base64 import urlsafe_b64encode
 from urllib.parse import parse_qsl, urlparse
 
 from django.apps import apps
@@ -199,7 +201,16 @@ class AbstractGrant(models.Model):
                       :data:`settings.AUTHORIZATION_CODE_EXPIRE_SECONDS`
     * :attr:`redirect_uri` Self explained
     * :attr:`scope` Required scopes, optional
+    * :attr:`code_challenge` PKCE code challenge
+    * :attr:`code_challenge_method` PKCE code challenge transform algorithm
     """
+    CODE_CHALLENGE_PLAIN = 'plain'
+    CODE_CHALLENGE_S256 = 'S256'
+    CODE_CHALLENGE_METHODS = (
+        (CODE_CHALLENGE_PLAIN, 'plain'),
+        (CODE_CHALLENGE_S256, 'S256')
+    )
+
     id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
@@ -216,6 +227,10 @@ class AbstractGrant(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
+    code_challenge = models.CharField(max_length=128, blank=True, null=True)
+    code_challenge_method = models.CharField(
+        max_length=10, blank=True, null=True, choices=CODE_CHALLENGE_METHODS)
+
     def is_expired(self):
         """
         Check token expiration with timezone awareness
@@ -227,6 +242,28 @@ class AbstractGrant(models.Model):
 
     def redirect_uri_allowed(self, uri):
         return uri == self.redirect_uri
+
+    def verify_code_challenge(self, code_verifier):
+        """
+        Takes a code_verifier and validates it against
+        the saved code_challenge
+        """
+        # Do not validate if no code challenge was set
+        if not self.code_challenge:
+            return True
+
+        # If the grant has a code_challenge, but no code_verifier was submitted, the request is invalid
+        if not code_verifier:
+            return False
+
+        if self.code_challenge_method == self.CODE_CHALLENGE_S256:
+            new_code_challenge = urlsafe_b64encode(
+                hashlib.sha256(code_verifier.encode('utf-8')).hexdigest().encode('utf-8')
+            ).decode('utf-8').replace('=', '')
+        else:
+            new_code_challenge = code_verifier
+
+        return self.code_challenge == new_code_challenge
 
     def __str__(self):
         return self.code
