@@ -385,7 +385,7 @@ class OAuth2Validator(RequestValidator):
     def validate_code(self, client_id, code, client, request, *args, **kwargs):
         try:
             grant = Grant.objects.get(code=code, application=client)
-            code_verifier = request.extra_credentials['code_verifier']
+            code_verifier = request.extra_credentials["code_verifier"]
             if client.client_type == Application.CLIENT_PUBLIC and not grant.verify_code_challenge(
                     code_verifier):
                 # Code verifier does not match the one sent during the authorize call

@@ -1,14 +1,14 @@
 import base64
-import hashlib
 import datetime
+import hashlib
 import json
 from urllib.parse import parse_qs, urlencode, urlparse
 
-from django.utils.crypto import get_random_string
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.crypto import get_random_string
 from oauthlib.oauth2.rfc6749 import errors as oauthlib_errors
 
 from oauth2_provider.models import (
@@ -544,10 +544,10 @@ class TestAuthorizationCodeTokenView(BaseTest):
         Helper method to generate pkce codes
         """
         code_verifier = get_random_string(32)
-        if algorithm == 'S256':
+        if algorithm == "S256":
             code_challenge = base64.urlsafe_b64encode(
-                hashlib.sha256(code_verifier.encode('utf-8')).hexdigest().encode('utf-8')
-            ).decode('utf-8').replace('=', '')
+                hashlib.sha256(code_verifier.encode("utf-8")).hexdigest().encode("utf-8")
+            ).decode("utf-8").replace("=", "")
         else:
             code_challenge = code_verifier
         return code_verifier, code_challenge
@@ -1019,8 +1019,8 @@ class TestAuthorizationCodeTokenView(BaseTest):
 
         self.application.client_type = Application.CLIENT_PUBLIC
         self.application.save()
-        code_verifier, code_challenge = self.generate_pkce_codes('S256')
-        authorization_code = self.get_pkce_auth(code_challenge, 'S256')
+        code_verifier, code_challenge = self.generate_pkce_codes("S256")
+        authorization_code = self.get_pkce_auth(code_challenge, "S256")
         print(code_verifier, code_challenge)
         token_request_data = {
             "grant_type": "authorization_code",
@@ -1047,8 +1047,8 @@ class TestAuthorizationCodeTokenView(BaseTest):
 
         self.application.client_type = Application.CLIENT_PUBLIC
         self.application.save()
-        code_verifier, code_challenge = self.generate_pkce_codes('plain')
-        authorization_code = self.get_pkce_auth(code_challenge, 'plain')
+        code_verifier, code_challenge = self.generate_pkce_codes("plain")
+        authorization_code = self.get_pkce_auth(code_challenge, "plain")
 
         token_request_data = {
             "grant_type": "authorization_code",
@@ -1075,7 +1075,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
 
         self.application.client_type = Application.CLIENT_PUBLIC
         self.application.save()
-        code_verifier, code_challenge = self.generate_pkce_codes('invalid')
+        code_verifier, code_challenge = self.generate_pkce_codes("invalid")
 
         query_string = {
             "client_id": self.application.client_id,
@@ -1085,7 +1085,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             "response_type": "code",
             "allow": True,
             "code_challenge": code_challenge,
-            "code_challenge_method": 'invalid',
+            "code_challenge_method": "invalid",
         }
         url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
 
@@ -1101,15 +1101,15 @@ class TestAuthorizationCodeTokenView(BaseTest):
 
         self.application.client_type = Application.CLIENT_PUBLIC
         self.application.save()
-        code_verifier, code_challenge = self.generate_pkce_codes('S256')
-        authorization_code = self.get_pkce_auth(code_challenge, 'S256')
+        code_verifier, code_challenge = self.generate_pkce_codes("S256")
+        authorization_code = self.get_pkce_auth(code_challenge, "S256")
 
         token_request_data = {
             "grant_type": "authorization_code",
             "code": authorization_code,
             "redirect_uri": "http://example.org",
             "client_id": self.application.client_id,
-            "code_verifier": 'invalid'
+            "code_verifier": "invalid"
         }
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data)
@@ -1124,15 +1124,15 @@ class TestAuthorizationCodeTokenView(BaseTest):
 
         self.application.client_type = Application.CLIENT_PUBLIC
         self.application.save()
-        code_verifier, code_challenge = self.generate_pkce_codes('plain')
-        authorization_code = self.get_pkce_auth(code_challenge, 'plain')
+        code_verifier, code_challenge = self.generate_pkce_codes("plain")
+        authorization_code = self.get_pkce_auth(code_challenge, "plain")
 
         token_request_data = {
             "grant_type": "authorization_code",
             "code": authorization_code,
             "redirect_uri": "http://example.org",
             "client_id": self.application.client_id,
-            "code_verifier": 'invalid'
+            "code_verifier": "invalid"
         }
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data)
@@ -1147,8 +1147,8 @@ class TestAuthorizationCodeTokenView(BaseTest):
 
         self.application.client_type = Application.CLIENT_PUBLIC
         self.application.save()
-        code_verifier, code_challenge = self.generate_pkce_codes('S256')
-        authorization_code = self.get_pkce_auth(code_challenge, 'S256')
+        code_verifier, code_challenge = self.generate_pkce_codes("S256")
+        authorization_code = self.get_pkce_auth(code_challenge, "S256")
 
         token_request_data = {
             "grant_type": "authorization_code",
@@ -1169,8 +1169,8 @@ class TestAuthorizationCodeTokenView(BaseTest):
 
         self.application.client_type = Application.CLIENT_PUBLIC
         self.application.save()
-        code_verifier, code_challenge = self.generate_pkce_codes('plain')
-        authorization_code = self.get_pkce_auth(code_challenge, 'plain')
+        code_verifier, code_challenge = self.generate_pkce_codes("plain")
+        authorization_code = self.get_pkce_auth(code_challenge, "plain")
 
         token_request_data = {
             "grant_type": "authorization_code",

@@ -1,6 +1,6 @@
 import hashlib
-from datetime import timedelta
 from base64 import urlsafe_b64encode
+from datetime import timedelta
 from urllib.parse import parse_qsl, urlparse
 
 from django.apps import apps
@@ -204,11 +204,11 @@ class AbstractGrant(models.Model):
     * :attr:`code_challenge` PKCE code challenge
     * :attr:`code_challenge_method` PKCE code challenge transform algorithm
     """
-    CODE_CHALLENGE_PLAIN = 'plain'
-    CODE_CHALLENGE_S256 = 'S256'
+    CODE_CHALLENGE_PLAIN = "plain"
+    CODE_CHALLENGE_S256 = "S256"
     CODE_CHALLENGE_METHODS = (
-        (CODE_CHALLENGE_PLAIN, 'plain'),
-        (CODE_CHALLENGE_S256, 'S256')
+        (CODE_CHALLENGE_PLAIN, "plain"),
+        (CODE_CHALLENGE_S256, "S256")
     )
 
     id = models.BigAutoField(primary_key=True)
@@ -258,8 +258,8 @@ class AbstractGrant(models.Model):
 
         if self.code_challenge_method == self.CODE_CHALLENGE_S256:
             new_code_challenge = urlsafe_b64encode(
-                hashlib.sha256(code_verifier.encode('utf-8')).hexdigest().encode('utf-8')
-            ).decode('utf-8').replace('=', '')
+                hashlib.sha256(code_verifier.encode("utf-8")).hexdigest().encode("utf-8")
+            ).decode("utf-8").replace("=", "")
         else:
             new_code_challenge = code_verifier
 

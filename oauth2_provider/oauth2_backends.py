@@ -1,13 +1,13 @@
 import json
 from urllib.parse import urlparse, urlunparse
 
-from django.http import HttpRequest
 from oauthlib import oauth2
 from oauthlib.common import quote, urlencode, urlencoded
 
 from .exceptions import FatalClientError, OAuthToolkitError
-from .settings import oauth2_settings
 from .models import get_grant_model
+from .settings import oauth2_settings
+
 
 Grant = get_grant_model()
 
@@ -45,7 +45,7 @@ class OAuthLibCore(object):
         """
         # Since oauthlib does not support PKCE yet, add the credential here
         extra_credentials = {
-            'code_verifier': request.POST.get('code_verifier', None)
+            "code_verifier": request.POST.get("code_verifier", None)
         }
         return extra_credentials
 
@@ -137,8 +137,8 @@ class OAuthLibCore(object):
             code_challenge, code_challenge_method = self._validate_code_challenge_and_method(
                 request, credentials)
 
-            credentials['code_challenge'] = code_challenge
-            credentials['code_challenge_method'] = code_challenge_method
+            credentials["code_challenge"] = code_challenge
+            credentials["code_challenge_method"] = code_challenge_method
 
             return scopes, credentials
         except oauth2.FatalClientError as error:
