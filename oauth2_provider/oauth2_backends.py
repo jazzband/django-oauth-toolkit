@@ -45,7 +45,7 @@ class OAuthLibCore(object):
         """
         # Since oauthlib does not support PKCE yet, add the credential here
         extra_credentials = {
-            "code_verifier": request.POST.get("code_verifier", None)
+            "code_verifier": request.POST.get("code_verifier", "")
         }
         return extra_credentials
 
@@ -71,8 +71,8 @@ class OAuthLibCore(object):
         :param request: The current django.http.HttpRequest object
         :return: The tuple (code_challenge, code_challenge_method)
         """
-        code_challenge = request.GET.get("code_challenge", None)
-        code_challenge_method = request.GET.get("code_challenge_method", None)
+        code_challenge = request.GET.get("code_challenge", "")
+        code_challenge_method = request.GET.get("code_challenge_method", "")
 
         check = [code_challenge, code_challenge_method]
         error = oauth2.InvalidRequestError()

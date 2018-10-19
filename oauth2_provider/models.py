@@ -227,9 +227,9 @@ class AbstractGrant(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
-    code_challenge = models.CharField(max_length=128, blank=True, null=True)
+    code_challenge = models.CharField(max_length=128, blank=True, default="")
     code_challenge_method = models.CharField(
-        max_length=10, blank=True, null=True, choices=CODE_CHALLENGE_METHODS)
+        max_length=10, blank=True, default="", choices=CODE_CHALLENGE_METHODS)
 
     def is_expired(self):
         """
