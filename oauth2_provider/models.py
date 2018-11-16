@@ -259,8 +259,8 @@ class AbstractAccessToken(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True,
         related_name="%(app_label)s_%(class)s"
     )
-    source_refresh_token = models.OneToOneField(
-        # unique=True implied by the OneToOneField
+    source_refresh_token = models.ForeignKey(
+        # Since NULL is allowed,  uniqueness cannot be required.
         oauth2_settings.REFRESH_TOKEN_MODEL, on_delete=models.SET_NULL, blank=True, null=True,
         related_name="refreshed_access_token"
     )
@@ -355,7 +355,7 @@ class AbstractRefreshToken(models.Model):
     token = models.CharField(max_length=255)
     application = models.ForeignKey(
         oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE)
-    access_token = models.OneToOneField(
+    access_token = models.ForeignKey(
         oauth2_settings.ACCESS_TOKEN_MODEL, on_delete=models.SET_NULL, blank=True, null=True,
         related_name="refresh_token"
     )
