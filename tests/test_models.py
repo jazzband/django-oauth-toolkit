@@ -13,7 +13,6 @@ from oauth2_provider.models import (
 )
 from oauth2_provider.settings import oauth2_settings
 
-
 Application = get_application_model()
 Grant = get_grant_model()
 AccessToken = get_access_token_model()
@@ -335,7 +334,6 @@ class TestClearExpired(TestCase):
         assert result == 'ImproperlyConfigured'
 
     def test_clear_expired_tokens_with_tokens(self):
-
         self.client.login(username="test_user", password="123456")
         oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS = 1
         ttokens = AccessToken.objects.count()
