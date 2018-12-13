@@ -13,6 +13,7 @@ from oauth2_provider.models import (
 )
 from oauth2_provider.settings import oauth2_settings
 
+
 Application = get_application_model()
 Grant = get_grant_model()
 AccessToken = get_access_token_model()
