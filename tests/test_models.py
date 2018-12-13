@@ -344,5 +344,4 @@ class TestClearExpired(TestCase):
         assert expiredt == 2
         clear_expired()
         expiredt = AccessToken.objects.filter(expires__lte=dt.now()).count()
-
         assert expiredt == 0
