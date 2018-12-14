@@ -311,7 +311,8 @@ class TestClearExpired(TestCase):
             user_id=1,
             created=dt.now(),
             updated=dt.now(),
-            source_refresh_token_id='0')
+            source_refresh_token_id='0',
+            )
         AccessToken.objects.create(
             id=2,
             token='666',
@@ -321,7 +322,8 @@ class TestClearExpired(TestCase):
             user_id=1,
             created=dt.now(),
             updated=dt.now(),
-            source_refresh_token_id='1')
+            source_refresh_token_id='1',
+            )
 
     def test_clear_expired_tokens(self):
         oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS = 60
@@ -336,7 +338,7 @@ class TestClearExpired(TestCase):
 
     def test_clear_expired_tokens_with_tokens(self):
         self.client.login(username="test_user", password="123456")
-        oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS = 1
+        oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS = 0
         ttokens = AccessToken.objects.count()
         expiredt = AccessToken.objects.filter(expires__lte=dt.now()).count()
         assert ttokens == 2
