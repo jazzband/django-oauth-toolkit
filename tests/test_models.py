@@ -301,7 +301,7 @@ class TestClearExpired(TestCase):
 
     def setUp(self):
         self.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
-        """Insert two tokens on database."""
+        # Insert two tokens on database.
         AccessToken.objects.create(
             id=1,
             token='555',
