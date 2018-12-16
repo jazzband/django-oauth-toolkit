@@ -97,6 +97,8 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             "client_id": self.oauth2_data.get("client_id", None),
             "state": self.oauth2_data.get("state", None),
             "response_type": self.oauth2_data.get("response_type", None),
+            "code_challenge": self.oauth2_data.get("code_challenge", None),
+            "code_challenge_method": self.oauth2_data.get("code_challenge_method", None),
         }
         return initial_data
 
@@ -108,6 +110,8 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             "redirect_uri": form.cleaned_data.get("redirect_uri"),
             "response_type": form.cleaned_data.get("response_type", None),
             "state": form.cleaned_data.get("state", None),
+            "code_challenge": form.cleaned_data.get("code_challenge", None),
+            "code_challenge_method": form.cleaned_data.get("code_challenge_method", None),
         }
         scopes = form.cleaned_data.get("scope")
         allow = form.cleaned_data.get("allow")
@@ -143,6 +147,8 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         kwargs["redirect_uri"] = credentials["redirect_uri"]
         kwargs["response_type"] = credentials["response_type"]
         kwargs["state"] = credentials["state"]
+        kwargs["code_challenge"] = credentials["code_challenge"]
+        kwargs["code_challenge_method"] = credentials["code_challenge_method"]
 
         self.oauth2_data = kwargs
         # following two loc are here only because of https://code.djangoproject.com/ticket/17795
