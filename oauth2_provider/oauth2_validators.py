@@ -385,11 +385,6 @@ class OAuth2Validator(RequestValidator):
     def validate_code(self, client_id, code, client, request, *args, **kwargs):
         try:
             grant = Grant.objects.get(code=code, application=client)
-            code_verifier = request.extra_credentials["code_verifier"]
-            if client.client_type == Application.CLIENT_PUBLIC and not grant.verify_code_challenge(
-                    code_verifier):
-                # Code verifier does not match the one sent during the authorize call
-                return False
             if not grant.is_expired():
                 request.scopes = grant.scope.split(" ")
                 request.user = grant.user
@@ -432,6 +427,25 @@ class OAuth2Validator(RequestValidator):
     def validate_redirect_uri(self, client_id, redirect_uri, request, *args, **kwargs):
         return request.client.redirect_uri_allowed(redirect_uri)
 
+    def is_pkce_required(self, client_id, request):
+        """
+        Enables or disables PKCE verification.
+
+        Uses the setting PKCE_REQUIRED, which can be either a bool or a callable that
+        receives the client id and returns a bool.
+        """
+        if callable(oauth2_settings.PKCE_REQUIRED):
+            return oauth2_settings.PKCE_REQUIRED(client_id)
+        return oauth2_settings.PKCE_REQUIRED
+
+    def get_code_challenge(self, code, request):
+        grant = Grant.objects.get(code=code, application=request.client)
+        return grant.code_challenge or None
+
+    def get_code_challenge_method(self, code, request):
+        grant = Grant.objects.get(code=code, application=request.client)
+        return grant.code_challenge_method or None
+
     def save_authorization_code(self, client_id, code, request, *args, **kwargs):
         expires = timezone.now() + timedelta(
             seconds=oauth2_settings.AUTHORIZATION_CODE_EXPIRE_SECONDS)
@@ -442,8 +456,8 @@ class OAuth2Validator(RequestValidator):
             expires=expires,
             redirect_uri=request.redirect_uri,
             scope=" ".join(request.scopes),
-            code_challenge=request.code_challenge,
-            code_challenge_method=request.code_challenge_method
+            code_challenge=request.code_challenge or "",
+            code_challenge_method=request.code_challenge_method or ""
         )
         g.save()
 

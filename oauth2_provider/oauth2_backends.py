@@ -5,11 +5,7 @@ from oauthlib import oauth2
 from oauthlib.common import quote, urlencode, urlencoded
 
 from .exceptions import FatalClientError, OAuthToolkitError
-from .models import get_grant_model
 from .settings import oauth2_settings
-
-
-Grant = get_grant_model()
 
 
 class OAuthLibCore(object):
@@ -43,11 +39,7 @@ class OAuthLibCore(object):
         :param request: The current django.http.HttpRequest object
         :return: dictionary of extra credentials or None (default)
         """
-        # Since oauthlib does not support PKCE yet, add the credential here
-        extra_credentials = {
-            "code_verifier": request.POST.get("code_verifier", "")
-        }
-        return extra_credentials
+        return None
 
     def _extract_params(self, request):
         """
@@ -60,44 +52,6 @@ class OAuthLibCore(object):
         headers = self.extract_headers(request)
         body = urlencode(self.extract_body(request))
         return uri, http_method, body, headers
-
-    def _validate_code_challenge_and_method(self, request, credentials):
-        """
-        Extract and validate the code_challenge and code_challenge_method.
-        These values will then be added to the credentials from validate_authorization_request
-
-        :param credentials: dictionary of credentials returned from
-                            server.validate_authorization_request
-        :param request: The current django.http.HttpRequest object
-        :return: The tuple (code_challenge, code_challenge_method)
-        """
-        code_challenge = request.GET.get("code_challenge", "")
-        code_challenge_method = request.GET.get("code_challenge_method", "")
-
-        check = [code_challenge, code_challenge_method]
-        error = oauth2.InvalidRequestError()
-        error.redirect_uri = credentials["redirect_uri"]
-
-        if not any(check):
-            # If none are set, return them
-            return code_challenge, code_challenge_method
-        elif not all(check):
-            """
-            If code_challenge or code_challenge_method is defined, but not the other,
-            raise an error per spec
-            """
-            error.description = "PKCE requires both `code_challenge` and `code_challenge_method` to be set"
-            raise error
-        if 43 > len(code_challenge) or len(code_challenge) > 128:
-            # If the code_challenge length does not meet spec
-            error.description = "invalid code_challenge length"
-            raise error
-        if code_challenge_method not in map(lambda x: x[0], Grant.CODE_CHALLENGE_METHODS):
-            # Validate transform algorithm
-            error.description = "transform algorithm not supported"
-            raise error
-
-        return code_challenge, code_challenge_method
 
     def extract_headers(self, request):
         """
@@ -133,12 +87,6 @@ class OAuthLibCore(object):
             uri, http_method, body, headers = self._extract_params(request)
             scopes, credentials = self.server.validate_authorization_request(
                 uri, http_method=http_method, body=body, headers=headers)
-
-            code_challenge, code_challenge_method = self._validate_code_challenge_and_method(
-                request, credentials)
-
-            credentials["code_challenge"] = code_challenge
-            credentials["code_challenge_method"] = code_challenge_method
 
             return scopes, credentials
         except oauth2.FatalClientError as error:
