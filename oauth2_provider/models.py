@@ -1,5 +1,3 @@
-import hashlib
-from base64 import urlsafe_b64encode
 from datetime import timedelta
 from urllib.parse import parse_qsl, urlparse
 
