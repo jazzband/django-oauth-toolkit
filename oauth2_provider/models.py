@@ -243,28 +243,6 @@ class AbstractGrant(models.Model):
     def redirect_uri_allowed(self, uri):
         return uri == self.redirect_uri
 
-    def verify_code_challenge(self, code_verifier):
-        """
-        Takes a code_verifier and validates it against
-        the saved code_challenge
-        """
-        # Do not validate if no code challenge was set
-        if not self.code_challenge:
-            return True
-
-        # If the grant has a code_challenge, but no code_verifier was submitted, the request is invalid
-        if not code_verifier:
-            return False
-
-        if self.code_challenge_method == self.CODE_CHALLENGE_S256:
-            new_code_challenge = urlsafe_b64encode(
-                hashlib.sha256(code_verifier.encode("utf-8")).hexdigest().encode("utf-8")
-            ).decode("utf-8").replace("=", "")
-        else:
-            new_code_challenge = code_verifier
-
-        return self.code_challenge == new_code_challenge
-
     def __str__(self):
         return self.code
 
