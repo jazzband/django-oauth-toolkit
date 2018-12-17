@@ -304,25 +304,25 @@ class TestClearExpired(TestCase):
         # Insert two tokens on database.
         AccessToken.objects.create(
             id=1,
-            token='555',
+            token="555",
             expires=dt.now(),
             scope=2,
             application_id=3,
             user_id=1,
             created=dt.now(),
             updated=dt.now(),
-            source_refresh_token_id='0',
+            source_refresh_token_id="0",
             )
         AccessToken.objects.create(
             id=2,
-            token='666',
+            token="666",
             expires=dt.now(),
             scope=2,
             application_id=3,
             user_id=1,
             created=dt.now(),
             updated=dt.now(),
-            source_refresh_token_id='1',
+            source_refresh_token_id="1",
             )
 
     def test_clear_expired_tokens(self):
@@ -330,11 +330,11 @@ class TestClearExpired(TestCase):
         assert clear_expired() is None
 
     def test_clear_expired_tokens_incorect_timetype(self):
-        oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS = 'A'
+        oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS = "A"
         with pytest.raises(ImproperlyConfigured) as excinfo:
             clear_expired()
         result = excinfo.value.__class__.__name__
-        assert result == 'ImproperlyConfigured'
+        assert result == "ImproperlyConfigured"
 
     def test_clear_expired_tokens_with_tokens(self):
         self.client.login(username="test_user", password="123456")
