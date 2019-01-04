@@ -636,6 +636,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             "refresh_token": content["refresh_token"],
             "scope": content["scope"],
         }
+        refresh_token = content["refresh_token"]
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
 
@@ -643,12 +644,15 @@ class TestAuthorizationCodeTokenView(BaseTest):
         self.assertTrue("access_token" in content)
         first_access_token = content["access_token"]
 
-        # check refresh token returns same data if used twice, see #497
+        # check access token returns same data if used twice, see #497
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content.decode("utf-8"))
         self.assertTrue("access_token" in content)
         self.assertEqual(content["access_token"], first_access_token)
+        # refresh token should be the same as well
+        self.assertTrue("refresh_token" in content)
+        self.assertEqual(content["refresh_token"], refresh_token)
         oauth2_settings.REFRESH_TOKEN_GRACE_PERIOD_SECONDS = 0
 
     def test_refresh_invalidates_old_tokens(self):
