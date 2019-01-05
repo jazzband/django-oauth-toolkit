@@ -1,30 +1,22 @@
 # https://travis-ci.org/evonove/django-oauth-toolkit
 sudo: false
+dist: xenial
+
 language: python
 
-python: "3.6"
-
-env:
-  - TOXENV=py34-django20
-  - TOXENV=py36-django20
-  - TOXENV=py36-django21
-  - TOXENV=py36-djangomaster
-  - TOXENV=docs
-  - TOXENV=flake8
+python:
+  - "3.4"
+  - "3.5"
+  - "3.6"
+  - "3.7"
 
 cache:
   directories:
     - $HOME/.cache/pip
     - $TRAVIS_BUILD_DIR/.tox
 
-matrix:
-  fast_finish: true
-
-  allow_failures:
-    - env: TOXENV=py36-djangomaster
-
 install:
-  - pip install coveralls tox
+  - pip install coveralls tox tox-travis
 
 script:
   - tox
