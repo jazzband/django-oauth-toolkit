@@ -1,5 +1,5 @@
 # https://travis-ci.org/evonove/django-oauth-toolkit
-sudo: false
+sudo: required
 dist: xenial
 
 language: python
