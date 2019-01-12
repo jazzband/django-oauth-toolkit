@@ -1,5 +1,4 @@
-# https://travis-ci.org/evonove/django-oauth-toolkit
-sudo: required
+# https://travis-ci.org/jazzband/django-oauth-toolkit
 dist: xenial
 
 language: python
