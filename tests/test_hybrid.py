@@ -1,8 +1,8 @@
-from __future__ import unicode_literals
-
 import base64
 import datetime
 import json
+
+from urllib.parse import parse_qs, urlencode, urlparse
 
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
@@ -10,7 +10,6 @@ from django.urls import reverse
 from django.utils import timezone
 from oauthlib.oauth2.rfc6749 import errors as oauthlib_errors
 
-from oauth2_provider.compat import parse_qs, urlencode, urlparse
 from oauth2_provider.models import (
     get_access_token_model, get_application_model,
     get_grant_model, get_refresh_token_model
