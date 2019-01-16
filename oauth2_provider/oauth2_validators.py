@@ -719,7 +719,7 @@ class OAuth2Validator(RequestValidator):
         expiration_time = timezone.now() + timedelta(seconds=oauth2_settings.ID_TOKEN_EXPIRE_SECONDS)
         # Required ID Token claims
         claims = {
-            "iss": 'https://id.olist.com',   # HTTPS URL
+            "iss": oauth2_settings.OIDC_ISS_ENDPOINT,
             "sub": str(request.user.id),
             "aud": request.client_id,
             "exp": int(dateformat.format(expiration_time, "U")),
