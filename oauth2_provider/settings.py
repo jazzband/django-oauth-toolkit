@@ -23,11 +23,19 @@ from django.core.exceptions import ImproperlyConfigured
 
 USER_SETTINGS = getattr(settings, "OAUTH2_PROVIDER", None)
 
-APPLICATION_MODEL = getattr(settings, "OAUTH2_PROVIDER_APPLICATION_MODEL", "oauth2_provider.Application")
-ACCESS_TOKEN_MODEL = getattr(settings, "OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL", "oauth2_provider.AccessToken")
-ID_TOKEN_MODEL = getattr(settings, "OAUTH2_PROVIDER_ID_TOKEN_MODEL", "oauth2_provider.IDToken")
+APPLICATION_MODEL = getattr(
+    settings, "OAUTH2_PROVIDER_APPLICATION_MODEL", "oauth2_provider.Application"
+)
+ACCESS_TOKEN_MODEL = getattr(
+    settings, "OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL", "oauth2_provider.AccessToken"
+)
+ID_TOKEN_MODEL = getattr(
+    settings, "OAUTH2_PROVIDER_ID_TOKEN_MODEL", "oauth2_provider.IDToken"
+)
 GRANT_MODEL = getattr(settings, "OAUTH2_PROVIDER_GRANT_MODEL", "oauth2_provider.Grant")
-REFRESH_TOKEN_MODEL = getattr(settings, "OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL", "oauth2_provider.RefreshToken")
+REFRESH_TOKEN_MODEL = getattr(
+    settings, "OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL", "oauth2_provider.RefreshToken"
+)
 
 DEFAULTS = {
     "CLIENT_ID_GENERATOR_CLASS": "oauth2_provider.generators.ClientIdGenerator",
@@ -36,7 +44,7 @@ DEFAULTS = {
     "ACCESS_TOKEN_GENERATOR": None,
     "REFRESH_TOKEN_GENERATOR": None,
     "EXTRA_SERVER_KWARGS": {},
-    "OAUTH2_SERVER_CLASS": "oauthlib.oauth2.Server",
+    "OAUTH2_SERVER_CLASS": "oauthlib.openid.connect.core.endpoints.pre_configured.Server",
     "OAUTH2_VALIDATOR_CLASS": "oauth2_provider.oauth2_validators.OAuth2Validator",
     "OAUTH2_BACKEND_CLASS": "oauth2_provider.oauth2_backends.OAuthLibCore",
     "SCOPES": {"read": "Reading scope", "write": "Writing scope"},
@@ -72,20 +80,20 @@ DEFAULTS = {
     ],
     "OIDC_SUBJECT_TYPES_SUPPORTED": ["public"],
     "OIDC_ID_TOKEN_SIGNING_ALG_VALUES_SUPPORTED": ["RS256", "HS256"],
-    "OIDC_TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED": ["client_secret_post", "client_secret_basic"],
-
+    "OIDC_TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED": [
+        "client_secret_post",
+        "client_secret_basic",
+    ],
     # Special settings that will be evaluated at runtime
     "_SCOPES": [],
     "_DEFAULT_SCOPES": [],
-
     # Resource Server with Token Introspection
     "RESOURCE_SERVER_INTROSPECTION_URL": None,
     "RESOURCE_SERVER_AUTH_TOKEN": None,
     "RESOURCE_SERVER_INTROSPECTION_CREDENTIALS": None,
     "RESOURCE_SERVER_TOKEN_CACHING_SECONDS": 36000,
-
     # Whether or not PKCE is required
-    "PKCE_REQUIRED": False
+    "PKCE_REQUIRED": False,
 }
 
 # List of settings that cannot be empty
@@ -103,7 +111,7 @@ MANDATORY = (
     "OIDC_RESPONSE_TYPES_SUPPORTED",
     "OIDC_SUBJECT_TYPES_SUPPORTED",
     "OIDC_ID_TOKEN_SIGNING_ALG_VALUES_SUPPORTED",
-    "OIDC_TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED"
+    "OIDC_TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED",
 )
 
 # List of settings that may be in string import notation.
@@ -142,7 +150,12 @@ def import_from_string(val, setting_name):
         module = importlib.import_module(module_path)
         return getattr(module, class_name)
     except ImportError as e:
-        msg = "Could not import %r for setting %r. %s: %s." % (val, setting_name, e.__class__.__name__, e)
+        msg = "Could not import %r for setting %r. %s: %s." % (
+            val,
+            setting_name,
+            e.__class__.__name__,
+            e,
+        )
         raise ImportError(msg)
 
 
@@ -154,7 +167,9 @@ class OAuth2ProviderSettings(object):
     and return the class, rather than the string literal.
     """
 
-    def __init__(self, user_settings=None, defaults=None, import_strings=None, mandatory=None):
+    def __init__(
+        self, user_settings=None, defaults=None, import_strings=None, mandatory=None
+    ):
         self.user_settings = user_settings or {}
         self.defaults = defaults or {}
         self.import_strings = import_strings or ()
@@ -189,7 +204,9 @@ class OAuth2ProviderSettings(object):
                     if scope in self._SCOPES:
                         val.append(scope)
                     else:
-                        raise ImproperlyConfigured("Defined DEFAULT_SCOPES not present in SCOPES")
+                        raise ImproperlyConfigured(
+                            "Defined DEFAULT_SCOPES not present in SCOPES"
+                        )
 
         self.validate_setting(attr, val)
 
