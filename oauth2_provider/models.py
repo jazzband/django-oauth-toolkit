@@ -451,6 +451,9 @@ def clear_expired():
 
             revoked.delete()
             expired.delete()
+        else:
+            logger.info('refresh_expire_at is %s. No refresh tokens deleted.',
+                         refresh_expire_at)
 
         access_tokens = access_token_model.objects.filter(
             refresh_token__isnull=True,
