@@ -73,7 +73,7 @@ msgstr "O token de acesso é inválido."
 
 #: oauth2_provider/oauth2_validators.py:171
 msgid "The access token has expired."
-msgstr "O token de acesso expirout."
+msgstr "O token de acesso expirou."
 
 #: oauth2_provider/oauth2_validators.py:176
 msgid "The access token is valid but does not have enough scope."
@@ -141,7 +141,7 @@ msgstr "Nova Aplicação"
 
 #: oauth2_provider/templates/oauth2_provider/application_list.html:17
 msgid "No applications defined"
-msgstr "Sem aplicações definidas."
+msgstr "Sem aplicações definidas"
 
 #: oauth2_provider/templates/oauth2_provider/application_list.html:17
 msgid "Click here"
@@ -169,4 +169,4 @@ msgstr "revogar"
 
 #: oauth2_provider/templates/oauth2_provider/authorized-tokens.html:19
 msgid "There are no authorized tokens yet."
-msgstr "De momento, não tem tokens atorizados."
+msgstr "De momento, não tem tokens autorizados."
