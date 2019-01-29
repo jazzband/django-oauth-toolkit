@@ -1,6 +1,9 @@
 import logging
+import json
 from datetime import timedelta
 from urllib.parse import parse_qsl, urlparse
+
+from jwcrypto import jwk, jwt
 
 from django.apps import apps
 from django.conf import settings
@@ -292,6 +295,10 @@ class AbstractAccessToken(models.Model):
         related_name="refreshed_access_token"
     )
     token = models.CharField(max_length=255, unique=True, )
+    id_token = models.OneToOneField(
+        oauth2_settings.ID_TOKEN_MODEL, on_delete=models.CASCADE, blank=True, null=True,
+        related_name="access_token"
+    )
     application = models.ForeignKey(
         oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE, blank=True, null=True,
     )
