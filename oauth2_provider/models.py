@@ -507,6 +507,12 @@ class AbstractIDToken(models.Model):
         token_scopes = self.scope.split()
         return {name: desc for name, desc in all_scopes.items() if name in token_scopes}
 
+    @property
+    def claims(self):
+        key = jwk.JWK.from_pem(oauth2_settings.OIDC_RSA_PRIVATE_KEY.encode("utf8"))
+        jwt_token = jwt.JWT(key=key, jwt=self.token)
+        return json.loads(jwt_token.claims)
+
     def __str__(self):
         return self.token
 
