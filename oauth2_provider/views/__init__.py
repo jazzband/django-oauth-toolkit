@@ -9,5 +9,5 @@ from .generic import (
     ScopedProtectedResourceView
 )
 from .introspect import IntrospectTokenView
-from .oidc import ConnectDiscoveryInfoView, JwksInfoView
+from .oidc import ConnectDiscoveryInfoView, JwksInfoView, UserInfoView
 from .token import AuthorizedTokenDeleteView, AuthorizedTokensListView

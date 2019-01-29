@@ -5,6 +5,9 @@ import json
 from django.http import JsonResponse
 from django.urls import reverse_lazy
 from django.views.generic import View
+
+from rest_framework.views import APIView
+
 from jwcrypto import jwk
 
 from ..settings import oauth2_settings
@@ -47,5 +50,15 @@ class JwksInfoView(View):
         }
         data["keys"][0].update(json.loads(key.export_public()))
         response = JsonResponse(data)
+        response["Access-Control-Allow-Origin"] = "*"
+        return response
+
+
+class UserInfoView(APIView):
+    """
+    View used to show Claims about the authenticated End-User
+    """
+    def get(self, request, *args, **kwargs):
+        response = JsonResponse(request.auth.id_token.claims)
         response["Access-Control-Allow-Origin"] = "*"
         return response
