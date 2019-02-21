@@ -189,6 +189,26 @@ Grab your access_token and start using your new OAuth2 API:
     # Insert a new user
     curl -H "Authorization: Bearer <your_access_token>" -X POST -d"username=foo&password=bar" http://localhost:8000/users/
 
+Some time has passed and your access token is about to expire, you can get renew the access token issued using the `refresh token`:
+
+::
+
+    curl -X POST -d "grant_type=refresh_token&refresh_token=<your_refresh_token>&client_id=<your_client_id>&client_secret=<your_client_secret>" http://localhost:8000/o/token/
+
+Your response should be similar to your first access_token request, containing a new access_token and refresh_token:
+
+.. code-block:: javascript
+
+    {
+        "access_token": "<your_new_access_token>",
+        "token_type": "Bearer",
+        "expires_in": 36000,
+        "refresh_token": "<your_new_refresh_token>",
+        "scope": "read write groups"
+    }
+
+
+
 Step 5: Testing Restricted Access
 ---------------------------------
 
