@@ -270,6 +270,23 @@ class TestOAuth2Validator(TransactionTestCase):
         self.assertEqual(0, RefreshToken.objects.count())
         self.assertEqual(1, AccessToken.objects.count())
 
+    def test_save_bearer_token__with_new_token__calls_methods_to_create_access_and_refresh_tokens(self):
+        token = {
+            "scope": "foo bar",
+            "refresh_token": "abc",
+            "access_token": "123",
+        }
+        # Mock private methods to create access and refresh tokens
+        create_access_token_mock = mock.MagicMock()
+        create_refresh_token_mock = mock.MagicMock()
+        self.validator._create_refresh_token = create_refresh_token_mock
+        self.validator._create_access_token = create_access_token_mock
+
+        self.validator.save_bearer_token(token, self.request)
+
+        create_access_token_mock.assert_called_once()
+        create_refresh_token_mock.asert_called_once()
+
 
 class TestOAuth2ValidatorProvidesErrorData(TransactionTestCase):
     """These test cases check that the recommended error codes are returned

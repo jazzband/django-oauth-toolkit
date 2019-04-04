@@ -520,13 +520,7 @@ class OAuth2Validator(RequestValidator):
                         source_refresh_token=refresh_token_instance,
                     )
 
-                    refresh_token = RefreshToken(
-                        user=request.user,
-                        token=refresh_token_code,
-                        application=request.client,
-                        access_token=access_token
-                    )
-                    refresh_token.save()
+                    self._create_refresh_token(request, refresh_token_code, access_token)
                 else:
                     # make sure that the token data we're returning matches
                     # the existing token
@@ -552,6 +546,15 @@ class OAuth2Validator(RequestValidator):
         )
         access_token.save()
         return access_token
+
+    def _create_refresh_token(self, request, refresh_token_code, access_token):
+        refresh_token = RefreshToken(
+            user=request.user,
+            token=refresh_token_code,
+            application=request.client,
+            access_token=access_token
+        )
+        refresh_token.save()
 
     def revoke_token(self, token, token_type_hint, request, *args, **kwargs):
         """
