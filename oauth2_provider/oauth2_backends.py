@@ -85,7 +85,6 @@ class OAuthLibCore(object):
         """
         try:
             uri, http_method, body, headers = self._extract_params(request)
-
             scopes, credentials = self.server.validate_authorization_request(
                 uri, http_method=http_method, body=body, headers=headers)
 

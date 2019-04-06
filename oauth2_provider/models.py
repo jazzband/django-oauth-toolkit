@@ -202,7 +202,16 @@ class AbstractGrant(models.Model):
                       :data:`settings.AUTHORIZATION_CODE_EXPIRE_SECONDS`
     * :attr:`redirect_uri` Self explained
     * :attr:`scope` Required scopes, optional
+    * :attr:`code_challenge` PKCE code challenge
+    * :attr:`code_challenge_method` PKCE code challenge transform algorithm
     """
+    CODE_CHALLENGE_PLAIN = "plain"
+    CODE_CHALLENGE_S256 = "S256"
+    CODE_CHALLENGE_METHODS = (
+        (CODE_CHALLENGE_PLAIN, "plain"),
+        (CODE_CHALLENGE_S256, "S256")
+    )
+
     id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
@@ -218,6 +227,10 @@ class AbstractGrant(models.Model):
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+
+    code_challenge = models.CharField(max_length=128, blank=True, default="")
+    code_challenge_method = models.CharField(
+        max_length=10, blank=True, default="", choices=CODE_CHALLENGE_METHODS)
 
     def is_expired(self):
         """
