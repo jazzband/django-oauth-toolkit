@@ -551,7 +551,9 @@ class OAuth2Validator(RequestValidator):
                     # make sure that the token data we're returning matches
                     # the existing token
                     token["access_token"] = previous_access_token.token
-                    token["refresh_token"] = previous_access_token.source_refresh_token.token
+                    token["refresh_token"] = RefreshToken.objects.filter(
+                        access_token=previous_access_token
+                    ).first().token
                     token["scope"] = previous_access_token.scope
 
         # No refresh token should be created, just access token
