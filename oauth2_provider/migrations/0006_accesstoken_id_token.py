@@ -9,7 +9,7 @@ from oauth2_provider.settings import oauth2_settings
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('oauth2_provider', '0009_idtoken'),
+        ('oauth2_provider', '0005_idtoken'),
     ]
 
     operations = [
