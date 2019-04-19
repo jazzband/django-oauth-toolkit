@@ -1072,9 +1072,6 @@ class TestAuthorizationCodeTokenView(BaseTest):
         url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
 
         response = self.client.get(url)
-        print(code_challenge)
-        print(response.context_data)
-        print(url)
         self.assertEqual(response.status_code, 200)
         oauth2_settings.PKCE_REQUIRED = False
 
@@ -1130,7 +1127,6 @@ class TestAuthorizationCodeTokenView(BaseTest):
         }
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data)
-        print(response.content)
         self.assertEqual(response.status_code, 200)
 
         content = json.loads(response.content.decode("utf-8"))
