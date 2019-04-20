@@ -32,6 +32,7 @@ class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
     * Implicit grant
 
     """
+
     def dispatch(self, request, *args, **kwargs):
         self.oauth2_data = {}
         return super().dispatch(request, *args, **kwargs)
@@ -132,6 +133,16 @@ class AuthorizationView(BaseAuthorizationView, FormView):
     def get(self, request, *args, **kwargs):
         try:
             scopes, credentials = self.validate_authorization_request(request)
+            # TODO: Remove the two following lines after oauthlib updates its implementation
+            # https://github.com/jazzband/django-oauth-toolkit/pull/707#issuecomment-485011945
+            credentials["code_challenge"] = credentials.get(
+                "code_challenge",
+                request.GET.get("code_challenge", None)
+            )
+            credentials["code_challenge_method"] = credentials.get(
+                "code_challenge_method",
+                request.GET.get("code_challenge_method", None)
+            )
         except OAuthToolkitError as error:
             # Application is not available at this time.
             return self.error_response(error, application=None)
@@ -149,8 +160,8 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         kwargs["redirect_uri"] = credentials["redirect_uri"]
         kwargs["response_type"] = credentials["response_type"]
         kwargs["state"] = credentials["state"]
-        kwargs["code_challenge"] = credentials.get("code_challenge", None)
-        kwargs["code_challenge_method"] = credentials.get("code_challenge_method", None)
+        kwargs["code_challenge"] = credentials["code_challenge"]
+        kwargs["code_challenge_method"] = credentials["code_challenge_method"]
 
         self.oauth2_data = kwargs
         # following two loc are here only because of https://code.djangoproject.com/ticket/17795
