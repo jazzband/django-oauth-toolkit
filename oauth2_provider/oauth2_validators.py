@@ -332,15 +332,14 @@ class OAuth2Validator(RequestValidator):
             scope = content.get("scope", "")
             expires = make_aware(expires)
 
-            access_token, _created = AccessToken\
-                .objects.select_related("application", "user")\
-                .update_or_create(token=token,
-                                  defaults={
-                                      "user": user,
-                                      "application": None,
-                                      "scope": scope,
-                                      "expires": expires,
-                                  })
+            access_token, _created = AccessToken.objects.update_or_create(
+                token=token,
+                defaults={
+                    "user": user,
+                    "application": None,
+                    "scope": scope,
+                    "expires": expires,
+                })
 
             return access_token
 
