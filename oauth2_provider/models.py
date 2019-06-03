@@ -1,5 +1,6 @@
 from datetime import timedelta
 from urllib.parse import parse_qsl, urlparse
+import logging
 
 from django.apps import apps
 from django.conf import settings
@@ -13,6 +14,8 @@ from .generators import generate_client_id, generate_client_secret
 from .scopes import get_scopes_backend
 from .settings import oauth2_settings
 from .validators import RedirectURIValidator, WildcardSet
+
+logger = logging.getLogger(__name__)
 
 
 class AbstractApplication(models.Model):
@@ -199,7 +202,16 @@ class AbstractGrant(models.Model):
                       :data:`settings.AUTHORIZATION_CODE_EXPIRE_SECONDS`
     * :attr:`redirect_uri` Self explained
     * :attr:`scope` Required scopes, optional
+    * :attr:`code_challenge` PKCE code challenge
+    * :attr:`code_challenge_method` PKCE code challenge transform algorithm
     """
+    CODE_CHALLENGE_PLAIN = "plain"
+    CODE_CHALLENGE_S256 = "S256"
+    CODE_CHALLENGE_METHODS = (
+        (CODE_CHALLENGE_PLAIN, "plain"),
+        (CODE_CHALLENGE_S256, "S256")
+    )
+
     id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
@@ -215,6 +227,10 @@ class AbstractGrant(models.Model):
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+
+    code_challenge = models.CharField(max_length=128, blank=True, default="")
+    code_challenge_method = models.CharField(
+        max_length=10, blank=True, default="", choices=CODE_CHALLENGE_METHODS)
 
     def is_expired(self):
         """
@@ -436,7 +452,30 @@ def clear_expired():
 
     with transaction.atomic():
         if refresh_expire_at:
-            refresh_token_model.objects.filter(revoked__lt=refresh_expire_at).delete()
-            refresh_token_model.objects.filter(access_token__expires__lt=refresh_expire_at).delete()
-        access_token_model.objects.filter(refresh_token__isnull=True, expires__lt=now).delete()
-        grant_model.objects.filter(expires__lt=now).delete()
+            revoked = refresh_token_model.objects.filter(
+                revoked__lt=refresh_expire_at,
+            )
+            expired = refresh_token_model.objects.filter(
+                access_token__expires__lt=refresh_expire_at,
+            )
+
+            logger.info('%s Revoked refresh tokens to be deleted', revoked.count())
+            logger.info('%s Expired refresh tokens to be deleted', expired.count())
+
+            revoked.delete()
+            expired.delete()
+        else:
+            logger.info('refresh_expire_at is %s. No refresh tokens deleted.',
+                         refresh_expire_at)
+
+        access_tokens = access_token_model.objects.filter(
+            refresh_token__isnull=True,
+            expires__lt=now
+        )
+        grants = grant_model.objects.filter(expires__lt=now)
+
+        logger.info('%s Expired access tokens to be deleted', access_tokens.count())
+        logger.info('%s Expired grant tokens to be deleted', grants.count())
+
+        access_tokens.delete()
+        grants.delete()
