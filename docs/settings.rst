@@ -185,3 +185,10 @@ RESOURCE_SERVER_TOKEN_CACHING_SECONDS
 The number of seconds an authorization token received from the introspection endpoint remains valid.
 If the expire time of the received token is less than ``RESOURCE_SERVER_TOKEN_CACHING_SECONDS`` the expire time
 will be used.
+
+
+PKCE_REQUIRED
+~~~~~~~~~~~~~
+Default: ``False``
+
+Whether or not PKCE is required. Can be either a bool or a callable that takes a client id and returns a bool.

@@ -1,11 +1,14 @@
+from datetime import datetime as dt
+
+import pytest
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils import timezone
 
 from oauth2_provider.models import (
-    get_access_token_model, get_application_model,
+    clear_expired, get_access_token_model, get_application_model,
     get_grant_model, get_refresh_token_model
 )
 from oauth2_provider.settings import oauth2_settings
@@ -19,6 +22,7 @@ UserModel = get_user_model()
 
 
 class TestModels(TestCase):
+
     def setUp(self):
         self.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
 
@@ -118,6 +122,7 @@ class TestModels(TestCase):
     OAUTH2_PROVIDER_GRANT_MODEL="tests.SampleGrant"
 )
 class TestCustomModels(TestCase):
+
     def setUp(self):
         self.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
 
@@ -260,6 +265,7 @@ class TestGrantModel(TestCase):
 
 
 class TestAccessTokenModel(TestCase):
+
     def setUp(self):
         self.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
 
@@ -289,3 +295,54 @@ class TestRefreshTokenModel(TestCase):
     def test_str(self):
         refresh_token = RefreshToken(token="test_token")
         self.assertEqual("%s" % refresh_token, refresh_token.token)
+
+
+class TestClearExpired(TestCase):
+
+    def setUp(self):
+        self.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
+        # Insert two tokens on database.
+        AccessToken.objects.create(
+            id=1,
+            token="555",
+            expires=dt.now(),
+            scope=2,
+            application_id=3,
+            user_id=1,
+            created=dt.now(),
+            updated=dt.now(),
+            source_refresh_token_id="0",
+            )
+        AccessToken.objects.create(
+            id=2,
+            token="666",
+            expires=dt.now(),
+            scope=2,
+            application_id=3,
+            user_id=1,
+            created=dt.now(),
+            updated=dt.now(),
+            source_refresh_token_id="1",
+            )
+
+    def test_clear_expired_tokens(self):
+        oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS = 60
+        assert clear_expired() is None
+
+    def test_clear_expired_tokens_incorect_timetype(self):
+        oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS = "A"
+        with pytest.raises(ImproperlyConfigured) as excinfo:
+            clear_expired()
+        result = excinfo.value.__class__.__name__
+        assert result == "ImproperlyConfigured"
+
+    def test_clear_expired_tokens_with_tokens(self):
+        self.client.login(username="test_user", password="123456")
+        oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS = 0
+        ttokens = AccessToken.objects.count()
+        expiredt = AccessToken.objects.filter(expires__lte=dt.now()).count()
+        assert ttokens == 2
+        assert expiredt == 2
+        clear_expired()
+        expiredt = AccessToken.objects.filter(expires__lte=dt.now()).count()
+        assert expiredt == 0

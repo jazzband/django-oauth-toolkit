@@ -98,6 +98,13 @@ class TokenHasScopeViewWrongAuth(BrokenOAuth2View):
 class MethodScopeAltViewWrongAuth(BrokenOAuth2View):
     permission_classes = [TokenMatchesOASRequirements]
 
+class AuthenticationNone(OAuth2Authentication):
+    def authenticate(self, request):
+        return None
+
+class AuthenticationNoneOAuth2View(MockView):
+    authentication_classes = [AuthenticationNone]
+
 
 urlpatterns = [
     url(r"^oauth2/", include("oauth2_provider.urls")),
@@ -110,6 +117,7 @@ urlpatterns = [
     url(r"^oauth2-method-scope-test/.*$", MethodScopeAltView.as_view()),
     url(r"^oauth2-method-scope-fail/$", MethodScopeAltViewBad.as_view()),
     url(r"^oauth2-method-scope-missing-auth/$", MethodScopeAltViewWrongAuth.as_view()),
+    url(r"^oauth2-authentication-none/$", AuthenticationNoneOAuth2View.as_view()),
 ]
 
 
@@ -399,3 +407,8 @@ class TestOAuth2Authentication(TestCase):
         with self.assertRaises(AssertionError) as e:
             self.client.get("/oauth2-method-scope-missing-auth/", HTTP_AUTHORIZATION=auth)
         self.assertTrue("`oauth2_provider.rest_framework.OAuth2Authentication`" in str(e.exception))
+
+    def test_authentication_none(self):
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.get("/oauth2-authentication-none/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 401)
