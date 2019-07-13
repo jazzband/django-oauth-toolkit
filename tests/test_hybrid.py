@@ -95,6 +95,7 @@ class TestRegressionIssue315Hybrid(BaseTest):
             "state": "random_state_string",
             "scope": "openid read write",
             "redirect_uri": "http://example.org",
+            "nonce": "nonce",
         })
         url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
 
@@ -110,6 +111,7 @@ class TestRegressionIssue315Hybrid(BaseTest):
             "state": "random_state_string",
             "scope": "openid read write",
             "redirect_uri": "http://example.org",
+            "nonce": "nonce",
         })
         url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
 
@@ -217,6 +219,7 @@ class TestHybridView(BaseTest):
             "state": "random_state_string",
             "scope": "openid",
             "redirect_uri": "http://example.org",
+            "nonce": "nonce",
         })
         url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
 
@@ -413,6 +416,7 @@ class TestHybridView(BaseTest):
             "redirect_uri": "http://example.org",
             "response_type": "code id_token",
             "allow": True,
+            "nonce": "nonce",
         }
 
         response = self.client.post(reverse("oauth2_provider:authorize"), data=form_data)
@@ -435,6 +439,7 @@ class TestHybridView(BaseTest):
             "redirect_uri": "http://example.org",
             "response_type": "code id_token token",
             "allow": True,
+            "nonce": "nonce",
         }
 
         response = self.client.post(reverse("oauth2_provider:authorize"), data=form_data)
@@ -458,6 +463,7 @@ class TestHybridView(BaseTest):
             "redirect_uri": "http://example.org",
             "response_type": "code id_token",
             "allow": True,
+            "nonce": "nonce",
         }
 
         response = self.client.post(reverse("oauth2_provider:authorize"), data=form_data)
@@ -578,6 +584,7 @@ class TestHybridView(BaseTest):
             "redirect_uri": "custom-scheme://example.com",
             "response_type": "code id_token",
             "allow": True,
+            "nonce": "nonce",
         }
 
         response = self.client.post(reverse("oauth2_provider:authorize"), data=form_data)
@@ -601,6 +608,7 @@ class TestHybridView(BaseTest):
             "redirect_uri": "custom-scheme://example.com",
             "response_type": "code id_token token",
             "allow": True,
+            "nonce": "nonce",
         }
 
         response = self.client.post(reverse("oauth2_provider:authorize"), data=form_data)
@@ -670,6 +678,7 @@ class TestHybridView(BaseTest):
             "redirect_uri": "http://example.com?foo=bar",
             "response_type": "code id_token",
             "allow": True,
+            "nonce": "nonce",
         }
 
         response = self.client.post(reverse("oauth2_provider:authorize"), data=form_data)
@@ -693,6 +702,7 @@ class TestHybridView(BaseTest):
             "redirect_uri": "http://example.com?foo=bar",
             "response_type": "code id_token token",
             "allow": True,
+            "nonce": "nonce",
         }
 
         response = self.client.post(reverse("oauth2_provider:authorize"), data=form_data)
@@ -754,6 +764,7 @@ class TestHybridTokenView(BaseTest):
             "redirect_uri": "http://example.org",
             "response_type": "code id_token",
             "allow": True,
+            "nonce": "nonce",
         }
 
         response = self.client.post(reverse("oauth2_provider:authorize"), data=authcode_data)
