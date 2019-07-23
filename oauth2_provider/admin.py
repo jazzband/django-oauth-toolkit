@@ -19,16 +19,22 @@ class ApplicationAdmin(admin.ModelAdmin):
 class GrantAdmin(admin.ModelAdmin):
     list_display = ("code", "application", "user", "expires")
     raw_id_fields = ("user", )
+    search_fields = ("code", "user__email")
+    list_filter = ("application",)
 
 
 class AccessTokenAdmin(admin.ModelAdmin):
     list_display = ("token", "user", "application", "expires")
-    raw_id_fields = ("user", )
+    raw_id_fields = ("user", "source_refresh_token")
+    search_fields = ("token", "user__email")
+    list_filter = ("application",)
 
 
 class RefreshTokenAdmin(admin.ModelAdmin):
     list_display = ("token", "user", "application")
     raw_id_fields = ("user", "access_token")
+    search_fields = ("token", "user__email")
+    list_filter = ("application",)
 
 
 Application = get_application_model()
