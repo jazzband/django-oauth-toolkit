@@ -2,8 +2,7 @@ import json
 from urllib.parse import urlparse, urlunparse
 
 from oauthlib import oauth2
-from oauthlib.common import quote, urlencode, urlencoded
-
+from oauthlib.common import quote, urlencode, urlencoded, Request as OauthlibRequest
 from .exceptions import FatalClientError, OAuthToolkitError
 from .settings import oauth2_settings
 
@@ -165,6 +164,15 @@ class OAuthLibCore(object):
 
         valid, r = self.server.verify_request(uri, http_method, body, headers, scopes=scopes)
         return valid, r
+
+    def authenticate_client(self, request):
+        """Wrapper to call  `authenticate_client` on `server_class` instance.
+        
+        :param request: The current django.http.HttpRequest object
+        """
+        uri, http_method, body, headers = self._extract_params(request)
+        oauth_request = OauthlibRequest(uri, http_method, body, headers)
+        return self.server.request_validator.authenticate_client(oauth_request)
 
 
 class JSONOAuthLibCore(OAuthLibCore):

@@ -173,6 +173,15 @@ class OAuthLibMixin(object):
 
         return redirect, error_response
 
+    def authenticate_client(self, request):
+        """Returns a boolean representing if client is authenticated with client credentials
+        method. Returns `True` if authenticated.
+        
+        :param request: The current django.http.HttpRequest object
+        """
+        core = self.get_oauthlib_core()
+        return core.authenticate_client(request)
+
 
 class ScopedResourceMixin(object):
     """
@@ -245,3 +254,29 @@ class ReadWriteScopedResourceMixin(ScopedResourceMixin, OAuthLibMixin):
 
         # this returns a copy so that self.required_scopes is not modified
         return scopes + [self.read_write_scope]
+
+class ClientProtectedResourceMixin(OAuthLibMixin):
+
+    """Mixin for protecting resources with client authentication as mentioned in rfc:`3.2.1`
+    This involves authenticating with any of: HTTP Basic Auth, Client Credentials and Access token in that order.
+    Breaks off after first validation. 
+    """
+
+    def dispatch(self, request, *args, **kwargs):
+        # let preflight OPTIONS requests pass
+        if request.method.upper() == "OPTIONS":
+            return super().dispatch(request, *args, **kwargs)
+        # Validate either with HTTP basic or client creds in request body.
+        # TODO: Restrict to POST.
+        valid = self.authenticate_client(request)
+        if not valid:
+            # Alternatively allow access tokens
+            # check if the request is valid and the protected resource may be accessed
+            valid, r = self.verify_request(request)
+            if valid:
+                request.resource_owner = r.user
+                return super().dispatch(request, *args, **kwargs)
+            else:
+                return HttpResponseForbidden()
+        else:
+            return super().dispatch(request, *args, **kwargs)
