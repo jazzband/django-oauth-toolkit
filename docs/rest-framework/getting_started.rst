@@ -100,6 +100,8 @@ Also add the following to your `settings.py` module:
 .. code-block:: python
 
     OAUTH2_PROVIDER = {
+        # parses OAuth2 data from application/json requests 
+        'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore',
         # this is the list of available scopes
         'SCOPES': {'read': 'Read scope', 'write': 'Write scope', 'groups': 'Access to your groups'}
     }
@@ -111,6 +113,10 @@ Also add the following to your `settings.py` module:
             'rest_framework.permissions.IsAuthenticated',
         )
     }
+
+`OAUTH2_PROVIDER` setting parameter sets the backend class that is used to parse OAuth2 requests.
+The `JSONOAuthLibCore` class extends the default OAuthLibCore to parse correctly
+`application/json` requests.
 
 `OAUTH2_PROVIDER.SCOPES` setting parameter contains the scopes that the application will be aware of,
 so we can use them for permission check.
