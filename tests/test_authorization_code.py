@@ -42,7 +42,7 @@ class BaseTest(TestCase):
 
         oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES = ["http", "custom-scheme"]
 
-        self.application = Application(
+        self.application = Application.objects.create(
             name="Test Application",
             redirect_uris=(
                 "http://localhost http://example.com http://example.org custom-scheme://example.com"
@@ -51,7 +51,6 @@ class BaseTest(TestCase):
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
         )
-        self.application.save()
 
         oauth2_settings._SCOPES = ["read", "write"]
         oauth2_settings._DEFAULT_SCOPES = ["read", "write"]
