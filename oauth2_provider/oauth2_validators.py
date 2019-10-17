@@ -448,7 +448,7 @@ class OAuth2Validator(RequestValidator):
     def save_authorization_code(self, client_id, code, request, *args, **kwargs):
         expires = timezone.now() + timedelta(
             seconds=oauth2_settings.AUTHORIZATION_CODE_EXPIRE_SECONDS)
-        g = Grant(
+        Grant.objects.create(
             application=request.client,
             user=request.user,
             code=code["code"],
@@ -458,7 +458,6 @@ class OAuth2Validator(RequestValidator):
             code_challenge=request.code_challenge or "",
             code_challenge_method=request.code_challenge_method or ""
         )
-        g.save()
 
     def rotate_refresh_token(self, request):
         """
@@ -563,7 +562,7 @@ class OAuth2Validator(RequestValidator):
         token["expires_in"] = oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS
 
     def _create_access_token(self, expires, request, token, source_refresh_token=None):
-        access_token = AccessToken(
+        return AccessToken.objects.create(
             user=request.user,
             scope=token["scope"],
             expires=expires,
@@ -571,17 +570,14 @@ class OAuth2Validator(RequestValidator):
             application=request.client,
             source_refresh_token=source_refresh_token,
         )
-        access_token.save()
-        return access_token
 
     def _create_refresh_token(self, request, refresh_token_code, access_token):
-        refresh_token = RefreshToken(
+        return RefreshToken.objects.create(
             user=request.user,
             token=refresh_token_code,
             application=request.client,
             access_token=access_token
         )
-        refresh_token.save()
 
     def revoke_token(self, token, token_type_hint, request, *args, **kwargs):
         """
