@@ -300,27 +300,30 @@ class TestClearExpired(TestCase):
     def setUp(self):
         self.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
         # Insert two tokens on database.
+        app = Application.objects.create(
+            name="test_app",
+            redirect_uris="http://localhost http://example.com http://example.org",
+            user=self.user,
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+        )
         AccessToken.objects.create(
-            id=1,
             token="555",
             expires=timezone.now(),
             scope=2,
-            application_id=3,
-            user_id=1,
+            application=app,
+            user=self.user,
             created=timezone.now(),
             updated=timezone.now(),
-            source_refresh_token_id="0",
             )
         AccessToken.objects.create(
-            id=2,
             token="666",
             expires=timezone.now(),
             scope=2,
-            application_id=3,
-            user_id=1,
+            application=app,
+            user=self.user,
             created=timezone.now(),
             updated=timezone.now(),
-            source_refresh_token_id="1",
             )
 
     def test_clear_expired_tokens(self):
