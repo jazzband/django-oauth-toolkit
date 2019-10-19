@@ -477,7 +477,11 @@ class OAuth2Validator(RequestValidator):
         if "scope" not in token:
             raise FatalClientError("Failed to renew access token: missing scope")
 
-        expires = timezone.now() + timedelta(seconds=oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
+        # expires_in is passed to Server on initialization
+        # custom server class can have logic to override this
+        expires = timezone.now() + timedelta(seconds=token.get(
+            'expires_in', oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS,
+        ))
 
         if request.grant_type == "client_credentials":
             request.user = None
@@ -557,9 +561,6 @@ class OAuth2Validator(RequestValidator):
         # No refresh token should be created, just access token
         else:
             self._create_access_token(expires, request, token)
-
-        # TODO: check out a more reliable way to communicate expire time to oauthlib
-        token["expires_in"] = oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS
 
     def _create_access_token(self, expires, request, token, source_refresh_token=None):
         return AccessToken.objects.create(
