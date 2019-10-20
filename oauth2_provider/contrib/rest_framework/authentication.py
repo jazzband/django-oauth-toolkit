@@ -39,7 +39,8 @@ class OAuth2Authentication(BaseAuthentication):
         www_authenticate_attributes = OrderedDict([
             ("realm", self.www_authenticate_realm,),
         ])
-        www_authenticate_attributes.update(request.oauth2_error)
+        oauth2_error = getattr(request, "oauth2_error", {})
+        www_authenticate_attributes.update(oauth2_error)
         return "Bearer {attributes}".format(
             attributes=self._dict_to_string(www_authenticate_attributes),
         )
