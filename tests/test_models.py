@@ -1,5 +1,3 @@
-from datetime import datetime as dt
-
 import pytest
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured, ValidationError
@@ -302,27 +300,30 @@ class TestClearExpired(TestCase):
     def setUp(self):
         self.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
         # Insert two tokens on database.
+        app = Application.objects.create(
+            name="test_app",
+            redirect_uris="http://localhost http://example.com http://example.org",
+            user=self.user,
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+        )
         AccessToken.objects.create(
-            id=1,
             token="555",
-            expires=dt.now(),
+            expires=timezone.now(),
             scope=2,
-            application_id=3,
-            user_id=1,
-            created=dt.now(),
-            updated=dt.now(),
-            source_refresh_token_id="0",
+            application=app,
+            user=self.user,
+            created=timezone.now(),
+            updated=timezone.now(),
             )
         AccessToken.objects.create(
-            id=2,
             token="666",
-            expires=dt.now(),
+            expires=timezone.now(),
             scope=2,
-            application_id=3,
-            user_id=1,
-            created=dt.now(),
-            updated=dt.now(),
-            source_refresh_token_id="1",
+            application=app,
+            user=self.user,
+            created=timezone.now(),
+            updated=timezone.now(),
             )
 
     def test_clear_expired_tokens(self):
@@ -340,9 +341,9 @@ class TestClearExpired(TestCase):
         self.client.login(username="test_user", password="123456")
         oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS = 0
         ttokens = AccessToken.objects.count()
-        expiredt = AccessToken.objects.filter(expires__lte=dt.now()).count()
+        expiredt = AccessToken.objects.filter(expires__lte=timezone.now()).count()
         assert ttokens == 2
         assert expiredt == 2
         clear_expired()
-        expiredt = AccessToken.objects.filter(expires__lte=dt.now()).count()
+        expiredt = AccessToken.objects.filter(expires__lte=timezone.now()).count()
         assert expiredt == 0
