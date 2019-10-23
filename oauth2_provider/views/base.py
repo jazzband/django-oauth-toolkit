@@ -12,7 +12,7 @@ from django.views.generic import FormView, View
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
 from ..http import OAuth2ResponseRedirect
-from ..models import get_access_token_model, get_application_model
+from ..models import get_access_token_model, get_application_model, get_refresh_token_model
 from ..scopes import get_scopes_backend
 from ..settings import oauth2_settings
 from ..signals import app_authorized
@@ -190,6 +190,12 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                     application=kwargs["application"],
                     expires__gt=timezone.now()
                 ).all()
+
+                refresh_tokens = get_refresh_token_model().objects.filter(
+                    user=request.user,
+                    application=kwargs["application"]
+                ).exclude(revoked__lt=timezone.now()).all()
+                tokens = list(tokens) + [r.access_token for r in refresh_tokens]
 
                 # check past authorizations regarded the same scopes as the current one
                 for token in tokens:
