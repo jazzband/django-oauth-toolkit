@@ -434,12 +434,10 @@ def get_refresh_token_model():
     return apps.get_model(oauth2_settings.REFRESH_TOKEN_MODEL)
 
 
-def clear_expired():
-    now = timezone.now()
+def get_refresh_expire_at():
+    """ Return the datetime before which refresh tokens are expired. """
     refresh_expire_at = None
-    access_token_model = get_access_token_model()
-    refresh_token_model = get_refresh_token_model()
-    grant_model = get_grant_model()
+
     REFRESH_TOKEN_EXPIRE_SECONDS = oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS
     if REFRESH_TOKEN_EXPIRE_SECONDS:
         if not isinstance(REFRESH_TOKEN_EXPIRE_SECONDS, timedelta):
@@ -448,7 +446,17 @@ def clear_expired():
             except TypeError:
                 e = "REFRESH_TOKEN_EXPIRE_SECONDS must be either a timedelta or seconds"
                 raise ImproperlyConfigured(e)
-        refresh_expire_at = now - REFRESH_TOKEN_EXPIRE_SECONDS
+        refresh_expire_at = timezone.now() - REFRESH_TOKEN_EXPIRE_SECONDS
+
+    return refresh_expire_at
+
+
+def clear_expired():
+    now = timezone.now()
+    access_token_model = get_access_token_model()
+    refresh_token_model = get_refresh_token_model()
+    grant_model = get_grant_model()
+    refresh_expire_at = get_refresh_expire_at()
 
     with transaction.atomic():
         if refresh_expire_at:

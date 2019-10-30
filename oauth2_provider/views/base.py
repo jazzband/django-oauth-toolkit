@@ -2,6 +2,7 @@ import json
 import logging
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
 from django.http import HttpResponse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -12,7 +13,9 @@ from django.views.generic import FormView, View
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
 from ..http import OAuth2ResponseRedirect
-from ..models import get_access_token_model, get_application_model, get_refresh_token_model
+from ..models import (
+    get_access_token_model, get_application_model,
+    get_refresh_token_model, get_refresh_expire_at)
 from ..scopes import get_scopes_backend
 from ..settings import oauth2_settings
 from ..signals import app_authorized
@@ -185,17 +188,24 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                 return self.redirect(uri, application)
 
             elif require_approval == "auto":
+                now = timezone.now()
                 tokens = get_access_token_model().objects.filter(
                     user=request.user,
-                    application=kwargs["application"],
-                    expires__gt=timezone.now()
-                ).all()
-
-                refresh_tokens = get_refresh_token_model().objects.filter(
-                    user=request.user,
                     application=kwargs["application"]
-                ).exclude(revoked__lt=timezone.now()).all()
-                tokens = list(tokens) + [r.access_token for r in refresh_tokens]
+                ).filter(
+                    # token is not expired
+                    Q(expires__gt=now) |
+                    # OR refresh_token exists and is not revoked
+                    (Q(refresh_token__isnull=False) &
+                     ~Q(refresh_token__revoked__lt=now))
+                )
+
+                # exclude if refresh token is expired
+                refresh_expire_at = get_refresh_expire_at()
+                if refresh_expire_at:
+                    tokens = tokens.exclude(
+                        Q(refresh_token__created__lt=refresh_expire_at)
+                    )
 
                 # check past authorizations regarded the same scopes as the current one
                 for token in tokens:

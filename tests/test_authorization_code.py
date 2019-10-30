@@ -185,6 +185,18 @@ class TestAuthorizationCodeView(BaseTest):
             expires=timezone.now() + datetime.timedelta(days=1),
             scope="read write"
         )
+        reftok = RefreshToken.objects.create(
+            user=self.test_user, token="0123456789",
+            application=self.application,
+            access_token=tok,
+            created=timezone.now() - datetime.timedelta(seconds=2000)
+        )
+
+        # WIP: This fails, reporting no related object. Why?
+        # I think new tests are failing due to this issue. @madprime
+        tok = AccessToken.objects.get(id=tok.id)
+        print(tok.refresh_token)
+
         self.client.login(username="test_user", password="123456")
         query_string = urlencode({
             "client_id": self.application.client_id,
@@ -197,19 +209,25 @@ class TestAuthorizationCodeView(BaseTest):
         url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
-        # access token expired but valid refresh token exists
-        tok.expires = timezone.now() - datetime.timedelta(days=1)
-        tok.save()
-        reftok = RefreshToken.objects.create(
-            user=self.test_user, token="0123456789",
-            application=self.application,
-            access_token=tok
-        )
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 302)
         # user already authorized the application, but with different scopes: prompt them.
         tok.scope = "read"
         tok.save()
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        tok.scope = "read write"
+        # access token expired but valid refresh token exists
+        tok.expires = timezone.now() - datetime.timedelta(days=1)
+        tok.save()
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        # refresh token invalid due to expiration
+        oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS = 1000
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS = None
+        # refresh token revoked
+        reftok.revoked = timezone.now() - datetime.timedelta(seconds=10)
+        reftok.save()
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
