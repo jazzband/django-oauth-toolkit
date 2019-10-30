@@ -74,7 +74,8 @@ class OAuthLibMixin(object):
         """
         server_class = cls.get_server_class()
         validator_class = cls.get_validator_class()
-        return server_class(validator_class())
+        server_kwargs = oauth2_settings.server_kwargs
+        return server_class(validator_class(), **server_kwargs)
 
     @classmethod
     def get_oauthlib_core(cls):

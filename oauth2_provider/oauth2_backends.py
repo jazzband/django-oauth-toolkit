@@ -10,13 +10,21 @@ from .settings import oauth2_settings
 
 class OAuthLibCore(object):
     """
-    TODO: add docs
+    Wrapper for oauth Server providing django-specific interfaces.
+
+    Meant for things like extracting request data and converting
+    everything to formats more palatable for oauthlib's Server.
     """
     def __init__(self, server=None):
         """
         :params server: An instance of oauthlib.oauth2.Server class
         """
-        self.server = server or oauth2_settings.OAUTH2_SERVER_CLASS(oauth2_settings.OAUTH2_VALIDATOR_CLASS())
+        validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
+        validator = validator_class()
+        server_kwargs = oauth2_settings.server_kwargs
+        self.server = server or oauth2_settings.OAUTH2_SERVER_CLASS(
+            validator, **server_kwargs
+        )
 
     def _get_escaped_full_path(self, request):
         """
@@ -189,9 +197,11 @@ class JSONOAuthLibCore(OAuthLibCore):
 
 def get_oauthlib_core():
     """
-    Utility function that take a request and returns an instance of
+    Utility function that returns an instance of
     `oauth2_provider.backends.OAuthLibCore`
     """
-    validator = oauth2_settings.OAUTH2_VALIDATOR_CLASS()
-    server = oauth2_settings.OAUTH2_SERVER_CLASS(validator)
+    validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
+    validator = validator_class()
+    server_kwargs = oauth2_settings.server_kwargs
+    server = oauth2_settings.OAUTH2_SERVER_CLASS(validator, **server_kwargs)
     return oauth2_settings.OAUTH2_BACKEND_CLASS(server)

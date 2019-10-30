@@ -5,9 +5,14 @@ MANAGERS = ADMINS
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": "example.sqlite",
+        "NAME": ":memory:",
     }
 }
+
+AUTH_USER_MODEL = 'auth.User'
+OAUTH2_PROVIDER_APPLICATION_MODEL = "oauth2_provider.Application"
+OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL = "oauth2_provider.AccessToken"
+OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL = "oauth2_provider.RefreshToken"
 
 ALLOWED_HOSTS = []
 
@@ -74,6 +79,7 @@ INSTALLED_APPS = (
     "django.contrib.sites",
     "django.contrib.staticfiles",
     "django.contrib.admin",
+    "django.contrib.messages",
 
     "oauth2_provider",
     "tests",

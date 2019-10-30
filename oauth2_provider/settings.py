@@ -32,6 +32,9 @@ DEFAULTS = {
     "CLIENT_ID_GENERATOR_CLASS": "oauth2_provider.generators.ClientIdGenerator",
     "CLIENT_SECRET_GENERATOR_CLASS": "oauth2_provider.generators.ClientSecretGenerator",
     "CLIENT_SECRET_GENERATOR_LENGTH": 128,
+    "ACCESS_TOKEN_GENERATOR": None,
+    "REFRESH_TOKEN_GENERATOR": None,
+    "EXTRA_SERVER_KWARGS": {},
     "OAUTH2_SERVER_CLASS": "oauthlib.oauth2.Server",
     "OAUTH2_VALIDATOR_CLASS": "oauth2_provider.oauth2_validators.OAuth2Validator",
     "OAUTH2_BACKEND_CLASS": "oauth2_provider.oauth2_backends.OAuthLibCore",
@@ -82,6 +85,8 @@ MANDATORY = (
 IMPORT_STRINGS = (
     "CLIENT_ID_GENERATOR_CLASS",
     "CLIENT_SECRET_GENERATOR_CLASS",
+    "ACCESS_TOKEN_GENERATOR",
+    "REFRESH_TOKEN_GENERATOR",
     "OAUTH2_SERVER_CLASS",
     "OAUTH2_VALIDATOR_CLASS",
     "OAUTH2_BACKEND_CLASS",
@@ -171,5 +176,30 @@ class OAuth2ProviderSettings(object):
         if not val and attr in self.mandatory:
             raise AttributeError("OAuth2Provider setting: %r is mandatory" % (attr))
 
+    @property
+    def server_kwargs(self):
+        """
+        This is used to communicate settings to oauth server.
+
+        Takes relevant settings and format them accordingly.
+        There's also EXTRA_SERVER_KWARGS that can override every value
+        and is more flexible regarding keys and acceptable values
+        but doesn't have import string magic or any additional
+        processing, callables have to be assigned directly.
+        For the likes of signed_token_generator it means something like
+
+        {'token_generator': signed_token_generator(privkey, **kwargs)}
+        """
+        kwargs = {
+            key: getattr(self, value)
+            for key, value in [
+                ('token_expires_in', 'ACCESS_TOKEN_EXPIRE_SECONDS'),
+                ('refresh_token_expires_in', 'REFRESH_TOKEN_EXPIRE_SECONDS'),
+                ('token_generator', 'ACCESS_TOKEN_GENERATOR'),
+                ('refresh_token_generator', 'REFRESH_TOKEN_GENERATOR'),
+            ]
+        }
+        kwargs.update(self.EXTRA_SERVER_KWARGS)
+        return kwargs
 
 oauth2_settings = OAuth2ProviderSettings(USER_SETTINGS, DEFAULTS, IMPORT_STRINGS, MANDATORY)

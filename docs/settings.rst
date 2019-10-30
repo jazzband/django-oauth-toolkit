@@ -39,6 +39,11 @@ The import string of the class (model) representing your access tokens. Overwrit
 this value if you wrote your own implementation (subclass of
 ``oauth2_provider.models.AccessToken``).
 
+ACCESS_TOKEN_GENERATOR
+~~~~~~~~~~~~~~~~~~~~~~
+Import path of a callable used to generate access tokens.
+oauthlib.oauth2.tokens.random_token_generator is (normally) used if not provided.
+
 ALLOWED_REDIRECT_URI_SCHEMES
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -78,6 +83,14 @@ CLIENT_SECRET_GENERATOR_LENGTH
 The length of the generated secrets, in characters. If this value is too low,
 secrets may become subject to bruteforce guessing.
 
+EXTRA_SERVER_KWARGS
+~~~~~~~~~~~~~~~~~~~
+A dictionary to be passed to oauthlib's Server class. Three options
+are natively supported: token_expires_in, token_generator,
+refresh_token_generator. There's no extra processing so callables (every one
+of those three can be a callable) must be passed here directly and classes
+must be instantiated (callables should accept request as their only argument).
+
 GRANT_MODEL
 ~~~~~~~~~~~~~~~~~
 The import string of the class (model) representing your grants. Overwrite
@@ -103,6 +116,9 @@ REFRESH_TOKEN_EXPIRE_SECONDS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The number of seconds before a refresh token gets removed from the database by
 the ``cleartokens`` management command. Check :ref:`cleartokens` management command for further info.
+NOTE: This value is completely ignored when validating refresh tokens.
+If you don't change the validator code and don't run cleartokens all refresh
+tokens will last until revoked or the end of time.
 
 REFRESH_TOKEN_GRACE_PERIOD_SECONDS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -123,6 +139,15 @@ this value if you wrote your own implementation (subclass of
 ROTATE_REFRESH_TOKEN
 ~~~~~~~~~~~~~~~~~~~~
 When is set to `True` (default) a new refresh token is issued to the client when the client refreshes an access token.
+Known bugs: `False` currently has a side effect of immediately revoking both access and refresh token on refreshing.
+See also: validator's rotate_refresh_token method can be overridden to make this variable
+(could be usable with expiring refresh tokens, in particular, so that they are rotated
+when close to expiration, theoretically).
+
+REFRESH_TOKEN_GENERATOR
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+See `ACCESS_TOKEN_GENERATOR`. This is the same but for refresh tokens.
+Defaults to access token generator if not provided.
 
 REQUEST_APPROVAL_PROMPT
 ~~~~~~~~~~~~~~~~~~~~~~~
