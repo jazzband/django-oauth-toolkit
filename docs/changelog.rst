@@ -1,6 +1,76 @@
 Changelog
 =========
 
+1.3.0 [unreleased]
+------------------
+
+* Fix a race condition in creation of AccessToken with external oauth2 server.
+* **Backwards-incompatible** squashed migrations:
+  If you are currently on a release < 1.2.0, you will need to first install 1.2.x then `manage.py migrate` before
+  upgrading to >= 1.3.0.
+
+
+1.2.0 [2018-06-03]
+------------------
+
+* **Compatibility**: Python 3.4 is the new minimum required version.
+* **Compatibility**: Django 2.0 is the new minimum required version.
+* **New feature**: Added TokenMatchesOASRequirements Permissions.
+* validators.URIValidator has been updated to match URLValidator behaviour more closely.
+* Moved `redirect_uris` validation to the application clean() method.
+
+
+1.1.2 [2018-05-12]
+------------------
+
+* Return state with Authorization Denied error (RFC6749 section 4.1.2.1)
+* Fix a crash with malformed base64 authentication headers
+* Fix a crash with malformed IPv6 redirect URIs
+
+
+1.1.1 [2018-05-08]
+------------------
+
+* **Critical**: Django OAuth Toolkit 1.1.0 contained a migration that would revoke all existing
+  RefreshTokens (`0006_auto_20171214_2232`). This release corrects the migration.
+  If you have already ran it in production, please see the following issue for more details:
+  https://github.com/jazzband/django-oauth-toolkit/issues/589
+
+
+1.1.0 [2018-04-13]
+------------------
+
+* **Notice**: The Django OAuth Toolkit project is now hosted by JazzBand.
+* **Compatibility**: Django 1.11 is the new minimum required version. Django 1.10 is no longer supported.
+* **Compatibility**: This will be the last release to support Django 1.11 and Python 2.7.
+* **New feature**: Option for RFC 7662 external AS that uses HTTP Basic Auth.
+* **New feature**: Individual applications may now override the `ALLOWED_REDIRECT_URI_SCHEMES`
+  setting by returning a list of allowed redirect uri schemes in `Application.get_allowed_schemes()`.
+* **New feature**: The new setting `ERROR_RESPONSE_WITH_SCOPES` can now be set to True to include required
+  scopes when DRF authorization fails due to improper scopes.
+* **New feature**: The new setting `REFRESH_TOKEN_GRACE_PERIOD_SECONDS` controls a grace period during which
+  refresh tokens may be re-used.
+* An `app_authorized` signal is fired when a token is generated.
+
+
+1.0.0 [2017-06-07]
+------------------
+
+* **New feature**: AccessToken, RefreshToken and Grant models are now swappable.
+* #477: **New feature**: Add support for RFC 7662 (IntrospectTokenView, introspect scope)
+* **Compatibility**: Django 1.10 is the new minimum required version
+* **Compatibility**: Django 1.11 is now supported
+* **Backwards-incompatible**: The `oauth2_provider.ext.rest_framework` module
+  has been moved to `oauth2_provider.contrib.rest_framework`
+* #177: Changed `id` field on Application, AccessToken, RefreshToken and Grant to BigAutoField (bigint/bigserial)
+* #321: Added `created` and `updated` auto fields to Application, AccessToken, RefreshToken and Grant
+* #476: Disallow empty redirect URIs
+* Fixed bad `url` parameter in some error responses.
+* Django 2.0 compatibility fixes.
+* The dependency on django-braces has been dropped.
+* The oauthlib dependency is no longer pinned.
+
+
 0.12.0 [2017-02-24]
 -------------------
 
