@@ -74,7 +74,7 @@ To check everything works properly, mount the view above to some url:
 .. code-block:: python
 
     urlpatterns = [
-        url(r'^secret$', 'my.views.secret_page', name='secret'),
+        path('secret', 'my.views.secret_page', name='secret'),
         '...',
     ]
 
