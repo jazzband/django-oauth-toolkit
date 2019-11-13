@@ -284,8 +284,8 @@ class TestOAuth2Validator(TransactionTestCase):
 
         self.validator.save_bearer_token(token, self.request)
 
-        create_access_token_mock.assert_called_once()
-        create_refresh_token_mock.asert_called_once()
+        assert create_access_token_mock.call_count == 1
+        assert create_refresh_token_mock.call_count == 1
 
 
 class TestOAuth2ValidatorProvidesErrorData(TransactionTestCase):

@@ -42,7 +42,7 @@ class BaseTest(TestCase):
 
         oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES = ["http", "custom-scheme"]
 
-        self.application = Application(
+        self.application = Application.objects.create(
             name="Test Application",
             redirect_uris=(
                 "http://localhost http://example.com http://example.org custom-scheme://example.com"
@@ -51,7 +51,6 @@ class BaseTest(TestCase):
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
         )
-        self.application.save()
 
         oauth2_settings._SCOPES = ["read", "write"]
         oauth2_settings._DEFAULT_SCOPES = ["read", "write"]
@@ -196,6 +195,16 @@ class TestAuthorizationCodeView(BaseTest):
             "approval_prompt": "auto",
         })
         url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        # access token expired but valid refresh token exists
+        tok.expires = timezone.now() - datetime.timedelta(days=1)
+        tok.save()
+        reftok = RefreshToken.objects.create(
+            user=self.test_user, token="0123456789",
+            application=self.application,
+            access_token=tok
+        )
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
         # user already authorized the application, but with different scopes: prompt them.

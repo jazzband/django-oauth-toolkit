@@ -21,14 +21,13 @@ class TestAuthorizedTokenViews(TestCase):
         self.foo_user = UserModel.objects.create_user("foo_user", "test@example.com", "123456")
         self.bar_user = UserModel.objects.create_user("bar_user", "dev@example.com", "123456")
 
-        self.application = Application(
+        self.application = Application.objects.create(
             name="Test Application",
             redirect_uris="http://localhost http://example.com http://example.org",
             user=self.bar_user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
         )
-        self.application.save()
 
     def tearDown(self):
         self.foo_user.delete()
