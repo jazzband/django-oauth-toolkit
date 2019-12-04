@@ -12,7 +12,7 @@ from django.views.generic import FormView, View
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
 from ..http import OAuth2ResponseRedirect
-from ..models import get_access_token_model, get_application_model
+from ..models import get_access_token_model, get_application_model, get_refresh_token_model
 from ..scopes import get_scopes_backend
 from ..settings import oauth2_settings
 from ..signals import app_authorized
@@ -32,6 +32,7 @@ class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
     * Implicit grant
 
     """
+
     def dispatch(self, request, *args, **kwargs):
         self.oauth2_data = {}
         return super().dispatch(request, *args, **kwargs)
@@ -97,6 +98,8 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             "client_id": self.oauth2_data.get("client_id", None),
             "state": self.oauth2_data.get("state", None),
             "response_type": self.oauth2_data.get("response_type", None),
+            "code_challenge": self.oauth2_data.get("code_challenge", None),
+            "code_challenge_method": self.oauth2_data.get("code_challenge_method", None),
         }
         return initial_data
 
@@ -107,8 +110,12 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             "client_id": form.cleaned_data.get("client_id"),
             "redirect_uri": form.cleaned_data.get("redirect_uri"),
             "response_type": form.cleaned_data.get("response_type", None),
-            "state": form.cleaned_data.get("state", None),
+            "state": form.cleaned_data.get("state", None)
         }
+        if form.cleaned_data.get("code_challenge", False):
+            credentials["code_challenge"] = form.cleaned_data.get("code_challenge")
+        if form.cleaned_data.get("code_challenge_method", False):
+            credentials["code_challenge_method"] = form.cleaned_data.get("code_challenge_method")
         scopes = form.cleaned_data.get("scope")
         allow = form.cleaned_data.get("allow")
 
@@ -126,6 +133,16 @@ class AuthorizationView(BaseAuthorizationView, FormView):
     def get(self, request, *args, **kwargs):
         try:
             scopes, credentials = self.validate_authorization_request(request)
+            # TODO: Remove the two following lines after oauthlib updates its implementation
+            # https://github.com/jazzband/django-oauth-toolkit/pull/707#issuecomment-485011945
+            credentials["code_challenge"] = credentials.get(
+                "code_challenge",
+                request.GET.get("code_challenge", None)
+            )
+            credentials["code_challenge_method"] = credentials.get(
+                "code_challenge_method",
+                request.GET.get("code_challenge_method", None)
+            )
         except OAuthToolkitError as error:
             # Application is not available at this time.
             return self.error_response(error, application=None)
@@ -143,6 +160,8 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         kwargs["redirect_uri"] = credentials["redirect_uri"]
         kwargs["response_type"] = credentials["response_type"]
         kwargs["state"] = credentials["state"]
+        kwargs["code_challenge"] = credentials["code_challenge"]
+        kwargs["code_challenge_method"] = credentials["code_challenge_method"]
 
         self.oauth2_data = kwargs
         # following two loc are here only because of https://code.djangoproject.com/ticket/17795
@@ -171,6 +190,12 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                     application=kwargs["application"],
                     expires__gt=timezone.now()
                 ).all()
+
+                refresh_tokens = get_refresh_token_model().objects.filter(
+                    user=request.user,
+                    application=kwargs["application"]
+                ).exclude(revoked__lt=timezone.now()).all()
+                tokens = list(tokens) + [r.access_token for r in refresh_tokens]
 
                 # check past authorizations regarded the same scopes as the current one
                 for token in tokens:

@@ -52,14 +52,13 @@ class BaseTest(TestCase):
         self.test_user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
         self.dev_user = UserModel.objects.create_user("dev_user", "dev@example.com", "123456")
 
-        self.application = Application(
+        self.application = Application.objects.create(
             name="Test Application",
             redirect_uris="http://localhost http://example.com http://example.org",
             user=self.dev_user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
         )
-        self.application.save()
 
         oauth2_settings._SCOPES = ["read", "write", "scope1", "scope2", "scope3"]
         oauth2_settings.READ_SCOPE = "read"

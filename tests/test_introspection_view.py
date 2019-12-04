@@ -23,14 +23,13 @@ class TestTokenIntrospectionViews(TestCase):
         self.resource_server_user = UserModel.objects.create_user("resource_server", "test@example.com")
         self.test_user = UserModel.objects.create_user("bar_user", "dev@example.com")
 
-        self.application = Application(
+        self.application = Application.objects.create(
             name="Test Application",
             redirect_uris="http://localhost http://example.com http://example.org",
             user=self.test_user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
         )
-        self.application.save()
 
         self.resource_server_token = AccessToken.objects.create(
             user=self.resource_server_user, token="12345678900",
