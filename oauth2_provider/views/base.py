@@ -1,13 +1,15 @@
 import json
 import logging
+import urllib.parse
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import FormView, View
+from django.shortcuts import render
 
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
@@ -211,6 +213,26 @@ class AuthorizationView(BaseAuthorizationView, FormView):
 
         return self.render_to_response(self.get_context_data(**kwargs))
 
+    def redirect(self, redirect_to, application):
+
+        if not redirect_to.startswith("urn:ietf:wg:oauth:2.0:oob"):
+            return super().redirect(redirect_to, application)
+
+        parsed_redirect = urllib.parse.urlparse(redirect_to)
+        code = urllib.parse.parse_qs(parsed_redirect.query)['code'][0]
+
+        if redirect_to.startswith('urn:ietf:wg:oauth:2.0:oob:auto'):
+            return JsonResponse({
+                'access_token': code,
+                        })
+        else:
+            return render(
+                    request=self.request,
+                    template_name="oauth2_provider/authorized-oob.html",
+                    context={
+                        'code': code,
+                        },
+                    )
 
 @method_decorator(csrf_exempt, name="dispatch")
 class TokenView(OAuthLibMixin, View):
