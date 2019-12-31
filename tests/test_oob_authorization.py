@@ -77,9 +77,6 @@ class TestOobAuthorizationCodeView(BaseTest):
         code = code_matches.groups(0)
         self.assertNotEqual(code, '')
 
-        with open('/tmp/fred.html', 'w') as f:
-            f.write(str(response.content, encoding='UTF-8'))
-
     def test_oob_as_json(self):
         """
         ...
@@ -103,6 +100,3 @@ class TestOobAuthorizationCodeView(BaseTest):
         content = json.loads(str(response.content, encoding='UTF-8'))
 
         self.assertIn('access_token', content)
-
-        with open('/tmp/fred.json', 'w') as f:
-            f.write(str(response.content, encoding='UTF-8'))
