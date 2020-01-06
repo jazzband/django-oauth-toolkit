@@ -10,6 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import FormView, View
 from django.shortcuts import render
+from django.urls import reverse
 
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
@@ -19,7 +20,6 @@ from ..scopes import get_scopes_backend
 from ..settings import oauth2_settings
 from ..signals import app_authorized
 from .mixins import OAuthLibMixin
-
 
 log = logging.getLogger("oauth2_provider")
 
@@ -61,6 +61,7 @@ class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
             allowed_schemes = application.get_allowed_schemes()
         return OAuth2ResponseRedirect(redirect_to, allowed_schemes)
 
+RFC3339 = '%Y-%m-%dT%H:%M:%SZ'
 
 class AuthorizationView(BaseAuthorizationView, FormView):
     """
@@ -206,14 +207,15 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                             request=self.request, scopes=" ".join(scopes),
                             credentials=credentials, allow=True
                         )
-                        return self.redirect(uri, application)
+                        return self.redirect(uri, application, token)
 
         except OAuthToolkitError as error:
             return self.error_response(error, application)
 
         return self.render_to_response(self.get_context_data(**kwargs))
 
-    def redirect(self, redirect_to, application):
+    def redirect(self, redirect_to, application,
+            token = None):
 
         if not redirect_to.startswith("urn:ietf:wg:oauth:2.0:oob"):
             return super().redirect(redirect_to, application)
@@ -222,9 +224,25 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         code = urllib.parse.parse_qs(parsed_redirect.query)['code'][0]
 
         if redirect_to.startswith('urn:ietf:wg:oauth:2.0:oob:auto'):
-            return JsonResponse({
-                'access_token': code,
-                        })
+
+            response = {
+                    'access_token': code,
+                    'token_uri': redirect_to,
+                    'refresh_token': None,
+                    'token_expiry': None,
+                    'token_uri': reverse('oauth2_provider:token'),
+                    'user_agent': '',
+                    'client_id': application.client_id,
+                    'client_secret': application.client_secret,
+                    'revoke_uri': reverse('oauth2_provider:revoke-token'),
+                    }
+
+            if token is not None:
+                response['refresh_token'] = token.token
+                response['token_expiry'] = token.expires.format(RFC3339)
+
+            return JsonResponse(response)
+
         else:
             return render(
                     request=self.request,
