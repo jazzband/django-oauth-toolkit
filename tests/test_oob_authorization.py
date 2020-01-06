@@ -99,4 +99,11 @@ class TestOobAuthorizationCodeView(BaseTest):
 
         content = json.loads(str(response.content, encoding='UTF-8'))
 
-        self.assertIn('access_token', content)
+        for field in [
+                'access_token', 'token_uri',
+                'refresh_token', 'token_expiry',
+                'token_uri', 'user_agent',
+                'client_id', 'client_secret',
+                'revoke_uri',
+                ]:
+            self.assertIn(field, content)
