@@ -53,7 +53,7 @@ class BaseTest(TestCase):
 class TestOobAuthorizationCodeView(BaseTest):
     def test_oob_as_html(self):
         """
-        ...
+        Test out-of-band authentication, with a legacy HTML response.
         """
         self.client.login(username="test_user", password="123456")
         self.application.skip_authorization = True
@@ -79,7 +79,7 @@ class TestOobAuthorizationCodeView(BaseTest):
 
     def test_oob_as_json(self):
         """
-        ...
+        Test out-of-band authentication, with a JSON response.
         """
         self.client.login(username="test_user", password="123456")
         self.application.skip_authorization = True
