@@ -228,18 +228,10 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             response = {
                     'access_token': code,
                     'token_uri': redirect_to,
-                    'refresh_token': None,
-                    'token_expiry': None,
-                    'token_uri': reverse('oauth2_provider:token'),
-                    'user_agent': '',
                     'client_id': application.client_id,
                     'client_secret': application.client_secret,
                     'revoke_uri': reverse('oauth2_provider:revoke-token'),
                     }
-
-            if token is not None:
-                response['refresh_token'] = token.token
-                response['token_expiry'] = token.expires.format(RFC3339)
 
             return JsonResponse(response)
 
