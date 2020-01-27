@@ -7,4 +7,6 @@ class Command(BaseCommand):
     help = "Can be run as a cronjob or directly to clean out expired tokens"
 
     def handle(self, *args, **options):
-        clear_expired()
+        before = options.get('before')
+        import pdb; pdb.set_trace()
+        clear_expired(before)
