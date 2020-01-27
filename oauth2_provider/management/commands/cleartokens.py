@@ -7,7 +7,7 @@ class Command(BaseCommand):
     help = "Can be run as a cronjob or directly to clean out expired tokens"
     
     def add_arguments(self, parser):
-        parser.add_argument('before', nargs='+', type=date)
+        parser.add_argument('before', nargs='+', type=datetime)
 
         
     def handle(self, *args, **options):
