@@ -11,6 +11,7 @@ class Command(BaseCommand):
 
         
     def handle(self, *args, **options):
-        before = options.get('--before')
-        import pdb; pdb.set_trace()
+        before = options.get('before')
+        if type(before).__name__ is not 'datetime':
+            return
         clear_expired(before)
