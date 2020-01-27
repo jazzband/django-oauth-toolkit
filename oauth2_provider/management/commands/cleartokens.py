@@ -5,7 +5,11 @@ from ...models import clear_expired
 
 class Command(BaseCommand):
     help = "Can be run as a cronjob or directly to clean out expired tokens"
+    
+    def add_arguments(self, parser):
+        parser.add_argument('before', nargs='+', type=date)
 
+        
     def handle(self, *args, **options):
         before = options.get('before')
         import pdb; pdb.set_trace()
