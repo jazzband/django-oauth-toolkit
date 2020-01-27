@@ -1,6 +1,6 @@
+import logging
 from datetime import timedelta
 from urllib.parse import parse_qsl, urlparse
-import logging
 
 from django.apps import apps
 from django.conf import settings
@@ -14,6 +14,7 @@ from .generators import generate_client_id, generate_client_secret
 from .scopes import get_scopes_backend
 from .settings import oauth2_settings
 from .validators import RedirectURIValidator, WildcardSet
+
 
 logger = logging.getLogger(__name__)
 
@@ -434,8 +435,15 @@ def get_refresh_token_model():
     return apps.get_model(oauth2_settings.REFRESH_TOKEN_MODEL)
 
 
-def clear_expired():
-    now = timezone.now()
+def clear_expired(before = None):
+    """Clear expired tokens, add custom date to limit clear tokens before this date."""
+    if not before:
+        now = timezone.now()
+    else:
+        now = before
+        if not type(now).__name__=='datetime':
+            print('Not valid datetime.')
+            return
     refresh_expire_at = None
     access_token_model = get_access_token_model()
     refresh_token_model = get_refresh_token_model()
