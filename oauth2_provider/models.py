@@ -442,6 +442,7 @@ def clear_expired(before = None):
         now = timezone.now()
     else:
         now = before
+        import pdb; pdb.set_trace()
         if type(before).__name__ is not 'datetime':
             try:
                 before = parse(before)
