@@ -1,3 +1,4 @@
+from dateutil.parser import parse
 from django.core.management.base import BaseCommand
 
 from ...models import clear_expired
@@ -12,6 +13,11 @@ class Command(BaseCommand):
         
     def handle(self, *args, **options):
         before = options.get('before')
+        try:
+            before = parse(before)
+        except:
+            print('Not datetime')
+        import pdb; pdb.set_trace()
         if type(before).__name__ is not 'datetime':
             return
         clear_expired(before)
