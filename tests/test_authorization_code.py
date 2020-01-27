@@ -2,6 +2,7 @@ import base64
 import datetime
 import hashlib
 import json
+import re
 from urllib.parse import parse_qs, urlencode, urlparse
 
 from django.contrib.auth import get_user_model
@@ -27,6 +28,8 @@ Grant = get_grant_model()
 RefreshToken = get_refresh_token_model()
 UserModel = get_user_model()
 
+URI_OOB = "urn:ietf:wg:oauth:2.0:oob"
+URI_OOB_AUTO = "urn:ietf:wg:oauth:2.0:oob:auto"
 
 # mocking a protected resource view
 class ResourceView(ProtectedResourceView):
@@ -46,6 +49,7 @@ class BaseTest(TestCase):
             name="Test Application",
             redirect_uris=(
                 "http://localhost http://example.com http://example.org custom-scheme://example.com"
+                " " + URI_OOB + " " + URI_OOB_AUTO
             ),
             user=self.dev_user,
             client_type=Application.CLIENT_CONFIDENTIAL,
@@ -1456,6 +1460,94 @@ class TestAuthorizationCodeTokenView(BaseTest):
         self.assertEqual(content["scope"], "read write")
         self.assertEqual(content["expires_in"], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
 
+    def test_oob_as_html(self):
+        """
+        Test out-of-band authentication.
+        """
+        self.client.login(username="test_user", password="123456")
+
+        authcode_data = {
+            "client_id": self.application.client_id,
+            "state": "random_state_string",
+            "scope": "read write",
+            "redirect_uri": URI_OOB,
+            "response_type": "code",
+            "allow": True,
+        }
+
+        response = self.client.post(reverse("oauth2_provider:authorize"), data=authcode_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertRegex(response['Content-Type'], r'^text/html')
+
+        content = response.content.decode("utf-8")
+
+        # "A lot of applications, for legacy reasons, use this and regex
+        # to extract the token, risking summoning zalgo in the process."
+        #    -- https://github.com/jazzband/django-oauth-toolkit/issues/235
+
+        matches = re.search(r'.*<code>([^<>]*)</code>',
+                content)
+        self.assertIsNotNone(matches,
+                msg="OOB response contains code inside <code> tag")
+        self.assertEqual(len(matches.groups()), 1,
+                msg="OOB response contains multiple <code> tags")
+        authorization_code = matches.groups()[0]
+
+        token_request_data = {
+            "grant_type": "authorization_code",
+            "code": authorization_code,
+            "redirect_uri": URI_OOB,
+            "client_id": self.application.client_id,
+            "client_secret": self.application.client_secret,
+        }
+
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data)
+        self.assertEqual(response.status_code, 200)
+
+        content = json.loads(response.content.decode("utf-8"))
+        self.assertEqual(content["token_type"], "Bearer")
+        self.assertEqual(content["scope"], "read write")
+        self.assertEqual(content["expires_in"], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
+
+    def test_oob_as_json(self):
+        """
+        Test out-of-band authentication, with a JSON response.
+        """
+        self.client.login(username="test_user", password="123456")
+
+        authcode_data = {
+            "client_id": self.application.client_id,
+            "state": "random_state_string",
+            "scope": "read write",
+            "redirect_uri": URI_OOB_AUTO,
+            "response_type": "code",
+            "allow": True,
+        }
+
+        response = self.client.post(reverse("oauth2_provider:authorize"), data=authcode_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertRegex(response['Content-Type'], '^application/json')
+
+        parsed_response = json.loads(response.content.decode("utf-8"))
+
+        self.assertIn('access_token', parsed_response)
+        authorization_code = parsed_response['access_token']
+
+        token_request_data = {
+            "grant_type": "authorization_code",
+            "code": authorization_code,
+            "redirect_uri": URI_OOB_AUTO,
+            "client_id": self.application.client_id,
+            "client_secret": self.application.client_secret,
+        }
+
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data)
+        self.assertEqual(response.status_code, 200)
+
+        content = json.loads(response.content.decode("utf-8"))
+        self.assertEqual(content["token_type"], "Bearer")
+        self.assertEqual(content["scope"], "read write")
+        self.assertEqual(content["expires_in"], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
 
 class TestAuthorizationCodeProtectedResource(BaseTest):
     def test_resource_access_allowed(self):
