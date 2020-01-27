@@ -17,7 +17,5 @@ class Command(BaseCommand):
             before = parse(before)
         except:
             print('Not datetime')
-        import pdb; pdb.set_trace()
-        if type(before).__name__ is not 'datetime':
-            return
+
         clear_expired(before)
