@@ -17,5 +17,4 @@ class Command(BaseCommand):
             before = parse(before)
         except:
             print('Not datetime')
-
         clear_expired(before)

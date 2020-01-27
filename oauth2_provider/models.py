@@ -2,6 +2,7 @@ import logging
 from datetime import timedelta
 from urllib.parse import parse_qsl, urlparse
 
+from dateutil.parser import parse
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -442,9 +443,10 @@ def clear_expired(before = None):
     else:
         now = before
         import pdb; pdb.set_trace()
-        if type(now).__name__ is not 'datetime':
-            print('Not valid datetime.')
-            return
+        try:
+            before = parse(before)
+        except:
+            print('Not valid datetime')
     refresh_expire_at = None
     access_token_model = get_access_token_model()
     refresh_token_model = get_refresh_token_model()
