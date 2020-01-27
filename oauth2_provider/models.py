@@ -442,11 +442,11 @@ def clear_expired(before = None):
         now = timezone.now()
     else:
         now = before
-        import pdb; pdb.set_trace()
         try:
             before = parse(before)
         except:
-            print('Not valid datetime')
+            print('Not valid datetime.')
+            return
     refresh_expire_at = None
     access_token_model = get_access_token_model()
     refresh_token_model = get_refresh_token_model()
