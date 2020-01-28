@@ -16,9 +16,9 @@ class Command(BaseCommand):
             before = options.get('before')
             try:
                 before = parse(before)
+                clear_expired(before)
             except Exception:
                 print('Not valid datetime')
                 return
         except Exception:
-            before = None
-        clear_expired(before)
+            clear_expired()
