@@ -12,10 +12,12 @@ class Command(BaseCommand):
         parser.add_argument('--before')
 
     def handle(self, *args, **options):
-        before = options.get('before')
+        before = None
         try:
-            before = parse(before)
-        except Exception:
-            print('Not valid datetime')
-            return
+            before = options.get('before')
+            try:
+                before = parse(before)
+            except Exception:
+                print('Not valid datetime')
+                return
         clear_expired(before)
