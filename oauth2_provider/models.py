@@ -1,5 +1,5 @@
 import logging
-from datetime import timedelta
+from datetime import date, timedelta
 from urllib.parse import parse_qsl, urlparse
 
 from dateutil.parser import parse
@@ -442,12 +442,8 @@ def clear_expired(before = None):
         now = timezone.now()
     else:
         now = before
-        if not type(before).__name__ == 'datetime':
-            try:
-                before = parse(before)
-            except:
-                print('Not valid datetime.')
-                return
+        if isinstance(now, datetime.date) is False:
+            return
     refresh_expire_at = None
     access_token_model = get_access_token_model()
     refresh_token_model = get_refresh_token_model()
