@@ -436,7 +436,7 @@ def get_refresh_token_model():
     return apps.get_model(oauth2_settings.REFRESH_TOKEN_MODEL)
 
 
-def clear_expired(before = None):
+def clear_expired(before=None):
     """Clear expired tokens, add custom date to limit clear tokens before this date."""
     if not before:
         now = timezone.now()
