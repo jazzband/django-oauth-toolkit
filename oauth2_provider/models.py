@@ -2,7 +2,6 @@ import logging
 from datetime import date, timedelta
 from urllib.parse import parse_qsl, urlparse
 
-from dateutil.parser import parse
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
