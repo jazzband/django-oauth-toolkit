@@ -442,7 +442,7 @@ def clear_expired(before=None):
     else:
         now = before
         if isinstance(now, datetime.date) is False:
-            print('Not valid datetime.')
+            logger.info('Not valid datetime.')
             return
     refresh_expire_at = None
     access_token_model = get_access_token_model()
