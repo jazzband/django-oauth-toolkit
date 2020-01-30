@@ -441,7 +441,7 @@ def clear_expired(before=None):
         now = timezone.now()
     else:
         now = before
-        if isinstance(now, datetime.date) is False:
+        if isinstance(now, date) is False:
             logger.info('Not valid datetime.')
             return
     refresh_expire_at = None
