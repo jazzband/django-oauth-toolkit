@@ -382,8 +382,8 @@ class TestClearExpired(TestCase):
         expired_token_count = AccessToken.objects.filter(expires__lte=timezone.now()).count()
         assert access_token_count == 4
         assert expired_token_count == 4
-        before = 1728000  # 20 days invalid format, must be datetime object
-        clear_expired(before)
+        tokens_expired_before_date = 1728000  # 20 days invalid format, must be datetime object
+        clear_expired(tokens_expired_before_date)
         expired_token_count = AccessToken.objects.filter(expires__lte=timezone.now()).count()
         assert expired_token_count == 4
     
@@ -419,8 +419,8 @@ class TestClearExpired(TestCase):
         expired_token_count = AccessToken.objects.filter(expires__lte=timezone.now()).count()
         assert access_token_count == 4
         assert expired_token_count == 4
-        before = timezone.now()-timedelta(days=20) # 20 days
-        clear_expired(before)
+        tokens_expired_before_date = timezone.now()-timedelta(days=20) # 20 days
+        clear_expired(tokens_expired_before_date)
         expired_token_count = AccessToken.objects.filter(expires__lte=timezone.now()).count()
         assert expired_token_count == 3
 
@@ -470,8 +470,8 @@ class TestClearExpired(TestCase):
         assert access_token_count == 4
         assert refresh_token_count == 2
         assert expired_token_count == 4
-        before = timezone.now()-timedelta(days=20) # 20 days
-        clear_expired(before)
+        tokens_expired_before_date = timezone.now()-timedelta(days=20) # 20 days
+        clear_expired(tokens_expired_before_date)
         expired_token_count = AccessToken.objects.filter(expires__lte=timezone.now()).count()
         refresh_token_count = RefreshToken.objects.count()
         assert expired_token_count == 4
@@ -529,8 +529,8 @@ class TestClearExpired(TestCase):
         assert expired_token_count == 4
         refresh_token1.revoke()
         refresh_token2.revoke()
-        before = timezone.now()-timedelta(days=20) # 20 days
-        clear_expired(before)
+        tokens_expired_before_date = timezone.now()-timedelta(days=20) # 20 days
+        clear_expired(tokens_expired_before_date)
         expired_token_count = AccessToken.objects.filter(expires__lte=timezone.now()).count()
         refresh_token_count = RefreshToken.objects.count()
         assert expired_token_count == 2
