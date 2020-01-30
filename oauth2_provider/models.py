@@ -454,7 +454,7 @@ def clear_expired(tokens_expired_before_date=None):
             except TypeError:
                 e = "REFRESH_TOKEN_EXPIRE_SECONDS must be either a timedelta or seconds"
                 raise ImproperlyConfigured(e)
-        refresh_expire_at = now - REFRESH_TOKEN_EXPIRE_SECONDS
+        refresh_expire_at = tokens_expired_before_date - REFRESH_TOKEN_EXPIRE_SECONDS
 
     with transaction.atomic():
         if refresh_expire_at:
@@ -476,9 +476,9 @@ def clear_expired(tokens_expired_before_date=None):
 
         access_tokens = access_token_model.objects.filter(
             refresh_token__isnull=True,
-            expires__lt=now
+            expires__lt=tokens_expired_before_date,
         )
-        grants = grant_model.objects.filter(expires__lt=now)
+        grants = grant_model.objects.filter(expires__lt=tokens_expired_before_date)
 
         logger.info('%s Expired access tokens to be deleted', access_tokens.count())
         logger.info('%s Expired grant tokens to be deleted', grants.count())
