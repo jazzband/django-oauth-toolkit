@@ -398,7 +398,7 @@ class TestClearExpired(TestCase):
         )
         oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS = 0
         AccessToken.objects.create(
-            token="999",
+            token="9999",
             expires=timezone.now()-timedelta(days=30),
             scope=2,
             application=app,
@@ -407,7 +407,7 @@ class TestClearExpired(TestCase):
             updated=timezone.now()-timedelta(days=40),
             )
         AccessToken.objects.create(
-            token="101010",
+            token="10101010",
             expires=timezone.now()-timedelta(days=15),
             scope=2,
             application=app,
@@ -423,3 +423,121 @@ class TestClearExpired(TestCase):
         clear_expired(before)
         expiredt = AccessToken.objects.filter(expires__lte=timezone.now()).count()
         assert expiredt == 3
+
+    def test_clear_expired_tokens_with_tokens_before_with_valid_refresh_tokens(self):
+        self.client.login(username="test_user", password="123456")
+        app = Application.objects.create(
+            name="test_app",
+            redirect_uris="http://localhost http://example.com http://example.org",
+            user=self.user,
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+        )
+        oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS = 0
+        AccessToken.objects.create(
+            token="999",
+            expires=timezone.now()-timedelta(days=30),
+            scope=2,
+            application=app,
+            user=self.user,
+            created=timezone.now()-timedelta(days=40),
+            updated=timezone.now()-timedelta(days=40),
+            )
+        access_token1 = AccessToken.objects.last()
+        RefreshToken.objects.create(
+            token = 'refresh999',
+            access_token = access_token1,
+            application = app,
+            user=self.user,
+            )
+        AccessToken.objects.create(
+            token="101010",
+            expires=timezone.now()-timedelta(days=15),
+            scope=2,
+            application=app,
+            user=self.user,
+            created=timezone.now()-timedelta(days=20),
+            updated=timezone.now()-timedelta(days=20),
+            )
+        access_token2 = AccessToken.objects.last()
+        RefreshToken.objects.create(
+            token = 'refresh101010',
+            access_token = access_token2,
+            application = app,
+            user=self.user,
+            )
+        ttokens = AccessToken.objects.count()
+        rtokens = RefreshToken.objects.count()
+        expiredt = AccessToken.objects.filter(expires__lte=timezone.now()).count()
+        assert ttokens == 4
+        assert rtokens == 2
+        assert expiredt == 4
+        before = timezone.now()-timedelta(days=20) # 20 days
+        clear_expired(before)
+        expiredt = AccessToken.objects.filter(expires__lte=timezone.now()).count()
+        rtokens = RefreshToken.objects.count()
+        assert expiredt == 4
+        assert rtokens == 2
+    
+    def test_clear_expired_tokens_with_tokens_before_with_revoked_refresh_tokens(self):
+        self.client.login(username="test_user", password="123456")
+        app = Application.objects.create(
+            name="test_app",
+            redirect_uris="http://localhost http://example.com http://example.org",
+            user=self.user,
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+        )
+        oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS = 0
+        AccessToken.objects.create(
+            token="999",
+            expires=timezone.now()-timedelta(days=30),
+            scope=2,
+            application=app,
+            user=self.user,
+            created=timezone.now()-timedelta(days=40),
+            updated=timezone.now()-timedelta(days=40),
+            )
+        access_token1 = AccessToken.objects.last()
+        RefreshToken.objects.create(
+            token = 'refresh999',
+            access_token = access_token1,
+            application = app,
+            user=self.user,
+            created=timezone.now()-timedelta(days=4),
+            updated=timezone.now()-timedelta(days=40),
+            )
+        refresh_token1= RefreshToken.objects.last()
+        AccessToken.objects.create(
+            token="101010",
+            expires=timezone.now()-timedelta(days=15),
+            scope=2,
+            application=app,
+            user=self.user,
+            created=timezone.now()-timedelta(days=20),
+            updated=timezone.now()-timedelta(days=20),
+            )
+        access_token2 = AccessToken.objects.last()
+        RefreshToken.objects.create(
+            token = 'refresh101010',
+            access_token = access_token2,
+            application = app,
+            user=self.user,
+            created=timezone.now()-timedelta(days=20),
+            updated=timezone.now()-timedelta(days=20),
+            )
+        refresh_token2= RefreshToken.objects.last()
+        ttokens = AccessToken.objects.count()
+        rtokens = RefreshToken.objects.count()
+        expiredt = AccessToken.objects.filter(expires__lte=timezone.now()).count()
+        assert ttokens == 4
+        assert rtokens == 2
+        assert expiredt == 4
+        refresh_token1.revoke()
+        refresh_token2.revoke()
+        before = timezone.now()-timedelta(days=20) # 20 days
+        clear_expired(before)
+        expiredt = AccessToken.objects.filter(expires__lte=timezone.now()).count()
+        rtokens = RefreshToken.objects.count()
+        assert expiredt == 2
+        assert rtokens == 2
