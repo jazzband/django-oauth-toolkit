@@ -1,6 +1,6 @@
-from datetime import timedelta
-from urllib.parse import parse_qsl, urlparse
 import logging
+from datetime import date, timedelta
+from urllib.parse import parse_qsl, urlparse
 
 from django.apps import apps
 from django.conf import settings
@@ -14,6 +14,7 @@ from .generators import generate_client_id, generate_client_secret
 from .scopes import get_scopes_backend
 from .settings import oauth2_settings
 from .validators import RedirectURIValidator, WildcardSet
+
 
 logger = logging.getLogger(__name__)
 
@@ -434,8 +435,13 @@ def get_refresh_token_model():
     return apps.get_model(oauth2_settings.REFRESH_TOKEN_MODEL)
 
 
-def clear_expired():
-    now = timezone.now()
+def clear_expired(tokens_expired_before_date=None):
+    """Clear expired tokens, add custom date to limit clear tokens before this date."""
+    if not tokens_expired_before_date:
+        tokens_expired_before_date = timezone.now()
+    if isinstance(tokens_expired_before_date, date) is False:
+        logger.info('Not valid datetime provided.')
+        return
     refresh_expire_at = None
     access_token_model = get_access_token_model()
     refresh_token_model = get_refresh_token_model()
@@ -448,7 +454,7 @@ def clear_expired():
             except TypeError:
                 e = "REFRESH_TOKEN_EXPIRE_SECONDS must be either a timedelta or seconds"
                 raise ImproperlyConfigured(e)
-        refresh_expire_at = now - REFRESH_TOKEN_EXPIRE_SECONDS
+        refresh_expire_at = tokens_expired_before_date - REFRESH_TOKEN_EXPIRE_SECONDS
 
     with transaction.atomic():
         if refresh_expire_at:
@@ -470,9 +476,9 @@ def clear_expired():
 
         access_tokens = access_token_model.objects.filter(
             refresh_token__isnull=True,
-            expires__lt=now
+            expires__lt=tokens_expired_before_date,
         )
-        grants = grant_model.objects.filter(expires__lt=now)
+        grants = grant_model.objects.filter(expires__lt=tokens_expired_before_date)
 
         logger.info('%s Expired access tokens to be deleted', access_tokens.count())
         logger.info('%s Expired grant tokens to be deleted', grants.count())
