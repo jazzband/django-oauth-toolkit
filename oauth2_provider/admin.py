@@ -23,7 +23,7 @@ class GrantAdmin(admin.ModelAdmin):
 
 class AccessTokenAdmin(admin.ModelAdmin):
     list_display = ("token", "user", "application", "expires")
-    raw_id_fields = ("user", )
+    raw_id_fields = ("user", "source_refresh_token")
 
 
 class RefreshTokenAdmin(admin.ModelAdmin):
