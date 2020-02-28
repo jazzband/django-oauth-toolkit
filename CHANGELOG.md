@@ -4,6 +4,8 @@
 * **Backwards-incompatible** squashed migrations:
   If you are currently on a release < 1.2.0, you will need to first install 1.2.x then `manage.py migrate` before
   upgrading to >= 1.3.0.
+* Bump django minimum to 2.1
+* Dropped Python 3.4
 
 ### 1.2.0 [2018-06-03]
 

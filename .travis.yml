@@ -1,5 +1,5 @@
 # https://travis-ci.org/jazzband/django-oauth-toolkit
-dist: xenial
+dist: bionic
 
 language: python
 
