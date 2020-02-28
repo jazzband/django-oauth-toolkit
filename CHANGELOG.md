@@ -1,3 +1,4 @@
+## Changelog
 ### 1.3.0 [unreleased]
 
 * Fix a race condition in creation of AccessToken with external oauth2 server.
