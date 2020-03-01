@@ -8,5 +8,4 @@ Fixes #
 - [ ] unit-test added
 - [ ] documentation updated
 - [ ] `CHANGELOG.md` updated (only for user relevant changes)
-- [ ] `docs/changelog.rst` updated to match.
 - [ ] author name in `AUTHORS`
