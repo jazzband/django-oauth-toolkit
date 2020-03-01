@@ -2,7 +2,7 @@
 This module is largely inspired by django-rest-framework settings.
 
 Settings for the OAuth2 Provider are all namespaced in the OAUTH2_PROVIDER setting.
-For example your project's `settings.py` file might look like this:
+For example your project"s `settings.py` file might look like this:
 
 OAUTH2_PROVIDER = {
     "CLIENT_ID_GENERATOR_CLASS":
@@ -182,24 +182,25 @@ class OAuth2ProviderSettings(object):
         This is used to communicate settings to oauth server.
 
         Takes relevant settings and format them accordingly.
-        There's also EXTRA_SERVER_KWARGS that can override every value
+        There"s also EXTRA_SERVER_KWARGS that can override every value
         and is more flexible regarding keys and acceptable values
-        but doesn't have import string magic or any additional
+        but doesn"t have import string magic or any additional
         processing, callables have to be assigned directly.
         For the likes of signed_token_generator it means something like
 
-        {'token_generator': signed_token_generator(privkey, **kwargs)}
+        {"token_generator": signed_token_generator(privkey, **kwargs)}
         """
         kwargs = {
             key: getattr(self, value)
             for key, value in [
-                ('token_expires_in', 'ACCESS_TOKEN_EXPIRE_SECONDS'),
-                ('refresh_token_expires_in', 'REFRESH_TOKEN_EXPIRE_SECONDS'),
-                ('token_generator', 'ACCESS_TOKEN_GENERATOR'),
-                ('refresh_token_generator', 'REFRESH_TOKEN_GENERATOR'),
+                ("token_expires_in", "ACCESS_TOKEN_EXPIRE_SECONDS"),
+                ("refresh_token_expires_in", "REFRESH_TOKEN_EXPIRE_SECONDS"),
+                ("token_generator", "ACCESS_TOKEN_GENERATOR"),
+                ("refresh_token_generator", "REFRESH_TOKEN_GENERATOR"),
             ]
         }
         kwargs.update(self.EXTRA_SERVER_KWARGS)
         return kwargs
+
 
 oauth2_settings = OAuth2ProviderSettings(USER_SETTINGS, DEFAULTS, IMPORT_STRINGS, MANDATORY)

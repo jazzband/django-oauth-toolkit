@@ -1,6 +1,6 @@
+import logging
 from datetime import timedelta
 from urllib.parse import parse_qsl, urlparse
-import logging
 
 from django.apps import apps
 from django.conf import settings
@@ -15,13 +15,14 @@ from .scopes import get_scopes_backend
 from .settings import oauth2_settings
 from .validators import RedirectURIValidator, WildcardSet
 
+
 logger = logging.getLogger(__name__)
 
 
 class AbstractApplication(models.Model):
     """
     An Application instance represents a Client on the Authorization server.
-    Usually an Application is created manually by client's developers after
+    Usually an Application is created manually by client"s developers after
     logging in on an Authorization Server.
 
     Fields:
@@ -259,11 +260,11 @@ class Grant(AbstractGrant):
 class AbstractAccessToken(models.Model):
     """
     An AccessToken instance represents the actual access token to
-    access user's resources, as in :rfc:`5`.
+    access user"s resources, as in :rfc:`5`.
 
     Fields:
 
-    * :attr:`user` The Django user representing resources' owner
+    * :attr:`user` The Django user representing resources" owner
     * :attr:`source_refresh_token` If from a refresh, the consumed RefeshToken
     * :attr:`token` Access token
     * :attr:`application` Application instance
@@ -323,7 +324,7 @@ class AbstractAccessToken(models.Model):
 
     def revoke(self):
         """
-        Convenience method to uniform tokens' interface, for now
+        Convenience method to uniform tokens" interface, for now
         simply remove this token from the database in order to revoke it.
         """
         self.delete()
@@ -356,7 +357,7 @@ class AbstractRefreshToken(models.Model):
 
     Fields:
 
-    * :attr:`user` The Django user representing resources' owner
+    * :attr:`user` The Django user representing resources" owner
     * :attr:`token` Token value
     * :attr:`application` Application instance
     * :attr:`access_token` AccessToken instance this refresh token is
@@ -459,14 +460,14 @@ def clear_expired():
                 access_token__expires__lt=refresh_expire_at,
             )
 
-            logger.info('%s Revoked refresh tokens to be deleted', revoked.count())
-            logger.info('%s Expired refresh tokens to be deleted', expired.count())
+            logger.info("%s Revoked refresh tokens to be deleted", revoked.count())
+            logger.info("%s Expired refresh tokens to be deleted", expired.count())
 
             revoked.delete()
             expired.delete()
         else:
-            logger.info('refresh_expire_at is %s. No refresh tokens deleted.',
-                         refresh_expire_at)
+            logger.info("refresh_expire_at is %s. No refresh tokens deleted.",
+                        refresh_expire_at)
 
         access_tokens = access_token_model.objects.filter(
             refresh_token__isnull=True,
@@ -474,8 +475,8 @@ def clear_expired():
         )
         grants = grant_model.objects.filter(expires__lt=now)
 
-        logger.info('%s Expired access tokens to be deleted', access_tokens.count())
-        logger.info('%s Expired grant tokens to be deleted', grants.count())
+        logger.info("%s Expired access tokens to be deleted", access_tokens.count())
+        logger.info("%s Expired grant tokens to be deleted", grants.count())
 
         access_tokens.delete()
         grants.delete()

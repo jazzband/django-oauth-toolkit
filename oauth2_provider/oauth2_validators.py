@@ -480,7 +480,7 @@ class OAuth2Validator(RequestValidator):
         # expires_in is passed to Server on initialization
         # custom server class can have logic to override this
         expires = timezone.now() + timedelta(seconds=token.get(
-            'expires_in', oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS,
+            "expires_in", oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS,
         ))
 
         if request.grant_type == "client_credentials":
