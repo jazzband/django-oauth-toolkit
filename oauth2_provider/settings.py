@@ -2,7 +2,7 @@
 This module is largely inspired by django-rest-framework settings.
 
 Settings for the OAuth2 Provider are all namespaced in the OAUTH2_PROVIDER setting.
-For example your project"s `settings.py` file might look like this:
+For example your project's `settings.py` file might look like this:
 
 OAUTH2_PROVIDER = {
     "CLIENT_ID_GENERATOR_CLASS":
@@ -182,9 +182,9 @@ class OAuth2ProviderSettings(object):
         This is used to communicate settings to oauth server.
 
         Takes relevant settings and format them accordingly.
-        There"s also EXTRA_SERVER_KWARGS that can override every value
+        There's also EXTRA_SERVER_KWARGS that can override every value
         and is more flexible regarding keys and acceptable values
-        but doesn"t have import string magic or any additional
+        but doesn't have import string magic or any additional
         processing, callables have to be assigned directly.
         For the likes of signed_token_generator it means something like
 
