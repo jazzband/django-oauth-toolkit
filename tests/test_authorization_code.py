@@ -31,6 +31,7 @@ UserModel = get_user_model()
 URI_OOB = "urn:ietf:wg:oauth:2.0:oob"
 URI_OOB_AUTO = "urn:ietf:wg:oauth:2.0:oob:auto"
 
+
 # mocking a protected resource view
 class ResourceView(ProtectedResourceView):
     def get(self, request, *args, **kwargs):
@@ -1467,7 +1468,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
 
         response = self.client.post(reverse("oauth2_provider:authorize"), data=authcode_data)
         self.assertEqual(response.status_code, 200)
-        self.assertRegex(response['Content-Type'], r'^text/html')
+        self.assertRegex(response["Content-Type"], r"^text/html")
 
         content = response.content.decode("utf-8")
 
@@ -1475,12 +1476,9 @@ class TestAuthorizationCodeTokenView(BaseTest):
         # to extract the token, risking summoning zalgo in the process."
         #    -- https://github.com/jazzband/django-oauth-toolkit/issues/235
 
-        matches = re.search(r'.*<code>([^<>]*)</code>',
-                content)
-        self.assertIsNotNone(matches,
-                msg="OOB response contains code inside <code> tag")
-        self.assertEqual(len(matches.groups()), 1,
-                msg="OOB response contains multiple <code> tags")
+        matches = re.search(r".*<code>([^<>]*)</code>", content)
+        self.assertIsNotNone(matches, msg="OOB response contains code inside <code> tag")
+        self.assertEqual(len(matches.groups()), 1, msg="OOB response contains multiple <code> tags")
         authorization_code = matches.groups()[0]
 
         token_request_data = {
@@ -1516,12 +1514,12 @@ class TestAuthorizationCodeTokenView(BaseTest):
 
         response = self.client.post(reverse("oauth2_provider:authorize"), data=authcode_data)
         self.assertEqual(response.status_code, 200)
-        self.assertRegex(response['Content-Type'], '^application/json')
+        self.assertRegex(response["Content-Type"], "^application/json")
 
         parsed_response = json.loads(response.content.decode("utf-8"))
 
-        self.assertIn('access_token', parsed_response)
-        authorization_code = parsed_response['access_token']
+        self.assertIn("access_token", parsed_response)
+        authorization_code = parsed_response["access_token"]
 
         token_request_data = {
             "grant_type": "authorization_code",
@@ -1538,6 +1536,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         self.assertEqual(content["token_type"], "Bearer")
         self.assertEqual(content["scope"], "read write")
         self.assertEqual(content["expires_in"], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
+
 
 class TestAuthorizationCodeProtectedResource(BaseTest):
     def test_resource_access_allowed(self):

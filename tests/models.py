@@ -1,10 +1,10 @@
 from django.db import models
 
-from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.models import (
     AbstractAccessToken, AbstractApplication,
     AbstractGrant, AbstractRefreshToken
 )
+from oauth2_provider.settings import oauth2_settings
 
 
 class BaseTestApplication(AbstractApplication):
