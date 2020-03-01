@@ -201,16 +201,6 @@ class TestAuthorizationCodeView(BaseTest):
         url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
-        # access token expired but valid refresh token exists
-        tok.expires = timezone.now() - datetime.timedelta(days=1)
-        tok.save()
-        reftok = RefreshToken.objects.create(
-            user=self.test_user, token="0123456789",
-            application=self.application,
-            access_token=tok
-        )
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 302)
         # user already authorized the application, but with different scopes: prompt them.
         tok.scope = "read"
         tok.save()
