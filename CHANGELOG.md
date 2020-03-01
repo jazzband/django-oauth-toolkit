@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 * Add support for Python 3.7 & 3.8
-* Add support for Django>=2.1,<=3.0
+* Add support for Django>=2.1,<3.1
 * Add requirement for oauthlib>=3.0.1
 * Add support for [Proof Key for Code Exchange (PKCE, RFC 7636)](https://tools.ietf.org/html/rfc7636).
 * Add support for custom token generators (e.g. to create JWT tokens).
