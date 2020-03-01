@@ -21,8 +21,9 @@ If you need support please send a message to the `Django OAuth Toolkit Google Gr
 Requirements
 ------------
 
-* Python 3.4+
-* Django 2.0+
+* Python 3.5+
+* Django 2.1+
+* oauthlib 3.0+
 
 Index
 =====
