@@ -15,8 +15,7 @@ Issues
 
 You can find the list of bugs, enhancements and feature requests on the
 `issue tracker <https://github.com/jazzband/django-oauth-toolkit/issues>`_. If you want to fix an issue, pick up one and
-add a comment stating you're working on it. If the resolution implies a discussion or if you realize the comments on the
-issue are growing pretty fast, move the discussion to the `Google Group <http://groups.google.com/group/django-oauth-toolkit>`_.
+add a comment stating you're working on it.
 
 Pull requests
 =============
@@ -36,7 +35,46 @@ Now you can go to your repository dashboard on GitHub and open a pull request st
 apply your pull request to the `master` branch of django-oauth-toolkit (this should be the default behaviour of GitHub
 user interface).
 
-Next you should add a comment about your branch, and if the pull request refers to a certain issue, insert a link to it.
+When you begin your PR, you'll be asked to provide the following:
+
+* Identify the issue number that this PR fixes (if any).
+  That issue will automatically be closed when your PR is accepted and merged.
+
+* Provide a high-level description of the change. A reviewer should be able to tell what your PR does without having
+  to read the commit(s).
+
+* Make sure the PR only contains one change. Try to keep the PR as small and focused as you can. You can always
+  submit additional PRs.
+
+* Any new or changed code requires that a unit test be added or updated. Make sure your tests check for
+  correct error behavior as well as normal expected behavior. Strive for 100% code coverage of any new
+  code you contribute! Improving unit tests is always a welcome contribution.
+  If your change reduces coverage, you'll be warned by `coveralls <https://coveralls.io/>`_.
+
+* Update the documentation (in `docs/`) to describe the new or changed functionality.
+
+* Update `CHANGELOG.md` (only for user relevant changes). We use `Keep A Changelog <https://keepachangelog.com/en/1.0.0/>`_
+  format which categorizes the changes as:
+
+  * `Added` for new features.
+
+  * `Changed` for changes in existing functionality.
+
+  * `Deprecated` for soon-to-be removed features.
+
+  * `Removed` for now removed features.
+
+  * `Fixed` for any bug fixes.
+
+  * `Security` in case of vulnerabilities. (Please report any security issues to the
+     JazzBand security team `<security@jazzband.co>`. Do not file an issue on the tracker
+     or submit a PR until directed to do so.)
+
+* Make sure your name is in `AUTHORS`.
+
+If your PR is not yet ready to be merged mark it as a Work-in-Progress
+By prepending `WIP:` to the PR title so that it doesn't get inadvertently approved and merged.
+
 The repo managers will be notified of your pull request and it will be reviewed, in the meantime you can continue to add
 commits to your topic branch (and push them up to GitHub) either if you see something that needs changing, or in
 response to a reviewer's comments.  If a reviewer asks for changes, you do not need to close the pull and reissue it
@@ -87,6 +125,15 @@ Whenever you add code, you have to add tests as well. We cannot accept untested 
 situation you previously discussed with the core committers, if your pull request reduces the test coverage it will be
 **immediately rejected**.
 
+You can check your coverage locally with the `coverage <https://pypi.org/project/coverage/>`_ package after running tox::
+
+  pip install coverage
+  coverage html -d mycoverage
+
+Open mycoverage/index.html in your browser and you can see a coverage summary and coverage details for each file.
+
+There's no need to wait for coveralls to complain after you submit your PR.
+
 Code conventions matter
 -----------------------
 
@@ -94,5 +141,6 @@ There are no good nor bad conventions, just follow PEP8 (run some lint tool for 
 Try reading our code and grasp the overall philosophy regarding method and variable names, avoid *black magics* for
 the sake of readability, keep in mind that *simple is better than complex*. If you feel the code is not straightforward,
 add a comment. If you think a function is not trivial, add a docstrings.
+
 
 The contents of this page are heavily based on the docs from `django-admin2 <https://github.com/twoscoops/django-admin2>`_
