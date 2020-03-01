@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 class AbstractApplication(models.Model):
     """
     An Application instance represents a Client on the Authorization server.
-    Usually an Application is created manually by client"s developers after
+    Usually an Application is created manually by client's developers after
     logging in on an Authorization Server.
 
     Fields:
@@ -260,7 +260,7 @@ class Grant(AbstractGrant):
 class AbstractAccessToken(models.Model):
     """
     An AccessToken instance represents the actual access token to
-    access user"s resources, as in :rfc:`5`.
+    access user's resources, as in :rfc:`5`.
 
     Fields:
 
