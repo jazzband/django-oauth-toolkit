@@ -188,18 +188,19 @@ class OAuth2ProviderSettings(object):
         processing, callables have to be assigned directly.
         For the likes of signed_token_generator it means something like
 
-        {'token_generator': signed_token_generator(privkey, **kwargs)}
+        {"token_generator": signed_token_generator(privkey, **kwargs)}
         """
         kwargs = {
             key: getattr(self, value)
             for key, value in [
-                ('token_expires_in', 'ACCESS_TOKEN_EXPIRE_SECONDS'),
-                ('refresh_token_expires_in', 'REFRESH_TOKEN_EXPIRE_SECONDS'),
-                ('token_generator', 'ACCESS_TOKEN_GENERATOR'),
-                ('refresh_token_generator', 'REFRESH_TOKEN_GENERATOR'),
+                ("token_expires_in", "ACCESS_TOKEN_EXPIRE_SECONDS"),
+                ("refresh_token_expires_in", "REFRESH_TOKEN_EXPIRE_SECONDS"),
+                ("token_generator", "ACCESS_TOKEN_GENERATOR"),
+                ("refresh_token_generator", "REFRESH_TOKEN_GENERATOR"),
             ]
         }
         kwargs.update(self.EXTRA_SERVER_KWARGS)
         return kwargs
+
 
 oauth2_settings = OAuth2ProviderSettings(USER_SETTINGS, DEFAULTS, IMPORT_STRINGS, MANDATORY)

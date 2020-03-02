@@ -98,9 +98,11 @@ class TokenHasScopeViewWrongAuth(BrokenOAuth2View):
 class MethodScopeAltViewWrongAuth(BrokenOAuth2View):
     permission_classes = [TokenMatchesOASRequirements]
 
+
 class AuthenticationNone(OAuth2Authentication):
     def authenticate(self, request):
         return None
+
 
 class AuthenticationNoneOAuth2View(MockView):
     authentication_classes = [AuthenticationNone]
