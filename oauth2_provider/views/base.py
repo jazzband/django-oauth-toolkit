@@ -145,7 +145,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         except OAuthToolkitError as error:
             return self.error_response(error, application)
 
-        self.success_url = redirect_uri
+        self.success_url = uri
         log.debug("Success url for the request: {0}".format(self.success_url))
         return self.redirect(self.success_url, application)
 
@@ -166,9 +166,9 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             client_id=credentials["client_id"]
         )
 
-        uri_query = parse.urlparse(self.request.get_raw_uri()).query
+        uri_query = urllib.parse.urlparse(self.request.get_raw_uri()).query
         uri_query_params = dict(
-            parse.parse_qsl(uri_query, keep_blank_values=True, strict_parsing=True)
+            urllib.parse.parse_qsl(uri_query, keep_blank_values=True, strict_parsing=True)
         )
 
         kwargs["application"] = application
@@ -202,7 +202,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                     credentials=credentials,
                     allow=True,
                 )
-                return self.redirect(redirect_uri, application)
+                return self.redirect(uri, application)
 
             elif require_approval == "auto":
                 tokens = (
@@ -225,7 +225,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                             credentials=credentials,
                             allow=True,
                         )
-                        return self.redirect(redirect_uri, application)
+                        return self.redirect(uri, application)
 
         except OAuthToolkitError as error:
             return self.error_response(error, application)
