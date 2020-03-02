@@ -44,6 +44,7 @@ Requirements
 
 * Python 3.5+
 * Django 2.1+
+* oauthlib 3.0+
 
 Installation
 ------------
