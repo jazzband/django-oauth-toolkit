@@ -1,5 +1,3 @@
-from datetime import datetime as dt
-
 import pytest
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured, ValidationError
@@ -8,30 +6,23 @@ from django.test.utils import override_settings
 from django.utils import timezone
 
 from oauth2_provider.models import (
-    clear_expired,
-    get_access_token_model,
-    get_application_model,
-    get_grant_model,
-    get_refresh_token_model,
-    get_id_token_model,
+    clear_expired, get_access_token_model, get_application_model,
+    get_grant_model, get_refresh_token_model
 )
 from oauth2_provider.settings import oauth2_settings
 
-from .models import SampleRefreshToken
 
 Application = get_application_model()
 Grant = get_grant_model()
 AccessToken = get_access_token_model()
 RefreshToken = get_refresh_token_model()
 UserModel = get_user_model()
-IDToken = get_id_token_model()
 
 
 class TestModels(TestCase):
+
     def setUp(self):
-        self.user = UserModel.objects.create_user(
-            "test_user", "test@example.com", "123456"
-        )
+        self.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
 
     def test_allow_scopes(self):
         self.client.login(username="test_user", password="123456")
@@ -44,7 +35,11 @@ class TestModels(TestCase):
         )
 
         access_token = AccessToken(
-            user=self.user, scope="read write", expires=0, token="", application=app
+            user=self.user,
+            scope="read write",
+            expires=0,
+            token="",
+            application=app
         )
 
         self.assertTrue(access_token.allow_scopes(["read", "write"]))
@@ -99,16 +94,22 @@ class TestModels(TestCase):
         )
 
         access_token = AccessToken(
-            user=self.user, scope="read write", expires=0, token="", application=app
+            user=self.user,
+            scope="read write",
+            expires=0,
+            token="",
+            application=app
         )
 
         access_token2 = AccessToken(
-            user=self.user, scope="write", expires=0, token="", application=app
+            user=self.user,
+            scope="write",
+            expires=0,
+            token="",
+            application=app
         )
 
-        self.assertEqual(
-            access_token.scopes, {"read": "Reading scope", "write": "Writing scope"}
-        )
+        self.assertEqual(access_token.scopes, {"read": "Reading scope", "write": "Writing scope"})
         self.assertEqual(access_token2.scopes, {"write": "Writing scope"})
 
 
@@ -116,13 +117,12 @@ class TestModels(TestCase):
     OAUTH2_PROVIDER_APPLICATION_MODEL="tests.SampleApplication",
     OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL="tests.SampleAccessToken",
     OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL="tests.SampleRefreshToken",
-    OAUTH2_PROVIDER_GRANT_MODEL="tests.SampleGrant",
+    OAUTH2_PROVIDER_GRANT_MODEL="tests.SampleGrant"
 )
 class TestCustomModels(TestCase):
+
     def setUp(self):
-        self.user = UserModel.objects.create_user(
-            "test_user", "test@example.com", "123456"
-        )
+        self.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
 
     def test_custom_application_model(self):
         """
@@ -132,8 +132,7 @@ class TestCustomModels(TestCase):
         See issue #90 (https://github.com/jazzband/django-oauth-toolkit/issues/90)
         """
         related_object_names = [
-            f.name
-            for f in UserModel._meta.get_fields()
+            f.name for f in UserModel._meta.get_fields()
             if (f.one_to_many or f.one_to_one) and f.auto_created and not f.concrete
         ]
         self.assertNotIn("oauth2_provider:application", related_object_names)
@@ -164,8 +163,7 @@ class TestCustomModels(TestCase):
         """
         # Django internals caches the related objects.
         related_object_names = [
-            f.name
-            for f in UserModel._meta.get_fields()
+            f.name for f in UserModel._meta.get_fields()
             if (f.one_to_many or f.one_to_one) and f.auto_created and not f.concrete
         ]
         self.assertNotIn("oauth2_provider:access_token", related_object_names)
@@ -196,8 +194,7 @@ class TestCustomModels(TestCase):
         """
         # Django internals caches the related objects.
         related_object_names = [
-            f.name
-            for f in UserModel._meta.get_fields()
+            f.name for f in UserModel._meta.get_fields()
             if (f.one_to_many or f.one_to_one) and f.auto_created and not f.concrete
         ]
         self.assertNotIn("oauth2_provider:refresh_token", related_object_names)
@@ -228,8 +225,7 @@ class TestCustomModels(TestCase):
         """
         # Django internals caches the related objects.
         related_object_names = [
-            f.name
-            for f in UserModel._meta.get_fields()
+            f.name for f in UserModel._meta.get_fields()
             if (f.one_to_many or f.one_to_one) and f.auto_created and not f.concrete
         ]
         self.assertNotIn("oauth2_provider:grant", related_object_names)
@@ -255,6 +251,7 @@ class TestCustomModels(TestCase):
 
 
 class TestGrantModel(TestCase):
+
     def test_str(self):
         grant = Grant(code="test_code")
         self.assertEqual("%s" % grant, grant.code)
@@ -266,10 +263,9 @@ class TestGrantModel(TestCase):
 
 
 class TestAccessTokenModel(TestCase):
+
     def setUp(self):
-        self.user = UserModel.objects.create_user(
-            "test_user", "test@example.com", "123456"
-        )
+        self.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
 
     def test_str(self):
         access_token = AccessToken(token="test_token")
@@ -283,9 +279,7 @@ class TestAccessTokenModel(TestCase):
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
         )
-        access_token = AccessToken.objects.create(
-            token="test_token", application=app, expires=timezone.now()
-        )
+        access_token = AccessToken.objects.create(token="test_token", application=app, expires=timezone.now())
         self.assertIsNone(access_token.user)
 
     def test_expires_can_be_none(self):
@@ -295,58 +289,16 @@ class TestAccessTokenModel(TestCase):
 
 
 class TestRefreshTokenModel(TestCase):
+
     def test_str(self):
         refresh_token = RefreshToken(token="test_token")
         self.assertEqual("%s" % refresh_token, refresh_token.token)
 
 
 class TestClearExpired(TestCase):
+
     def setUp(self):
-        self.user = UserModel.objects.create_user(
-            "test_user", "test@example.com", "123456"
-        )
-        app1 = Application.objects.create(
-            name="Test Application",
-            redirect_uris=(
-                "http://localhost http://example.com http://example.org custom-scheme://example.com"
-            ),
-            user=self.user,
-            client_type=Application.CLIENT_CONFIDENTIAL,
-            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
-        )
-        app2 = Application.objects.create(
-            name="Test Application",
-            redirect_uris=(
-                "http://localhost http://example.com http://example.org custom-scheme://example.com"
-            ),
-            user=self.user,
-            client_type=Application.CLIENT_CONFIDENTIAL,
-            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
-        )
-        id1 = IDToken.objects.create(
-            token="666",
-            expires=dt.now(),
-            scope=2,
-            application=app1,
-            user=self.user,
-            created=dt.now(),
-            updated=dt.now(),
-        )
-        id2 = IDToken.objects.create(
-            token="999",
-            expires=dt.now(),
-            scope=2,
-            application=app2,
-            user=self.user,
-            created=dt.now(),
-            updated=dt.now(),
-        )
-        refresh_token1 = SampleRefreshToken.objects.create(
-            token="test_token", application=app1, user=self.user,
-        )
-        refresh_token2 = SampleRefreshToken.objects.create(
-            token="test_token2", application=app2, user=self.user,
-        )
+        self.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
         # Insert two tokens on database.
         app = Application.objects.create(
             name="test_app",
@@ -359,24 +311,20 @@ class TestClearExpired(TestCase):
             token="555",
             expires=timezone.now(),
             scope=2,
-            application=app1,
-            id_token=id1,
+            application=app,
             user=self.user,
-            created=dt.now(),
-            updated=dt.now(),
-            refresh_token=refresh_token1,
-        )
+            created=timezone.now(),
+            updated=timezone.now(),
+            )
         AccessToken.objects.create(
             token="666",
             expires=timezone.now(),
             scope=2,
-            application=app2,
+            application=app,
             user=self.user,
-            id_token=id2,
-            created=dt.now(),
-            updated=dt.now(),
-            refresh_token=refresh_token2,
-        )
+            created=timezone.now(),
+            updated=timezone.now(),
+            )
 
     def test_clear_expired_tokens(self):
         oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS = 60
