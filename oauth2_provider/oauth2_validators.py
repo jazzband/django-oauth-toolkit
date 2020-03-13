@@ -634,7 +634,9 @@ class OAuth2Validator(RequestValidator):
                 seconds=oauth2_settings.REFRESH_TOKEN_GRACE_PERIOD_SECONDS
             )
         )
-        rt = RefreshToken.objects.filter(null_or_recent, token=refresh_token).first()
+        rt = RefreshToken.objects.filter(null_or_recent, token=refresh_token).select_related(
+            "access_token"
+        ).first()
 
         if not rt:
             return False
