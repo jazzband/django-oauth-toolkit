@@ -14,11 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
   -->
 
-## [1.3.1] unrelease
+## [1.3.1] unreleased
 ### Fixed
 * #812: Reverts #643 pass wrong request object to authenticate function.
-
-### Security
 
 ## [1.3.0] 2020-03-02
 
