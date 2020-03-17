@@ -8,6 +8,7 @@ from oauth2_provider.views.application import ApplicationRegistration
 
 from .models import SampleApplication
 
+
 Application = get_application_model()
 UserModel = get_user_model()
 

@@ -4,22 +4,23 @@ import urllib.parse
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import FormView, View
-from django.shortcuts import render
-from django.urls import reverse
 
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
 from ..http import OAuth2ResponseRedirect
-from ..models import get_access_token_model, get_application_model, get_refresh_token_model
+from ..models import get_access_token_model, get_application_model
 from ..scopes import get_scopes_backend
 from ..settings import oauth2_settings
 from ..signals import app_authorized
 from .mixins import OAuthLibMixin
+
 
 log = logging.getLogger("oauth2_provider")
 
@@ -61,7 +62,9 @@ class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
             allowed_schemes = application.get_allowed_schemes()
         return OAuth2ResponseRedirect(redirect_to, allowed_schemes)
 
-RFC3339 = '%Y-%m-%dT%H:%M:%SZ'
+
+RFC3339 = "%Y-%m-%dT%H:%M:%SZ"
+
 
 class AuthorizationView(BaseAuthorizationView, FormView):
     """
@@ -194,12 +197,6 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                     expires__gt=timezone.now()
                 ).all()
 
-                refresh_tokens = get_refresh_token_model().objects.filter(
-                    user=request.user,
-                    application=kwargs["application"]
-                ).exclude(revoked__lt=timezone.now()).all()
-                tokens = list(tokens) + [r.access_token for r in refresh_tokens]
-
                 # check past authorizations regarded the same scopes as the current one
                 for token in tokens:
                     if token.allow_scopes(scopes):
@@ -214,23 +211,22 @@ class AuthorizationView(BaseAuthorizationView, FormView):
 
         return self.render_to_response(self.get_context_data(**kwargs))
 
-    def redirect(self, redirect_to, application,
-            token = None):
+    def redirect(self, redirect_to, application, token=None):
 
         if not redirect_to.startswith("urn:ietf:wg:oauth:2.0:oob"):
             return super().redirect(redirect_to, application)
 
         parsed_redirect = urllib.parse.urlparse(redirect_to)
-        code = urllib.parse.parse_qs(parsed_redirect.query)['code'][0]
+        code = urllib.parse.parse_qs(parsed_redirect.query)["code"][0]
 
-        if redirect_to.startswith('urn:ietf:wg:oauth:2.0:oob:auto'):
+        if redirect_to.startswith("urn:ietf:wg:oauth:2.0:oob:auto"):
 
             response = {
-                    'access_token': code,
-                    'token_uri': redirect_to,
-                    'client_id': application.client_id,
-                    'client_secret': application.client_secret,
-                    'revoke_uri': reverse('oauth2_provider:revoke-token'),
+                    "access_token": code,
+                    "token_uri": redirect_to,
+                    "client_id": application.client_id,
+                    "client_secret": application.client_secret,
+                    "revoke_uri": reverse("oauth2_provider:revoke-token"),
                     }
 
             return JsonResponse(response)
@@ -240,9 +236,10 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                     request=self.request,
                     template_name="oauth2_provider/authorized-oob.html",
                     context={
-                        'code': code,
+                        "code": code,
                         },
                     )
+
 
 @method_decorator(csrf_exempt, name="dispatch")
 class TokenView(OAuthLibMixin, View):

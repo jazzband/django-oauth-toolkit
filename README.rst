@@ -42,8 +42,9 @@ Please report any security issues to the JazzBand security team at <security@jaz
 Requirements
 ------------
 
-* Python 3.4+
-* Django 2.0+
+* Python 3.5+
+* Django 2.1+
+* oauthlib 3.0+
 
 Installation
 ------------
@@ -69,7 +70,7 @@ Notice that `oauth2_provider` namespace is mandatory.
 
     urlpatterns = [
         ...
-        url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+        path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     ]
 
 Changelog

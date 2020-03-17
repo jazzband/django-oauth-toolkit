@@ -3,7 +3,7 @@ from urllib.parse import urlsplit
 
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 
 
 class URIValidator(URLValidator):
@@ -28,7 +28,7 @@ class RedirectURIValidator(URIValidator):
 
     def __call__(self, value):
         super().__call__(value)
-        value = force_text(value)
+        value = force_str(value)
         scheme, netloc, path, query, fragment = urlsplit(value)
         if fragment and not self.allow_fragments:
             raise ValidationError("Redirect URIs must not contain fragments")

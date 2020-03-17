@@ -480,7 +480,7 @@ class OAuth2Validator(RequestValidator):
         # expires_in is passed to Server on initialization
         # custom server class can have logic to override this
         expires = timezone.now() + timedelta(seconds=token.get(
-            'expires_in', oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS,
+            "expires_in", oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS,
         ))
 
         if request.grant_type == "client_credentials":
@@ -608,7 +608,7 @@ class OAuth2Validator(RequestValidator):
         """
         Check username and password correspond to a valid and active User
         """
-        u = authenticate(request, username=username, password=password)
+        u = authenticate(username=username, password=password)
         if u is not None and u.is_active:
             request.user = u
             return True
@@ -634,7 +634,9 @@ class OAuth2Validator(RequestValidator):
                 seconds=oauth2_settings.REFRESH_TOKEN_GRACE_PERIOD_SECONDS
             )
         )
-        rt = RefreshToken.objects.filter(null_or_recent, token=refresh_token).first()
+        rt = RefreshToken.objects.filter(null_or_recent, token=refresh_token).select_related(
+            "access_token"
+        ).first()
 
         if not rt:
             return False
