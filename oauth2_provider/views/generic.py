@@ -2,10 +2,10 @@ from django.views.generic import View
 
 from ..settings import oauth2_settings
 from .mixins import (
-    OAuthLibMixin,
-    ProtectedResourceMixin, ReadWriteScopedResourceMixin, ScopedResourceMixin,
-    ClientProtectedResourceMixin
+    ClientProtectedResourceMixin, OAuthLibMixin, ProtectedResourceMixin,
+    ReadWriteScopedResourceMixin, ScopedResourceMixin
 )
+
 
 class InitializationMixin(OAuthLibMixin):
 
@@ -15,6 +15,7 @@ class InitializationMixin(OAuthLibMixin):
     server_class = oauth2_settings.OAUTH2_SERVER_CLASS
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
     oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
+
 
 class ProtectedResourceView(ProtectedResourceMixin, InitializationMixin, View):
     """
@@ -38,6 +39,7 @@ class ReadWriteScopedResourceView(ReadWriteScopedResourceMixin, ProtectedResourc
     """
     pass
 
+
 class ClientProtectedResourceView(ClientProtectedResourceMixin, InitializationMixin, View):
 
     """View for protecting a resource with client-credentials method.
@@ -45,6 +47,7 @@ class ClientProtectedResourceView(ClientProtectedResourceMixin, InitializationMi
     """
 
     pass
+
 
 class ClientProtectedScopedResourceView(ScopedResourceMixin, ClientProtectedResourceView):
 
