@@ -15,10 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   -->
 
 ## [1.3.1] unreleased
+### Added
+* #725: HTTP Basic Auth support for introspection (Fix issue #709)
+
 ### Fixed
 * #812: Reverts #643 pass wrong request object to authenticate function.
 * Fix concurrency issue with refresh token requests (#[810](https://github.com/jazzband/django-oauth-toolkit/pull/810))
 * #817: Reverts #734 tutorial documentation error.
+
 
 ## [1.3.0] 2020-03-02
 
