@@ -702,7 +702,7 @@ class OAuth2Validator(RequestValidator):
         """
         Check username and password correspond to a valid and active User
         """
-        u = authenticate(request, username=username, password=password)
+        u = authenticate(username=username, password=password)
         if u is not None and u.is_active:
             request.user = u
             return True
@@ -727,7 +727,9 @@ class OAuth2Validator(RequestValidator):
             revoked__gt=timezone.now()
             - timedelta(seconds=oauth2_settings.REFRESH_TOKEN_GRACE_PERIOD_SECONDS)
         )
-        rt = RefreshToken.objects.filter(null_or_recent, token=refresh_token).first()
+        rt = RefreshToken.objects.filter(null_or_recent, token=refresh_token).select_related(
+            "access_token"
+        ).first()
 
         if not rt:
             return False
