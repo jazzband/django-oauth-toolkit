@@ -14,7 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
   -->
 
-## [1.3.1] unreleased
+## [1.3.1] 2020-03-23
+
 ### Added
 * #725: HTTP Basic Auth support for introspection (Fix issue #709)
 
