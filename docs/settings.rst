@@ -198,12 +198,18 @@ Only applicable when used with `Django REST Framework <http://django-rest-framew
 
 RESOURCE_SERVER_INTROSPECTION_URL
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The introspection endpoint for validating token remotely (RFC7662).
+The introspection endpoint for validating token remotely (RFC7662). This URL requires either an authorization
+token (RESOURCE_SERVER_AUTH_TOKEN)
+or HTTP Basic Auth client credentials (RESOURCE_SERVER_INTROSPECTION_CREDENTIALS):
 
 RESOURCE_SERVER_AUTH_TOKEN
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 The bearer token to authenticate the introspection request towards the introspection endpoint (RFC7662).
 
+RESOURCE_SERVER_INTROSPECTION_CREDENTIALS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The HTTP Basic Auth Client_ID and Client_Secret to authenticate the introspection request
+towards the introspect endpoint (RFC7662) as a tuple: (client_id,client_secret).
 
 RESOURCE_SERVER_TOKEN_CACHING_SECONDS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

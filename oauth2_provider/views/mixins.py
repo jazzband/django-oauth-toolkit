@@ -174,6 +174,15 @@ class OAuthLibMixin(object):
 
         return redirect, error_response
 
+    def authenticate_client(self, request):
+        """Returns a boolean representing if client is authenticated with client credentials
+        method. Returns `True` if authenticated.
+
+        :param request: The current django.http.HttpRequest object
+        """
+        core = self.get_oauthlib_core()
+        return core.authenticate_client(request)
+
 
 class ScopedResourceMixin(object):
     """
@@ -200,6 +209,7 @@ class ProtectedResourceMixin(OAuthLibMixin):
     Helper mixin that implements OAuth2 protection on request dispatch,
     specially useful for Django Generic Views
     """
+
     def dispatch(self, request, *args, **kwargs):
         # let preflight OPTIONS requests pass
         if request.method.upper() == "OPTIONS":
@@ -223,12 +233,14 @@ class ReadWriteScopedResourceMixin(ScopedResourceMixin, OAuthLibMixin):
 
     def __new__(cls, *args, **kwargs):
         provided_scopes = get_scopes_backend().get_all_scopes()
-        read_write_scopes = [oauth2_settings.READ_SCOPE, oauth2_settings.WRITE_SCOPE]
+        read_write_scopes = [oauth2_settings.READ_SCOPE,
+                             oauth2_settings.WRITE_SCOPE]
 
         if not set(read_write_scopes).issubset(set(provided_scopes)):
             raise ImproperlyConfigured(
                 "ReadWriteScopedResourceMixin requires following scopes {}"
-                ' to be in OAUTH2_PROVIDER["SCOPES"] list in settings'.format(read_write_scopes)
+                ' to be in OAUTH2_PROVIDER["SCOPES"] list in settings'.format(
+                    read_write_scopes)
             )
 
         return super().__new__(cls, *args, **kwargs)
@@ -246,3 +258,30 @@ class ReadWriteScopedResourceMixin(ScopedResourceMixin, OAuthLibMixin):
 
         # this returns a copy so that self.required_scopes is not modified
         return scopes + [self.read_write_scope]
+
+
+class ClientProtectedResourceMixin(OAuthLibMixin):
+
+    """Mixin for protecting resources with client authentication as mentioned in rfc:`3.2.1`
+    This involves authenticating with any of: HTTP Basic Auth, Client Credentials and
+    Access token in that order. Breaks off after first validation.
+    """
+
+    def dispatch(self, request, *args, **kwargs):
+        # let preflight OPTIONS requests pass
+        if request.method.upper() == "OPTIONS":
+            return super().dispatch(request, *args, **kwargs)
+        # Validate either with HTTP basic or client creds in request body.
+        # TODO: Restrict to POST.
+        valid = self.authenticate_client(request)
+        if not valid:
+            # Alternatively allow access tokens
+            # check if the request is valid and the protected resource may be accessed
+            valid, r = self.verify_request(request)
+            if valid:
+                request.resource_owner = r.user
+                return super().dispatch(request, *args, **kwargs)
+            else:
+                return HttpResponseForbidden()
+        else:
+            return super().dispatch(request, *args, **kwargs)

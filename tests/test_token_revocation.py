@@ -50,6 +50,7 @@ class TestRevocationView(BaseTest):
             expires=timezone.now() + datetime.timedelta(days=1),
             scope="read write"
         )
+
         data = {
             "client_id": self.application.client_id,
             "client_secret": self.application.client_secret,
@@ -96,12 +97,14 @@ class TestRevocationView(BaseTest):
             expires=timezone.now() + datetime.timedelta(days=1),
             scope="read write"
         )
+
         data = {
             "client_id": self.application.client_id,
             "client_secret": self.application.client_secret,
             "token": tok.token,
             "token_type_hint": "access_token"
         }
+
         url = reverse("oauth2_provider:revoke-token")
         response = self.client.post(url, data=data)
         self.assertEqual(response.status_code, 200)
@@ -115,12 +118,14 @@ class TestRevocationView(BaseTest):
             scope="read write"
         )
         # invalid hint should have no effect
+
         data = {
             "client_id": self.application.client_id,
             "client_secret": self.application.client_secret,
             "token": tok.token,
             "token_type_hint": "bad_hint"
         }
+
         url = reverse("oauth2_provider:revoke-token")
         response = self.client.post(url, data=data)
         self.assertEqual(response.status_code, 200)
@@ -137,11 +142,13 @@ class TestRevocationView(BaseTest):
             user=self.test_user, token="999999999",
             application=self.application, access_token=tok
         )
+
         data = {
             "client_id": self.application.client_id,
             "client_secret": self.application.client_secret,
             "token": rtok.token,
         }
+
         url = reverse("oauth2_provider:revoke-token")
         response = self.client.post(url, data=data)
         self.assertEqual(response.status_code, 200)
@@ -166,6 +173,7 @@ class TestRevocationView(BaseTest):
                 "client_secret": self.application.client_secret,
                 "token": token,
             }
+
             url = reverse("oauth2_provider:revoke-token")
             response = self.client.post(url, data=data)
             self.assertEqual(response.status_code, 200)
@@ -195,6 +203,7 @@ class TestRevocationView(BaseTest):
             "token": tok.token,
             "token_type_hint": "refresh_token"
         }
+
         url = reverse("oauth2_provider:revoke-token")
         response = self.client.post(url, data=data)
         self.assertEqual(response.status_code, 200)

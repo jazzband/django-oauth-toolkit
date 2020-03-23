@@ -2,6 +2,7 @@ import json
 from urllib.parse import urlparse, urlunparse
 
 from oauthlib import oauth2
+from oauthlib.common import Request as OauthlibRequest
 from oauthlib.common import quote, urlencode, urlencoded
 
 from .exceptions import FatalClientError, OAuthToolkitError
@@ -15,6 +16,7 @@ class OAuthLibCore(object):
     Meant for things like extracting request data and converting
     everything to formats more palatable for oauthlib's Server.
     """
+
     def __init__(self, server=None):
         """
         :params server: An instance of oauthlib.oauth2.Server class
@@ -128,9 +130,11 @@ class OAuthLibCore(object):
             return uri, headers, body, status
 
         except oauth2.FatalClientError as error:
-            raise FatalClientError(error=error, redirect_uri=credentials["redirect_uri"])
+            raise FatalClientError(
+                error=error, redirect_uri=credentials["redirect_uri"])
         except oauth2.OAuth2Error as error:
-            raise OAuthToolkitError(error=error, redirect_uri=credentials["redirect_uri"])
+            raise OAuthToolkitError(
+                error=error, redirect_uri=credentials["redirect_uri"])
 
     def create_token_response(self, request):
         """
@@ -171,14 +175,25 @@ class OAuthLibCore(object):
         """
         uri, http_method, body, headers = self._extract_params(request)
 
-        valid, r = self.server.verify_request(uri, http_method, body, headers, scopes=scopes)
+        valid, r = self.server.verify_request(
+            uri, http_method, body, headers, scopes=scopes)
         return valid, r
+
+    def authenticate_client(self, request):
+        """Wrapper to call  `authenticate_client` on `server_class` instance.
+
+        :param request: The current django.http.HttpRequest object
+        """
+        uri, http_method, body, headers = self._extract_params(request)
+        oauth_request = OauthlibRequest(uri, http_method, body, headers)
+        return self.server.request_validator.authenticate_client(oauth_request)
 
 
 class JSONOAuthLibCore(OAuthLibCore):
     """
     Extends the default OAuthLibCore to parse correctly application/json requests
     """
+
     def extract_body(self, request):
         """
         Extracts the JSON body from the Django request object

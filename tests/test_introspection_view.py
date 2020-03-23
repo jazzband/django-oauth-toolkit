@@ -9,6 +9,8 @@ from django.utils import timezone
 from oauth2_provider.models import get_access_token_model, get_application_model
 from oauth2_provider.settings import oauth2_settings
 
+from .utils import get_basic_auth_header
+
 
 Application = get_application_model()
 AccessToken = get_access_token_model()
@@ -19,9 +21,12 @@ class TestTokenIntrospectionViews(TestCase):
     """
     Tests for Authorized Token Introspection Views
     """
+
     def setUp(self):
-        self.resource_server_user = UserModel.objects.create_user("resource_server", "test@example.com")
-        self.test_user = UserModel.objects.create_user("bar_user", "dev@example.com")
+        self.resource_server_user = UserModel.objects.create_user(
+            "resource_server", "test@example.com")
+        self.test_user = UserModel.objects.create_user(
+            "bar_user", "dev@example.com")
 
         self.application = Application.objects.create(
             name="Test Application",
@@ -256,3 +261,63 @@ class TestTokenIntrospectionViews(TestCase):
         self.assertDictEqual(content, {
             "active": False,
         })
+
+    def test_view_post_valid_client_creds_basic_auth(self):
+        """Test HTTP basic auth working
+        """
+        auth_headers = get_basic_auth_header(
+            self.application.client_id, self.application.client_secret)
+        response = self.client.post(
+            reverse("oauth2_provider:introspect"),
+            {"token": self.valid_token.token},
+            **auth_headers)
+        self.assertEqual(response.status_code, 200)
+        content = response.json()
+        self.assertIsInstance(content, dict)
+        self.assertDictEqual(content, {
+            "active": True,
+            "scope": self.valid_token.scope,
+            "client_id": self.valid_token.application.client_id,
+            "username": self.valid_token.user.get_username(),
+            "exp": int(calendar.timegm(self.valid_token.expires.timetuple())),
+        })
+
+    def test_view_post_invalid_client_creds_basic_auth(self):
+        """Must fail for invalid client credentials
+        """
+        auth_headers = get_basic_auth_header(
+            self.application.client_id, self.application.client_secret + "_so_wrong")
+        response = self.client.post(
+            reverse("oauth2_provider:introspect"),
+            {"token": self.valid_token.token},
+            **auth_headers)
+        self.assertEqual(response.status_code, 403)
+
+    def test_view_post_valid_client_creds_plaintext(self):
+        """Test introspecting with credentials in request body
+        """
+        response = self.client.post(
+            reverse("oauth2_provider:introspect"),
+            {"token": self.valid_token.token,
+             "client_id": self.application.client_id,
+             "client_secret": self.application.client_secret})
+        self.assertEqual(response.status_code, 200)
+        content = response.json()
+        self.assertIsInstance(content, dict)
+        self.assertDictEqual(content, {
+            "active": True,
+            "scope": self.valid_token.scope,
+            "client_id": self.valid_token.application.client_id,
+            "username": self.valid_token.user.get_username(),
+            "exp": int(calendar.timegm(self.valid_token.expires.timetuple())),
+        })
+
+    def test_view_post_invalid_client_creds_plaintext(self):
+        """Must fail for invalid creds in request body.
+        """
+        response = self.client.post(
+            reverse("oauth2_provider:introspect"),
+            {"token": self.valid_token.token,
+             "client_id": self.application.client_id,
+             "client_secret": self.application.client_secret + "_so_wrong"})
+        self.assertEqual(response.status_code, 403)
