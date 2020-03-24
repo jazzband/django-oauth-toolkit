@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
   -->
 
+## [1.3.2] 2020-03-24
+
+### Fixed
+* Fixes: 1.3.1 inadvertently uploaded to pypi with an extra migration (0003...) from a dev branch.
+
 ## [1.3.1] 2020-03-23
 
 ### Added
