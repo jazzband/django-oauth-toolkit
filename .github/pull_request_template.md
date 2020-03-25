@@ -8,6 +8,7 @@ Fixes #
 
 <!-- Replace '[ ]' with '[x]' to indicate that the checklist item is completed. -->
 <!-- You can check the boxes now or later by just clicking on them. -->
+
 - [ ] PR only contains one change (considered splitting up PR)
 - [ ] unit-test added
 - [ ] documentation updated
