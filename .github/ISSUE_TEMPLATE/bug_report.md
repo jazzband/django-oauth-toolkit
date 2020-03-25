@@ -2,7 +2,7 @@
 name: Bug report
 about: Create a report to help us improve
 title: ''
-labels: bug, docs, api
+labels: bug
 assignees: ''
 
 ---
@@ -20,6 +20,7 @@ assignees: ''
 <!-- Version of django-oauth-toolkit -->
 
 <!-- Have you tested with the latest version and/or master branch? -->
+<!-- Replace '[ ]' with '[x]' to indicate that. -->
 - [ ] I have tested with the latest published release and it's still a problem.
 - [ ] I have tested with the master branch and it's still a problem.
 
