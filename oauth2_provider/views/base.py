@@ -139,16 +139,6 @@ class AuthorizationView(BaseAuthorizationView, FormView):
     def get(self, request, *args, **kwargs):
         try:
             scopes, credentials = self.validate_authorization_request(request)
-            # TODO: Remove the two following lines after oauthlib updates its implementation
-            # https://github.com/jazzband/django-oauth-toolkit/pull/707#issuecomment-485011945
-            credentials["code_challenge"] = credentials.get(
-                "code_challenge",
-                request.GET.get("code_challenge", None)
-            )
-            credentials["code_challenge_method"] = credentials.get(
-                "code_challenge_method",
-                request.GET.get("code_challenge_method", None)
-            )
         except OAuthToolkitError as error:
             # Application is not available at this time.
             return self.error_response(error, application=None)
