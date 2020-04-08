@@ -3,7 +3,7 @@ import datetime
 import hashlib
 import json
 import re
-from urllib.parse import parse_qs, urlencode, urlparse
+from urllib.parse import parse_qs, urlparse
 
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
@@ -74,16 +74,13 @@ class TestRegressionIssue315(BaseTest):
 
     def test_request_is_not_overwritten(self):
         self.client.login(username="test_user", password="123456")
-        query_string = urlencode({
+        response = self.client.get(reverse("oauth2_provider:authorize"), {
             "client_id": self.application.client_id,
             "response_type": "code",
             "state": "random_state_string",
             "scope": "read write",
             "redirect_uri": "http://example.org",
         })
-        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
-
-        response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         assert "request" not in response.context_data
 
@@ -97,16 +94,13 @@ class TestAuthorizationCodeView(BaseTest):
         self.application.skip_authorization = True
         self.application.save()
 
-        query_string = urlencode({
+        response = self.client.get(reverse("oauth2_provider:authorize"), {
             "client_id": self.application.client_id,
             "response_type": "code",
             "state": "random_state_string",
             "scope": "read write",
             "redirect_uri": "http://example.org",
         })
-        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
-
-        response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
 
     def test_pre_auth_invalid_client(self):
@@ -115,13 +109,12 @@ class TestAuthorizationCodeView(BaseTest):
         """
         self.client.login(username="test_user", password="123456")
 
-        query_string = urlencode({
+        query_data = {
             "client_id": "fakeclientid",
             "response_type": "code",
-        })
-        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
+        }
 
-        response = self.client.get(url)
+        response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.context_data["url"],
@@ -134,16 +127,15 @@ class TestAuthorizationCodeView(BaseTest):
         """
         self.client.login(username="test_user", password="123456")
 
-        query_string = urlencode({
+        query_data = {
             "client_id": self.application.client_id,
             "response_type": "code",
             "state": "random_state_string",
             "scope": "read write",
             "redirect_uri": "http://example.org",
-        })
-        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
+        }
 
-        response = self.client.get(url)
+        response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
         self.assertEqual(response.status_code, 200)
 
         # check form is in context and form params are valid
@@ -162,16 +154,15 @@ class TestAuthorizationCodeView(BaseTest):
         """
         self.client.login(username="test_user", password="123456")
 
-        query_string = urlencode({
+        query_data = {
             "client_id": self.application.client_id,
             "response_type": "code",
             "state": "random_state_string",
             "scope": "read write",
             "redirect_uri": "custom-scheme://example.com",
-        })
-        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
+        }
 
-        response = self.client.get(url)
+        response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
         self.assertEqual(response.status_code, 200)
 
         # check form is in context and form params are valid
@@ -191,21 +182,22 @@ class TestAuthorizationCodeView(BaseTest):
             scope="read write"
         )
         self.client.login(username="test_user", password="123456")
-        query_string = urlencode({
+
+        query_data = {
             "client_id": self.application.client_id,
             "response_type": "code",
             "state": "random_state_string",
             "scope": "read write",
             "redirect_uri": "http://example.org",
             "approval_prompt": "auto",
-        })
-        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
-        response = self.client.get(url)
+        }
+        url = reverse("oauth2_provider:authorize")
+        response = self.client.get(url, data=query_data)
         self.assertEqual(response.status_code, 302)
         # user already authorized the application, but with different scopes: prompt them.
         tok.scope = "read"
         tok.save()
-        response = self.client.get(url)
+        response = self.client.get(url, data=query_data)
         self.assertEqual(response.status_code, 200)
 
     def test_pre_auth_approval_prompt_default(self):
@@ -218,15 +210,14 @@ class TestAuthorizationCodeView(BaseTest):
             scope="read write"
         )
         self.client.login(username="test_user", password="123456")
-        query_string = urlencode({
+        query_data = {
             "client_id": self.application.client_id,
             "response_type": "code",
             "state": "random_state_string",
             "scope": "read write",
             "redirect_uri": "http://example.org",
-        })
-        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
-        response = self.client.get(url)
+        }
+        response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
         self.assertEqual(response.status_code, 200)
 
     def test_pre_auth_approval_prompt_default_override(self):
@@ -239,15 +230,14 @@ class TestAuthorizationCodeView(BaseTest):
             scope="read write"
         )
         self.client.login(username="test_user", password="123456")
-        query_string = urlencode({
+        query_data = {
             "client_id": self.application.client_id,
             "response_type": "code",
             "state": "random_state_string",
             "scope": "read write",
             "redirect_uri": "http://example.org",
-        })
-        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
-        response = self.client.get(url)
+        }
+        response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
         self.assertEqual(response.status_code, 302)
 
     def test_pre_auth_default_redirect(self):
@@ -256,13 +246,12 @@ class TestAuthorizationCodeView(BaseTest):
         """
         self.client.login(username="test_user", password="123456")
 
-        query_string = urlencode({
+        query_data = {
             "client_id": self.application.client_id,
             "response_type": "code",
-        })
-        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
+        }
 
-        response = self.client.get(url)
+        response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
         self.assertEqual(response.status_code, 200)
 
         form = response.context["form"]
@@ -274,14 +263,13 @@ class TestAuthorizationCodeView(BaseTest):
         """
         self.client.login(username="test_user", password="123456")
 
-        query_string = urlencode({
+        query_data = {
             "client_id": self.application.client_id,
             "response_type": "code",
             "redirect_uri": "http://forbidden.it",
-        })
-        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
+        }
 
-        response = self.client.get(url)
+        response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
         self.assertEqual(response.status_code, 400)
 
     def test_pre_auth_wrong_response_type(self):
@@ -290,13 +278,12 @@ class TestAuthorizationCodeView(BaseTest):
         """
         self.client.login(username="test_user", password="123456")
 
-        query_string = urlencode({
+        query_data = {
             "client_id": self.application.client_id,
             "response_type": "WRONG",
-        })
-        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
+        }
 
-        response = self.client.get(url)
+        response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
         self.assertEqual(response.status_code, 302)
         self.assertIn("error=unsupported_response_type", response["Location"])
 
@@ -1034,7 +1021,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         code_verifier, code_challenge = self.generate_pkce_codes("S256")
         oauth2_settings.PKCE_REQUIRED = True
 
-        query_string = urlencode({
+        query_data = {
             "client_id": self.application.client_id,
             "state": "random_state_string",
             "scope": "read write",
@@ -1043,10 +1030,9 @@ class TestAuthorizationCodeTokenView(BaseTest):
             "allow": True,
             "code_challenge": code_challenge,
             "code_challenge_method": "S256"
-        })
-        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
+        }
 
-        response = self.client.get(url)
+        response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
         self.assertEqual(response.status_code, 200)
         oauth2_settings.PKCE_REQUIRED = False
 
@@ -1063,7 +1049,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         code_verifier, code_challenge = self.generate_pkce_codes("plain")
         oauth2_settings.PKCE_REQUIRED = True
 
-        query_string = urlencode({
+        query_data = {
             "client_id": self.application.client_id,
             "state": "random_state_string",
             "scope": "read write",
@@ -1072,10 +1058,9 @@ class TestAuthorizationCodeTokenView(BaseTest):
             "allow": True,
             "code_challenge": code_challenge,
             "code_challenge_method": "plain"
-        })
-        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
+        }
 
-        response = self.client.get(url)
+        response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
         self.assertEqual(response.status_code, 200)
         oauth2_settings.PKCE_REQUIRED = False
 
@@ -1151,7 +1136,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         code_verifier, code_challenge = self.generate_pkce_codes("invalid")
         oauth2_settings.PKCE_REQUIRED = True
 
-        query_string = urlencode({
+        query_data = {
             "client_id": self.application.client_id,
             "state": "random_state_string",
             "scope": "read write",
@@ -1160,10 +1145,9 @@ class TestAuthorizationCodeTokenView(BaseTest):
             "allow": True,
             "code_challenge": code_challenge,
             "code_challenge_method": "invalid",
-        })
-        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
+        }
 
-        response = self.client.get(url)
+        response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
         self.assertEqual(response.status_code, 302)
         self.assertIn("error=invalid_request", response["Location"])
         oauth2_settings.PKCE_REQUIRED = False
@@ -1181,7 +1165,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         code_verifier, code_challenge = self.generate_pkce_codes("S256")
         oauth2_settings.PKCE_REQUIRED = True
 
-        query_string = urlencode({
+        query_data = {
             "client_id": self.application.client_id,
             "state": "random_state_string",
             "scope": "read write",
@@ -1189,10 +1173,9 @@ class TestAuthorizationCodeTokenView(BaseTest):
             "response_type": "code",
             "allow": True,
             "code_challenge_method": "S256"
-        })
-        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
+        }
 
-        response = self.client.get(url)
+        response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
         self.assertEqual(response.status_code, 302)
         self.assertIn("error=invalid_request", response["Location"])
         oauth2_settings.PKCE_REQUIRED = False
@@ -1209,7 +1192,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         code_verifier, code_challenge = self.generate_pkce_codes("S256")
         oauth2_settings.PKCE_REQUIRED = True
 
-        query_string = urlencode({
+        query_data = {
             "client_id": self.application.client_id,
             "state": "random_state_string",
             "scope": "read write",
@@ -1217,10 +1200,9 @@ class TestAuthorizationCodeTokenView(BaseTest):
             "response_type": "code",
             "allow": True,
             "code_challenge": code_challenge
-        })
-        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
+        }
 
-        response = self.client.get(url)
+        response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
         self.assertEqual(response.status_code, 200)
         oauth2_settings.PKCE_REQUIRED = False
 
@@ -1599,15 +1581,14 @@ class TestDefaultScopes(BaseTest):
         self.client.login(username="test_user", password="123456")
         oauth2_settings._DEFAULT_SCOPES = ["read"]
 
-        query_string = urlencode({
+        query_data = {
             "client_id": self.application.client_id,
             "response_type": "code",
             "state": "random_state_string",
             "redirect_uri": "http://example.org",
-        })
-        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
+        }
 
-        response = self.client.get(url)
+        response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
         self.assertEqual(response.status_code, 200)
 
         # check form is in context and form params are valid
