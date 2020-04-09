@@ -156,8 +156,6 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         kwargs["redirect_uri"] = credentials["redirect_uri"]
         kwargs["response_type"] = credentials["response_type"]
         kwargs["state"] = credentials["state"]
-        kwargs["code_challenge"] = credentials["code_challenge"]
-        kwargs["code_challenge_method"] = credentials["code_challenge_method"]
 
         self.oauth2_data = kwargs
         # following two loc are here only because of https://code.djangoproject.com/ticket/17795
