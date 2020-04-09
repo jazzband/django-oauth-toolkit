@@ -51,13 +51,6 @@ CorsMiddleware should be placed as high as possible, especially before any middl
         # ...
     )
 
-    # Or on Django < 1.10:
-    MIDDLEWARE_CLASSES = (
-        # ...
-        'corsheaders.middleware.CorsMiddleware',
-        # ...
-    )
-
 Allow CORS requests from all domains (just for the scope of this tutorial):
 
 .. code-block:: python

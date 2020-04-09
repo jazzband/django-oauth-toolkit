@@ -31,14 +31,6 @@ which takes care of token verification. In your settings.py:
         '...',
     )
 
-    # Or on Django<1.10:
-    MIDDLEWARE_CLASSES = (
-        '...',
-        'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-        'oauth2_provider.middleware.OAuth2TokenMiddleware',
-        '...',
-    )
-
 You will likely use the `django.contrib.auth.backends.ModelBackend` along with the OAuth2 backend
 (or you might not be able to log in into the admin), only pay attention to the order in which
 Django processes authentication backends.
