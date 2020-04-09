@@ -37,7 +37,7 @@ ACCESS_TOKEN_MODEL
 ~~~~~~~~~~~~~~~~~~
 The import string of the class (model) representing your access tokens. Overwrite
 this value if you wrote your own implementation (subclass of
-``oauth2_provider.models.AccessToken``).
+``oauth2_provider.models.AbstractAccessToken``).
 
 ACCESS_TOKEN_GENERATOR
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -60,7 +60,7 @@ APPLICATION_MODEL
 ~~~~~~~~~~~~~~~~~
 The import string of the class (model) representing your applications. Overwrite
 this value if you wrote your own implementation (subclass of
-``oauth2_provider.models.Application``).
+``oauth2_provider.models.AbstractApplication``).
 
 AUTHORIZATION_CODE_EXPIRE_SECONDS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -95,7 +95,7 @@ GRANT_MODEL
 ~~~~~~~~~~~~~~~~~
 The import string of the class (model) representing your grants. Overwrite
 this value if you wrote your own implementation (subclass of
-``oauth2_provider.models.Grant``).
+``oauth2_provider.models.AbstractGrant``).
 
 OAUTH2_SERVER_CLASS
 ~~~~~~~~~~~~~~~~~~~
@@ -104,7 +104,7 @@ used in the ``OAuthLibMixin`` that implements OAuth2 grant types.
 
 OAUTH2_VALIDATOR_CLASS
 ~~~~~~~~~~~~~~~~~~~~~~
-The import string of the ``oauthlib.oauth2.RequestValidator`` subclass that
+The import string of the ``oauth2_provider.oauth2_validators.OAuth2Validator`` or ``oauthlib.oauth2.RequestValidator`` subclass that
 validates every step of the OAuth2 process.
 
 OAUTH2_BACKEND_CLASS
@@ -134,7 +134,7 @@ REFRESH_TOKEN_MODEL
 ~~~~~~~~~~~~~~~~~~~
 The import string of the class (model) representing your refresh tokens. Overwrite
 this value if you wrote your own implementation (subclass of
-``oauth2_provider.models.RefreshToken``).
+``oauth2_provider.models.AbstractRefreshToken``).
 
 ROTATE_REFRESH_TOKEN
 ~~~~~~~~~~~~~~~~~~~~
