@@ -446,9 +446,7 @@ class OAuth2Validator(RequestValidator):
         return grant.code_challenge_method or None
 
     def save_authorization_code(self, client_id, code, request, *args, **kwargs):
-        expires = timezone.now() + timedelta(
-            seconds=oauth2_settings.AUTHORIZATION_CODE_EXPIRE_SECONDS)
-        self._create_authorization_code(request, code, expires)
+        self._create_authorization_code(request, code)
 
     def rotate_refresh_token(self, request):
         """
@@ -563,7 +561,10 @@ class OAuth2Validator(RequestValidator):
             source_refresh_token=source_refresh_token,
         )
 
-    def _create_authorization_code(self, request, code, expires):
+    def _create_authorization_code(self, request, code, expires=None):
+        if not expires:
+            expires = timezone.now() + timedelta(seconds=oauth2_settings.AUTHORIZATION_CODE_EXPIRE_SECONDS)
+
         return Grant.objects.create(
             application=request.client,
             user=request.user,
