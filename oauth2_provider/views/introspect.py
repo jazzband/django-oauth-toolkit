@@ -25,7 +25,7 @@ class IntrospectTokenView(ClientProtectedScopedResourceView):
     def get_token_response(token_value=None):
         try:
             token = get_access_token_model().objects.select_related(
-                'user', 'application'
+                "user", "application"
                 ).get(token=token_value)
         except ObjectDoesNotExist:
             return HttpResponse(
