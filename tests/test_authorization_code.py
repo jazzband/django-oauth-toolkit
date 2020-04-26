@@ -1777,7 +1777,6 @@ class TestAuthorizationCodeTokenView(BaseTest):
             content["expires_in"], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS
         )
 
-
     def test_oob_as_html(self):
         """
         Test out-of-band authentication.
@@ -1869,7 +1868,6 @@ class TestAuthorizationCodeTokenView(BaseTest):
         self.assertEqual(
             content["expires_in"], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS
         )
-
 
 
 class TestAuthorizationCodeProtectedResource(BaseTest):
