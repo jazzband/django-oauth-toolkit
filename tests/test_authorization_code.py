@@ -13,10 +13,8 @@ from django.utils.crypto import get_random_string
 from oauthlib.oauth2.rfc6749 import errors as oauthlib_errors
 
 from oauth2_provider.models import (
-    get_access_token_model,
-    get_application_model,
-    get_grant_model,
-    get_refresh_token_model,
+    get_access_token_model, get_application_model,
+    get_grant_model, get_refresh_token_model
 )
 from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views import ProtectedResourceView
@@ -159,7 +157,7 @@ class TestAuthorizationCodeView(BaseTest):
         self.client.login(username="test_user", password="123456")
 
         query_string = urlencode(
-            {"client_id": "fakeclientid", "response_type": "code",}
+            {"client_id": "fakeclientid", "response_type": "code", }
         )
         url = "{url}?{qs}".format(
             url=reverse("oauth2_provider:authorize"), qs=query_string
@@ -355,7 +353,7 @@ class TestAuthorizationCodeView(BaseTest):
         self.client.login(username="test_user", password="123456")
 
         query_string = urlencode(
-            {"client_id": self.application.client_id, "response_type": "code",}
+            {"client_id": self.application.client_id, "response_type": "code", }
         )
         url = "{url}?{qs}".format(
             url=reverse("oauth2_provider:authorize"), qs=query_string
@@ -394,7 +392,7 @@ class TestAuthorizationCodeView(BaseTest):
         self.client.login(username="test_user", password="123456")
 
         query_string = urlencode(
-            {"client_id": self.application.client_id, "response_type": "WRONG",}
+            {"client_id": self.application.client_id, "response_type": "WRONG", }
         )
         url = "{url}?{qs}".format(
             url=reverse("oauth2_provider:authorize"), qs=query_string
@@ -1860,7 +1858,6 @@ class TestAuthorizationCodeTokenView(BaseTest):
             content["expires_in"], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS
         )
 
-
     def test_oob_as_html(self):
         """
         Test out-of-band authentication.
@@ -1952,7 +1949,6 @@ class TestAuthorizationCodeTokenView(BaseTest):
         self.assertEqual(
             content["expires_in"], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS
         )
-
 
 
 class TestAuthorizationCodeProtectedResource(BaseTest):
