@@ -1,7 +1,7 @@
 import base64
 import binascii
-import json
 import hashlib
+import json
 import logging
 from collections import OrderedDict
 from datetime import datetime, timedelta
@@ -16,21 +16,16 @@ from django.db.models import Q
 from django.utils import dateformat, timezone
 from django.utils.timezone import make_aware
 from django.utils.translation import gettext_lazy as _
+from jwcrypto import jwk, jwt
+from jwcrypto.common import JWException
+from jwcrypto.jwt import JWTExpired
 from oauthlib.oauth2 import RequestValidator
 from oauthlib.oauth2.rfc6749 import utils
 
-from jwcrypto.common import JWException
-from jwcrypto import jwk, jwt
-from jwcrypto.jwt import JWTExpired
-
 from .exceptions import FatalClientError
 from .models import (
-    AbstractApplication,
-    get_access_token_model,
-    get_id_token_model,
-    get_application_model,
-    get_grant_model,
-    get_refresh_token_model,
+    AbstractApplication, get_access_token_model, get_application_model,
+    get_grant_model, get_id_token_model, get_refresh_token_model
 )
 from .scopes import get_scopes_backend
 from .settings import oauth2_settings
@@ -214,7 +209,7 @@ class OAuth2Validator(RequestValidator):
             )
         else:
             log.warning("OAuth2 access token is invalid for an unknown reason.")
-            error = OrderedDict([("error", "invalid_token",),])
+            error = OrderedDict([("error", "invalid_token",), ])
         request.oauth2_error = error
         return request
 
@@ -793,7 +788,7 @@ class OAuth2Validator(RequestValidator):
         # http://openid.net/specs/openid-connect-core-1_0.html#ImplicitIDToken
         # if request.grant_type in 'authorization_code' and 'access_token' in token:
         if (
-            (request.grant_type is "authorization_code" and "access_token" in token)
+            (request.grant_type == "authorization_code" and "access_token" in token)
             or request.response_type == "code id_token token"
             or (request.response_type == "id_token token" and "access_token" in token)
         ):
@@ -876,4 +871,4 @@ class OAuth2Validator(RequestValidator):
             - Authorization Token Grant Dispatcher
         """
         # TODO: Fix this ;)
-        return  ""
+        return ""

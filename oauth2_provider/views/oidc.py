@@ -5,10 +5,8 @@ import json
 from django.http import JsonResponse
 from django.urls import reverse_lazy
 from django.views.generic import View
-
-from rest_framework.views import APIView
-
 from jwcrypto import jwk
+from rest_framework.views import APIView
 
 from ..settings import oauth2_settings
 
@@ -27,8 +25,10 @@ class ConnectDiscoveryInfoView(View):
             "jwks_uri": "{}{}".format(issuer_url, reverse_lazy("oauth2_provider:jwks-info")),
             "response_types_supported": oauth2_settings.OIDC_RESPONSE_TYPES_SUPPORTED,
             "subject_types_supported": oauth2_settings.OIDC_SUBJECT_TYPES_SUPPORTED,
-            "id_token_signing_alg_values_supported": oauth2_settings.OIDC_ID_TOKEN_SIGNING_ALG_VALUES_SUPPORTED,
-            "token_endpoint_auth_methods_supported": oauth2_settings.OIDC_TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED,
+            "id_token_signing_alg_values_supported":
+            oauth2_settings.OIDC_ID_TOKEN_SIGNING_ALG_VALUES_SUPPORTED,
+            "token_endpoint_auth_methods_supported":
+            oauth2_settings.OIDC_TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED,
         }
         response = JsonResponse(data)
         response["Access-Control-Allow-Origin"] = "*"

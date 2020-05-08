@@ -1,7 +1,6 @@
 import base64
 import datetime
 import json
-
 from urllib.parse import parse_qs, urlencode, urlparse
 
 from django.contrib.auth import get_user_model
@@ -731,7 +730,9 @@ class TestHybridView(BaseTest):
 
         response = self.client.post(reverse("oauth2_provider:authorize"), data=form_data)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual("http://example.com?foo=bar&error=access_denied&state=random_state_string", response["Location"])
+        self.assertEqual(
+            "http://example.com?foo=bar&error=access_denied&state=random_state_string", response["Location"]
+        )
 
     def test_code_post_auth_fails_when_redirect_uri_path_is_invalid(self):
         """
