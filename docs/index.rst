@@ -32,6 +32,7 @@ Index
    :maxdepth: 2
 
    install
+   getting_started
    tutorial/tutorial
    rest-framework/rest-framework
    views/views
