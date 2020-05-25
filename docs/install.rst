@@ -45,4 +45,5 @@ Sync your database
 
     $ python manage.py migrate oauth2_provider
 
-Next step is our :doc:`first tutorial <tutorial/tutorial_01>`.
+Next step is :doc:`getting started <getting_started>` or :doc:`first tutorial <tutorial/tutorial_01>`.
+
