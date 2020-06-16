@@ -2,7 +2,7 @@ import contextlib
 import datetime
 
 from django.contrib.auth import get_user_model
-from django.test import TransactionTestCase, TestCase
+from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
 from oauthlib.common import Request
 
