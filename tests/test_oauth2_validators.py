@@ -400,13 +400,13 @@ class TestOAuth2ValidatorErrorResourceToken(TestCase):
     """
 
     def setUp(self):
-        self.token = 'test_token'
-        self.introspection_url = 'http://example.com/token/introspection/'
-        self.introspection_token = 'test_introspection_token'
+        self.token = "test_token"
+        self.introspection_url = "http://example.com/token/introspection/"
+        self.introspection_token = "test_introspection_token"
         self.validator = OAuth2Validator()
 
     def test_response_when_auth_server_response_return_404(self):
-        with self.assertLogs(logger='oauth2_provider') as mock_log:
+        with self.assertLogs(logger="oauth2_provider") as mock_log:
             self.validator._get_token_from_authentication_server(
                 self.token, self.introspection_url,
                 self.introspection_token, None)
