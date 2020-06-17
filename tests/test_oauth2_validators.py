@@ -2,7 +2,7 @@ import contextlib
 import datetime
 
 from django.contrib.auth import get_user_model
-from django.test import TransactionTestCase
+from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
 from oauthlib.common import Request
 
@@ -392,3 +392,26 @@ class TestOAuth2ValidatorProvidesErrorData(TransactionTestCase):
         self.assertDictEqual(self.request.oauth2_error, {
             "error": "invalid_token",
         })
+
+
+class TestOAuth2ValidatorErrorResourceToken(TestCase):
+    """The following tests check logger information when response from oauth2
+    is unsuccessful.
+    """
+
+    def setUp(self):
+        self.token = "test_token"
+        self.introspection_url = "http://example.com/token/introspection/"
+        self.introspection_token = "test_introspection_token"
+        self.validator = OAuth2Validator()
+
+    def test_response_when_auth_server_response_return_404(self):
+        with self.assertLogs(logger="oauth2_provider") as mock_log:
+            self.validator._get_token_from_authentication_server(
+                self.token, self.introspection_url,
+                self.introspection_token, None)
+            self.assertIn("ERROR:oauth2_provider:Introspection: Failed to "
+                          "get a valid response from authentication server. "
+                          "Status code: 404, Reason: "
+                          "Not Found.\nNoneType: None",
+                          mock_log.output)

@@ -1,5 +1,6 @@
 import base64
 import binascii
+import http.client
 import logging
 from collections import OrderedDict
 from datetime import datetime, timedelta
@@ -302,6 +303,14 @@ class OAuth2Validator(RequestValidator):
             )
         except requests.exceptions.RequestException:
             log.exception("Introspection: Failed POST to %r in token lookup", introspection_url)
+            return None
+
+        # Log an exception when response from auth server is not successful
+        if response.status_code != http.client.OK:
+            log.exception("Introspection: Failed to get a valid response "
+                          "from authentication server. Status code: {}, "
+                          "Reason: {}.".format(response.status_code,
+                                               response.reason))
             return None
 
         try:
