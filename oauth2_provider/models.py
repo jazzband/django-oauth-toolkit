@@ -169,7 +169,7 @@ class AbstractApplication(models.Model):
         """
         Determines whether the application can be used.
 
-        :param request: The HTTP request being processed.
+        :param request: The oauthlib.common.Request being processed.
         """
         return True
 
