@@ -2,8 +2,10 @@ from __future__ import absolute_import, unicode_literals
 
 import json
 
-from django.http import JsonResponse
-from django.urls import reverse_lazy
+from django.http import JsonResponse, HttpResponse
+from django.urls import reverse_lazy, reverse
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
 from jwcrypto import jwk
 from rest_framework.views import APIView
@@ -21,7 +23,7 @@ class ConnectDiscoveryInfoView(View):
             "issuer": issuer_url,
             "authorization_endpoint": "{}{}".format(issuer_url, reverse_lazy("oauth2_provider:authorize")),
             "token_endpoint": "{}{}".format(issuer_url, reverse_lazy("oauth2_provider:token")),
-            "userinfo_endpoint": oauth2_settings.OIDC_USERINFO_ENDPOINT,
+            "userinfo_endpoint": oauth2_settings.OIDC_USERINFO_ENDPOINT or request.build_absolute_uri(reverse("oauth2_provider:user-info")),
             "jwks_uri": "{}{}".format(issuer_url, reverse_lazy("oauth2_provider:jwks-info")),
             "response_types_supported": oauth2_settings.OIDC_RESPONSE_TYPES_SUPPORTED,
             "subject_types_supported": oauth2_settings.OIDC_SUBJECT_TYPES_SUPPORTED,
