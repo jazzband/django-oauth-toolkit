@@ -2,6 +2,8 @@ from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
 
+from oauth2_provider.settings import oauth2_settings
+
 
 class Migration(migrations.Migration):
 
@@ -20,7 +22,7 @@ class Migration(migrations.Migration):
                 ('scope', models.TextField(blank=True)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('updated', models.DateTimeField(auto_now=True)),
-                ('application', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.OAUTH2_PROVIDER_APPLICATION_MODEL)),
+                ('application', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=oauth2_settings.APPLICATION_MODEL)),
                 ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='oauth2_provider_idtoken', to=settings.AUTH_USER_MODEL)),
             ],
             options={
