@@ -8,8 +8,8 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
 from jwcrypto import jwk
-from rest_framework.views import APIView
 
+from .mixins import OAuthLibMixin
 from ..settings import oauth2_settings
 
 
@@ -56,11 +56,19 @@ class JwksInfoView(View):
         return response
 
 
-class UserInfoView(APIView):
+@method_decorator(csrf_exempt, name="dispatch")
+class UserInfoView(OAuthLibMixin, View):
     """
     View used to show Claims about the authenticated End-User
     """
+    server_class = oauth2_settings.OAUTH2_SERVER_CLASS
+    validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
+    oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
+
     def get(self, request, *args, **kwargs):
-        response = JsonResponse(request.auth.id_token.claims)
-        response["Access-Control-Allow-Origin"] = "*"
+        url, headers, body, status = self.create_userinfo_response(request)
+        response = HttpResponse(content=body or "", status=status)
+
+        for k, v in headers.items():
+            response[k] = v
         return response

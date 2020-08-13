@@ -134,6 +134,16 @@ class OAuthLibMixin(object):
         core = self.get_oauthlib_core()
         return core.create_revocation_response(request)
 
+    def create_userinfo_response(self, request):
+        """
+        A wrapper method that calls create_userinfo_response on the
+        `server_class` instance.
+
+        :param request: The current django.http.HttpRequest object
+        """
+        core = self.get_oauthlib_core()
+        return core.create_userinfo_response(request)
+
     def verify_request(self, request):
         """
         A wrapper method that calls verify_request on `server_class` instance.

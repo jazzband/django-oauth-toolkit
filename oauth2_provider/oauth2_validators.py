@@ -891,3 +891,12 @@ class OAuth2Validator(RequestValidator):
         """
         # TODO: Fix this ;)
         return ""
+
+    def get_userinfo_claims(self, request):
+        """
+        Generates and saves a new JWT for this request, and returns it as the
+        current user's claims. As the JWT is encrypted, this returns an opaque
+        string rather than a dictionary.
+
+        """
+        return self.get_id_token(None, None, request)
