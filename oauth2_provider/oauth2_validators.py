@@ -49,6 +49,7 @@ GRANT_TYPE_MAPPING = {
         AbstractApplication.GRANT_AUTHORIZATION_CODE,
         AbstractApplication.GRANT_PASSWORD,
         AbstractApplication.GRANT_CLIENT_CREDENTIALS,
+        AbstractApplication.GRANT_OPENID_HYBRID,
     ),
 }
 
