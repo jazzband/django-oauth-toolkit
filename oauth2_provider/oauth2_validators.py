@@ -14,6 +14,8 @@ from django.contrib.auth import authenticate, get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.db.models import Q
+from django.http import HttpRequest
+from django.urls import reverse
 from django.utils import dateformat, timezone
 from django.utils.timezone import make_aware
 from django.utils.translation import gettext_lazy as _
@@ -799,7 +801,7 @@ class OAuth2Validator(RequestValidator):
         )
         # Required ID Token claims
         claims.update(**{
-            "iss": oauth2_settings.OIDC_ISS_ENDPOINT,
+            "iss": self.get_oidc_issuer_endpoint(request),
             "aud": request.client_id,
             "exp": int(dateformat.format(expiration_time, "U")),
             "iat": int(dateformat.format(datetime.utcnow(), "U")),
@@ -833,6 +835,18 @@ class OAuth2Validator(RequestValidator):
             claims["c_hash"] = c_hash.decode("utf8")
 
         return claims, expiration_time
+
+    def get_oidc_issuer_endpoint(self, request):
+        if oauth2_settings.OIDC_ISS_ENDPOINT:
+            return oauth2_settings.OIDC_ISS_ENDPOINT
+
+        # generate it based on known URL
+        django_request = HttpRequest()
+        django_request.META = request.headers
+
+        abs_url = django_request.build_absolute_uri(reverse('oauth2_provider:oidc-connect-discovery-info'))
+        base_url = abs_url[:-len("/.well-known/openid-configuration/")]
+        return base_url
 
     def generate_at_hash(self, access_token):
         sha256 = hashlib.sha256(access_token.encode("ascii"))

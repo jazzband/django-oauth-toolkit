@@ -19,6 +19,11 @@ class ConnectDiscoveryInfoView(View):
     """
     def get(self, request, *args, **kwargs):
         issuer_url = oauth2_settings.OIDC_ISS_ENDPOINT
+
+        if not issuer_url:
+            abs_url = request.build_absolute_uri(reverse('oauth2_provider:oidc-connect-discovery-info'))
+            issuer_url = abs_url[:-len("/.well-known/openid-configuration/")]
+
         data = {
             "issuer": issuer_url,
             "authorization_endpoint": request.build_absolute_uri(reverse("oauth2_provider:authorize")),
