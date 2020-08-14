@@ -820,10 +820,8 @@ class OAuth2Validator(RequestValidator):
             or (request.response_type == "id_token token" and "access_token" in token)
         ):
             acess_token = token["access_token"]
-            sha256 = hashlib.sha256(acess_token.encode("ascii"))
-            bits128 = sha256.hexdigest()[:16]
-            at_hash = base64.urlsafe_b64encode(bits128.encode("ascii"))
-            claims["at_hash"] = at_hash.decode("utf8")
+            at_hash = self.generate_at_hash(acess_token)
+            claims["at_hash"] = at_hash
 
         # TODO: create a function to check if we should include c_hash
         # http://openid.net/specs/openid-connect-core-1_0.html#HybridIDToken
@@ -835,6 +833,12 @@ class OAuth2Validator(RequestValidator):
             claims["c_hash"] = c_hash.decode("utf8")
 
         return claims, expiration_time
+
+    def generate_at_hash(self, access_token):
+        sha256 = hashlib.sha256(access_token.encode("ascii"))
+        bits128 = sha256.digest()[:16]
+        at_hash = base64.urlsafe_b64encode(bits128).decode("utf8").rstrip('=')
+        return at_hash
 
     def get_id_token(self, token, token_handler, request):
         key = jwk.JWK.from_pem(oauth2_settings.OIDC_RSA_PRIVATE_KEY.encode("utf8"))
