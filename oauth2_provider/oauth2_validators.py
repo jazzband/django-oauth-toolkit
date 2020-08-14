@@ -774,29 +774,37 @@ class OAuth2Validator(RequestValidator):
     def get_jwt_bearer_token(self, token, token_handler, request):
         return self.get_id_token(token, token_handler, request)
 
-    def get_id_token(self, token, token_handler, request):
+    def get_oidc_claims(self, token, token_handler, request):
+        # Required OIDC claims
+        claims = {
+            "sub": str(request.user.id),
+        }
 
-        key = jwk.JWK.from_pem(oauth2_settings.OIDC_RSA_PRIVATE_KEY.encode("utf8"))
+        # https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+        claims.update(**self.get_additional_claims(request))
 
+        return claims
+
+    def get_id_token_dictionary(self, token, token_handler, request):
         # TODO: http://openid.net/specs/openid-connect-core-1_0.html#HybridIDToken2
         # Save the id_token on database bound to code when the request come to
         # Authorization Endpoint and return the same one when request come to
         # Token Endpoint
 
         # TODO: Check if at this point this request parameters are alredy validated
+        claims = self.get_oidc_claims(token, token_handler, request)
 
         expiration_time = timezone.now() + timedelta(
             seconds=oauth2_settings.ID_TOKEN_EXPIRE_SECONDS
         )
         # Required ID Token claims
-        claims = {
+        claims.update(**{
             "iss": oauth2_settings.OIDC_ISS_ENDPOINT,
-            "sub": str(request.user.id),
             "aud": request.client_id,
             "exp": int(dateformat.format(expiration_time, "U")),
             "iat": int(dateformat.format(datetime.utcnow(), "U")),
             "auth_time": int(dateformat.format(request.user.last_login, "U")),
-        }
+        })
 
         nonce = getattr(request, "nonce", None)
         if nonce:
@@ -826,6 +834,13 @@ class OAuth2Validator(RequestValidator):
             c_hash = base64.urlsafe_b64encode(bits256.encode("ascii"))
             claims["c_hash"] = c_hash.decode("utf8")
 
+        return claims, expiration_time
+
+    def get_id_token(self, token, token_handler, request):
+        key = jwk.JWK.from_pem(oauth2_settings.OIDC_RSA_PRIVATE_KEY.encode("utf8"))
+
+        claims, expiration_time = self.get_id_token_dictionary(token, token_handler, request)
+
         jwt_token = jwt.JWT(
             header=json.dumps({"alg": "RS256"}, default=str),
             claims=json.dumps(claims, default=str),
@@ -837,6 +852,7 @@ class OAuth2Validator(RequestValidator):
         request.access_token = id_token
         request.id_token = id_token
         return jwt_token.serialize()
+
 
     def validate_jwt_bearer_token(self, token, scopes, request):
         return self.validate_id_token(token, scopes, request)
@@ -895,8 +911,10 @@ class OAuth2Validator(RequestValidator):
     def get_userinfo_claims(self, request):
         """
         Generates and saves a new JWT for this request, and returns it as the
-        current user's claims. As the JWT is encrypted, this returns an opaque
-        string rather than a dictionary.
+        current user's claims.
 
         """
-        return self.get_id_token(None, None, request)
+        return self.get_oidc_claims(None, None, request)
+
+    def get_additional_claims(self, request):
+        return {}
