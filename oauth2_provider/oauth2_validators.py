@@ -844,14 +844,14 @@ class OAuth2Validator(RequestValidator):
         django_request = HttpRequest()
         django_request.META = request.headers
 
-        abs_url = django_request.build_absolute_uri(reverse('oauth2_provider:oidc-connect-discovery-info'))
+        abs_url = django_request.build_absolute_uri(reverse("oauth2_provider:oidc-connect-discovery-info"))
         base_url = abs_url[:-len("/.well-known/openid-configuration/")]
         return base_url
 
     def generate_at_hash(self, access_token):
         sha256 = hashlib.sha256(access_token.encode("ascii"))
         bits128 = sha256.digest()[:16]
-        at_hash = base64.urlsafe_b64encode(bits128).decode("utf8").rstrip('=')
+        at_hash = base64.urlsafe_b64encode(bits128).decode("utf8").rstrip("=")
         return at_hash
 
     def get_id_token(self, token, token_handler, request):
@@ -870,7 +870,6 @@ class OAuth2Validator(RequestValidator):
         request.access_token = id_token
         request.id_token = id_token
         return jwt_token.serialize()
-
 
     def validate_jwt_bearer_token(self, token, scopes, request):
         return self.validate_id_token(token, scopes, request)

@@ -2,15 +2,15 @@ from __future__ import absolute_import, unicode_literals
 
 import json
 
-from django.http import JsonResponse, HttpResponse
-from django.urls import reverse_lazy, reverse
+from django.http import HttpResponse, JsonResponse
+from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
 from jwcrypto import jwk
 
-from .mixins import OAuthLibMixin
 from ..settings import oauth2_settings
+from .mixins import OAuthLibMixin
 
 
 class ConnectDiscoveryInfoView(View):
@@ -21,17 +21,23 @@ class ConnectDiscoveryInfoView(View):
         issuer_url = oauth2_settings.OIDC_ISS_ENDPOINT
 
         if not issuer_url:
-            abs_url = request.build_absolute_uri(reverse('oauth2_provider:oidc-connect-discovery-info'))
+            abs_url = request.build_absolute_uri(reverse("oauth2_provider:oidc-connect-discovery-info"))
             issuer_url = abs_url[:-len("/.well-known/openid-configuration/")]
 
             authorization_endpoint = request.build_absolute_uri(reverse("oauth2_provider:authorize"))
             token_endpoint = request.build_absolute_uri(reverse("oauth2_provider:token"))
-            userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or request.build_absolute_uri(reverse("oauth2_provider:user-info"))
+            userinfo_endpoint = (
+                oauth2_settings.OIDC_USERINFO_ENDPOINT or
+                request.build_absolute_uri(reverse("oauth2_provider:user-info"))
+            )
             jwks_uri = request.build_absolute_uri(reverse("oauth2_provider:jwks-info"))
         else:
             authorization_endpoint = "{}{}".format(issuer_url, reverse_lazy("oauth2_provider:authorize"))
             token_endpoint = "{}{}".format(issuer_url, reverse_lazy("oauth2_provider:token"))
-            userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or "{}{}".format(issuer_url, reverse_lazy("oauth2_provider:user-info"))
+            userinfo_endpoint = (
+                oauth2_settings.OIDC_USERINFO_ENDPOINT or
+                "{}{}".format(issuer_url, reverse_lazy("oauth2_provider:user-info"))
+            )
             jwks_uri = "{}{}".format(issuer_url, reverse_lazy("oauth2_provider:jwks-info"))
 
         data = {
