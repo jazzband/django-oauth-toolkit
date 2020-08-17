@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 from django.test import TestCase
 from django.urls import reverse
 
+from oauth2_provider.settings import oauth2_settings
+
 
 class TestConnectDiscoveryInfoView(TestCase):
     def test_get_connect_discovery_info(self):
@@ -28,6 +30,34 @@ class TestConnectDiscoveryInfoView(TestCase):
         response = self.client.get(reverse("oauth2_provider:oidc-connect-discovery-info"))
         self.assertEqual(response.status_code, 200)
         assert response.json() == expected_response
+
+    def test_get_connect_discovery_info_without_issuer_url(self):
+        oauth2_settings.OIDC_ISS_ENDPOINT = None
+        oauth2_settings.OIDC_USERINFO_ENDPOINT = None
+        expected_response = {
+            "issuer": "http://testserver/o",
+            "authorization_endpoint": "http://testserver/o/authorize/",
+            "token_endpoint": "http://testserver/o/token/",
+            "userinfo_endpoint": "http://testserver/o/userinfo/",
+            "jwks_uri": "http://testserver/o/jwks/",
+            "response_types_supported": [
+                "code",
+                "token",
+                "id_token",
+                "id_token token",
+                "code token",
+                "code id_token",
+                "code id_token token"
+            ],
+            "subject_types_supported": ["public"],
+            "id_token_signing_alg_values_supported": ["RS256", "HS256"],
+            "token_endpoint_auth_methods_supported": ["client_secret_post", "client_secret_basic"]
+        }
+        response = self.client.get(reverse("oauth2_provider:oidc-connect-discovery-info"))
+        self.assertEqual(response.status_code, 200)
+        assert response.json() == expected_response
+        oauth2_settings.OIDC_ISS_ENDPOINT = "http://localhost"
+        oauth2_settings.OIDC_USERINFO_ENDPOINT = "http://localhost/userinfo/"
 
 
 class TestJwksInfoView(TestCase):
