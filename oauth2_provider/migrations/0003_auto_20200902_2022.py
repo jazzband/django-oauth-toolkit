@@ -9,10 +9,20 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('oauth2_provider', '0003_auto_20190413_2007'),
+        ('oauth2_provider', '0002_auto_20190406_1805'),
     ]
 
     operations = [
+        migrations.AddField(
+            model_name='application',
+            name='algorithm',
+            field=models.CharField(choices=[('RS256', 'RSA with SHA-2 256'), ('HS256', 'HMAC with SHA-2 256')], default='RS256', max_length=5),
+        ),
+        migrations.AlterField(
+            model_name='application',
+            name='authorization_grant_type',
+            field=models.CharField(choices=[('authorization-code', 'Authorization code'), ('implicit', 'Implicit'), ('password', 'Resource owner password-based'), ('client-credentials', 'Client credentials'), ('openid-hybrid', 'OpenID connect hybrid')], max_length=32),
+        ),
         migrations.CreateModel(
             name='IDToken',
             fields=[
@@ -29,5 +39,10 @@ class Migration(migrations.Migration):
                 'abstract': False,
                 'swappable': 'OAUTH2_PROVIDER_ID_TOKEN_MODEL',
             },
+        ),
+        migrations.AddField(
+            model_name='accesstoken',
+            name='id_token',
+            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='access_token', to=oauth2_settings.ID_TOKEN_MODEL),
         ),
     ]

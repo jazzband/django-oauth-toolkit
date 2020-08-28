@@ -29,7 +29,7 @@ management_urlpatterns = [
 
 oidc_urlpatterns = [
     re_path(r"^\.well-known/openid-configuration/$", views.ConnectDiscoveryInfoView.as_view(),
-        name="oidc-connect-discovery-info"),
+            name="oidc-connect-discovery-info"),
     re_path(r"^jwks/$", views.JwksInfoView.as_view(), name="jwks-info"),
     re_path(r"^userinfo/$", views.UserInfoView.as_view(), name="user-info")
 ]

@@ -1,11 +1,9 @@
-from urllib.parse import parse_qs, urlparse
-
 import json
+from urllib.parse import parse_qs, urlparse
 
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
-
 from jwcrypto import jwk, jwt
 
 from oauth2_provider.models import get_application_model
