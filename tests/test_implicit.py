@@ -317,18 +317,16 @@ class TestOpenIDConnectImplicitFlow(BaseTest):
         self.application.skip_authorization = True
         self.application.save()
 
-        query_string = urlencode({
+        query_data = {
             "client_id": self.application.client_id,
             "response_type": "id_token",
             "state": "random_state_string",
             "nonce": "random_nonce_string",
             "scope": "openid",
             "redirect_uri": "http://example.org",
-        })
+        }
 
-        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
-
-        response = self.client.get(url)
+        response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
         self.assertEqual(response.status_code, 302)
         self.assertIn("http://example.org#", response["Location"])
         self.assertNotIn("access_token=", response["Location"])
@@ -351,17 +349,15 @@ class TestOpenIDConnectImplicitFlow(BaseTest):
         self.application.skip_authorization = True
         self.application.save()
 
-        query_string = urlencode({
+        query_data = {
             "client_id": self.application.client_id,
             "response_type": "id_token",
             "state": "random_state_string",
             "scope": "openid",
             "redirect_uri": "http://example.org",
-        })
+        }
 
-        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
-
-        response = self.client.get(url)
+        response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
         self.assertEqual(response.status_code, 302)
         self.assertIn("error=invalid_request", response["Location"])
         self.assertIn("error_description=Request+is+missing+mandatory+nonce+paramete", response["Location"])
@@ -425,18 +421,16 @@ class TestOpenIDConnectImplicitFlow(BaseTest):
         self.application.skip_authorization = True
         self.application.save()
 
-        query_string = urlencode({
+        query_data = {
             "client_id": self.application.client_id,
             "response_type": "id_token token",
             "state": "random_state_string",
             "nonce": "random_nonce_string",
             "scope": "openid",
             "redirect_uri": "http://example.org",
-        })
+        }
 
-        url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)
-
-        response = self.client.get(url)
+        response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
         self.assertEqual(response.status_code, 302)
         self.assertIn("http://example.org#", response["Location"])
         self.assertIn("access_token=", response["Location"])
