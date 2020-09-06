@@ -7,7 +7,5 @@ admin.autodiscover()
 
 urlpatterns = [
     path("o/", include("oauth2_provider.urls", namespace="oauth2_provider")),
+    path("admin/", admin.site.urls),
 ]
-
-
-urlpatterns += [path("admin/", admin.site.urls)]
