@@ -104,7 +104,7 @@ class OAuthLibCore(object):
         except oauth2.OAuth2Error as error:
             raise OAuthToolkitError(error=error)
 
-    def create_authorization_response(self, request, scopes, credentials, allow):
+    def create_authorization_response(self, uri, request, scopes, credentials, body, allow):
         """
         A wrapper method that calls create_authorization_response on `server_class`
         instance.
@@ -112,7 +112,8 @@ class OAuthLibCore(object):
         :param request: The current django.http.HttpRequest object
         :param scopes: A list of provided scopes
         :param credentials: Authorization credentials dictionary containing
-                           `client_id`, `state`, `redirect_uri`, `response_type`
+                           `client_id`, `state`, `redirect_uri` and `response_type`
+        :param body: Other body parameters not used in credentials dictionary
         :param allow: True if the user authorize the client, otherwise False
         """
         try:
@@ -124,10 +125,10 @@ class OAuthLibCore(object):
             credentials["user"] = request.user
 
             headers, body, status = self.server.create_authorization_response(
-                uri=credentials["redirect_uri"], scopes=scopes, credentials=credentials)
-            uri = headers.get("Location", None)
+                uri=uri, scopes=scopes, credentials=credentials, body=body)
+            redirect_uri = headers.get("Location", None)
 
-            return uri, headers, body, status
+            return redirect_uri, headers, body, status
 
         except oauth2.FatalClientError as error:
             raise FatalClientError(
@@ -162,6 +163,21 @@ class OAuthLibCore(object):
 
         headers, body, status = self.server.create_revocation_response(
             uri, http_method, body, headers)
+        uri = headers.get("Location", None)
+
+        return uri, headers, body, status
+
+    def create_userinfo_response(self, request):
+        """
+        A wrapper method that calls create_userinfo_response on a
+        `server_class` instance.
+
+        :param request: The current django.http.HttpRequest object
+        """
+        uri, http_method, body, headers = self._extract_params(request)
+        headers, body, status = self.server.create_userinfo_response(
+            uri, http_method, body, headers
+        )
         uri = headers.get("Location", None)
 
         return uri, headers, body, status

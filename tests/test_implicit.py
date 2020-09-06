@@ -1,8 +1,10 @@
+import json
 from urllib.parse import parse_qs, urlparse
 
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
+from jwcrypto import jwk, jwt
 
 from oauth2_provider.models import get_application_model
 from oauth2_provider.settings import oauth2_settings
@@ -33,8 +35,14 @@ class BaseTest(TestCase):
             authorization_grant_type=Application.GRANT_IMPLICIT,
         )
 
-        oauth2_settings._SCOPES = ["read", "write"]
+        oauth2_settings._SCOPES = ["read", "write", "openid"]
         oauth2_settings._DEFAULT_SCOPES = ["read"]
+        oauth2_settings.SCOPES = {
+            "read": "Reading scope",
+            "write": "Writing scope",
+            "openid": "OpenID connect"
+        }
+        self.key = jwk.JWK.from_pem(oauth2_settings.OIDC_RSA_PRIVATE_KEY.encode("utf8"))
 
     def tearDown(self):
         self.application.delete()
@@ -265,3 +273,191 @@ class TestImplicitTokenView(BaseTest):
         view = ResourceView.as_view()
         response = view(request)
         self.assertEqual(response, "This is a protected resource")
+
+
+class TestOpenIDConnectImplicitFlow(BaseTest):
+    def test_id_token_post_auth_allow(self):
+        """
+        Test authorization code is given for an allowed request with response_type: id_token
+        """
+        self.client.login(username="test_user", password="123456")
+
+        form_data = {
+            "client_id": self.application.client_id,
+            "state": "random_state_string",
+            "nonce": "random_nonce_string",
+            "scope": "openid",
+            "redirect_uri": "http://example.org",
+            "response_type": "id_token",
+            "allow": True,
+        }
+
+        response = self.client.post(reverse("oauth2_provider:authorize"), data=form_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("http://example.org#", response["Location"])
+        self.assertNotIn("access_token=", response["Location"])
+        self.assertIn("id_token=", response["Location"])
+        self.assertIn("state=random_state_string", response["Location"])
+
+        uri_query = urlparse(response["Location"]).fragment
+        uri_query_params = dict(parse_qs(uri_query, keep_blank_values=True, strict_parsing=True))
+        id_token = uri_query_params["id_token"][0]
+        jwt_token = jwt.JWT(key=self.key, jwt=id_token)
+        claims = json.loads(jwt_token.claims)
+        self.assertIn("nonce", claims)
+        self.assertNotIn("at_hash", claims)
+
+    def test_id_token_skip_authorization_completely(self):
+        """
+        If application.skip_authorization = True, should skip the authorization page.
+        """
+        self.client.login(username="test_user", password="123456")
+        self.application.skip_authorization = True
+        self.application.save()
+
+        query_data = {
+            "client_id": self.application.client_id,
+            "response_type": "id_token",
+            "state": "random_state_string",
+            "nonce": "random_nonce_string",
+            "scope": "openid",
+            "redirect_uri": "http://example.org",
+        }
+
+        response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("http://example.org#", response["Location"])
+        self.assertNotIn("access_token=", response["Location"])
+        self.assertIn("id_token=", response["Location"])
+        self.assertIn("state=random_state_string", response["Location"])
+
+        uri_query = urlparse(response["Location"]).fragment
+        uri_query_params = dict(parse_qs(uri_query, keep_blank_values=True, strict_parsing=True))
+        id_token = uri_query_params["id_token"][0]
+        jwt_token = jwt.JWT(key=self.key, jwt=id_token)
+        claims = json.loads(jwt_token.claims)
+        self.assertIn("nonce", claims)
+        self.assertNotIn("at_hash", claims)
+
+    def test_id_token_skip_authorization_completely_missing_nonce(self):
+        """
+        If application.skip_authorization = True, should skip the authorization page.
+        """
+        self.client.login(username="test_user", password="123456")
+        self.application.skip_authorization = True
+        self.application.save()
+
+        query_data = {
+            "client_id": self.application.client_id,
+            "response_type": "id_token",
+            "state": "random_state_string",
+            "scope": "openid",
+            "redirect_uri": "http://example.org",
+        }
+
+        response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("error=invalid_request", response["Location"])
+        self.assertIn("error_description=Request+is+missing+mandatory+nonce+paramete", response["Location"])
+
+    def test_id_token_post_auth_deny(self):
+        """
+        Test error when resource owner deny access
+        """
+        self.client.login(username="test_user", password="123456")
+
+        form_data = {
+            "client_id": self.application.client_id,
+            "state": "random_state_string",
+            "nonce": "random_nonce_string",
+            "scope": "openid",
+            "redirect_uri": "http://example.org",
+            "response_type": "id_token",
+            "allow": False,
+        }
+
+        response = self.client.post(reverse("oauth2_provider:authorize"), data=form_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("error=access_denied", response["Location"])
+
+    def test_access_token_and_id_token_post_auth_allow(self):
+        """
+        Test authorization code is given for an allowed request with response_type: token
+        """
+        self.client.login(username="test_user", password="123456")
+
+        form_data = {
+            "client_id": self.application.client_id,
+            "state": "random_state_string",
+            "nonce": "random_nonce_string",
+            "scope": "openid",
+            "redirect_uri": "http://example.org",
+            "response_type": "id_token token",
+            "allow": True,
+        }
+
+        response = self.client.post(reverse("oauth2_provider:authorize"), data=form_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("http://example.org#", response["Location"])
+        self.assertIn("access_token=", response["Location"])
+        self.assertIn("id_token=", response["Location"])
+        self.assertIn("state=random_state_string", response["Location"])
+
+        uri_query = urlparse(response["Location"]).fragment
+        uri_query_params = dict(parse_qs(uri_query, keep_blank_values=True, strict_parsing=True))
+        id_token = uri_query_params["id_token"][0]
+        jwt_token = jwt.JWT(key=self.key, jwt=id_token)
+        claims = json.loads(jwt_token.claims)
+        self.assertIn("nonce", claims)
+        self.assertIn("at_hash", claims)
+
+    def test_access_token_and_id_token_skip_authorization_completely(self):
+        """
+        If application.skip_authorization = True, should skip the authorization page.
+        """
+        self.client.login(username="test_user", password="123456")
+        self.application.skip_authorization = True
+        self.application.save()
+
+        query_data = {
+            "client_id": self.application.client_id,
+            "response_type": "id_token token",
+            "state": "random_state_string",
+            "nonce": "random_nonce_string",
+            "scope": "openid",
+            "redirect_uri": "http://example.org",
+        }
+
+        response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("http://example.org#", response["Location"])
+        self.assertIn("access_token=", response["Location"])
+        self.assertIn("id_token=", response["Location"])
+        self.assertIn("state=random_state_string", response["Location"])
+
+        uri_query = urlparse(response["Location"]).fragment
+        uri_query_params = dict(parse_qs(uri_query, keep_blank_values=True, strict_parsing=True))
+        id_token = uri_query_params["id_token"][0]
+        jwt_token = jwt.JWT(key=self.key, jwt=id_token)
+        claims = json.loads(jwt_token.claims)
+        self.assertIn("nonce", claims)
+        self.assertIn("at_hash", claims)
+
+    def test_access_token_and_id_token_post_auth_deny(self):
+        """
+        Test error when resource owner deny access
+        """
+        self.client.login(username="test_user", password="123456")
+
+        form_data = {
+            "client_id": self.application.client_id,
+            "state": "random_state_string",
+            "scope": "openid",
+            "redirect_uri": "http://example.org",
+            "response_type": "id_token token",
+            "allow": False,
+        }
+
+        response = self.client.post(reverse("oauth2_provider:authorize"), data=form_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("error=access_denied", response["Location"])

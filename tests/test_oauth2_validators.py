@@ -287,6 +287,13 @@ class TestOAuth2Validator(TransactionTestCase):
         assert create_access_token_mock.call_count == 1
         assert create_refresh_token_mock.call_count == 1
 
+    def test_generate_at_hash(self):
+        # Values taken from spec, https://openid.net/specs/openid-connect-core-1_0.html#id_token-tokenExample
+        access_token = "jHkWEdUXMU1BwAsC4vtUsZwnNvTIxEl0z9K3vx5KF0Y"
+        at_hash = self.validator.generate_at_hash(access_token)
+
+        assert at_hash == "77QmUPtjPfzWtF2AnpK9RQ"
+
 
 class TestOAuth2ValidatorProvidesErrorData(TransactionTestCase):
     """These test cases check that the recommended error codes are returned
