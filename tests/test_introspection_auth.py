@@ -1,10 +1,11 @@
 import calendar
 import datetime
 
-from django.conf.urls import include, url
+from django.conf.urls import include
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
+from django.urls import path
 from django.utils import timezone
 from oauthlib.common import Request
 
@@ -64,8 +65,8 @@ def mocked_requests_post(url, data, *args, **kwargs):
 
 
 urlpatterns = [
-    url(r"^oauth2/", include("oauth2_provider.urls")),
-    url(r"^oauth2-test-resource/$", ScopeResourceView.as_view()),
+    path("oauth2/", include("oauth2_provider.urls")),
+    path("oauth2-test-resource/", ScopeResourceView.as_view()),
 ]
 
 
