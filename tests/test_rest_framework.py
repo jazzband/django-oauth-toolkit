@@ -1,11 +1,12 @@
 from datetime import timedelta
 
-from django.conf.urls import include, url
+from django.conf.urls import include
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponse
 from django.test import TestCase
 from django.test.utils import override_settings
+from django.urls import path, re_path
 from django.utils import timezone
 from rest_framework import permissions
 from rest_framework.authentication import BaseAuthentication
@@ -109,17 +110,17 @@ class AuthenticationNoneOAuth2View(MockView):
 
 
 urlpatterns = [
-    url(r"^oauth2/", include("oauth2_provider.urls")),
-    url(r"^oauth2-test/$", OAuth2View.as_view()),
-    url(r"^oauth2-scoped-test/$", ScopedView.as_view()),
-    url(r"^oauth2-scoped-missing-auth/$", TokenHasScopeViewWrongAuth.as_view()),
-    url(r"^oauth2-read-write-test/$", ReadWriteScopedView.as_view()),
-    url(r"^oauth2-resource-scoped-test/$", ResourceScopedView.as_view()),
-    url(r"^oauth2-authenticated-or-scoped-test/$", AuthenticatedOrScopedView.as_view()),
-    url(r"^oauth2-method-scope-test/.*$", MethodScopeAltView.as_view()),
-    url(r"^oauth2-method-scope-fail/$", MethodScopeAltViewBad.as_view()),
-    url(r"^oauth2-method-scope-missing-auth/$", MethodScopeAltViewWrongAuth.as_view()),
-    url(r"^oauth2-authentication-none/$", AuthenticationNoneOAuth2View.as_view()),
+    path("oauth2/", include("oauth2_provider.urls")),
+    path("oauth2-test/", OAuth2View.as_view()),
+    path("oauth2-scoped-test/", ScopedView.as_view()),
+    path("oauth2-scoped-missing-auth/", TokenHasScopeViewWrongAuth.as_view()),
+    path("oauth2-read-write-test/", ReadWriteScopedView.as_view()),
+    path("oauth2-resource-scoped-test/", ResourceScopedView.as_view()),
+    path("oauth2-authenticated-or-scoped-test/", AuthenticatedOrScopedView.as_view()),
+    re_path(r"oauth2-method-scope-test/.*$", MethodScopeAltView.as_view()),
+    path("oauth2-method-scope-fail/", MethodScopeAltViewBad.as_view()),
+    path("oauth2-method-scope-missing-auth/", MethodScopeAltViewWrongAuth.as_view()),
+    path("oauth2-authentication-none/", AuthenticationNoneOAuth2View.as_view()),
 ]
 
 
