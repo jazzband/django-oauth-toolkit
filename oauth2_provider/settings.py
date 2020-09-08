@@ -157,7 +157,7 @@ def import_from_string(val, setting_name):
         raise ImportError(msg)
 
 
-class OAuth2ProviderSettings(object):
+class OAuth2ProviderSettings:
     """
     A settings object, that allows OAuth2 Provider settings to be accessed as properties.
 
