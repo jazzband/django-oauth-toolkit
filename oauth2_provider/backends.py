@@ -7,7 +7,7 @@ UserModel = get_user_model()
 OAuthLibCore = get_oauthlib_core()
 
 
-class OAuth2Backend(object):
+class OAuth2Backend:
     """
     Authenticate against an OAuth2 access token
     """

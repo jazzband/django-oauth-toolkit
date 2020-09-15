@@ -9,7 +9,7 @@ from .exceptions import FatalClientError, OAuthToolkitError
 from .settings import oauth2_settings
 
 
-class OAuthLibCore(object):
+class OAuthLibCore:
     """
     Wrapper for oauth Server providing django-specific interfaces.
 

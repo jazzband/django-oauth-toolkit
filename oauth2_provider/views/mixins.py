@@ -13,7 +13,7 @@ log = logging.getLogger("oauth2_provider")
 SAFE_HTTP_METHODS = ["GET", "HEAD", "OPTIONS"]
 
 
-class OAuthLibMixin(object):
+class OAuthLibMixin:
     """
     This mixin decouples Django OAuth Toolkit from OAuthLib.
 
@@ -195,7 +195,7 @@ class OAuthLibMixin(object):
         return core.authenticate_client(request)
 
 
-class ScopedResourceMixin(object):
+class ScopedResourceMixin:
     """
     Helper mixin that implements "scopes handling" behaviour
     """
