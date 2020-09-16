@@ -88,8 +88,11 @@ class TestOAuth2Middleware(BaseTest):
         super(TestOAuth2Middleware, self).setUp()
         self.anon_user = AnonymousUser()
 
+    def dummy_get_response(request):
+        return None
+
     def test_middleware_wrong_headers(self):
-        m = OAuth2TokenMiddleware()
+        m = OAuth2TokenMiddleware(self.dummy_get_response)
         request = self.factory.get("/a-resource")
         self.assertIsNone(m.process_request(request))
         auth_headers = {
@@ -99,7 +102,7 @@ class TestOAuth2Middleware(BaseTest):
         self.assertIsNone(m.process_request(request))
 
     def test_middleware_user_is_set(self):
-        m = OAuth2TokenMiddleware()
+        m = OAuth2TokenMiddleware(self.dummy_get_response)
         auth_headers = {
             "HTTP_AUTHORIZATION": "Bearer " + "tokstr",
         }
@@ -110,7 +113,7 @@ class TestOAuth2Middleware(BaseTest):
         self.assertIsNone(m.process_request(request))
 
     def test_middleware_success(self):
-        m = OAuth2TokenMiddleware()
+        m = OAuth2TokenMiddleware(self.dummy_get_response)
         auth_headers = {
             "HTTP_AUTHORIZATION": "Bearer " + "tokstr",
         }
@@ -119,7 +122,7 @@ class TestOAuth2Middleware(BaseTest):
         self.assertEqual(request.user, self.user)
 
     def test_middleware_response(self):
-        m = OAuth2TokenMiddleware()
+        m = OAuth2TokenMiddleware(self.dummy_get_response)
         auth_headers = {
             "HTTP_AUTHORIZATION": "Bearer " + "tokstr",
         }
@@ -129,7 +132,7 @@ class TestOAuth2Middleware(BaseTest):
         self.assertIs(response, processed)
 
     def test_middleware_response_header(self):
-        m = OAuth2TokenMiddleware()
+        m = OAuth2TokenMiddleware(self.dummy_get_response)
         auth_headers = {
             "HTTP_AUTHORIZATION": "Bearer " + "tokstr",
         }

@@ -58,7 +58,7 @@ class TestOAuthLibMixin(BaseTest):
         self.assertIsInstance(test_view.get_server(), Server)
 
     def test_custom_backend(self):
-        class AnotherOauthLibBackend(object):
+        class AnotherOauthLibBackend:
             pass
 
         class TestView(OAuthLibMixin, View):
