@@ -1,5 +1,5 @@
 Django>=3.0,<3.1
 oauthlib>=3.1.0
 m2r>=0.2.1
-swapper>-1.1.2.post1
+swapper>=1.1.2
 .
