@@ -1,3 +1,5 @@
+import swapper
+
 from django.conf import settings
 import django.db.models.deletion
 from django.db import migrations, models
@@ -18,7 +20,11 @@ class Migration(migrations.Migration):
     - 0006_auto_20171214_2232.py
     """
     dependencies = [
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL)
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        swapper.dependency('oauth2_provider', 'AccessToken'),
+        swapper.dependency('oauth2_provider', 'RefreshToken'),
+        swapper.dependency('oauth2_provider', 'Application'),
+        swapper.dependency('oauth2_provider', 'Grant')
     ]
 
     operations = [
@@ -39,7 +45,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'abstract': False,
-                'swappable': 'OAUTH2_PROVIDER_APPLICATION_MODEL',
+                'swappable': swapper.swappable_setting('oauth2_provider', 'Application'),
             },
         ),
         migrations.CreateModel(
@@ -49,7 +55,7 @@ class Migration(migrations.Migration):
                 ('token', models.CharField(unique=True, max_length=255)),
                 ('expires', models.DateTimeField()),
                 ('scope', models.TextField(blank=True)),
-                ('application', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=oauth2_settings.APPLICATION_MODEL)),
+                ('application', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=swapper.get_model_name('oauth2_provider', 'Application'))),
                 ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='oauth2_provider_accesstoken', to=settings.AUTH_USER_MODEL)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('updated', models.DateTimeField(auto_now=True)),
@@ -58,7 +64,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'abstract': False,
-                'swappable': 'OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL',
+                'swappable': swapper.swappable_setting('oauth2_provider', 'AccessToken')#'OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL',
             },
         ),
         migrations.CreateModel(
@@ -69,14 +75,14 @@ class Migration(migrations.Migration):
                 ('expires', models.DateTimeField()),
                 ('redirect_uri', models.CharField(max_length=255)),
                 ('scope', models.TextField(blank=True)),
-                ('application', models.ForeignKey(to=oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE)),
+                ('application', models.ForeignKey(to=swapper.swappable_setting('oauth2_provider', 'Application'), on_delete=models.CASCADE)),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='oauth2_provider_grant', to=settings.AUTH_USER_MODEL)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('updated', models.DateTimeField(auto_now=True)),
             ],
             options={
                 'abstract': False,
-                'swappable': 'OAUTH2_PROVIDER_GRANT_MODEL',
+                'swappable': swapper.swappable_setting('oauth2_provider', 'Grant')#'OAUTH2_PROVIDER_GRANT_MODEL',
             },
         ),
         migrations.CreateModel(
@@ -84,8 +90,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(serialize=False, primary_key=True)),
                 ('token', models.CharField(max_length=255)),
-                ('access_token', models.OneToOneField(blank=True, null=True, related_name="refresh_token", to=oauth2_settings.ACCESS_TOKEN_MODEL, on_delete=models.SET_NULL)),
-                ('application', models.ForeignKey(to=oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE)),
+                ('access_token', models.OneToOneField(blank=True, null=True, related_name="refresh_token", to=swapper.get_model_name('oauth2_provider', 'AccessToken'), on_delete=models.SET_NULL)),
+                ('application', models.ForeignKey(to=swapper.get_model_name('oauth2_provider', 'Application'), on_delete=models.CASCADE)),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='oauth2_provider_refreshtoken', to=settings.AUTH_USER_MODEL)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('updated', models.DateTimeField(auto_now=True)),
@@ -93,13 +99,13 @@ class Migration(migrations.Migration):
             ],
             options={
                 'abstract': False,
-                'swappable': 'OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL',
+                'swappable': swapper.swappable_setting('oauth2_provider', 'RefreshToken'),#'OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL',
                 'unique_together': set([("token", "revoked")]),
             },
         ),
         migrations.AddField(
             model_name='AccessToken',
             name='source_refresh_token',
-            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=oauth2_settings.REFRESH_TOKEN_MODEL, related_name="refreshed_access_token"),
+            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=swapper.get_model_name('oauth2_provider', 'RefreshToken'), related_name="refreshed_access_token"),
         ),
     ]

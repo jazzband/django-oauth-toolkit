@@ -1,9 +1,9 @@
 import json
 import logging
+import swapper
 from datetime import timedelta
 from urllib.parse import parse_qsl, urlparse
 
-from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models, transaction
@@ -195,7 +195,7 @@ class Application(AbstractApplication):
     objects = ApplicationManager()
 
     class Meta(AbstractApplication.Meta):
-        swappable = "OAUTH2_PROVIDER_APPLICATION_MODEL"
+        swappable = swapper.swappable_setting('oauth2_provider', 'Application')
 
     def natural_key(self):
         return (self.client_id,)
@@ -232,7 +232,8 @@ class AbstractGrant(models.Model):
     )
     code = models.CharField(max_length=255, unique=True)  # code comes from oauthlib
     application = models.ForeignKey(
-        oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE
+        swapper.get_model_name('oauth_provider', 'Application'),
+        on_delete=models.CASCADE
     )
     expires = models.DateTimeField()
     redirect_uri = models.CharField(max_length=255)
@@ -266,7 +267,7 @@ class AbstractGrant(models.Model):
 
 class Grant(AbstractGrant):
     class Meta(AbstractGrant.Meta):
-        swappable = "OAUTH2_PROVIDER_GRANT_MODEL"
+        swappable = swapper.swappable_setting('oauth_provider', 'Grant')#"OAUTH2_PROVIDER_GRANT_MODEL"
 
 
 class AbstractAccessToken(models.Model):
@@ -289,17 +290,15 @@ class AbstractAccessToken(models.Model):
         related_name="%(app_label)s_%(class)s"
     )
     source_refresh_token = models.OneToOneField(
-        # unique=True implied by the OneToOneField
-        oauth2_settings.REFRESH_TOKEN_MODEL, on_delete=models.SET_NULL, blank=True, null=True,
-        related_name="refreshed_access_token"
-    )
+        swapper.get_model_name('oauth2_provider', 'RefreshToken'),
+        on_delete=models.SET_NULL, blank=True, null=True, related_name='refreshed_access_token')
     token = models.CharField(max_length=255, unique=True, )
     id_token = models.OneToOneField(
-        oauth2_settings.ID_TOKEN_MODEL, on_delete=models.CASCADE, blank=True, null=True,
-        related_name="access_token"
+        swapper.get_model_name('oauth2_provider', 'IDToken'),
+        on_delete=models.CASCADE, blank=True, null=True, related_name='access_token'
     )
     application = models.ForeignKey(
-        oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE, blank=True, null=True,
+        swapper.get_model_name('oauth_provider', 'Application'), on_delete=models.CASCADE, blank=True, null=True
     )
     expires = models.DateTimeField()
     scope = models.TextField(blank=True)
@@ -363,7 +362,7 @@ class AbstractAccessToken(models.Model):
 
 class AccessToken(AbstractAccessToken):
     class Meta(AbstractAccessToken.Meta):
-        swappable = "OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL"
+        swappable = swapper.swappable_setting('oauth_provider', 'AccessToken')
 
 
 class AbstractRefreshToken(models.Model):
@@ -387,10 +386,11 @@ class AbstractRefreshToken(models.Model):
     )
     token = models.CharField(max_length=255)
     application = models.ForeignKey(
-        oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE)
+        swapper.get_model_name('oauth2_provider', 'Application'), on_delete=models.CASCADE,
+    )
     access_token = models.OneToOneField(
-        oauth2_settings.ACCESS_TOKEN_MODEL, on_delete=models.SET_NULL, blank=True, null=True,
-        related_name="refresh_token"
+        swapper.get_model_name('oauth2_provider', 'AccessToken'), on_delete=models.SET_NULL, blank=True, null=True,
+        related_name='refresh_token'
     )
 
     created = models.DateTimeField(auto_now_add=True)
@@ -428,7 +428,7 @@ class AbstractRefreshToken(models.Model):
 
 class RefreshToken(AbstractRefreshToken):
     class Meta(AbstractRefreshToken.Meta):
-        swappable = "OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL"
+        swappable = swapper.swappable_setting('oauth2_provider', 'RefreshToken')
 
 
 class AbstractIDToken(models.Model):
@@ -451,7 +451,7 @@ class AbstractIDToken(models.Model):
     )
     token = models.TextField(unique=True)
     application = models.ForeignKey(
-        oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE, blank=True, null=True,
+        swapper.get_model_name('oauth2_provider', 'Application'), on_delete=models.CASCADE, blank=True, null=True
     )
     expires = models.DateTimeField()
     scope = models.TextField(blank=True)
@@ -521,32 +521,32 @@ class AbstractIDToken(models.Model):
 
 class IDToken(AbstractIDToken):
     class Meta(AbstractIDToken.Meta):
-        swappable = "OAUTH2_PROVIDER_ID_TOKEN_MODEL"
+        swappable = swapper.swappable_setting('oauth2_provider', 'IDToken')#"OAUTH2_PROVIDER_ID_TOKEN_MODEL"
 
 
 def get_application_model():
     """ Return the Application model that is active in this project. """
-    return apps.get_model(oauth2_settings.APPLICATION_MODEL)
+    return swapper.load_model('oauth2_provider', 'Application')
 
 
 def get_grant_model():
     """ Return the Grant model that is active in this project. """
-    return apps.get_model(oauth2_settings.GRANT_MODEL)
+    return swapper.load_model('oauth2_provider', 'Grant')
 
 
 def get_access_token_model():
     """ Return the AccessToken model that is active in this project. """
-    return apps.get_model(oauth2_settings.ACCESS_TOKEN_MODEL)
+    return swapper.load_model('oauth2_provider', 'AccessToken')
 
 
 def get_id_token_model():
     """ Return the AccessToken model that is active in this project. """
-    return apps.get_model(oauth2_settings.ID_TOKEN_MODEL)
+    return swapper.load_model('oauth2_provider', 'IDToken')
 
 
 def get_refresh_token_model():
     """ Return the RefreshToken model that is active in this project. """
-    return apps.get_model(oauth2_settings.REFRESH_TOKEN_MODEL)
+    return swapper.load_model('oauth2_provider', 'RefreshToken')
 
 
 def clear_expired():

@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
+import swapper
 
 from oauth2_provider.settings import oauth2_settings
 
@@ -10,6 +11,8 @@ class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('oauth2_provider', '0002_auto_20190406_1805'),
+        swapper.dependency('oauth_provider', 'IDToken')
+
     ]
 
     operations = [
@@ -32,17 +35,17 @@ class Migration(migrations.Migration):
                 ('scope', models.TextField(blank=True)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('updated', models.DateTimeField(auto_now=True)),
-                ('application', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=oauth2_settings.APPLICATION_MODEL)),
+                ('application', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=swapper.get_model_name('oauth2_provider', 'Application'))),
                 ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='oauth2_provider_idtoken', to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'abstract': False,
-                'swappable': 'OAUTH2_PROVIDER_ID_TOKEN_MODEL',
+                'swappable': swapper.swappable_setting('oauth2_provider', 'IDToken'),#'OAUTH2_PROVIDER_ID_TOKEN_MODEL',
             },
         ),
         migrations.AddField(
             model_name='accesstoken',
             name='id_token',
-            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='access_token', to=oauth2_settings.ID_TOKEN_MODEL),
+            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='access_token', to=swapper.get_model_name('oauth2_provider', 'IDToken')),
         ),
     ]
