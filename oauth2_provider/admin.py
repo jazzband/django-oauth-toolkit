@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from .models import (
     get_access_token_model, get_application_model,
-    get_grant_model, get_id_token_model, get_refresh_token_model
+    get_grant_model, get_refresh_token_model
 )
 
 
@@ -26,11 +26,6 @@ class AccessTokenAdmin(admin.ModelAdmin):
     raw_id_fields = ("user", "source_refresh_token")
 
 
-class IDTokenAdmin(admin.ModelAdmin):
-    list_display = ("token", "user", "application", "expires")
-    raw_id_fields = ("user", )
-
-
 class RefreshTokenAdmin(admin.ModelAdmin):
     list_display = ("token", "user", "application")
     raw_id_fields = ("user", "access_token")
@@ -39,11 +34,9 @@ class RefreshTokenAdmin(admin.ModelAdmin):
 Application = get_application_model()
 Grant = get_grant_model()
 AccessToken = get_access_token_model()
-IDToken = get_id_token_model()
 RefreshToken = get_refresh_token_model()
 
 admin.site.register(Application, ApplicationAdmin)
 admin.site.register(Grant, GrantAdmin)
 admin.site.register(AccessToken, AccessTokenAdmin)
-admin.site.register(IDToken, IDTokenAdmin)
 admin.site.register(RefreshToken, RefreshTokenAdmin)

@@ -32,7 +32,7 @@ class ApplicationRegistration(LoginRequiredMixin, CreateView):
             get_application_model(),
             fields=(
                 "name", "client_id", "client_secret", "client_type",
-                "authorization_grant_type", "redirect_uris", "algorithm",
+                "authorization_grant_type", "redirect_uris"
             )
         )
 
@@ -81,6 +81,6 @@ class ApplicationUpdate(ApplicationOwnerIsUserMixin, UpdateView):
             get_application_model(),
             fields=(
                 "name", "client_id", "client_secret", "client_type",
-                "authorization_grant_type", "redirect_uris", "algorithm",
+                "authorization_grant_type", "redirect_uris"
             )
         )
