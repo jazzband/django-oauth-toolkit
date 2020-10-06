@@ -97,7 +97,7 @@ class OAuthLibMixin:
         core = self.get_oauthlib_core()
         return core.validate_authorization_request(request)
 
-    def create_authorization_response(self, uri, request, scopes, credentials, allow, body=None):
+    def create_authorization_response(self, request, scopes, credentials, allow):
         """
         A wrapper method that calls create_authorization_response on `server_class`
         instance.
@@ -105,15 +105,14 @@ class OAuthLibMixin:
         :param request: The current django.http.HttpRequest object
         :param scopes: A space-separated string of provided scopes
         :param credentials: Authorization credentials dictionary containing
-                           `client_id`, `state`, `redirect_uri` and `response_type`
+                           `client_id`, `state`, `redirect_uri`, `response_type`
         :param allow: True if the user authorize the client, otherwise False
-        :param body: Other body parameters not used in credentials dictionary
         """
         # TODO: move this scopes conversion from and to string into a utils function
         scopes = scopes.split(" ") if scopes else []
 
         core = self.get_oauthlib_core()
-        return core.create_authorization_response(uri, request, scopes, credentials, body, allow)
+        return core.create_authorization_response(request, scopes, credentials, allow)
 
     def create_token_response(self, request):
         """
@@ -133,16 +132,6 @@ class OAuthLibMixin:
         """
         core = self.get_oauthlib_core()
         return core.create_revocation_response(request)
-
-    def create_userinfo_response(self, request):
-        """
-        A wrapper method that calls create_userinfo_response on the
-        `server_class` instance.
-
-        :param request: The current django.http.HttpRequest object
-        """
-        core = self.get_oauthlib_core()
-        return core.create_userinfo_response(request)
 
     def verify_request(self, request):
         """
@@ -288,13 +277,11 @@ class ClientProtectedResourceMixin(OAuthLibMixin):
         if not valid:
             # Alternatively allow access tokens
             # check if the request is valid and the protected resource may be accessed
-            try:
-                valid, r = self.verify_request(request)
-                if valid:
-                    request.resource_owner = r.user
-                    return super().dispatch(request, *args, **kwargs)
-            except ValueError:
-                pass
-            return HttpResponseForbidden()
+            valid, r = self.verify_request(request)
+            if valid:
+                request.resource_owner = r.user
+                return super().dispatch(request, *args, **kwargs)
+            else:
+                return HttpResponseForbidden()
         else:
             return super().dispatch(request, *args, **kwargs)

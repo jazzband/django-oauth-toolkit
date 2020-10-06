@@ -25,7 +25,7 @@ __pycache__
 pip-log.txt
 
 # Unit test / coverage reports
-.pytest_cache
+.cache
 .coverage
 .tox
 .pytest_cache/

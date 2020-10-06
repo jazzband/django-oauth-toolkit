@@ -86,7 +86,6 @@ class AuthorizationView(BaseAuthorizationView, FormView):
     * Authorization code
     * Implicit grant
     """
-
     template_name = "oauth2_provider/authorize.html"
     form_class = AllowForm
 
@@ -102,14 +101,11 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         initial_data = {
             "redirect_uri": self.oauth2_data.get("redirect_uri", None),
             "scope": " ".join(scopes),
-            "nonce": self.oauth2_data.get("nonce", None),
             "client_id": self.oauth2_data.get("client_id", None),
             "state": self.oauth2_data.get("state", None),
             "response_type": self.oauth2_data.get("response_type", None),
             "code_challenge": self.oauth2_data.get("code_challenge", None),
-            "code_challenge_method": self.oauth2_data.get(
-                "code_challenge_method", None
-            ),
+            "code_challenge_method": self.oauth2_data.get("code_challenge_method", None),
         }
         return initial_data
 
@@ -120,27 +116,18 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             "client_id": form.cleaned_data.get("client_id"),
             "redirect_uri": form.cleaned_data.get("redirect_uri"),
             "response_type": form.cleaned_data.get("response_type", None),
-            "state": form.cleaned_data.get("state", None),
+            "state": form.cleaned_data.get("state", None)
         }
         if form.cleaned_data.get("code_challenge", False):
             credentials["code_challenge"] = form.cleaned_data.get("code_challenge")
         if form.cleaned_data.get("code_challenge_method", False):
-            credentials["code_challenge_method"] = form.cleaned_data.get(
-                "code_challenge_method"
-            )
-
-        body = {"nonce": form.cleaned_data.get("nonce")}
+            credentials["code_challenge_method"] = form.cleaned_data.get("code_challenge_method")
         scopes = form.cleaned_data.get("scope")
         allow = form.cleaned_data.get("allow")
 
         try:
             uri, headers, body, status = self.create_authorization_response(
-                self.request.get_raw_uri(),
-                request=self.request,
-                scopes=scopes,
-                credentials=credentials,
-                body=body,
-                allow=allow,
+                request=self.request, scopes=scopes, credentials=credentials, allow=allow
             )
         except OAuthToolkitError as error:
             return self.error_response(error, application)
@@ -162,21 +149,13 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         # at this point we know an Application instance with such client_id exists in the database
 
         # TODO: Cache this!
-        application = get_application_model().objects.get(
-            client_id=credentials["client_id"]
-        )
-
-        uri_query = urllib.parse.urlparse(self.request.get_raw_uri()).query
-        uri_query_params = dict(
-            urllib.parse.parse_qsl(uri_query, keep_blank_values=True, strict_parsing=True)
-        )
+        application = get_application_model().objects.get(client_id=credentials["client_id"])
 
         kwargs["application"] = application
         kwargs["client_id"] = credentials["client_id"]
         kwargs["redirect_uri"] = credentials["redirect_uri"]
         kwargs["response_type"] = credentials["response_type"]
         kwargs["state"] = credentials["state"]
-        kwargs["nonce"] = uri_query_params.get("nonce", None)
 
         self.oauth2_data = kwargs
         # following two loc are here only because of https://code.djangoproject.com/ticket/17795
@@ -185,9 +164,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
 
         # Check to see if the user has already granted access and return
         # a successful response depending on "approval_prompt" url parameter
-        require_approval = request.GET.get(
-            "approval_prompt", oauth2_settings.REQUEST_APPROVAL_PROMPT
-        )
+        require_approval = request.GET.get("approval_prompt", oauth2_settings.REQUEST_APPROVAL_PROMPT)
 
         try:
             # If skip_authorization field is True, skip the authorization screen even
@@ -196,36 +173,26 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             # are already approved.
             if application.skip_authorization:
                 uri, headers, body, status = self.create_authorization_response(
-                    self.request.get_raw_uri(),
-                    request=self.request,
-                    scopes=" ".join(scopes),
-                    credentials=credentials,
-                    allow=True,
+                    request=self.request, scopes=" ".join(scopes),
+                    credentials=credentials, allow=True
                 )
                 return self.redirect(uri, application)
 
             elif require_approval == "auto":
-                tokens = (
-                    get_access_token_model()
-                    .objects.filter(
-                        user=request.user,
-                        application=kwargs["application"],
-                        expires__gt=timezone.now(),
-                    )
-                    .all()
-                )
+                tokens = get_access_token_model().objects.filter(
+                    user=request.user,
+                    application=kwargs["application"],
+                    expires__gt=timezone.now()
+                ).all()
 
                 # check past authorizations regarded the same scopes as the current one
                 for token in tokens:
                     if token.allow_scopes(scopes):
                         uri, headers, body, status = self.create_authorization_response(
-                            self.request.get_raw_uri(),
-                            request=self.request,
-                            scopes=" ".join(scopes),
-                            credentials=credentials,
-                            allow=True,
+                            request=self.request, scopes=" ".join(scopes),
+                            credentials=credentials, allow=True
                         )
-                        return self.redirect(uri, application)
+                        return self.redirect(uri, application, token)
 
         except OAuthToolkitError as error:
             return self.error_response(error, application)
@@ -272,7 +239,6 @@ class TokenView(OAuthLibMixin, View):
     * Password
     * Client credentials
     """
-
     server_class = oauth2_settings.OAUTH2_SERVER_CLASS
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
     oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
@@ -283,8 +249,11 @@ class TokenView(OAuthLibMixin, View):
         if status == 200:
             access_token = json.loads(body).get("access_token")
             if access_token is not None:
-                token = get_access_token_model().objects.get(token=access_token)
-                app_authorized.send(sender=self, request=request, token=token)
+                token = get_access_token_model().objects.get(
+                    token=access_token)
+                app_authorized.send(
+                    sender=self, request=request,
+                    token=token)
         response = HttpResponse(content=body, status=status)
 
         for k, v in headers.items():
@@ -297,7 +266,6 @@ class RevokeTokenView(OAuthLibMixin, View):
     """
     Implements an endpoint to revoke access or refresh tokens
     """
-
     server_class = oauth2_settings.OAUTH2_SERVER_CLASS
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
     oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS

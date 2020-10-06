@@ -7,7 +7,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
 from oauth2_provider.models import get_access_token_model
-from oauth2_provider.views.generic import ClientProtectedScopedResourceView
+from oauth2_provider.views import ClientProtectedScopedResourceView
 
 
 @method_decorator(csrf_exempt, name="dispatch")

@@ -1,4 +1,3 @@
-import json
 import logging
 from datetime import timedelta
 from urllib.parse import parse_qsl, urlparse
@@ -10,7 +9,6 @@ from django.db import models, transaction
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from jwcrypto import jwk, jwt
 
 from .generators import generate_client_id, generate_client_secret
 from .scopes import get_scopes_backend
@@ -52,20 +50,11 @@ class AbstractApplication(models.Model):
     GRANT_IMPLICIT = "implicit"
     GRANT_PASSWORD = "password"
     GRANT_CLIENT_CREDENTIALS = "client-credentials"
-    GRANT_OPENID_HYBRID = "openid-hybrid"
     GRANT_TYPES = (
         (GRANT_AUTHORIZATION_CODE, _("Authorization code")),
         (GRANT_IMPLICIT, _("Implicit")),
         (GRANT_PASSWORD, _("Resource owner password-based")),
         (GRANT_CLIENT_CREDENTIALS, _("Client credentials")),
-        (GRANT_OPENID_HYBRID, _("OpenID connect hybrid")),
-    )
-
-    RS256_ALGORITHM = "RS256"
-    HS256_ALGORITHM = "HS256"
-    ALGORITHM_TYPES = (
-        (RS256_ALGORITHM, _("RSA with SHA-2 256")),
-        (HS256_ALGORITHM, _("HMAC with SHA-2 256")),
     )
 
     id = models.BigAutoField(primary_key=True)
@@ -93,7 +82,6 @@ class AbstractApplication(models.Model):
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    algorithm = models.CharField(max_length=5, choices=ALGORITHM_TYPES, default=RS256_ALGORITHM)
 
     class Meta:
         abstract = True
@@ -294,10 +282,6 @@ class AbstractAccessToken(models.Model):
         related_name="refreshed_access_token"
     )
     token = models.CharField(max_length=255, unique=True, )
-    id_token = models.OneToOneField(
-        oauth2_settings.ID_TOKEN_MODEL, on_delete=models.CASCADE, blank=True, null=True,
-        related_name="access_token"
-    )
     application = models.ForeignKey(
         oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE, blank=True, null=True,
     )
@@ -431,99 +415,6 @@ class RefreshToken(AbstractRefreshToken):
         swappable = "OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL"
 
 
-class AbstractIDToken(models.Model):
-    """
-    An IDToken instance represents the actual token to
-    access user's resources, as in :openid:`2`.
-
-    Fields:
-
-    * :attr:`user` The Django user representing resources' owner
-    * :attr:`token` ID token
-    * :attr:`application` Application instance
-    * :attr:`expires` Date and time of token expiration, in DateTime format
-    * :attr:`scope` Allowed scopes
-    """
-    id = models.BigAutoField(primary_key=True)
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True,
-        related_name="%(app_label)s_%(class)s"
-    )
-    token = models.TextField(unique=True)
-    application = models.ForeignKey(
-        oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE, blank=True, null=True,
-    )
-    expires = models.DateTimeField()
-    scope = models.TextField(blank=True)
-
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
-
-    def is_valid(self, scopes=None):
-        """
-        Checks if the access token is valid.
-
-        :param scopes: An iterable containing the scopes to check or None
-        """
-        return not self.is_expired() and self.allow_scopes(scopes)
-
-    def is_expired(self):
-        """
-        Check token expiration with timezone awareness
-        """
-        if not self.expires:
-            return True
-
-        return timezone.now() >= self.expires
-
-    def allow_scopes(self, scopes):
-        """
-        Check if the token allows the provided scopes
-
-        :param scopes: An iterable containing the scopes to check
-        """
-        if not scopes:
-            return True
-
-        provided_scopes = set(self.scope.split())
-        resource_scopes = set(scopes)
-
-        return resource_scopes.issubset(provided_scopes)
-
-    def revoke(self):
-        """
-        Convenience method to uniform tokens' interface, for now
-        simply remove this token from the database in order to revoke it.
-        """
-        self.delete()
-
-    @property
-    def scopes(self):
-        """
-        Returns a dictionary of allowed scope names (as keys) with their descriptions (as values)
-        """
-        all_scopes = get_scopes_backend().get_all_scopes()
-        token_scopes = self.scope.split()
-        return {name: desc for name, desc in all_scopes.items() if name in token_scopes}
-
-    @property
-    def claims(self):
-        key = jwk.JWK.from_pem(oauth2_settings.OIDC_RSA_PRIVATE_KEY.encode("utf8"))
-        jwt_token = jwt.JWT(key=key, jwt=self.token)
-        return json.loads(jwt_token.claims)
-
-    def __str__(self):
-        return self.token
-
-    class Meta:
-        abstract = True
-
-
-class IDToken(AbstractIDToken):
-    class Meta(AbstractIDToken.Meta):
-        swappable = "OAUTH2_PROVIDER_ID_TOKEN_MODEL"
-
-
 def get_application_model():
     """ Return the Application model that is active in this project. """
     return apps.get_model(oauth2_settings.APPLICATION_MODEL)
@@ -537,11 +428,6 @@ def get_grant_model():
 def get_access_token_model():
     """ Return the AccessToken model that is active in this project. """
     return apps.get_model(oauth2_settings.ACCESS_TOKEN_MODEL)
-
-
-def get_id_token_model():
-    """ Return the AccessToken model that is active in this project. """
-    return apps.get_model(oauth2_settings.ID_TOKEN_MODEL)
 
 
 def get_refresh_token_model():
