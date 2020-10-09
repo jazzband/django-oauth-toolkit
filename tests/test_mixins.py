@@ -14,7 +14,7 @@ class BaseTest(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.request_factory = RequestFactory()
-        super(BaseTest, cls).setUpClass()
+        super().setUpClass()
 
 
 class TestOAuthLibMixin(BaseTest):
