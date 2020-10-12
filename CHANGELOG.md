@@ -14,6 +14,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
   -->
 
+## [unreleased] 
+
+### added
+* added `select_related` in intospect view for better query performance
+
+### Fixed
+* #847: Fix inappropriate message when response from authentication server is not OK.
+
 ## [1.3.2] 2020-03-24
 
 ### Fixed

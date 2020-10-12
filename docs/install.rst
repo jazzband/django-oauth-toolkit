@@ -19,11 +19,22 @@ If you need an OAuth2 provider you'll want to add the following to your urls.py
 
 .. code-block:: python
 
+    from django.urls import include, path
+
     urlpatterns = [
         ...
         path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+    ]
 
-        # using re_path
+Or using `re_path()`
+
+.. code-block:: python
+
+    from django.urls import include, re_path
+
+    urlpatterns = [
+        ...
+
         re_path(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     ]
 
@@ -34,4 +45,5 @@ Sync your database
 
     $ python manage.py migrate oauth2_provider
 
-Next step is our :doc:`first tutorial <tutorial/tutorial_01>`.
+Next step is :doc:`getting started <getting_started>` or :doc:`first tutorial <tutorial/tutorial_01>`.
+

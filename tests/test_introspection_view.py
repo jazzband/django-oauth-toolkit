@@ -321,3 +321,7 @@ class TestTokenIntrospectionViews(TestCase):
              "client_id": self.application.client_id,
              "client_secret": self.application.client_secret + "_so_wrong"})
         self.assertEqual(response.status_code, 403)
+
+    def test_select_related_in_view_for_less_db_queries(self):
+        with self.assertNumQueries(1):
+            self.client.post(reverse("oauth2_provider:introspect"))
