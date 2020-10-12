@@ -24,6 +24,34 @@ You can find the list of bugs, enhancements and feature requests on the
 `issue tracker <https://github.com/jazzband/django-oauth-toolkit/issues>`_. If you want to fix an issue, pick up one and
 add a comment stating you're working on it.
 
+Code Style
+==========
+
+The project uses `flake8 <https://flake8.pycqa.org/en/latest/>`_ for linting,
+`black <https://black.readthedocs.io/en/stable/>`_ for formatting the code,
+`isort <https://pycqa.github.io/isort/>`_ for formatting and sorting imports,
+and `pre-commit <https://pre-commit.com/>`_ for checking/fixing commits for
+correctness before they are made.
+
+You will need to install ``pre-commit`` yourself, and then ``pre-commit`` will
+take care of installing ``flake8``, ``black`` and ``isort``.
+
+After cloning your repository, go into it and run::
+
+    pre-commit install
+
+to install the hooks. On the next commit that you make, ``pre-commit`` will
+download and install the necessary hooks (a one off task). If anything in the
+commit would fail the hooks, the commit will be abandoned. For ``black`` and
+``isort``, any necessary changes will be made automatically, but not staged.
+Review the changes, and then re-stage and commit again.
+
+Using ``pre-commit`` ensures that code that would fail in QA does not make it
+into a commit in the first place, and will save you time in the long run. You
+can also (largely) stop worrying about code style, although you should always
+check how the code looks after ``black`` has formatted it, and think if there
+is a better way to structure the code so that it is more readable.
+
 Pull requests
 =============
 
