@@ -14,13 +14,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
   -->
 
-## [unreleased] 
+## [unreleased]
 
-### added
+## [1.3.3] 2020-10-16
+
+### Added
 * added `select_related` in intospect view for better query performance
+* #831 Authorization token creation now can receive an expire date
+* #831 Added a method to override Grant creation
+* #825 Bump oauthlib to 3.1.0 to introduce PKCE
 
 ### Fixed
 * #847: Fix inappropriate message when response from authentication server is not OK.
+
+### Changed
+* few smaller improvements to remove older django version compatibility #830, #861, #862, #863
 
 ## [1.3.2] 2020-03-24
 
