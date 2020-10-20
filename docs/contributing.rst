@@ -2,6 +2,13 @@
 Contributing
 ============
 
+.. image:: https://jazzband.co/static/img/jazzband.svg
+   :target: https://jazzband.co/
+   :alt: Jazzband
+
+This is a `Jazzband <https://jazzband.co>`_ project. By contributing you agree to abide by the `Contributor Code of Conduct <https://jazzband.co/about/conduct>`_ and follow the `guidelines <https://jazzband.co/about/guidelines>`_.
+
+
 Setup
 =====
 
@@ -70,7 +77,7 @@ When you begin your PR, you'll be asked to provide the following:
      JazzBand security team `<security@jazzband.co>`. Do not file an issue on the tracker
      or submit a PR until directed to do so.)
 
-* Make sure your name is in `AUTHORS`.
+* Make sure your name is in `AUTHORS`. We want to give credit to all contrbutors!
 
 If your PR is not yet ready to be merged mark it as a Work-in-Progress
 By prepending `WIP:` to the PR title so that it doesn't get inadvertently approved and merged.
@@ -105,6 +112,29 @@ How to get your pull request accepted
 =====================================
 
 We really want your code, so please follow these simple guidelines to make the process as smooth as possible.
+
+The Checklist
+-------------
+
+A checklist template is automatically added to your PR when you create it. Make sure you've done all the
+applicable steps and check them off to indicate you have done so. This is
+what you'll see when creating your PR:
+
+  Fixes #
+
+  ## Description of the Change
+
+  ## Checklist
+
+  - [ ] PR only contains one change (considered splitting up PR)
+  - [ ] unit-test added
+  - [ ] documentation updated
+  - [ ] `CHANGELOG.md` updated (only for user relevant changes)
+  - [ ] author name in `AUTHORS`
+
+Any PRs that are missing checklist items will not be merged and may be reverted if they are merged by
+mistake.
+
 
 Run the tests!
 --------------
@@ -142,5 +172,45 @@ Try reading our code and grasp the overall philosophy regarding method and varia
 the sake of readability, keep in mind that *simple is better than complex*. If you feel the code is not straightforward,
 add a comment. If you think a function is not trivial, add a docstrings.
 
+To see if your code formatting will pass muster use: `tox -e py37-flake8`
+
 
 The contents of this page are heavily based on the docs from `django-admin2 <https://github.com/twoscoops/django-admin2>`_
+
+Maintainer Checklist
+====================
+The following notes are to remind the project maintainers and leads of the steps required to
+review and merge PRs and to publish a new release.
+
+Reviewing and Merging PRs
+------------------------
+
+- Make sure the PR description includes the `pull request template
+  <https://github.com/jazzband/django-oauth-toolkit/blob/master/.github/pull_request_template.md>`_
+- Confirm that all required checklist items from the PR template are both indicated as done in the
+  PR description and are actually done.
+- Perform a careful review and ask for any needed changes.
+- Make sure any PRs only ever improve code coverage percentage.
+- All PRs should be be reviewed by one individual (not the submitter) and merged by another.
+
+PRs that are incorrectly merged may (reluctantly) be reverted by the Project Leads.
+
+
+Publishing a Release
+--------------------
+
+Only Project Leads can publish a release to pypi.org and rtfd.io. This checklist is a reminder
+of steps.
+
+- When planning a new release, create a `milestone
+  <https://github.com/jazzband/django-oauth-toolkit/milestones>`_
+  and assign issues, PRs, etc. to that milestone.
+- Review all commits since the last release and confirm that they are properly
+  documented in the CHANGELOG. (Unfortunately, this has not always been the case
+  so you may be stuck documenting things that should have been documented as part of their PRs.)
+- Make a final PR for the release that updates:
+
+  - CHANGELOG to show the release date.
+  - setup.cfg to set `version = ...`
+
+- Once the final PR is committed push the new release to pypi and rtfd.io.
