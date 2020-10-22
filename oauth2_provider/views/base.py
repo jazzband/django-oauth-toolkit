@@ -136,6 +136,18 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         log.debug("Success url for the request: {0}".format(self.success_url))
         return self.redirect(self.success_url, application)
 
+    def get_active_access_token(self, application, user, scopes):
+        tokens = get_access_token_model().objects.filter(
+            user=user,
+            application=application,
+            expires__gt=timezone.now()
+        ).all()
+
+        # check past authorizations regarded the same scopes as the current one
+        for token in tokens:
+            if token.allow_scopes(scopes):
+                return token
+
     def get(self, request, *args, **kwargs):
         try:
             scopes, credentials = self.validate_authorization_request(request)
@@ -179,20 +191,13 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                 return self.redirect(uri, application)
 
             elif require_approval == "auto":
-                tokens = get_access_token_model().objects.filter(
-                    user=request.user,
-                    application=kwargs["application"],
-                    expires__gt=timezone.now()
-                ).all()
-
-                # check past authorizations regarded the same scopes as the current one
-                for token in tokens:
-                    if token.allow_scopes(scopes):
-                        uri, headers, body, status = self.create_authorization_response(
-                            request=self.request, scopes=" ".join(scopes),
-                            credentials=credentials, allow=True
-                        )
-                        return self.redirect(uri, application, token)
+                token = self.get_active_access_token(kwargs["application"], request.user, scopes)
+                if token:
+                    uri, headers, body, status = self.create_authorization_response(
+                        request=self.request, scopes=" ".join(scopes),
+                        credentials=credentials, allow=True
+                    )
+                    return self.redirect(uri, application, token)
 
         except OAuthToolkitError as error:
             return self.error_response(error, application)
