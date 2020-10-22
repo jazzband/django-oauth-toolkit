@@ -141,7 +141,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             user=user,
             application=application,
             expires__gt=timezone.now()
-        ).all()
+        )
 
         # check past authorizations regarded the same scopes as the current one
         for token in tokens:
