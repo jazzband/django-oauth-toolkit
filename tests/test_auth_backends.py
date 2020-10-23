@@ -85,7 +85,7 @@ class TestOAuth2Backend(BaseTest):
 class TestOAuth2Middleware(BaseTest):
 
     def setUp(self):
-        super(TestOAuth2Middleware, self).setUp()
+        super().setUp()
         self.anon_user = AnonymousUser()
 
     def dummy_get_response(request):

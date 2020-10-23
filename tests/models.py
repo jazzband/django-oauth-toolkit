@@ -13,7 +13,7 @@ class BaseTestApplication(AbstractApplication):
     def get_allowed_schemes(self):
         if self.allowed_schemes:
             return self.allowed_schemes.split()
-        return super(BaseTestApplication, self).get_allowed_schemes()
+        return super().get_allowed_schemes()
 
 
 class SampleApplication(AbstractApplication):

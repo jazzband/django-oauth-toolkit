@@ -70,7 +70,7 @@ class TestApplicationViews(BaseTest):
         return app
 
     def setUp(self):
-        super(TestApplicationViews, self).setUp()
+        super().setUp()
         self.app_foo_1 = self._create_application("app foo_user 1", self.foo_user)
         self.app_foo_2 = self._create_application("app foo_user 2", self.foo_user)
         self.app_foo_3 = self._create_application("app foo_user 3", self.foo_user)
@@ -79,7 +79,7 @@ class TestApplicationViews(BaseTest):
         self.app_bar_2 = self._create_application("app bar_user 2", self.bar_user)
 
     def tearDown(self):
-        super(TestApplicationViews, self).tearDown()
+        super().tearDown()
         get_application_model().objects.all().delete()
 
     def test_application_list(self):
