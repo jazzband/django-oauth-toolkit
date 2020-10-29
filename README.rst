@@ -84,6 +84,21 @@ Documentation
 
 The `full documentation <https://django-oauth-toolkit.readthedocs.io/>`_ is on *Read the Docs*.
 
+
+Developer Setup
+---------------
+
+To get started with running or building the module you will need to install a virtual environment
+1) `python36 -m venv ~/venv/python36-django-oauth-toolkit`
+2) `source ~/venv/python36-django-oauth-toolkit`
+3) `python setup.py install`
+4) `python setup.py build`
+
+To run the tox tests for our specifically supported build use the following
+1) `pip install tox`
+2) `tox -e py36-django22`
+
+
 License
 -------
 
