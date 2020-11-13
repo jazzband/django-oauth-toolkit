@@ -82,7 +82,7 @@ That’ll create a directory :file:`users`, which is laid out like this::
 If you’re starting a new project, it’s highly recommended to set up a custom user model, even if the default `User`_ model is sufficient for you. This model behaves identically to the default user model, but you’ll be able to customize it in the future if the need arises.
 -- `Django documentation`_
 
-Edit :file:`users/models.py` adding the code bellow:
+Edit :file:`users/models.py` adding the code below:
 
 .. code-block:: python
 
@@ -105,7 +105,7 @@ Change :file:`iam/settings.py` to add ``users`` application to ``INSTALLED_APPS`
         'users',
     ]
 
-Configure ``users.User`` to be the model used for the ``auth`` application adding ``AUTH_USER_MODEL`` to :file:`iam/settings.py`:
+Configure ``users.User`` to be the model used for the ``auth`` application by adding ``AUTH_USER_MODEL`` to :file:`iam/settings.py`:
 
 .. code-block:: python
 
@@ -152,7 +152,7 @@ The ``migrate`` output::
 Django OAuth Toolkit
 --------------------
 
-Django OAuth Toolkit can help you providing out of the box all the endpoints, data and logic needed to add OAuth2 capabilities to your Django projects.
+Django OAuth Toolkit can help you by providing, out of the box, all the endpoints, data, and logic needed to add OAuth2 capabilities to your Django projects.
 
 Install Django OAuth Toolkit::
 
@@ -231,12 +231,12 @@ We will start by given a try to the grant types listed below:
 * Authorization code
 * Client credential
 
-This two grant types cover the most initially used uses cases.
+These two grant types cover the most initially used use cases.
 
 Authorization Code
 ------------------
 
-The Authorization Code flow is best used in web and mobile apps. This is the flow used for third party integration, the user authorize your partner to access its products in your APIs.
+The Authorization Code flow is best used in web and mobile apps. This is the flow used for third party integration, the user authorizes your partner to access its products in your APIs.
 
 Start the development server::
 
@@ -256,7 +256,7 @@ Export ``Client id`` and ``Client secret`` values as environment variable:
     export ID=vW1RcAl7Mb0d5gyHNQIAcH110lWoOW2BmWJIero8
     export SECRET=DZFpuNjRdt5xUEzxXovAp40bU3lQvoMvF3awEStn61RXWE0Ses4RgzHWKJKTvUCHfRkhcBi3ebsEfSjfEO96vo2Sh6pZlxJ6f7KcUbhvqMMPoVxRwv4vfdWEoWMGPeIO
 
-To start the Authorization code flow got to this `URL`_ with is the same as show bellow::
+To start the Authorization code flow go to this `URL`_ which is the same as shown below::
 
     http://127.0.0.1:8000/o/authorize/?response_type=code&client_id=vW1RcAl7Mb0d5gyHNQIAcH110lWoOW2BmWJIero8&redirect_uri=http://127.0.0.1:8000/noexist/callback
 
@@ -273,13 +273,13 @@ Go ahead and authorize the ``web-app``
 .. image:: _images/application-authorize-web-app.png
    :alt: Authorization code authorize web-app
 
-Remenber we used ``http://127.0.0.1:8000/noexist/callback`` as ``redirect_uri`` you will get a **Page not found (404)** but it worked if you get a url like::
+Remember we used ``http://127.0.0.1:8000/noexist/callback`` as ``redirect_uri`` you will get a **Page not found (404)** but it worked if you get a url like::
 
     http://127.0.0.1:8000/noexist/callback?code=uVqLxiHDKIirldDZQfSnDsmYW1Abj2
 
-This is the OAuth2 provider trying to give you a ``code`` in this case ``uVqLxiHDKIirldDZQfSnDsmYW1Abj2``.
+This is the OAuth2 provider trying to give you a ``code``. in this case ``uVqLxiHDKIirldDZQfSnDsmYW1Abj2``.
 
-Export it as environment variable:
+Export it as an environment variable:
 
 .. code-block:: sh
 
@@ -326,7 +326,7 @@ The Client Credential grant is suitable for machine-to-machine authentication. Y
 
 Point your browser to http://127.0.0.1:8000/o/applications/register/ lets create an application.
 
-Fill the form as show in the screenshot bellow and before save take note of ``Client id`` and ``Client secret`` we will use it in a minute.
+Fill the form as show in the screenshot below, and before saving take note of ``Client id`` and ``Client secret`` we will use it in a minute.
 
 .. image:: _images/application-register-client-credential.png
    :alt: Client credential application registration
@@ -352,7 +352,7 @@ We need to encode ``client_id`` and ``client_secret`` as HTTP base authenticatio
     b'YXhYU1NCVnV2T3lHVnpoNFB1cnZLYXE1TUhYTW03RnRySGdETWk0dToxZnV2NVdWZlI3QTVCbEYwbzE1NUg3czViTGdYbHdXTGhpM1k3cGRKOWFKdUNkbDBYVjVDeGdkMHRyaTduU3pDODBxeXJvdmg4cUZYRkhnRkFBYzBsZFBObjVaWUxhbnhTbTFTSTFyeGxScldVUDU5MXdwSERHYTNwU3BCNmRDWg=='
     >>>
 
-Export the credential as environment variable
+Export the credential as an environment variable
 
 .. code-block:: sh
 
@@ -362,7 +362,7 @@ To start the Client Credential flow you call ``/token/`` endpoint direct::
 
     curl -X POST -H "Authorization: Basic ${CREDENTIAL}" -H "Cache-Control: no-cache" -H "Content-Type: application/x-www-form-urlencoded" "http://127.0.0.1:8000/o/token/" -d "grant_type=client_credentials"
 
-To be more easy to visualize::
+To be easier to visualize::
 
     curl -X POST \
         -H "Authorization: Basic ${CREDENTIAL}" \
@@ -371,7 +371,7 @@ To be more easy to visualize::
         "http://127.0.0.1:8000/o/token/" \
         -d "grant_type=client_credentials"
 
-The OAuth2 provider will return the follow response:
+The OAuth2 provider will return the following response:
 
 .. code-block:: javascript
 
