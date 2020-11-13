@@ -1012,7 +1012,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         """
         Request an access token using client_type: public
         and PKCE enabled. Tests if the authorize get is successfull
-        for the S256 algorithm
+        for the S256 algorithm and form data are properly passed.
         """
         self.client.login(username="test_user", password="123456")
 
@@ -1033,14 +1033,15 @@ class TestAuthorizationCodeTokenView(BaseTest):
         }
 
         response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
-        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'value="S256"', count=1, status_code=200)
+        self.assertContains(response, 'value="{0}"'.format(code_challenge), count=1, status_code=200)
         oauth2_settings.PKCE_REQUIRED = False
 
     def test_public_pkce_plain_authorize_get(self):
         """
         Request an access token using client_type: public
         and PKCE enabled. Tests if the authorize get is successfull
-        for the plain algorithm
+        for the plain algorithm and form data are properly passed.
         """
         self.client.login(username="test_user", password="123456")
 
@@ -1061,7 +1062,8 @@ class TestAuthorizationCodeTokenView(BaseTest):
         }
 
         response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
-        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'value="plain"', count=1, status_code=200)
+        self.assertContains(response, 'value="{0}"'.format(code_challenge), count=1, status_code=200)
         oauth2_settings.PKCE_REQUIRED = False
 
     def test_public_pkce_S256(self):
