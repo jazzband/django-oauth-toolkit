@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #831 Authorization token creation now can receive an expire date
 * #831 Added a method to override Grant creation
 * #825 Bump oauthlib to 3.1.0 to introduce PKCE
+* Support for Django 3.1
 
 ### Fixed
 * #847: Fix inappropriate message when response from authentication server is not OK.

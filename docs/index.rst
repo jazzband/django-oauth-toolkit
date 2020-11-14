@@ -22,7 +22,7 @@ Requirements
 ------------
 
 * Python 3.5+
-* Django 2.1+
+* Django 2.2+
 * oauthlib 3.1+
 
 Index
