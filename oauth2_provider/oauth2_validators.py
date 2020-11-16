@@ -164,50 +164,29 @@ class OAuth2Validator(RequestValidator):
         if access_token is None:
             error = OrderedDict(
                 [
-                    (
-                        "error",
-                        "invalid_token",
-                    ),
-                    (
-                        "error_description",
-                        _("The access token is invalid."),
-                    ),
+                    ("error", "invalid_token"),
+                    ("error_description", _("The access token is invalid.")),
                 ]
             )
         elif access_token.is_expired():
             error = OrderedDict(
                 [
-                    (
-                        "error",
-                        "invalid_token",
-                    ),
-                    (
-                        "error_description",
-                        _("The access token has expired."),
-                    ),
+                    ("error", "invalid_token"),
+                    ("error_description", _("The access token has expired.")),
                 ]
             )
         elif not access_token.allow_scopes(scopes):
             error = OrderedDict(
                 [
-                    (
-                        "error",
-                        "insufficient_scope",
-                    ),
-                    (
-                        "error_description",
-                        _("The access token is valid but does not have enough scope."),
-                    ),
+                    ("error", "insufficient_scope"),
+                    ("error_description", _("The access token is valid but does not have enough scope.")),
                 ]
             )
         else:
             log.warning("OAuth2 access token is invalid for an unknown reason.")
             error = OrderedDict(
                 [
-                    (
-                        "error",
-                        "invalid_token",
-                    ),
+                    ("error", "invalid_token"),
                 ]
             )
         request.oauth2_error = error

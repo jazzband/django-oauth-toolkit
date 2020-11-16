@@ -39,7 +39,6 @@ class BaseTest(TestCase):
 
 class TestRevocationView(BaseTest):
     def test_revoke_access_token(self):
-        """"""
         tok = AccessToken.objects.create(
             user=self.test_user,
             token="1234567890",
@@ -87,7 +86,6 @@ class TestRevocationView(BaseTest):
         self.assertEqual(response.status_code, 200)
 
     def test_revoke_access_token_with_hint(self):
-        """"""
         tok = AccessToken.objects.create(
             user=self.test_user,
             token="1234567890",

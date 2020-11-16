@@ -36,10 +36,7 @@ class OAuth2Authentication(BaseAuthentication):
         """
         www_authenticate_attributes = OrderedDict(
             [
-                (
-                    "realm",
-                    self.www_authenticate_realm,
-                ),
+                ("realm", self.www_authenticate_realm),
             ]
         )
         oauth2_error = getattr(request, "oauth2_error", {})
