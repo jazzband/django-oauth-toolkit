@@ -13,7 +13,6 @@ except ImportError:
 
 
 class TestOAuthLibCoreBackend(TestCase):
-
     def setUp(self):
         self.factory = RequestFactory()
         self.oauthlib_core = OAuthLibCore()
@@ -33,11 +32,13 @@ class TestOAuthLibCoreBackend(TestCase):
         self.assertIn("password=123456", body)
 
     def test_application_json_extract_params(self):
-        payload = json.dumps({
-            "grant_type": "password",
-            "username": "john",
-            "password": "123456",
-        })
+        payload = json.dumps(
+            {
+                "grant_type": "password",
+                "username": "john",
+                "password": "123456",
+            }
+        )
         request = self.factory.post("/o/token/", payload, content_type="application/json")
 
         uri, http_method, body, headers = self.oauthlib_core._extract_params(request)
@@ -51,6 +52,7 @@ class TestCustomOAuthLibCoreBackend(TestCase):
     Tests that the public API behaves as expected when we override
     the OAuthLibCoreBackend core methods.
     """
+
     class MyOAuthLibCore(OAuthLibCore):
         def _get_extra_credentials(self, request):
             return 1
@@ -79,11 +81,13 @@ class TestJSONOAuthLibCoreBackend(TestCase):
         self.oauthlib_core = JSONOAuthLibCore()
 
     def test_application_json_extract_params(self):
-        payload = json.dumps({
-            "grant_type": "password",
-            "username": "john",
-            "password": "123456",
-        })
+        payload = json.dumps(
+            {
+                "grant_type": "password",
+                "username": "john",
+                "password": "123456",
+            }
+        )
         request = self.factory.post("/o/token/", payload, content_type="application/json")
 
         uri, http_method, body, headers = self.oauthlib_core._extract_params(request)

@@ -1,9 +1,6 @@
 from django.contrib import admin
 
-from .models import (
-    get_access_token_model, get_application_model,
-    get_grant_model, get_refresh_token_model
-)
+from .models import get_access_token_model, get_application_model, get_grant_model, get_refresh_token_model
 
 
 class ApplicationAdmin(admin.ModelAdmin):
@@ -13,12 +10,12 @@ class ApplicationAdmin(admin.ModelAdmin):
         "client_type": admin.HORIZONTAL,
         "authorization_grant_type": admin.VERTICAL,
     }
-    raw_id_fields = ("user", )
+    raw_id_fields = ("user",)
 
 
 class GrantAdmin(admin.ModelAdmin):
     list_display = ("code", "application", "user", "expires")
-    raw_id_fields = ("user", )
+    raw_id_fields = ("user",)
 
 
 class AccessTokenAdmin(admin.ModelAdmin):

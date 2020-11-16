@@ -34,7 +34,7 @@ class TestProtectedResourceDecorator(TestCase):
             scope="read write",
             expires=timezone.now() + timedelta(seconds=300),
             token="secret-access-token-key",
-            application=self.application
+            application=self.application,
         )
 
         oauth2_settings._SCOPES = ["read", "write"]

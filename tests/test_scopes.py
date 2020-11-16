@@ -6,13 +6,9 @@ from django.core.exceptions import ImproperlyConfigured
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
-from oauth2_provider.models import (
-    get_access_token_model, get_application_model, get_grant_model
-)
+from oauth2_provider.models import get_access_token_model, get_application_model, get_grant_model
 from oauth2_provider.settings import oauth2_settings
-from oauth2_provider.views import (
-    ReadWriteScopedResourceView, ScopedProtectedResourceView
-)
+from oauth2_provider.views import ReadWriteScopedResourceView, ScopedProtectedResourceView
 
 from .utils import get_basic_auth_header
 
@@ -117,7 +113,7 @@ class TestScopesSave(BaseTest):
         token_request_data = {
             "grant_type": "authorization_code",
             "code": authorization_code,
-            "redirect_uri": "http://example.org"
+            "redirect_uri": "http://example.org",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
@@ -153,7 +149,7 @@ class TestScopesProtection(BaseTest):
         token_request_data = {
             "grant_type": "authorization_code",
             "code": authorization_code,
-            "redirect_uri": "http://example.org"
+            "redirect_uri": "http://example.org",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
@@ -195,7 +191,7 @@ class TestScopesProtection(BaseTest):
         token_request_data = {
             "grant_type": "authorization_code",
             "code": authorization_code,
-            "redirect_uri": "http://example.org"
+            "redirect_uri": "http://example.org",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
@@ -237,7 +233,7 @@ class TestScopesProtection(BaseTest):
         token_request_data = {
             "grant_type": "authorization_code",
             "code": authorization_code,
-            "redirect_uri": "http://example.org"
+            "redirect_uri": "http://example.org",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
@@ -279,7 +275,7 @@ class TestScopesProtection(BaseTest):
         token_request_data = {
             "grant_type": "authorization_code",
             "code": authorization_code,
-            "redirect_uri": "http://example.org"
+            "redirect_uri": "http://example.org",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
@@ -320,7 +316,7 @@ class TestReadWriteScope(BaseTest):
         token_request_data = {
             "grant_type": "authorization_code",
             "code": authorization_code,
-            "redirect_uri": "http://example.org"
+            "redirect_uri": "http://example.org",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 

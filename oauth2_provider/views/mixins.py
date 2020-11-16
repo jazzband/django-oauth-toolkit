@@ -26,6 +26,7 @@ class OAuthLibMixin:
       * oauthlib_backend_class
 
     """
+
     server_class = None
     validator_class = None
     oauthlib_backend_class = None
@@ -38,7 +39,8 @@ class OAuthLibMixin:
         if cls.server_class is None:
             raise ImproperlyConfigured(
                 "OAuthLibMixin requires either a definition of 'server_class'"
-                " or an implementation of 'get_server_class()'")
+                " or an implementation of 'get_server_class()'"
+            )
         else:
             return cls.server_class
 
@@ -50,7 +52,8 @@ class OAuthLibMixin:
         if cls.validator_class is None:
             raise ImproperlyConfigured(
                 "OAuthLibMixin requires either a definition of 'validator_class'"
-                " or an implementation of 'get_validator_class()'")
+                " or an implementation of 'get_validator_class()'"
+            )
         else:
             return cls.validator_class
 
@@ -62,7 +65,8 @@ class OAuthLibMixin:
         if cls.oauthlib_backend_class is None:
             raise ImproperlyConfigured(
                 "OAuthLibMixin requires either a definition of 'oauthlib_backend_class'"
-                " or an implementation of 'get_oauthlib_backend_class()'")
+                " or an implementation of 'get_oauthlib_backend_class()'"
+            )
         else:
             return cls.oauthlib_backend_class
 
@@ -188,6 +192,7 @@ class ScopedResourceMixin:
     """
     Helper mixin that implements "scopes handling" behaviour
     """
+
     required_scopes = None
 
     def get_scopes(self, *args, **kwargs):
@@ -199,7 +204,8 @@ class ScopedResourceMixin:
         if self.required_scopes is None:
             raise ImproperlyConfigured(
                 "ProtectedResourceMixin requires either a definition of 'required_scopes'"
-                " or an implementation of 'get_scopes()'")
+                " or an implementation of 'get_scopes()'"
+            )
         else:
             return self.required_scopes
 
@@ -228,19 +234,18 @@ class ReadWriteScopedResourceMixin(ScopedResourceMixin, OAuthLibMixin):
     """
     Helper mixin that implements "read and write scopes" behavior
     """
+
     required_scopes = []
     read_write_scope = None
 
     def __new__(cls, *args, **kwargs):
         provided_scopes = get_scopes_backend().get_all_scopes()
-        read_write_scopes = [oauth2_settings.READ_SCOPE,
-                             oauth2_settings.WRITE_SCOPE]
+        read_write_scopes = [oauth2_settings.READ_SCOPE, oauth2_settings.WRITE_SCOPE]
 
         if not set(read_write_scopes).issubset(set(provided_scopes)):
             raise ImproperlyConfigured(
                 "ReadWriteScopedResourceMixin requires following scopes {}"
-                ' to be in OAUTH2_PROVIDER["SCOPES"] list in settings'.format(
-                    read_write_scopes)
+                ' to be in OAUTH2_PROVIDER["SCOPES"] list in settings'.format(read_write_scopes)
             )
 
         return super().__new__(cls, *args, **kwargs)

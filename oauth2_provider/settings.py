@@ -55,19 +55,16 @@ DEFAULTS = {
     "REFRESH_TOKEN_MODEL": REFRESH_TOKEN_MODEL,
     "REQUEST_APPROVAL_PROMPT": "force",
     "ALLOWED_REDIRECT_URI_SCHEMES": ["http", "https"],
-
     # Special settings that will be evaluated at runtime
     "_SCOPES": [],
     "_DEFAULT_SCOPES": [],
-
     # Resource Server with Token Introspection
     "RESOURCE_SERVER_INTROSPECTION_URL": None,
     "RESOURCE_SERVER_AUTH_TOKEN": None,
     "RESOURCE_SERVER_INTROSPECTION_CREDENTIALS": None,
     "RESOURCE_SERVER_TOKEN_CACHING_SECONDS": 36000,
-
     # Whether or not PKCE is required
-    "PKCE_REQUIRED": False
+    "PKCE_REQUIRED": False,
 }
 
 # List of settings that cannot be empty

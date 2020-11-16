@@ -39,6 +39,7 @@ class AbstractApplication(models.Model):
                             the registration process as described in :rfc:`2.2`
     * :attr:`name` Friendly name for the Application
     """
+
     CLIENT_CONFIDENTIAL = "confidential"
     CLIENT_PUBLIC = "public"
     CLIENT_TYPES = (
@@ -58,22 +59,21 @@ class AbstractApplication(models.Model):
     )
 
     id = models.BigAutoField(primary_key=True)
-    client_id = models.CharField(
-        max_length=100, unique=True, default=generate_client_id, db_index=True
-    )
+    client_id = models.CharField(max_length=100, unique=True, default=generate_client_id, db_index=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name="%(app_label)s_%(class)s",
-        null=True, blank=True, on_delete=models.CASCADE
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
     )
 
     redirect_uris = models.TextField(
-        blank=True, help_text=_("Allowed URIs list, space separated"),
+        blank=True,
+        help_text=_("Allowed URIs list, space separated"),
     )
     client_type = models.CharField(max_length=32, choices=CLIENT_TYPES)
-    authorization_grant_type = models.CharField(
-        max_length=32, choices=GRANT_TYPES
-    )
+    authorization_grant_type = models.CharField(max_length=32, choices=GRANT_TYPES)
     client_secret = models.CharField(
         max_length=255, blank=True, default=generate_client_secret, db_index=True
     )
@@ -115,9 +115,11 @@ class AbstractApplication(models.Model):
         for allowed_uri in self.redirect_uris.split():
             parsed_allowed_uri = urlparse(allowed_uri)
 
-            if (parsed_allowed_uri.scheme == parsed_uri.scheme and
-                    parsed_allowed_uri.netloc == parsed_uri.netloc and
-                    parsed_allowed_uri.path == parsed_uri.path):
+            if (
+                parsed_allowed_uri.scheme == parsed_uri.scheme
+                and parsed_allowed_uri.netloc == parsed_uri.netloc
+                and parsed_allowed_uri.path == parsed_uri.path
+            ):
 
                 aqs_set = set(parse_qsl(parsed_allowed_uri.query))
 
@@ -143,14 +145,14 @@ class AbstractApplication(models.Model):
                 validator(uri)
                 scheme = urlparse(uri).scheme
                 if scheme not in allowed_schemes:
-                    raise ValidationError(_(
-                        "Unauthorized redirect scheme: {scheme}"
-                    ).format(scheme=scheme))
+                    raise ValidationError(_("Unauthorized redirect scheme: {scheme}").format(scheme=scheme))
 
         elif self.authorization_grant_type in grant_types:
-            raise ValidationError(_(
-                "redirect_uris cannot be empty with grant_type {grant_type}"
-            ).format(grant_type=self.authorization_grant_type))
+            raise ValidationError(
+                _("redirect_uris cannot be empty with grant_type {grant_type}").format(
+                    grant_type=self.authorization_grant_type
+                )
+            )
 
     def get_absolute_url(self):
         return reverse("oauth2_provider:detail", args=[str(self.id)])
@@ -206,22 +208,17 @@ class AbstractGrant(models.Model):
     * :attr:`code_challenge` PKCE code challenge
     * :attr:`code_challenge_method` PKCE code challenge transform algorithm
     """
+
     CODE_CHALLENGE_PLAIN = "plain"
     CODE_CHALLENGE_S256 = "S256"
-    CODE_CHALLENGE_METHODS = (
-        (CODE_CHALLENGE_PLAIN, "plain"),
-        (CODE_CHALLENGE_S256, "S256")
-    )
+    CODE_CHALLENGE_METHODS = ((CODE_CHALLENGE_PLAIN, "plain"), (CODE_CHALLENGE_S256, "S256"))
 
     id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
-        related_name="%(app_label)s_%(class)s"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="%(app_label)s_%(class)s"
     )
     code = models.CharField(max_length=255, unique=True)  # code comes from oauthlib
-    application = models.ForeignKey(
-        oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE
-    )
+    application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE)
     expires = models.DateTimeField()
     redirect_uri = models.CharField(max_length=255)
     scope = models.TextField(blank=True)
@@ -231,7 +228,8 @@ class AbstractGrant(models.Model):
 
     code_challenge = models.CharField(max_length=128, blank=True, default="")
     code_challenge_method = models.CharField(
-        max_length=10, blank=True, default="", choices=CODE_CHALLENGE_METHODS)
+        max_length=10, blank=True, default="", choices=CODE_CHALLENGE_METHODS
+    )
 
     def is_expired(self):
         """
@@ -271,19 +269,32 @@ class AbstractAccessToken(models.Model):
     * :attr:`expires` Date and time of token expiration, in DateTime format
     * :attr:`scope` Allowed scopes
     """
+
     id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True,
-        related_name="%(app_label)s_%(class)s"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name="%(app_label)s_%(class)s",
     )
     source_refresh_token = models.OneToOneField(
         # unique=True implied by the OneToOneField
-        oauth2_settings.REFRESH_TOKEN_MODEL, on_delete=models.SET_NULL, blank=True, null=True,
-        related_name="refreshed_access_token"
+        oauth2_settings.REFRESH_TOKEN_MODEL,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="refreshed_access_token",
     )
-    token = models.CharField(max_length=255, unique=True, )
+    token = models.CharField(
+        max_length=255,
+        unique=True,
+    )
     application = models.ForeignKey(
-        oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE, blank=True, null=True,
+        oauth2_settings.APPLICATION_MODEL,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
     )
     expires = models.DateTimeField()
     scope = models.TextField(blank=True)
@@ -364,17 +375,19 @@ class AbstractRefreshToken(models.Model):
                            bounded to
     * :attr:`revoked` Timestamp of when this refresh token was revoked
     """
+
     id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
-        related_name="%(app_label)s_%(class)s"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="%(app_label)s_%(class)s"
     )
     token = models.CharField(max_length=255)
-    application = models.ForeignKey(
-        oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE)
+    application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE)
     access_token = models.OneToOneField(
-        oauth2_settings.ACCESS_TOKEN_MODEL, on_delete=models.SET_NULL, blank=True, null=True,
-        related_name="refresh_token"
+        oauth2_settings.ACCESS_TOKEN_MODEL,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="refresh_token",
     )
 
     created = models.DateTimeField(auto_now_add=True)
@@ -388,9 +401,11 @@ class AbstractRefreshToken(models.Model):
         access_token_model = get_access_token_model()
         refresh_token_model = get_refresh_token_model()
         with transaction.atomic():
-            self = refresh_token_model.objects.filter(
-                pk=self.pk, revoked__isnull=True
-            ).select_for_update().first()
+            self = (
+                refresh_token_model.objects.filter(pk=self.pk, revoked__isnull=True)
+                .select_for_update()
+                .first()
+            )
             if not self:
                 return
 
@@ -407,7 +422,10 @@ class AbstractRefreshToken(models.Model):
 
     class Meta:
         abstract = True
-        unique_together = ("token", "revoked",)
+        unique_together = (
+            "token",
+            "revoked",
+        )
 
 
 class RefreshToken(AbstractRefreshToken):
@@ -466,13 +484,9 @@ def clear_expired():
             revoked.delete()
             expired.delete()
         else:
-            logger.info("refresh_expire_at is %s. No refresh tokens deleted.",
-                        refresh_expire_at)
+            logger.info("refresh_expire_at is %s. No refresh tokens deleted.", refresh_expire_at)
 
-        access_tokens = access_token_model.objects.filter(
-            refresh_token__isnull=True,
-            expires__lt=now
-        )
+        access_tokens = access_token_model.objects.filter(refresh_token__isnull=True, expires__lt=now)
         grants = grant_model.objects.filter(expires__lt=now)
 
         logger.info("%s Expired access tokens to be deleted", access_tokens.count())

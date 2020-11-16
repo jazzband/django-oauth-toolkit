@@ -19,19 +19,18 @@ class IntrospectTokenView(ClientProtectedScopedResourceView):
     To access this view the request must pass a OAuth2 Bearer Token
     which is allowed to access the scope `introspection`.
     """
+
     required_scopes = ["introspection"]
 
     @staticmethod
     def get_token_response(token_value=None):
         try:
-            token = get_access_token_model().objects.select_related(
-                "user", "application"
-                ).get(token=token_value)
+            token = (
+                get_access_token_model().objects.select_related("user", "application").get(token=token_value)
+            )
         except ObjectDoesNotExist:
             return HttpResponse(
-                content=json.dumps({"active": False}),
-                status=401,
-                content_type="application/json"
+                content=json.dumps({"active": False}), status=401, content_type="application/json"
             )
         else:
             if token.is_valid():
@@ -46,9 +45,15 @@ class IntrospectTokenView(ClientProtectedScopedResourceView):
                     data["username"] = token.user.get_username()
                 return HttpResponse(content=json.dumps(data), status=200, content_type="application/json")
             else:
-                return HttpResponse(content=json.dumps({
-                    "active": False,
-                }), status=200, content_type="application/json")
+                return HttpResponse(
+                    content=json.dumps(
+                        {
+                            "active": False,
+                        }
+                    ),
+                    status=200,
+                    content_type="application/json",
+                )
 
     def get(self, request, *args, **kwargs):
         """

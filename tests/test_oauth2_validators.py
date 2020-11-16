@@ -7,9 +7,7 @@ from django.utils import timezone
 from oauthlib.common import Request
 
 from oauth2_provider.exceptions import FatalClientError
-from oauth2_provider.models import (
-    get_access_token_model, get_application_model, get_refresh_token_model
-)
+from oauth2_provider.models import get_access_token_model, get_application_model, get_refresh_token_model
 from oauth2_provider.oauth2_validators import OAuth2Validator
 
 
@@ -46,8 +44,12 @@ class TestOAuth2Validator(TransactionTestCase):
         self.request.grant_type = "not client"
         self.validator = OAuth2Validator()
         self.application = Application.objects.create(
-            client_id="client_id", client_secret="client_secret", user=self.user,
-            client_type=Application.CLIENT_PUBLIC, authorization_grant_type=Application.GRANT_PASSWORD)
+            client_id="client_id",
+            client_secret="client_secret",
+            user=self.user,
+            client_type=Application.CLIENT_PUBLIC,
+            authorization_grant_type=Application.GRANT_PASSWORD,
+        )
         self.request.client = self.application
 
     def tearDown(self):
@@ -163,13 +165,10 @@ class TestOAuth2Validator(TransactionTestCase):
             token="123",
             user=self.user,
             expires=timezone.now() + datetime.timedelta(seconds=60),
-            application=self.application
+            application=self.application,
         )
         refresh_token = RefreshToken.objects.create(
-            access_token=access_token,
-            token="abc",
-            user=self.user,
-            application=self.application
+            access_token=access_token, token="abc", user=self.user, application=self.application
         )
         self.request.refresh_token_instance = refresh_token
         token = {
@@ -196,13 +195,10 @@ class TestOAuth2Validator(TransactionTestCase):
             token="123",
             user=self.user,
             expires=timezone.now() + datetime.timedelta(seconds=60),
-            application=self.application
+            application=self.application,
         )
         refresh_token = RefreshToken.objects.create(
-            access_token=access_token,
-            token="abc",
-            user=self.user,
-            application=self.application
+            access_token=access_token, token="abc", user=self.user, application=self.application
         )
         self.request.refresh_token_instance = refresh_token
         token = {
@@ -234,13 +230,10 @@ class TestOAuth2Validator(TransactionTestCase):
             token="123",
             user=self.user,
             expires=timezone.now() + datetime.timedelta(seconds=60),
-            application=self.application
+            application=self.application,
         )
         refresh_token = RefreshToken.objects.create(
-            access_token=access_token,
-            token="abc",
-            user=self.user,
-            application=self.application
+            access_token=access_token, token="abc", user=self.user, application=self.application
         )
 
         self.request.refresh_token_instance = refresh_token
@@ -318,7 +311,9 @@ class TestOAuth2ValidatorProvidesErrorData(TransactionTestCase):
 
     def setUp(self):
         self.user = UserModel.objects.create_user(
-            "user", "test@example.com", "123456",
+            "user",
+            "test@example.com",
+            "123456",
         )
         self.request = mock.MagicMock(wraps=Request)
         self.request.user = self.user
@@ -340,13 +335,20 @@ class TestOAuth2ValidatorProvidesErrorData(TransactionTestCase):
 
     def test_validate_bearer_token_adds_error_to_the_request_when_an_invalid_token_is_provided(self):
         access_token = mock.MagicMock(token="some_invalid_token")
-        self.assertFalse(self.validator.validate_bearer_token(
-            access_token.token, [], self.request,
-        ))
-        self.assertDictEqual(self.request.oauth2_error, {
-            "error": "invalid_token",
-            "error_description": "The access token is invalid.",
-        })
+        self.assertFalse(
+            self.validator.validate_bearer_token(
+                access_token.token,
+                [],
+                self.request,
+            )
+        )
+        self.assertDictEqual(
+            self.request.oauth2_error,
+            {
+                "error": "invalid_token",
+                "error_description": "The access token is invalid.",
+            },
+        )
 
     def test_validate_bearer_token_adds_error_to_the_request_when_an_expired_token_is_provided(self):
         access_token = AccessToken.objects.create(
@@ -355,13 +357,20 @@ class TestOAuth2ValidatorProvidesErrorData(TransactionTestCase):
             expires=timezone.now() - datetime.timedelta(seconds=1),
             application=self.application,
         )
-        self.assertFalse(self.validator.validate_bearer_token(
-            access_token.token, [], self.request,
-        ))
-        self.assertDictEqual(self.request.oauth2_error, {
-            "error": "invalid_token",
-            "error_description": "The access token has expired.",
-        })
+        self.assertFalse(
+            self.validator.validate_bearer_token(
+                access_token.token,
+                [],
+                self.request,
+            )
+        )
+        self.assertDictEqual(
+            self.request.oauth2_error,
+            {
+                "error": "invalid_token",
+                "error_description": "The access token has expired.",
+            },
+        )
 
     def test_validate_bearer_token_adds_error_to_the_request_when_a_valid_token_has_insufficient_scope(self):
         access_token = AccessToken.objects.create(
@@ -370,13 +379,20 @@ class TestOAuth2ValidatorProvidesErrorData(TransactionTestCase):
             expires=timezone.now() + datetime.timedelta(seconds=1),
             application=self.application,
         )
-        self.assertFalse(self.validator.validate_bearer_token(
-            access_token.token, ["some_extra_scope"], self.request,
-        ))
-        self.assertDictEqual(self.request.oauth2_error, {
-            "error": "insufficient_scope",
-            "error_description": "The access token is valid but does not have enough scope.",
-        })
+        self.assertFalse(
+            self.validator.validate_bearer_token(
+                access_token.token,
+                ["some_extra_scope"],
+                self.request,
+            )
+        )
+        self.assertDictEqual(
+            self.request.oauth2_error,
+            {
+                "error": "insufficient_scope",
+                "error_description": "The access token is valid but does not have enough scope.",
+            },
+        )
 
     def test_validate_bearer_token_adds_error_to_the_request_when_a_invalid_custom_token_is_provided(self):
         access_token = AccessToken.objects.create(
@@ -386,12 +402,19 @@ class TestOAuth2ValidatorProvidesErrorData(TransactionTestCase):
             application=self.application,
         )
         with always_invalid_token():
-            self.assertFalse(self.validator.validate_bearer_token(
-                access_token.token, [], self.request,
-            ))
-        self.assertDictEqual(self.request.oauth2_error, {
-            "error": "invalid_token",
-        })
+            self.assertFalse(
+                self.validator.validate_bearer_token(
+                    access_token.token,
+                    [],
+                    self.request,
+                )
+            )
+        self.assertDictEqual(
+            self.request.oauth2_error,
+            {
+                "error": "invalid_token",
+            },
+        )
 
 
 class TestOAuth2ValidatorErrorResourceToken(TestCase):
@@ -408,10 +431,12 @@ class TestOAuth2ValidatorErrorResourceToken(TestCase):
     def test_response_when_auth_server_response_return_404(self):
         with self.assertLogs(logger="oauth2_provider") as mock_log:
             self.validator._get_token_from_authentication_server(
-                self.token, self.introspection_url,
-                self.introspection_token, None)
-            self.assertIn("ERROR:oauth2_provider:Introspection: Failed to "
-                          "get a valid response from authentication server. "
-                          "Status code: 404, Reason: "
-                          "Not Found.\nNoneType: None",
-                          mock_log.output)
+                self.token, self.introspection_url, self.introspection_token, None
+            )
+            self.assertIn(
+                "ERROR:oauth2_provider:Introspection: Failed to "
+                "get a valid response from authentication server. "
+                "Status code: 404, Reason: "
+                "Not Found.\nNoneType: None",
+                mock_log.output,
+            )
