@@ -83,6 +83,12 @@ class AbstractApplication(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
+    access_token_expire_seconds = models.IntegerField(
+        default=oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS
+    )
+    refresh_token_expire_seconds = models.IntegerField(
+        default=oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS
+    )
     class Meta:
         abstract = True
 
