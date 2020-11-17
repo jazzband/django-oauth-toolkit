@@ -42,6 +42,7 @@ def mocked_requests_post(url, data, *args, **kwargs):
     """
     Mock the response from the authentication server
     """
+
     class MockResponse:
         def __init__(self, json_data, status_code):
             self.json_data = json_data
@@ -51,17 +52,23 @@ def mocked_requests_post(url, data, *args, **kwargs):
             return self.json_data
 
     if "token" in data and data["token"] and data["token"] != "12345678900":
-        return MockResponse({
-            "active": True,
-            "scope": "read write dolphin",
-            "client_id": "client_id_{}".format(data["token"]),
-            "username": "{}_user".format(data["token"]),
-            "exp": int(calendar.timegm(exp.timetuple())),
-        }, 200)
+        return MockResponse(
+            {
+                "active": True,
+                "scope": "read write dolphin",
+                "client_id": "client_id_{}".format(data["token"]),
+                "username": "{}_user".format(data["token"]),
+                "exp": int(calendar.timegm(exp.timetuple())),
+            },
+            200,
+        )
 
-    return MockResponse({
-        "active": False,
-    }, 200)
+    return MockResponse(
+        {
+            "active": False,
+        },
+        200,
+    )
 
 
 urlpatterns = [
@@ -75,6 +82,7 @@ class TestTokenIntrospectionAuth(TestCase):
     """
     Tests for Authorization through token introspection
     """
+
     def setUp(self):
         self.validator = OAuth2Validator()
         self.request = mock.MagicMock(wraps=Request)
@@ -91,17 +99,19 @@ class TestTokenIntrospectionAuth(TestCase):
         )
 
         self.resource_server_token = AccessToken.objects.create(
-            user=self.resource_server_user, token="12345678900",
+            user=self.resource_server_user,
+            token="12345678900",
             application=self.application,
             expires=timezone.now() + datetime.timedelta(days=1),
-            scope="introspection"
+            scope="introspection",
         )
 
         self.invalid_token = AccessToken.objects.create(
-            user=self.resource_server_user, token="12345678901",
+            user=self.resource_server_user,
+            token="12345678901",
             application=self.application,
             expires=timezone.now() + datetime.timedelta(days=-1),
-            scope="read write dolphin"
+            scope="read write dolphin",
         )
 
         oauth2_settings._SCOPES = ["read", "write", "introspection", "dolphin"]
@@ -128,7 +138,7 @@ class TestTokenIntrospectionAuth(TestCase):
             self.resource_server_token.token,
             oauth2_settings.RESOURCE_SERVER_INTROSPECTION_URL,
             oauth2_settings.RESOURCE_SERVER_AUTH_TOKEN,
-            oauth2_settings.RESOURCE_SERVER_INTROSPECTION_CREDENTIALS
+            oauth2_settings.RESOURCE_SERVER_INTROSPECTION_CREDENTIALS,
         )
         self.assertIsNone(token)
 
@@ -141,7 +151,7 @@ class TestTokenIntrospectionAuth(TestCase):
             "foo",
             oauth2_settings.RESOURCE_SERVER_INTROSPECTION_URL,
             oauth2_settings.RESOURCE_SERVER_AUTH_TOKEN,
-            oauth2_settings.RESOURCE_SERVER_INTROSPECTION_CREDENTIALS
+            oauth2_settings.RESOURCE_SERVER_INTROSPECTION_CREDENTIALS,
         )
         self.assertIsInstance(token, AccessToken)
         self.assertEqual(token.user.username, "foo_user")

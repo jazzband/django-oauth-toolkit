@@ -5,9 +5,7 @@ from django.test import RequestFactory, TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from oauth2_provider.models import (
-    get_access_token_model, get_application_model, get_refresh_token_model
-)
+from oauth2_provider.models import get_access_token_model, get_application_model, get_refresh_token_model
 from oauth2_provider.settings import oauth2_settings
 
 
@@ -41,14 +39,12 @@ class BaseTest(TestCase):
 
 class TestRevocationView(BaseTest):
     def test_revoke_access_token(self):
-        """
-
-        """
         tok = AccessToken.objects.create(
-            user=self.test_user, token="1234567890",
+            user=self.test_user,
+            token="1234567890",
             application=self.application,
             expires=timezone.now() + datetime.timedelta(days=1),
-            scope="read write"
+            scope="read write",
         )
 
         data = {
@@ -73,9 +69,11 @@ class TestRevocationView(BaseTest):
         public_app.save()
 
         tok = AccessToken.objects.create(
-            user=self.test_user, token="1234567890", application=public_app,
+            user=self.test_user,
+            token="1234567890",
+            application=public_app,
             expires=timezone.now() + datetime.timedelta(days=1),
-            scope="read write"
+            scope="read write",
         )
 
         data = {
@@ -88,21 +86,19 @@ class TestRevocationView(BaseTest):
         self.assertEqual(response.status_code, 200)
 
     def test_revoke_access_token_with_hint(self):
-        """
-
-        """
         tok = AccessToken.objects.create(
-            user=self.test_user, token="1234567890",
+            user=self.test_user,
+            token="1234567890",
             application=self.application,
             expires=timezone.now() + datetime.timedelta(days=1),
-            scope="read write"
+            scope="read write",
         )
 
         data = {
             "client_id": self.application.client_id,
             "client_secret": self.application.client_secret,
             "token": tok.token,
-            "token_type_hint": "access_token"
+            "token_type_hint": "access_token",
         }
 
         url = reverse("oauth2_provider:revoke-token")
@@ -112,10 +108,11 @@ class TestRevocationView(BaseTest):
 
     def test_revoke_access_token_with_invalid_hint(self):
         tok = AccessToken.objects.create(
-            user=self.test_user, token="1234567890",
+            user=self.test_user,
+            token="1234567890",
             application=self.application,
             expires=timezone.now() + datetime.timedelta(days=1),
-            scope="read write"
+            scope="read write",
         )
         # invalid hint should have no effect
 
@@ -123,7 +120,7 @@ class TestRevocationView(BaseTest):
             "client_id": self.application.client_id,
             "client_secret": self.application.client_secret,
             "token": tok.token,
-            "token_type_hint": "bad_hint"
+            "token_type_hint": "bad_hint",
         }
 
         url = reverse("oauth2_provider:revoke-token")
@@ -133,14 +130,14 @@ class TestRevocationView(BaseTest):
 
     def test_revoke_refresh_token(self):
         tok = AccessToken.objects.create(
-            user=self.test_user, token="1234567890",
+            user=self.test_user,
+            token="1234567890",
             application=self.application,
             expires=timezone.now() + datetime.timedelta(days=1),
-            scope="read write"
+            scope="read write",
         )
         rtok = RefreshToken.objects.create(
-            user=self.test_user, token="999999999",
-            application=self.application, access_token=tok
+            user=self.test_user, token="999999999", application=self.application, access_token=tok
         )
 
         data = {
@@ -158,14 +155,14 @@ class TestRevocationView(BaseTest):
 
     def test_revoke_refresh_token_with_revoked_access_token(self):
         tok = AccessToken.objects.create(
-            user=self.test_user, token="1234567890",
+            user=self.test_user,
+            token="1234567890",
             application=self.application,
             expires=timezone.now() + datetime.timedelta(days=1),
-            scope="read write"
+            scope="read write",
         )
         rtok = RefreshToken.objects.create(
-            user=self.test_user, token="999999999",
-            application=self.application, access_token=tok
+            user=self.test_user, token="999999999", application=self.application, access_token=tok
         )
         for token in (tok.token, rtok.token):
             data = {
@@ -191,17 +188,18 @@ class TestRevocationView(BaseTest):
         .. _`Section 4.1.2`: http://tools.ietf.org/html/draft-ietf-oauth-revocation-11#section-4.1.2
         """
         tok = AccessToken.objects.create(
-            user=self.test_user, token="1234567890",
+            user=self.test_user,
+            token="1234567890",
             application=self.application,
             expires=timezone.now() + datetime.timedelta(days=1),
-            scope="read write"
+            scope="read write",
         )
 
         data = {
             "client_id": self.application.client_id,
             "client_secret": self.application.client_secret,
             "token": tok.token,
-            "token_type_hint": "refresh_token"
+            "token_type_hint": "refresh_token",
         }
 
         url = reverse("oauth2_provider:revoke-token")

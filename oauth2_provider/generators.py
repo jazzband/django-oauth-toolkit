@@ -8,6 +8,7 @@ class BaseHashGenerator:
     """
     All generators should extend this class overriding `.hash()` method.
     """
+
     def hash(self):
         raise NotImplementedError()
 

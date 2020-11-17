@@ -24,7 +24,6 @@ class BaseTest(TestCase):
 
 
 class TestApplicationRegistrationView(BaseTest):
-
     def test_get_form_class(self):
         """
         Tests that the form class returned by the "get_form_class" method is
@@ -62,10 +61,11 @@ class TestApplicationRegistrationView(BaseTest):
 class TestApplicationViews(BaseTest):
     def _create_application(self, name, user):
         app = Application.objects.create(
-            name=name, redirect_uris="http://example.com",
+            name=name,
+            redirect_uris="http://example.com",
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
-            user=user
+            user=user,
         )
         return app
 

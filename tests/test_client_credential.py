@@ -158,11 +158,7 @@ class TestClientResourcePasswordBased(BaseTest):
             authorization_grant_type=Application.GRANT_PASSWORD,
         )
 
-        token_request_data = {
-            "grant_type": "password",
-            "username": "test_user",
-            "password": "123456"
-        }
+        token_request_data = {"grant_type": "password", "username": "test_user", "password": "123456"}
         auth_headers = get_basic_auth_header(
             quote_plus(self.application.client_id), quote_plus(self.application.client_secret)
         )

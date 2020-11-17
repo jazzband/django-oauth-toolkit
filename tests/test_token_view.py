@@ -17,6 +17,7 @@ class TestAuthorizedTokenViews(TestCase):
     """
     TestCase superclass for Authorized Token Views" Test Cases
     """
+
     def setUp(self):
         self.foo_user = UserModel.objects.create_user("foo_user", "test@example.com", "123456")
         self.bar_user = UserModel.objects.create_user("bar_user", "dev@example.com", "123456")
@@ -38,6 +39,7 @@ class TestAuthorizedTokenListView(TestAuthorizedTokenViews):
     """
     Tests for the Authorized Token ListView
     """
+
     def test_list_view_authorization_required(self):
         """
         Test that the view redirects to login page if user is not logged-in.
@@ -62,10 +64,11 @@ class TestAuthorizedTokenListView(TestAuthorizedTokenViews):
         """
         self.client.login(username="bar_user", password="123456")
         AccessToken.objects.create(
-            user=self.bar_user, token="1234567890",
+            user=self.bar_user,
+            token="1234567890",
             application=self.application,
             expires=timezone.now() + datetime.timedelta(days=1),
-            scope="read write"
+            scope="read write",
         )
 
         response = self.client.get(reverse("oauth2_provider:authorized-token-list"))
@@ -80,16 +83,18 @@ class TestAuthorizedTokenListView(TestAuthorizedTokenViews):
         """
         self.client.login(username="bar_user", password="123456")
         AccessToken.objects.create(
-            user=self.bar_user, token="1234567890",
+            user=self.bar_user,
+            token="1234567890",
             application=self.application,
             expires=timezone.now() + datetime.timedelta(days=1),
-            scope="read write"
+            scope="read write",
         )
         AccessToken.objects.create(
-            user=self.bar_user, token="0123456789",
+            user=self.bar_user,
+            token="0123456789",
             application=self.application,
             expires=timezone.now() + datetime.timedelta(days=1),
-            scope="read write"
+            scope="read write",
         )
 
         response = self.client.get(reverse("oauth2_provider:authorized-token-list"))
@@ -102,10 +107,11 @@ class TestAuthorizedTokenListView(TestAuthorizedTokenViews):
         """
         self.client.login(username="bar_user", password="123456")
         AccessToken.objects.create(
-            user=self.foo_user, token="1234567890",
+            user=self.foo_user,
+            token="1234567890",
             application=self.application,
             expires=timezone.now() + datetime.timedelta(days=1),
-            scope="read write"
+            scope="read write",
         )
 
         response = self.client.get(reverse("oauth2_provider:authorized-token-list"))
@@ -117,15 +123,17 @@ class TestAuthorizedTokenDeleteView(TestAuthorizedTokenViews):
     """
     Tests for the Authorized Token DeleteView
     """
+
     def test_delete_view_authorization_required(self):
         """
         Test that the view redirects to login page if user is not logged-in.
         """
         self.token = AccessToken.objects.create(
-            user=self.foo_user, token="1234567890",
+            user=self.foo_user,
+            token="1234567890",
             application=self.application,
             expires=timezone.now() + datetime.timedelta(days=1),
-            scope="read write"
+            scope="read write",
         )
 
         url = reverse("oauth2_provider:authorized-token-delete", kwargs={"pk": self.token.pk})
@@ -138,10 +146,11 @@ class TestAuthorizedTokenDeleteView(TestAuthorizedTokenViews):
         Test that a GET on this view returns 200 if the token belongs to the logged-in user.
         """
         self.token = AccessToken.objects.create(
-            user=self.foo_user, token="1234567890",
+            user=self.foo_user,
+            token="1234567890",
             application=self.application,
             expires=timezone.now() + datetime.timedelta(days=1),
-            scope="read write"
+            scope="read write",
         )
 
         self.client.login(username="foo_user", password="123456")
@@ -154,10 +163,11 @@ class TestAuthorizedTokenDeleteView(TestAuthorizedTokenViews):
         Test that a 404 is returned when trying to GET this view with someone else"s tokens.
         """
         self.token = AccessToken.objects.create(
-            user=self.foo_user, token="1234567890",
+            user=self.foo_user,
+            token="1234567890",
             application=self.application,
             expires=timezone.now() + datetime.timedelta(days=1),
-            scope="read write"
+            scope="read write",
         )
 
         self.client.login(username="bar_user", password="123456")
@@ -170,10 +180,11 @@ class TestAuthorizedTokenDeleteView(TestAuthorizedTokenViews):
         Test that a POST on this view works if the token belongs to the logged-in user.
         """
         self.token = AccessToken.objects.create(
-            user=self.foo_user, token="1234567890",
+            user=self.foo_user,
+            token="1234567890",
             application=self.application,
             expires=timezone.now() + datetime.timedelta(days=1),
-            scope="read write"
+            scope="read write",
         )
 
         self.client.login(username="foo_user", password="123456")
@@ -187,10 +198,11 @@ class TestAuthorizedTokenDeleteView(TestAuthorizedTokenViews):
         Test that a 404 is returned when trying to POST on this view with someone else"s tokens.
         """
         self.token = AccessToken.objects.create(
-            user=self.foo_user, token="1234567890",
+            user=self.foo_user,
+            token="1234567890",
             application=self.application,
             expires=timezone.now() + datetime.timedelta(days=1),
-            scope="read write"
+            scope="read write",
         )
 
         self.client.login(username="bar_user", password="123456")

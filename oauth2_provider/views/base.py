@@ -86,6 +86,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
     * Authorization code
     * Implicit grant
     """
+
     template_name = "oauth2_provider/authorize.html"
     form_class = AllowForm
 
@@ -116,7 +117,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             "client_id": form.cleaned_data.get("client_id"),
             "redirect_uri": form.cleaned_data.get("redirect_uri"),
             "response_type": form.cleaned_data.get("response_type", None),
-            "state": form.cleaned_data.get("state", None)
+            "state": form.cleaned_data.get("state", None),
         }
         if form.cleaned_data.get("code_challenge", False):
             credentials["code_challenge"] = form.cleaned_data.get("code_challenge")
@@ -177,24 +178,24 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             # are already approved.
             if application.skip_authorization:
                 uri, headers, body, status = self.create_authorization_response(
-                    request=self.request, scopes=" ".join(scopes),
-                    credentials=credentials, allow=True
+                    request=self.request, scopes=" ".join(scopes), credentials=credentials, allow=True
                 )
                 return self.redirect(uri, application)
 
             elif require_approval == "auto":
-                tokens = get_access_token_model().objects.filter(
-                    user=request.user,
-                    application=kwargs["application"],
-                    expires__gt=timezone.now()
-                ).all()
+                tokens = (
+                    get_access_token_model()
+                    .objects.filter(
+                        user=request.user, application=kwargs["application"], expires__gt=timezone.now()
+                    )
+                    .all()
+                )
 
                 # check past authorizations regarded the same scopes as the current one
                 for token in tokens:
                     if token.allow_scopes(scopes):
                         uri, headers, body, status = self.create_authorization_response(
-                            request=self.request, scopes=" ".join(scopes),
-                            credentials=credentials, allow=True
+                            request=self.request, scopes=" ".join(scopes), credentials=credentials, allow=True
                         )
                         return self.redirect(uri, application, token)
 
@@ -214,23 +215,23 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         if redirect_to.startswith("urn:ietf:wg:oauth:2.0:oob:auto"):
 
             response = {
-                    "access_token": code,
-                    "token_uri": redirect_to,
-                    "client_id": application.client_id,
-                    "client_secret": application.client_secret,
-                    "revoke_uri": reverse("oauth2_provider:revoke-token"),
-                    }
+                "access_token": code,
+                "token_uri": redirect_to,
+                "client_id": application.client_id,
+                "client_secret": application.client_secret,
+                "revoke_uri": reverse("oauth2_provider:revoke-token"),
+            }
 
             return JsonResponse(response)
 
         else:
             return render(
-                    request=self.request,
-                    template_name="oauth2_provider/authorized-oob.html",
-                    context={
-                        "code": code,
-                        },
-                    )
+                request=self.request,
+                template_name="oauth2_provider/authorized-oob.html",
+                context={
+                    "code": code,
+                },
+            )
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -243,6 +244,7 @@ class TokenView(OAuthLibMixin, View):
     * Password
     * Client credentials
     """
+
     server_class = oauth2_settings.OAUTH2_SERVER_CLASS
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
     oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
@@ -253,11 +255,8 @@ class TokenView(OAuthLibMixin, View):
         if status == 200:
             access_token = json.loads(body).get("access_token")
             if access_token is not None:
-                token = get_access_token_model().objects.get(
-                    token=access_token)
-                app_authorized.send(
-                    sender=self, request=request,
-                    token=token)
+                token = get_access_token_model().objects.get(token=access_token)
+                app_authorized.send(sender=self, request=request, token=token)
         response = HttpResponse(content=body, status=status)
 
         for k, v in headers.items():
@@ -270,6 +269,7 @@ class RevokeTokenView(OAuthLibMixin, View):
     """
     Implements an endpoint to revoke access or refresh tokens
     """
+
     server_class = oauth2_settings.OAUTH2_SERVER_CLASS
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
     oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS

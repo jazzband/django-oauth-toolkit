@@ -13,8 +13,10 @@ from django.utils.crypto import get_random_string
 from oauthlib.oauth2.rfc6749 import errors as oauthlib_errors
 
 from oauth2_provider.models import (
-    get_access_token_model, get_application_model,
-    get_grant_model, get_refresh_token_model
+    get_access_token_model,
+    get_application_model,
+    get_grant_model,
+    get_refresh_token_model,
 )
 from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views import ProtectedResourceView
@@ -74,13 +76,16 @@ class TestRegressionIssue315(BaseTest):
 
     def test_request_is_not_overwritten(self):
         self.client.login(username="test_user", password="123456")
-        response = self.client.get(reverse("oauth2_provider:authorize"), {
-            "client_id": self.application.client_id,
-            "response_type": "code",
-            "state": "random_state_string",
-            "scope": "read write",
-            "redirect_uri": "http://example.org",
-        })
+        response = self.client.get(
+            reverse("oauth2_provider:authorize"),
+            {
+                "client_id": self.application.client_id,
+                "response_type": "code",
+                "state": "random_state_string",
+                "scope": "read write",
+                "redirect_uri": "http://example.org",
+            },
+        )
         self.assertEqual(response.status_code, 200)
         assert "request" not in response.context_data
 
@@ -94,13 +99,16 @@ class TestAuthorizationCodeView(BaseTest):
         self.application.skip_authorization = True
         self.application.save()
 
-        response = self.client.get(reverse("oauth2_provider:authorize"), {
-            "client_id": self.application.client_id,
-            "response_type": "code",
-            "state": "random_state_string",
-            "scope": "read write",
-            "redirect_uri": "http://example.org",
-        })
+        response = self.client.get(
+            reverse("oauth2_provider:authorize"),
+            {
+                "client_id": self.application.client_id,
+                "response_type": "code",
+                "state": "random_state_string",
+                "scope": "read write",
+                "redirect_uri": "http://example.org",
+            },
+        )
         self.assertEqual(response.status_code, 302)
 
     def test_pre_auth_invalid_client(self):
@@ -118,7 +126,7 @@ class TestAuthorizationCodeView(BaseTest):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.context_data["url"],
-            "?error=invalid_request&error_description=Invalid+client_id+parameter+value."
+            "?error=invalid_request&error_description=Invalid+client_id+parameter+value.",
         )
 
     def test_pre_auth_valid_client(self):
@@ -176,10 +184,11 @@ class TestAuthorizationCodeView(BaseTest):
 
     def test_pre_auth_approval_prompt(self):
         tok = AccessToken.objects.create(
-            user=self.test_user, token="1234567890",
+            user=self.test_user,
+            token="1234567890",
             application=self.application,
             expires=timezone.now() + datetime.timedelta(days=1),
-            scope="read write"
+            scope="read write",
         )
         self.client.login(username="test_user", password="123456")
 
@@ -204,10 +213,11 @@ class TestAuthorizationCodeView(BaseTest):
         self.assertEqual(oauth2_settings.REQUEST_APPROVAL_PROMPT, "force")
 
         AccessToken.objects.create(
-            user=self.test_user, token="1234567890",
+            user=self.test_user,
+            token="1234567890",
             application=self.application,
             expires=timezone.now() + datetime.timedelta(days=1),
-            scope="read write"
+            scope="read write",
         )
         self.client.login(username="test_user", password="123456")
         query_data = {
@@ -224,10 +234,11 @@ class TestAuthorizationCodeView(BaseTest):
         oauth2_settings.REQUEST_APPROVAL_PROMPT = "auto"
 
         AccessToken.objects.create(
-            user=self.test_user, token="1234567890",
+            user=self.test_user,
+            token="1234567890",
             application=self.application,
             expires=timezone.now() + datetime.timedelta(days=1),
-            scope="read write"
+            scope="read write",
         )
         self.client.login(username="test_user", password="123456")
         query_data = {
@@ -536,9 +547,9 @@ class TestAuthorizationCodeTokenView(BaseTest):
         """
         code_verifier = get_random_string(length)
         if algorithm == "S256":
-            code_challenge = base64.urlsafe_b64encode(
-                hashlib.sha256(code_verifier.encode()).digest()
-            ).decode().rstrip("=")
+            code_challenge = (
+                base64.urlsafe_b64encode(hashlib.sha256(code_verifier.encode()).digest()).decode().rstrip("=")
+            )
         else:
             code_challenge = code_verifier
         return code_verifier, code_challenge
@@ -574,7 +585,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         token_request_data = {
             "grant_type": "authorization_code",
             "code": authorization_code,
-            "redirect_uri": "http://example.org"
+            "redirect_uri": "http://example.org",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
@@ -596,7 +607,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         token_request_data = {
             "grant_type": "authorization_code",
             "code": authorization_code,
-            "redirect_uri": "http://example.org"
+            "redirect_uri": "http://example.org",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
@@ -609,7 +620,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         token_request_data = {
             "grant_type": "authorization_code",
             "code": authorization_code,
-            "redirect_uri": "http://example.org"
+            "redirect_uri": "http://example.org",
         }
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
 
@@ -641,7 +652,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         token_request_data = {
             "grant_type": "authorization_code",
             "code": authorization_code,
-            "redirect_uri": "http://example.org"
+            "redirect_uri": "http://example.org",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
@@ -654,7 +665,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         token_request_data = {
             "grant_type": "authorization_code",
             "code": authorization_code,
-            "redirect_uri": "http://example.org"
+            "redirect_uri": "http://example.org",
         }
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
 
@@ -693,7 +704,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         token_request_data = {
             "grant_type": "authorization_code",
             "code": authorization_code,
-            "redirect_uri": "http://example.org"
+            "redirect_uri": "http://example.org",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
@@ -725,7 +736,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         token_request_data = {
             "grant_type": "authorization_code",
             "code": authorization_code,
-            "redirect_uri": "http://example.org"
+            "redirect_uri": "http://example.org",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
@@ -753,7 +764,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         token_request_data = {
             "grant_type": "authorization_code",
             "code": authorization_code,
-            "redirect_uri": "http://example.org"
+            "redirect_uri": "http://example.org",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
@@ -779,7 +790,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         token_request_data = {
             "grant_type": "authorization_code",
             "code": authorization_code,
-            "redirect_uri": "http://example.org"
+            "redirect_uri": "http://example.org",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
@@ -809,7 +820,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         token_request_data = {
             "grant_type": "authorization_code",
             "code": authorization_code,
-            "redirect_uri": "http://example.org"
+            "redirect_uri": "http://example.org",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
@@ -847,7 +858,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         token_request_data = {
             "grant_type": "authorization_code",
             "code": authorization_code,
-            "redirect_uri": "http://example.org"
+            "redirect_uri": "http://example.org",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
@@ -878,7 +889,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         token_request_data = {
             "grant_type": "authorization_code",
             "code": "BLAH",
-            "redirect_uri": "http://example.org"
+            "redirect_uri": "http://example.org",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
@@ -891,11 +902,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         """
         self.client.login(username="test_user", password="123456")
 
-        token_request_data = {
-            "grant_type": "UNKNOWN",
-            "code": "BLAH",
-            "redirect_uri": "http://example.org"
-        }
+        token_request_data = {"grant_type": "UNKNOWN", "code": "BLAH", "redirect_uri": "http://example.org"}
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
@@ -907,14 +914,19 @@ class TestAuthorizationCodeTokenView(BaseTest):
         """
         self.client.login(username="test_user", password="123456")
         g = Grant(
-            application=self.application, user=self.test_user, code="BLAH",
-            expires=timezone.now(), redirect_uri="", scope="")
+            application=self.application,
+            user=self.test_user,
+            code="BLAH",
+            expires=timezone.now(),
+            redirect_uri="",
+            scope="",
+        )
         g.save()
 
         token_request_data = {
             "grant_type": "authorization_code",
             "code": "BLAH",
-            "redirect_uri": "http://example.org"
+            "redirect_uri": "http://example.org",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
@@ -931,7 +943,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         token_request_data = {
             "grant_type": "authorization_code",
             "code": authorization_code,
-            "redirect_uri": "http://example.org"
+            "redirect_uri": "http://example.org",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, "BOOM!")
 
@@ -948,7 +960,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         token_request_data = {
             "grant_type": "authorization_code",
             "code": authorization_code,
-            "redirect_uri": "http://example.org"
+            "redirect_uri": "http://example.org",
         }
 
         user_pass = "{0}:{1}".format(self.application.client_id, self.application.client_secret)
@@ -997,7 +1009,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             "grant_type": "authorization_code",
             "code": authorization_code,
             "redirect_uri": "http://example.org",
-            "client_id": self.application.client_id
+            "client_id": self.application.client_id,
         }
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data)
@@ -1029,7 +1041,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             "response_type": "code",
             "allow": True,
             "code_challenge": code_challenge,
-            "code_challenge_method": "S256"
+            "code_challenge_method": "S256",
         }
 
         response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
@@ -1058,7 +1070,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             "response_type": "code",
             "allow": True,
             "code_challenge": code_challenge,
-            "code_challenge_method": "plain"
+            "code_challenge_method": "plain",
         }
 
         response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
@@ -1084,7 +1096,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             "code": authorization_code,
             "redirect_uri": "http://example.org",
             "client_id": self.application.client_id,
-            "code_verifier": code_verifier
+            "code_verifier": code_verifier,
         }
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data)
@@ -1114,7 +1126,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             "code": authorization_code,
             "redirect_uri": "http://example.org",
             "client_id": self.application.client_id,
-            "code_verifier": code_verifier
+            "code_verifier": code_verifier,
         }
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data)
@@ -1174,7 +1186,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             "redirect_uri": "http://example.org",
             "response_type": "code",
             "allow": True,
-            "code_challenge_method": "S256"
+            "code_challenge_method": "S256",
         }
 
         response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
@@ -1201,7 +1213,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             "redirect_uri": "http://example.org",
             "response_type": "code",
             "allow": True,
-            "code_challenge": code_challenge
+            "code_challenge": code_challenge,
         }
 
         response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
@@ -1226,7 +1238,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             "code": authorization_code,
             "redirect_uri": "http://example.org",
             "client_id": self.application.client_id,
-            "code_verifier": "invalid"
+            "code_verifier": "invalid",
         }
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data)
@@ -1251,7 +1263,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             "code": authorization_code,
             "redirect_uri": "http://example.org",
             "client_id": self.application.client_id,
-            "code_verifier": "invalid"
+            "code_verifier": "invalid",
         }
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data)
@@ -1275,7 +1287,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             "grant_type": "authorization_code",
             "code": authorization_code,
             "redirect_uri": "http://example.org",
-            "client_id": self.application.client_id
+            "client_id": self.application.client_id,
         }
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data)
@@ -1299,7 +1311,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             "grant_type": "authorization_code",
             "code": authorization_code,
             "redirect_uri": "http://example.org",
-            "client_id": self.application.client_id
+            "client_id": self.application.client_id,
         }
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data)
@@ -1321,7 +1333,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
             "grant_type": "authorization_code",
             "code": authorization_code,
             "redirect_uri": "/../",
-            "client_id": self.application.client_id
+            "client_id": self.application.client_id,
         }
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data)
@@ -1353,7 +1365,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         token_request_data = {
             "grant_type": "authorization_code",
             "code": authorization_code,
-            "redirect_uri": "http://example.org?foo=bar"
+            "redirect_uri": "http://example.org?foo=bar",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
@@ -1388,7 +1400,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         token_request_data = {
             "grant_type": "authorization_code",
             "code": authorization_code,
-            "redirect_uri": "http://example.org?foo=baraa"
+            "redirect_uri": "http://example.org?foo=baraa",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
@@ -1423,7 +1435,7 @@ class TestAuthorizationCodeTokenView(BaseTest):
         token_request_data = {
             "grant_type": "authorization_code",
             "code": authorization_code,
-            "redirect_uri": "http://example.com?bar=baz&foo=bar"
+            "redirect_uri": "http://example.com?bar=baz&foo=bar",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
@@ -1543,7 +1555,7 @@ class TestAuthorizationCodeProtectedResource(BaseTest):
         token_request_data = {
             "grant_type": "authorization_code",
             "code": authorization_code,
-            "redirect_uri": "http://example.org"
+            "redirect_uri": "http://example.org",
         }
         auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
@@ -1575,7 +1587,6 @@ class TestAuthorizationCodeProtectedResource(BaseTest):
 
 
 class TestDefaultScopes(BaseTest):
-
     def test_pre_auth_default_scopes(self):
         """
         Test response for a valid client_id with response_type: code using default scopes

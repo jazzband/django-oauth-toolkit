@@ -14,9 +14,12 @@ from rest_framework.test import APIRequestFactory, force_authenticate
 from rest_framework.views import APIView
 
 from oauth2_provider.contrib.rest_framework import (
-    IsAuthenticatedOrTokenHasScope, OAuth2Authentication,
-    TokenHasReadWriteScope, TokenHasResourceScope,
-    TokenHasScope, TokenMatchesOASRequirements
+    IsAuthenticatedOrTokenHasScope,
+    OAuth2Authentication,
+    TokenHasReadWriteScope,
+    TokenHasResourceScope,
+    TokenHasScope,
+    TokenMatchesOASRequirements,
 )
 from oauth2_provider.models import get_access_token_model, get_application_model
 from oauth2_provider.settings import oauth2_settings
@@ -85,7 +88,10 @@ class MethodScopeAltViewBad(OAuth2View):
 
 class MissingAuthentication(BaseAuthentication):
     def authenticate(self, request):
-        return ("junk", "junk",)
+        return (
+            "junk",
+            "junk",
+        )
 
 
 class BrokenOAuth2View(MockView):
@@ -145,7 +151,7 @@ class TestOAuth2Authentication(TestCase):
             scope="read write",
             expires=timezone.now() + timedelta(seconds=300),
             token="secret-access-token-key",
-            application=self.application
+            application=self.application,
         )
 
     def tearDown(self):

@@ -5,9 +5,7 @@ from oauthlib.oauth2 import Server
 
 from oauth2_provider.oauth2_backends import OAuthLibCore
 from oauth2_provider.oauth2_validators import OAuth2Validator
-from oauth2_provider.views.mixins import (
-    OAuthLibMixin, ProtectedResourceMixin, ScopedResourceMixin
-)
+from oauth2_provider.views.mixins import OAuthLibMixin, ProtectedResourceMixin, ScopedResourceMixin
 
 
 class BaseTest(TestCase):
@@ -70,9 +68,7 @@ class TestOAuthLibMixin(BaseTest):
         request.user = "fake"
         test_view = TestView()
 
-        self.assertEqual(
-            test_view.get_oauthlib_backend_class(), AnotherOauthLibBackend
-        )
+        self.assertEqual(test_view.get_oauthlib_backend_class(), AnotherOauthLibBackend)
 
 
 class TestScopedResourceMixin(BaseTest):

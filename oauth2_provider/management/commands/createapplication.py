@@ -72,15 +72,10 @@ class Command(BaseCommand):
         try:
             new_application.full_clean()
         except ValidationError as exc:
-            errors = "\n ".join(["- " + err_key + ": " + str(err_value) for err_key,
-                                 err_value in exc.message_dict.items()])
-            self.stdout.write(
-                self.style.ERROR(
-                    "Please correct the following errors:\n %s" % errors
-                )
+            errors = "\n ".join(
+                ["- " + err_key + ": " + str(err_value) for err_key, err_value in exc.message_dict.items()]
             )
+            self.stdout.write(self.style.ERROR("Please correct the following errors:\n %s" % errors))
         else:
             new_application.save()
-            self.stdout.write(
-                self.style.SUCCESS("New application created successfully")
-            )
+            self.stdout.write(self.style.SUCCESS("New application created successfully"))

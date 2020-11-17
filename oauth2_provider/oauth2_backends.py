@@ -24,9 +24,7 @@ class OAuthLibCore:
         validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
         validator = validator_class()
         server_kwargs = oauth2_settings.server_kwargs
-        self.server = server or oauth2_settings.OAUTH2_SERVER_CLASS(
-            validator, **server_kwargs
-        )
+        self.server = server or oauth2_settings.OAUTH2_SERVER_CLASS(validator, **server_kwargs)
 
     def _get_escaped_full_path(self, request):
         """
@@ -96,7 +94,8 @@ class OAuthLibCore:
         try:
             uri, http_method, body, headers = self._extract_params(request)
             scopes, credentials = self.server.validate_authorization_request(
-                uri, http_method=http_method, body=body, headers=headers)
+                uri, http_method=http_method, body=body, headers=headers
+            )
 
             return scopes, credentials
         except oauth2.FatalClientError as error:
@@ -117,24 +116,22 @@ class OAuthLibCore:
         """
         try:
             if not allow:
-                raise oauth2.AccessDeniedError(
-                    state=credentials.get("state", None))
+                raise oauth2.AccessDeniedError(state=credentials.get("state", None))
 
             # add current user to credentials. this will be used by OAUTH2_VALIDATOR_CLASS
             credentials["user"] = request.user
 
             headers, body, status = self.server.create_authorization_response(
-                uri=credentials["redirect_uri"], scopes=scopes, credentials=credentials)
+                uri=credentials["redirect_uri"], scopes=scopes, credentials=credentials
+            )
             uri = headers.get("Location", None)
 
             return uri, headers, body, status
 
         except oauth2.FatalClientError as error:
-            raise FatalClientError(
-                error=error, redirect_uri=credentials["redirect_uri"])
+            raise FatalClientError(error=error, redirect_uri=credentials["redirect_uri"])
         except oauth2.OAuth2Error as error:
-            raise OAuthToolkitError(
-                error=error, redirect_uri=credentials["redirect_uri"])
+            raise OAuthToolkitError(error=error, redirect_uri=credentials["redirect_uri"])
 
     def create_token_response(self, request):
         """
@@ -145,8 +142,9 @@ class OAuthLibCore:
         uri, http_method, body, headers = self._extract_params(request)
         extra_credentials = self._get_extra_credentials(request)
 
-        headers, body, status = self.server.create_token_response(uri, http_method, body,
-                                                                  headers, extra_credentials)
+        headers, body, status = self.server.create_token_response(
+            uri, http_method, body, headers, extra_credentials
+        )
         uri = headers.get("Location", None)
 
         return uri, headers, body, status
@@ -160,8 +158,7 @@ class OAuthLibCore:
         """
         uri, http_method, body, headers = self._extract_params(request)
 
-        headers, body, status = self.server.create_revocation_response(
-            uri, http_method, body, headers)
+        headers, body, status = self.server.create_revocation_response(uri, http_method, body, headers)
         uri = headers.get("Location", None)
 
         return uri, headers, body, status
@@ -175,8 +172,7 @@ class OAuthLibCore:
         """
         uri, http_method, body, headers = self._extract_params(request)
 
-        valid, r = self.server.verify_request(
-            uri, http_method, body, headers, scopes=scopes)
+        valid, r = self.server.verify_request(uri, http_method, body, headers, scopes=scopes)
         return valid, r
 
     def authenticate_client(self, request):

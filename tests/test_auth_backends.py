@@ -19,17 +19,17 @@ class BaseTest(TestCase):
     """
     Base class for cases in this module
     """
+
     def setUp(self):
         self.user = UserModel.objects.create_user("user", "test@example.com", "123456")
         self.app = ApplicationModel.objects.create(
             name="app",
             client_type=ApplicationModel.CLIENT_CONFIDENTIAL,
             authorization_grant_type=ApplicationModel.GRANT_CLIENT_CREDENTIALS,
-            user=self.user
+            user=self.user,
         )
         self.token = AccessTokenModel.objects.create(
-            user=self.user, token="tokstr", application=self.app,
-            expires=now() + timedelta(days=365)
+            user=self.user, token="tokstr", application=self.app, expires=now() + timedelta(days=365)
         )
         self.factory = RequestFactory()
 
@@ -40,7 +40,6 @@ class BaseTest(TestCase):
 
 
 class TestOAuth2Backend(BaseTest):
-
     def test_authenticate(self):
         auth_headers = {
             "HTTP_AUTHORIZATION": "Bearer " + "tokstr",
@@ -83,7 +82,6 @@ class TestOAuth2Backend(BaseTest):
     }
 )
 class TestOAuth2Middleware(BaseTest):
-
     def setUp(self):
         super().setUp()
         self.anon_user = AnonymousUser()

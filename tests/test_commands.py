@@ -12,7 +12,6 @@ Application = get_application_model()
 
 
 class CreateApplicationTest(TestCase):
-
     def test_command_creates_application(self):
         output = StringIO()
         self.assertEqual(Application.objects.count(), 0)
