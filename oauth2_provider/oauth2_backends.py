@@ -123,9 +123,9 @@ class OAuthLibCore:
 
             # add current user to credentials. this will be used by OAUTH2_VALIDATOR_CLASS
             credentials["user"] = request.user
-
             headers, body, status = self.server.create_authorization_response(
-                uri=uri, scopes=scopes, credentials=credentials, body=body)
+                uri=uri, scopes=scopes, credentials=credentials, body=body, headers=request.META
+            )
             redirect_uri = headers.get("Location", None)
 
             return redirect_uri, headers, body, status
