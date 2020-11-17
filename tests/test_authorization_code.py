@@ -4,6 +4,7 @@ import hashlib
 import json
 import re
 from urllib.parse import parse_qs, urlparse
+from jwcrypto import jwk, jwt
 
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
@@ -1252,6 +1253,45 @@ class TestAuthorizationCodeTokenView(BaseTest):
         self.assertEqual(
             content["expires_in"], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS
         )
+
+    def test_id_token_public_oidc_capable(self):
+        """
+        Check that the id token includes our custom iss
+        """
+        iss_entity = "http://testserver/o"
+        oauth2_settings.OIDC_ISS_ENDPOINT = None
+        oauth2_settings.OIDC_USERINFO_ENDPOINT = None
+
+        self.client.login(username="test_user", password="123456")
+
+        self.application.client_type = Application.CLIENT_PUBLIC
+        self.application.save()
+        authorization_code = self.get_auth(scope="openid")
+
+        token_request_data = {
+            "grant_type": "authorization_code",
+            "code": authorization_code,
+            "redirect_uri": "http://example.org",
+            "client_id": self.application.client_id,
+            "scope": "openid",
+        }
+
+        response = self.client.post(
+            reverse("oauth2_provider:token"), data=token_request_data
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Unload and decode the jwt and check the iss entity matches
+        content = json.loads(response.content.decode("utf-8"))
+        key = jwk.JWK.from_pem(oauth2_settings.OIDC_RSA_PRIVATE_KEY.encode("utf8"))
+        jwt_token = jwt.JWT(key=key, jwt=content["id_token"])
+
+        # Find our testserver iss entity
+        self.assertIn(iss_entity, jwt_token.claims)
+
+        # Turn back on the OIDC specific endpoints
+        oauth2_settings.OIDC_ISS_ENDPOINT = "http://localhost"
+        oauth2_settings.OIDC_USERINFO_ENDPOINT = "http://localhost/userinfo/"
 
     def test_public_pkce_S256_authorize_get(self):
         """
