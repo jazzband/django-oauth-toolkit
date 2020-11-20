@@ -475,11 +475,15 @@ class OAuth2Validator(RequestValidator):
         if "scope" not in token:
             raise FatalClientError("Failed to renew access token: missing scope")
 
+        # "authenticate_client" sets the client (Application) on request
+        application = request.client
+        access_token_expire_seconds = application.access_token_expire_seconds
+
         # expires_in is passed to Server on initialization
         # custom server class can have logic to override this
-        expires = timezone.now() + timedelta(seconds=token.get(
-            "expires_in", oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS,
-        ))
+        expires = (
+            timezone.now() + timedelta(seconds=access_token_expire_seconds)
+        )
 
         if request.grant_type == "client_credentials":
             request.user = None
@@ -648,14 +652,38 @@ class OAuth2Validator(RequestValidator):
             )
         )
         rt = RefreshToken.objects.filter(null_or_recent, token=refresh_token).select_related(
-            "access_token"
+            "access_token",
+            "application",
         ).first()
 
         if not rt:
             return False
 
+        # Access and refresh token expiration is configurable by Application
+        # Determine refresh token expiration datetime by adding the timedelta
+        # of "refresh_token_expire_seconds" to the "created" datetime
+        expire_seconds = rt.application.refresh_token_expire_seconds
+        expires = rt.created + timedelta(seconds=expire_seconds)
+
+        is_expired = timezone.now() >= expires
+
+        # Revoke token if expired
+        if is_expired:
+            try:
+                rt.revoke()
+            # Catch exception in case access or refresh token do not exist
+            except (AccessToken.DoesNotExist, RefreshToken.DoesNotExist):
+                pass
+
         request.user = rt.user
         request.refresh_token = rt.token
         # Temporary store RefreshToken instance to be reused by get_original_scopes and save_bearer_token.
         request.refresh_token_instance = rt
-        return rt.application == client
+
+        # Token is valid if it refers to the right client AND is not expired
+        is_valid = (
+            rt.application == client and
+            not is_expired
+        )
+
+        return is_valid
