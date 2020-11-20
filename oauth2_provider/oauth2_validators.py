@@ -626,7 +626,10 @@ class OAuth2Validator(RequestValidator):
         Check username and password correspond to a valid and active User
         """
         u = authenticate(username=username, password=password)
-        if u is not None and u.is_active:
+
+        # NOTE: [11/20/2020] Removed check for u.is_active because the check
+        # will be made *before* calling DOT (Django OAuth Toolkit)
+        if u is not None:
             request.user = u
             return True
         return False
