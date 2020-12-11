@@ -120,8 +120,7 @@ def import_from_string(val, setting_name):
     try:
         return import_string(val)
     except ImportError as e:
-        msg = "Could not import '%s' for API setting '%s'. %s: %s." % (
-            val, setting_name, e.__class__.__name__, e)
+        msg = f"Could not import {val} for API setting {setting_name}. {e.__class__.__name__}: {e}."
         raise ImportError(msg)
 
 

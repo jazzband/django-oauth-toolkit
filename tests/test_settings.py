@@ -1,12 +1,12 @@
 from django.test import TestCase
 
-from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.admin import (
     get_access_token_admin_class,
     get_application_admin_class,
     get_grant_admin_class,
     get_refresh_token_admin_class,
 )
+from oauth2_provider.settings import oauth2_settings
 
 
 class TestAdminClass(TestCase):

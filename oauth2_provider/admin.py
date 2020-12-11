@@ -1,14 +1,14 @@
 from django.contrib import admin
 
-from .models import (
-    get_access_token_model,
+from oauth2_provider.models import (
     get_access_token_admin_class,
-    get_application_model,
+    get_access_token_model,
     get_application_admin_class,
-    get_grant_model,
+    get_application_model,
     get_grant_admin_class,
-    get_refresh_token_model,
+    get_grant_model,
     get_refresh_token_admin_class,
+    get_refresh_token_model,
 )
 
 
