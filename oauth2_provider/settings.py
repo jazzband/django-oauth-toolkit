@@ -15,10 +15,10 @@ This module provides the `oauth2_settings` object, that is used to access
 OAuth2 Provider settings, checking for user settings first, then falling
 back to the defaults.
 """
-import importlib
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+from django.utils.module_loading import import_string
 
 
 USER_SETTINGS = getattr(settings, "OAUTH2_PROVIDER", None)
@@ -53,6 +53,10 @@ DEFAULTS = {
     "ACCESS_TOKEN_MODEL": ACCESS_TOKEN_MODEL,
     "GRANT_MODEL": GRANT_MODEL,
     "REFRESH_TOKEN_MODEL": REFRESH_TOKEN_MODEL,
+    "APPLICATION_ADMIN_CLASS": "oauth2_provider.admin.ApplicationAdmin",
+    "ACCESS_TOKEN_ADMIN_CLASS": "oauth2_provider.admin.AccessTokenAdmin",
+    "GRANT_ADMIN_CLASS": "oauth2_provider.admin.GrantAdmin",
+    "REFRESH_TOKEN_ADMIN_CLASS": "oauth2_provider.admin.RefreshTokenAdmin",
     "REQUEST_APPROVAL_PROMPT": "force",
     "ALLOWED_REDIRECT_URI_SCHEMES": ["http", "https"],
     # Special settings that will be evaluated at runtime
@@ -88,6 +92,10 @@ IMPORT_STRINGS = (
     "OAUTH2_VALIDATOR_CLASS",
     "OAUTH2_BACKEND_CLASS",
     "SCOPES_BACKEND_CLASS",
+    "APPLICATION_ADMIN_CLASS",
+    "ACCESS_TOKEN_ADMIN_CLASS",
+    "GRANT_ADMIN_CLASS",
+    "REFRESH_TOKEN_ADMIN_CLASS"
 )
 
 
@@ -96,12 +104,13 @@ def perform_import(val, setting_name):
     If the given setting is a string import notation,
     then perform the necessary import or imports.
     """
-    if isinstance(val, (list, tuple)):
-        return [import_from_string(item, setting_name) for item in val]
-    elif "." in val:
+    if val is None:
+        return None
+    elif isinstance(val, str):
         return import_from_string(val, setting_name)
-    else:
-        raise ImproperlyConfigured("Bad value for %r: %r" % (setting_name, val))
+    elif isinstance(val, (list, tuple)):
+        return [import_from_string(item, setting_name) for item in val]
+    return val
 
 
 def import_from_string(val, setting_name):
@@ -109,12 +118,9 @@ def import_from_string(val, setting_name):
     Attempt to import a class from a string representation.
     """
     try:
-        parts = val.split(".")
-        module_path, class_name = ".".join(parts[:-1]), parts[-1]
-        module = importlib.import_module(module_path)
-        return getattr(module, class_name)
+        return import_string(val)
     except ImportError as e:
-        msg = "Could not import %r for setting %r. %s: %s." % (val, setting_name, e.__class__.__name__, e)
+        msg = "Could not import '%s' for API setting '%s'. %s: %s." % (val, setting_name, e.__class__.__name__, e)
         raise ImportError(msg)
 
 

@@ -453,6 +453,30 @@ def get_refresh_token_model():
     return apps.get_model(oauth2_settings.REFRESH_TOKEN_MODEL)
 
 
+def get_application_admin_class():
+    """ Return the Application admin class that is active in this project. """
+    application_admin_class = oauth2_settings.APPLICATION_ADMIN_CLASS
+    return application_admin_class
+
+
+def get_access_token_admin_class():
+    """ Return the AccessToken admin class that is active in this project. """
+    access_token_admin_class = oauth2_settings.ACCESS_TOKEN_ADMIN_CLASS
+    return access_token_admin_class
+
+
+def get_grant_admin_class():
+    """ Return the Grant admin class that is active in this project. """
+    grant_admin_class = oauth2_settings.GRANT_ADMIN_CLASS
+    return grant_admin_class
+
+
+def get_refresh_token_admin_class():
+    """ Return the RefreshToken admin class that is active in this project. """
+    refresh_token_admin_class = oauth2_settings.REFRESH_TOKEN_ADMIN_CLASS
+    return refresh_token_admin_class
+
+
 def clear_expired():
     now = timezone.now()
     refresh_expire_at = None
