@@ -18,6 +18,7 @@ back to the defaults.
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+from django.test.signals import setting_changed
 from django.utils.module_loading import import_string
 
 
@@ -133,10 +134,17 @@ class OAuth2ProviderSettings:
     """
 
     def __init__(self, user_settings=None, defaults=None, import_strings=None, mandatory=None):
-        self.user_settings = user_settings or {}
+        self._user_settings = user_settings or {}
         self.defaults = defaults or DEFAULTS
         self.import_strings = import_strings or IMPORT_STRINGS
         self.mandatory = mandatory or ()
+        self._cached_attrs = set()
+
+    @property
+    def user_settings(self):
+        if not hasattr(self, '_user_settings'):
+            self._user_settings = getattr(settings, 'OAUTH2_PROVIDER', {})
+        return self._user_settings
 
     def __getattr__(self, attr):
         if attr not in self.defaults:
@@ -172,6 +180,7 @@ class OAuth2ProviderSettings:
         self.validate_setting(attr, val)
 
         # Cache the result
+        self._cached_attrs.add(attr)
         setattr(self, attr, val)
         return val
 
@@ -205,5 +214,21 @@ class OAuth2ProviderSettings:
         kwargs.update(self.EXTRA_SERVER_KWARGS)
         return kwargs
 
+    def reload(self):
+        for attr in self._cached_attrs:
+            delattr(self, attr)
+        self._cached_attrs.clear()
+        if hasattr(self, "_user_settings"):
+            delattr(self, "_user_settings")
+
 
 oauth2_settings = OAuth2ProviderSettings(USER_SETTINGS, DEFAULTS, IMPORT_STRINGS, MANDATORY)
+
+
+def reload_oauth2_settings(*args, **kwargs):
+    setting = kwargs["setting"]
+    if setting == "OAUTH2_PROVIDER":
+        oauth2_settings.reload()
+
+
+setting_changed.connect(reload_oauth2_settings)
