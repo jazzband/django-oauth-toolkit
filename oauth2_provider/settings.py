@@ -134,13 +134,13 @@ class OAuth2ProviderSettings:
 
     def __init__(self, user_settings=None, defaults=None, import_strings=None, mandatory=None):
         self.user_settings = user_settings or {}
-        self.defaults = defaults or {}
-        self.import_strings = import_strings or ()
+        self.defaults = defaults or DEFAULTS
+        self.import_strings = import_strings or IMPORT_STRINGS
         self.mandatory = mandatory or ()
 
     def __getattr__(self, attr):
-        if attr not in self.defaults.keys():
-            raise AttributeError("Invalid OAuth2Provider setting: %r" % (attr))
+        if attr not in self.defaults:
+            raise AttributeError("Invalid OAuth2Provider setting: %s" % attr)
 
         try:
             # Check if present in user settings
@@ -177,7 +177,7 @@ class OAuth2ProviderSettings:
 
     def validate_setting(self, attr, val):
         if not val and attr in self.mandatory:
-            raise AttributeError("OAuth2Provider setting: %r is mandatory" % (attr))
+            raise AttributeError("OAuth2Provider setting: %s is mandatory" % attr)
 
     @property
     def server_kwargs(self):
