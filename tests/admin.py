@@ -15,11 +15,3 @@ class CustomGrantAdmin(admin.ModelAdmin):
 
 class CustomRefreshTokenAdmin(admin.ModelAdmin):
     list_display = ("id",)
-
-
-__all__ = [
-    'CustomApplicationAdmin',
-    'CustomAccessTokenAdmin',
-    'CustomGrantAdmin',
-    'CustomRefreshTokenAdmin',
-]

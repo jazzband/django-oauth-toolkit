@@ -142,8 +142,8 @@ class OAuth2ProviderSettings:
 
     @property
     def user_settings(self):
-        if not hasattr(self, '_user_settings'):
-            self._user_settings = getattr(settings, 'OAUTH2_PROVIDER', {})
+        if not hasattr(self, "_user_settings"):
+            self._user_settings = getattr(settings, "OAUTH2_PROVIDER", {})
         return self._user_settings
 
     def __getattr__(self, attr):

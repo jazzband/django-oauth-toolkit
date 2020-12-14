@@ -7,10 +7,10 @@ from oauth2_provider.admin import (
     get_grant_admin_class,
     get_refresh_token_admin_class,
 )
-from oauth2_provider.settings import oauth2_settings, OAuth2ProviderSettings
+from oauth2_provider.settings import OAuth2ProviderSettings, oauth2_settings
 from tests.admin import (
-    CustomApplicationAdmin,
     CustomAccessTokenAdmin,
+    CustomApplicationAdmin,
     CustomGrantAdmin,
     CustomRefreshTokenAdmin,
 )
@@ -21,9 +21,7 @@ class TestAdminClass(TestCase):
         """
         Make sure import errors are captured and raised sensibly.
         """
-        settings = OAuth2ProviderSettings({
-            "CLIENT_ID_GENERATOR_CLASS": "tests.invalid_module.InvalidClassName"
-        })
+        settings = OAuth2ProviderSettings({"CLIENT_ID_GENERATOR_CLASS": "invalid_module.InvalidClassName"})
         with self.assertRaises(ImportError):
             settings.CLIENT_ID_GENERATOR_CLASS
 
@@ -59,9 +57,7 @@ class TestAdminClass(TestCase):
         default_refresh_token_admin_class = oauth2_settings.REFRESH_TOKEN_ADMIN_CLASS
         assert refresh_token_admin_class == default_refresh_token_admin_class
 
-    @override_settings(OAUTH2_PROVIDER={
-        "APPLICATION_ADMIN_CLASS": "tests.admin.CustomApplicationAdmin"
-    })
+    @override_settings(OAUTH2_PROVIDER={"APPLICATION_ADMIN_CLASS": "tests.admin.CustomApplicationAdmin"})
     def test_get_custom_application_admin_class(self):
         """
         Test for getting custom class for application admin.
@@ -69,9 +65,7 @@ class TestAdminClass(TestCase):
         application_admin_class = get_application_admin_class()
         assert application_admin_class == CustomApplicationAdmin
 
-    @override_settings(OAUTH2_PROVIDER={
-        "ACCESS_TOKEN_ADMIN_CLASS": "tests.admin.CustomAccessTokenAdmin"
-    })
+    @override_settings(OAUTH2_PROVIDER={"ACCESS_TOKEN_ADMIN_CLASS": "tests.admin.CustomAccessTokenAdmin"})
     def test_get_custom_access_token_admin_class(self):
         """
         Test for getting custom class for access token admin.
@@ -79,9 +73,7 @@ class TestAdminClass(TestCase):
         access_token_admin_class = get_access_token_admin_class()
         assert access_token_admin_class == CustomAccessTokenAdmin
 
-    @override_settings(OAUTH2_PROVIDER={
-        "GRANT_ADMIN_CLASS": "tests.admin.CustomGrantAdmin"
-    })
+    @override_settings(OAUTH2_PROVIDER={"GRANT_ADMIN_CLASS": "tests.admin.CustomGrantAdmin"})
     def test_get_custom_grant_admin_class(self):
         """
         Test for getting custom class for grant admin.
@@ -89,9 +81,7 @@ class TestAdminClass(TestCase):
         grant_admin_class = get_grant_admin_class()
         assert grant_admin_class == CustomGrantAdmin
 
-    @override_settings(OAUTH2_PROVIDER={
-        "REFRESH_TOKEN_ADMIN_CLASS": "tests.admin.CustomRefreshTokenAdmin"
-    })
+    @override_settings(OAUTH2_PROVIDER={"REFRESH_TOKEN_ADMIN_CLASS": "tests.admin.CustomRefreshTokenAdmin"})
     def test_get_custom_refresh_token_admin_class(self):
         """
         Test for getting custom class for refresh token admin.
