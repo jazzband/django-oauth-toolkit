@@ -1,6 +1,15 @@
 from django.contrib import admin
 
-from .models import get_access_token_model, get_application_model, get_grant_model, get_refresh_token_model
+from oauth2_provider.models import (
+    get_access_token_admin_class,
+    get_access_token_model,
+    get_application_admin_class,
+    get_application_model,
+    get_grant_admin_class,
+    get_grant_model,
+    get_refresh_token_admin_class,
+    get_refresh_token_model,
+)
 
 
 class ApplicationAdmin(admin.ModelAdmin):
@@ -13,14 +22,14 @@ class ApplicationAdmin(admin.ModelAdmin):
     raw_id_fields = ("user",)
 
 
-class GrantAdmin(admin.ModelAdmin):
-    list_display = ("code", "application", "user", "expires")
-    raw_id_fields = ("user",)
-
-
 class AccessTokenAdmin(admin.ModelAdmin):
     list_display = ("token", "user", "application", "expires")
     raw_id_fields = ("user", "source_refresh_token")
+
+
+class GrantAdmin(admin.ModelAdmin):
+    list_display = ("code", "application", "user", "expires")
+    raw_id_fields = ("user",)
 
 
 class RefreshTokenAdmin(admin.ModelAdmin):
@@ -28,12 +37,17 @@ class RefreshTokenAdmin(admin.ModelAdmin):
     raw_id_fields = ("user", "access_token")
 
 
-Application = get_application_model()
-Grant = get_grant_model()
-AccessToken = get_access_token_model()
-RefreshToken = get_refresh_token_model()
+application_model = get_application_model()
+access_token_model = get_access_token_model()
+grant_model = get_grant_model()
+refresh_token_model = get_refresh_token_model()
 
-admin.site.register(Application, ApplicationAdmin)
-admin.site.register(Grant, GrantAdmin)
-admin.site.register(AccessToken, AccessTokenAdmin)
-admin.site.register(RefreshToken, RefreshTokenAdmin)
+application_admin_class = get_application_admin_class()
+access_token_admin_class = get_access_token_admin_class()
+grant_admin_class = get_grant_admin_class()
+refresh_token_admin_class = get_refresh_token_admin_class()
+
+admin.site.register(application_model, application_admin_class)
+admin.site.register(access_token_model, access_token_admin_class)
+admin.site.register(grant_model, grant_admin_class)
+admin.site.register(refresh_token_model, refresh_token_admin_class)

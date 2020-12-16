@@ -15,10 +15,11 @@ This module provides the `oauth2_settings` object, that is used to access
 OAuth2 Provider settings, checking for user settings first, then falling
 back to the defaults.
 """
-import importlib
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+from django.test.signals import setting_changed
+from django.utils.module_loading import import_string
 
 
 USER_SETTINGS = getattr(settings, "OAUTH2_PROVIDER", None)
@@ -53,6 +54,10 @@ DEFAULTS = {
     "ACCESS_TOKEN_MODEL": ACCESS_TOKEN_MODEL,
     "GRANT_MODEL": GRANT_MODEL,
     "REFRESH_TOKEN_MODEL": REFRESH_TOKEN_MODEL,
+    "APPLICATION_ADMIN_CLASS": "oauth2_provider.admin.ApplicationAdmin",
+    "ACCESS_TOKEN_ADMIN_CLASS": "oauth2_provider.admin.AccessTokenAdmin",
+    "GRANT_ADMIN_CLASS": "oauth2_provider.admin.GrantAdmin",
+    "REFRESH_TOKEN_ADMIN_CLASS": "oauth2_provider.admin.RefreshTokenAdmin",
     "REQUEST_APPROVAL_PROMPT": "force",
     "ALLOWED_REDIRECT_URI_SCHEMES": ["http", "https"],
     # Special settings that will be evaluated at runtime
@@ -88,6 +93,10 @@ IMPORT_STRINGS = (
     "OAUTH2_VALIDATOR_CLASS",
     "OAUTH2_BACKEND_CLASS",
     "SCOPES_BACKEND_CLASS",
+    "APPLICATION_ADMIN_CLASS",
+    "ACCESS_TOKEN_ADMIN_CLASS",
+    "GRANT_ADMIN_CLASS",
+    "REFRESH_TOKEN_ADMIN_CLASS",
 )
 
 
@@ -96,12 +105,13 @@ def perform_import(val, setting_name):
     If the given setting is a string import notation,
     then perform the necessary import or imports.
     """
-    if isinstance(val, (list, tuple)):
-        return [import_from_string(item, setting_name) for item in val]
-    elif "." in val:
+    if val is None:
+        return None
+    elif isinstance(val, str):
         return import_from_string(val, setting_name)
-    else:
-        raise ImproperlyConfigured("Bad value for %r: %r" % (setting_name, val))
+    elif isinstance(val, (list, tuple)):
+        return [import_from_string(item, setting_name) for item in val]
+    return val
 
 
 def import_from_string(val, setting_name):
@@ -109,10 +119,7 @@ def import_from_string(val, setting_name):
     Attempt to import a class from a string representation.
     """
     try:
-        parts = val.split(".")
-        module_path, class_name = ".".join(parts[:-1]), parts[-1]
-        module = importlib.import_module(module_path)
-        return getattr(module, class_name)
+        return import_string(val)
     except ImportError as e:
         msg = "Could not import %r for setting %r. %s: %s." % (val, setting_name, e.__class__.__name__, e)
         raise ImportError(msg)
@@ -127,14 +134,21 @@ class OAuth2ProviderSettings:
     """
 
     def __init__(self, user_settings=None, defaults=None, import_strings=None, mandatory=None):
-        self.user_settings = user_settings or {}
-        self.defaults = defaults or {}
-        self.import_strings = import_strings or ()
+        self._user_settings = user_settings or {}
+        self.defaults = defaults or DEFAULTS
+        self.import_strings = import_strings or IMPORT_STRINGS
         self.mandatory = mandatory or ()
+        self._cached_attrs = set()
+
+    @property
+    def user_settings(self):
+        if not hasattr(self, "_user_settings"):
+            self._user_settings = getattr(settings, "OAUTH2_PROVIDER", {})
+        return self._user_settings
 
     def __getattr__(self, attr):
-        if attr not in self.defaults.keys():
-            raise AttributeError("Invalid OAuth2Provider setting: %r" % (attr))
+        if attr not in self.defaults:
+            raise AttributeError("Invalid OAuth2Provider setting: %s" % attr)
 
         try:
             # Check if present in user settings
@@ -166,12 +180,13 @@ class OAuth2ProviderSettings:
         self.validate_setting(attr, val)
 
         # Cache the result
+        self._cached_attrs.add(attr)
         setattr(self, attr, val)
         return val
 
     def validate_setting(self, attr, val):
         if not val and attr in self.mandatory:
-            raise AttributeError("OAuth2Provider setting: %r is mandatory" % (attr))
+            raise AttributeError("OAuth2Provider setting: %s is mandatory" % attr)
 
     @property
     def server_kwargs(self):
@@ -199,5 +214,21 @@ class OAuth2ProviderSettings:
         kwargs.update(self.EXTRA_SERVER_KWARGS)
         return kwargs
 
+    def reload(self):
+        for attr in self._cached_attrs:
+            delattr(self, attr)
+        self._cached_attrs.clear()
+        if hasattr(self, "_user_settings"):
+            delattr(self, "_user_settings")
+
 
 oauth2_settings = OAuth2ProviderSettings(USER_SETTINGS, DEFAULTS, IMPORT_STRINGS, MANDATORY)
+
+
+def reload_oauth2_settings(*args, **kwargs):
+    setting = kwargs["setting"]
+    if setting == "OAUTH2_PROVIDER":
+        oauth2_settings.reload()
+
+
+setting_changed.connect(reload_oauth2_settings)
