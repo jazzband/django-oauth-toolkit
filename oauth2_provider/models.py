@@ -220,7 +220,7 @@ class AbstractGrant(models.Model):
     code = models.CharField(max_length=255, unique=True)  # code comes from oauthlib
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE)
     expires = models.DateTimeField()
-    redirect_uri = models.CharField(max_length=255)
+    redirect_uri = models.TextField()
     scope = models.TextField(blank=True)
 
     created = models.DateTimeField(auto_now_add=True)

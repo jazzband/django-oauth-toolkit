@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [unreleased]
 
 * #898 Added the ability to customize classes for django admin
+* #903 Disable `redirect_uri` field length limit for `AbstractGrant`
 
 ### Added
 * #884 Added support for Python 3.9
