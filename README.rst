@@ -10,14 +10,13 @@ Django OAuth Toolkit
 .. image:: https://badge.fury.io/py/django-oauth-toolkit.png
     :target: http://badge.fury.io/py/django-oauth-toolkit
 
-.. image:: https://travis-ci.org/jazzband/django-oauth-toolkit.png
-   :alt: Build Status
-   :target: https://travis-ci.org/jazzband/django-oauth-toolkit
+.. image:: https://github.com/jazzband/django-oauth-toolkit/workflows/Test/badge.svg
+   :target: https://github.com/jazzband/django-oauth-toolkit/actions
+   :alt: GitHub Actions
 
-.. image:: https://coveralls.io/repos/github/jazzband/django-oauth-toolkit/badge.svg?branch=master
-   :alt: Coverage Status
-   :target: https://coveralls.io/github/jazzband/django-oauth-toolkit?branch=master
-
+.. image:: https://codecov.io/gh/jazzband/django-oauth-toolkit/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/jazzband/django-oauth-toolkit
+   :alt: Coverage
 
 If you are facing one or more of the following:
  * Your Django app exposes a web API you want to protect with OAuth2 authentication,
