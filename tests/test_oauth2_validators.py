@@ -1,8 +1,9 @@
+import calendar
 import contextlib
 import datetime
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase, TransactionTestCase
+from django.test import override_settings, TestCase, TransactionTestCase
 from django.utils import timezone
 from oauthlib.common import Request
 
@@ -293,6 +294,20 @@ class TestOAuth2Validator(TransactionTestCase):
         at_hash = self.validator.generate_at_hash(access_token)
 
         assert at_hash == "77QmUPtjPfzWtF2AnpK9RQ"
+
+    @override_settings(TIME_ZONE="US/Eastern")
+    def test_iat_timezone_awareness(self):
+        # get_id_token_dictionary requires these fields to be set
+        self.request.client_id = self.application.client_id
+        self.request.user.last_login = timezone.now()
+        self.request.response_type = None
+        
+        claims, __ = self.validator.get_id_token_dictionary(None, None, self.request)
+        # Remove several sig figs to improve test resilience
+        expected_time = int(calendar.timegm(timezone.now().timetuple()) / 1000) * 1000
+        actual_time = int(claims["iat"] / 1000) * 1000
+
+        assert actual_time == expected_time
 
 
 class TestOAuth2ValidatorProvidesErrorData(TransactionTestCase):

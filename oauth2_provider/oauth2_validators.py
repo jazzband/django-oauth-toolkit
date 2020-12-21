@@ -800,7 +800,7 @@ class OAuth2Validator(RequestValidator):
             "iss": self.get_oidc_issuer_endpoint(request),
             "aud": request.client_id,
             "exp": int(dateformat.format(expiration_time, "U")),
-            "iat": int(dateformat.format(datetime.utcnow(), "U")),
+            "iat": int(dateformat.format(timezone.now(), "U")),
             "auth_time": int(dateformat.format(request.user.last_login, "U")),
         })
 
