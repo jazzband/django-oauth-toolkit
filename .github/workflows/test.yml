@@ -33,13 +33,16 @@ jobs:
           ${{ matrix.python-version }}-v1-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/tox.ini') }}
         restore-keys: |
           ${{ matrix.python-version }}-v1-
+
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
         python -m pip install --upgrade tox tox-gh-actions
+
     - name: Tox tests
       run: |
         tox -v
+
     - name: Upload coverage
       uses: codecov/codecov-action@v1
       with:
