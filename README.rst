@@ -7,7 +7,7 @@ Django OAuth Toolkit
 
 *OAuth2 goodies for the Djangonauts!*
 
-.. image:: https://badge.fury.io/py/django-oauth-toolkit.png
+.. image:: https://badge.fury.io/py/django-oauth-toolkit.svg
     :target: http://badge.fury.io/py/django-oauth-toolkit
 
 .. image:: https://github.com/jazzband/django-oauth-toolkit/workflows/Test/badge.svg
