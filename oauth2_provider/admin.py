@@ -7,6 +7,7 @@ from oauth2_provider.models import (
     get_application_model,
     get_grant_admin_class,
     get_grant_model,
+    get_id_token_admin_class,
     get_id_token_model,
     get_refresh_token_admin_class,
     get_refresh_token_model,
@@ -52,10 +53,11 @@ refresh_token_model = get_refresh_token_model()
 application_admin_class = get_application_admin_class()
 access_token_admin_class = get_access_token_admin_class()
 grant_admin_class = get_grant_admin_class()
+id_token_admin_class = get_id_token_admin_class()
 refresh_token_admin_class = get_refresh_token_admin_class()
 
 admin.site.register(application_model, application_admin_class)
 admin.site.register(access_token_model, access_token_admin_class)
 admin.site.register(grant_model, grant_admin_class)
-admin.site.register(id_token_model, IDTokenAdmin)
+admin.site.register(id_token_model, id_token_admin_class)
 admin.site.register(refresh_token_model, refresh_token_admin_class)

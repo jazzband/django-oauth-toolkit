@@ -595,6 +595,12 @@ def get_grant_admin_class():
     return grant_admin_class
 
 
+def get_id_token_admin_class():
+    """ Return the IDToken admin class that is active in this project. """
+    id_token_admin_class = oauth2_settings.ID_TOKEN_ADMIN_CLASS
+    return id_token_admin_class
+
+
 def get_refresh_token_admin_class():
     """ Return the RefreshToken admin class that is active in this project. """
     refresh_token_admin_class = oauth2_settings.REFRESH_TOKEN_ADMIN_CLASS
