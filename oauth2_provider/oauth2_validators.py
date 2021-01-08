@@ -475,9 +475,19 @@ class OAuth2Validator(RequestValidator):
         if "scope" not in token:
             raise FatalClientError("Failed to renew access token: missing scope")
 
-        # "authenticate_client" sets the client (Application) on request
-        application = request.client
-        access_token_expire_seconds = application.access_token_expire_seconds
+        # "authenticate_client" sets the client (Application) on request.
+        app = request.client
+
+        # Users on older app versions should get long-lived tokens for
+        # backwards compatibility.
+        is_legacy_token = request.POST.get('is_legacy_token', False)
+
+        if is_legacy_token:
+            access_token_expire_seconds = (
+                settings.LEGACY_ACCESS_TOKEN_EXPIRE_SECONDS,
+            )
+        else:
+            access_token_expire_seconds = app.access_token_expire_seconds
 
         # expires_in is passed to Server on initialization
         # custom server class can have logic to override this
@@ -654,24 +664,18 @@ class OAuth2Validator(RequestValidator):
                 seconds=oauth2_settings.REFRESH_TOKEN_GRACE_PERIOD_SECONDS
             )
         )
-        rt = RefreshToken.objects.filter(null_or_recent, token=refresh_token).select_related(
-            "access_token",
-            "application",
-        ).first()
+        rt = (
+            RefreshToken.objects
+            .filter(null_or_recent, token=refresh_token)
+            .select_related("user", "access_token", "application")
+            .first()
+        )
 
         if not rt:
             return False
 
-        # Access and refresh token expiration is configurable by Application
-        # Determine refresh token expiration datetime by adding the timedelta
-        # of "refresh_token_expire_seconds" to the "created" datetime
-        expire_seconds = rt.application.refresh_token_expire_seconds
-        expires = rt.created + timedelta(seconds=expire_seconds)
-
-        is_expired = timezone.now() >= expires
-
-        # Revoke token if expired
-        if is_expired:
+        # Revoke token if expired.
+        if rt.is_expired:
             try:
                 rt.revoke()
             # Catch exception in case access or refresh token do not exist
@@ -686,7 +690,7 @@ class OAuth2Validator(RequestValidator):
         # Token is valid if it refers to the right client AND is not expired
         is_valid = (
             rt.application == client and
-            not is_expired
+            not rt.is_expired
         )
 
         return is_valid
