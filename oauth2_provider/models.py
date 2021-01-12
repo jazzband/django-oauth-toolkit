@@ -396,11 +396,15 @@ class AbstractRefreshToken(models.Model):
         now = timezone.now()
         is_refresh_token_expired = now >= expires
         
+        # Access token assumed to be expired, by default.
+        is_access_token_expired = True
+        
         # RefreshToken should not outlive AccessToken.
         # NOTE: Check AccessToken expiration for backwards compatibility with
         # long-lived tokens.
-        access_token_expires = self.access_token.expires
-        is_access_token_expired = now >= access_token_expires
+        if self.access_token:
+            access_token_expires = self.access_token.expires
+            is_access_token_expired = now >= access_token_expires
 
         # RefreshToken expired if and only if both refresh and access tokens
         # are expired.
