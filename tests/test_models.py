@@ -22,10 +22,15 @@ RefreshToken = get_refresh_token_model()
 UserModel = get_user_model()
 
 
-class TestModels(TestCase):
+class BaseTestModels(TestCase):
     def setUp(self):
         self.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
 
+    def tearDown(self):
+        self.user.delete()
+
+
+class TestModels(BaseTestModels):
     def test_allow_scopes(self):
         self.client.login(username="test_user", password="123456")
         app = Application.objects.create(
@@ -103,10 +108,7 @@ class TestModels(TestCase):
     OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL="tests.SampleRefreshToken",
     OAUTH2_PROVIDER_GRANT_MODEL="tests.SampleGrant",
 )
-class TestCustomModels(TestCase):
-    def setUp(self):
-        self.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
-
+class TestCustomModels(BaseTestModels):
     def test_custom_application_model(self):
         """
         If a custom application model is installed, it should be present in
@@ -237,7 +239,21 @@ class TestCustomModels(TestCase):
         oauth2_settings.GRANT_MODEL = "oauth2_provider.Grant"
 
 
-class TestGrantModel(TestCase):
+class TestGrantModel(BaseTestModels):
+    def setUp(self):
+        super().setUp()
+        self.application = Application.objects.create(
+            name="Test Application",
+            redirect_uris="",
+            user=self.user,
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+        )
+
+    def tearDown(self):
+        self.application.delete()
+        super().tearDown()
+
     def test_str(self):
         grant = Grant(code="test_code")
         self.assertEqual("%s" % grant, grant.code)
@@ -247,11 +263,26 @@ class TestGrantModel(TestCase):
         self.assertIsNone(grant.expires)
         self.assertTrue(grant.is_expired())
 
+    def test_redirect_uri_can_be_longer_than_255_chars(self):
+        long_redirect_uri = "http://example.com/{}".format("authorized/" * 25)
+        self.assertTrue(len(long_redirect_uri) > 255)
+        grant = Grant.objects.create(
+            user=self.user,
+            code="test_code",
+            application=self.application,
+            expires=timezone.now(),
+            redirect_uri=long_redirect_uri,
+            scope="",
+        )
+        grant.refresh_from_db()
 
-class TestAccessTokenModel(TestCase):
-    def setUp(self):
-        self.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
+        # It would be necessary to run test using another DB engine than sqlite
+        # that transform varchar(255) into text data type.
+        # https://sqlite.org/datatype3.html#affinity_name_examples
+        self.assertEqual(grant.redirect_uri, long_redirect_uri)
 
+
+class TestAccessTokenModel(BaseTestModels):
     def test_str(self):
         access_token = AccessToken(token="test_token")
         self.assertEqual("%s" % access_token, access_token.token)
@@ -273,15 +304,15 @@ class TestAccessTokenModel(TestCase):
         self.assertTrue(access_token.is_expired())
 
 
-class TestRefreshTokenModel(TestCase):
+class TestRefreshTokenModel(BaseTestModels):
     def test_str(self):
         refresh_token = RefreshToken(token="test_token")
         self.assertEqual("%s" % refresh_token, refresh_token.token)
 
 
-class TestClearExpired(TestCase):
+class TestClearExpired(BaseTestModels):
     def setUp(self):
-        self.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
+        super().setUp()
         # Insert two tokens on database.
         app = Application.objects.create(
             name="test_app",

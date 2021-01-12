@@ -97,6 +97,30 @@ The import string of the class (model) representing your grants. Overwrite
 this value if you wrote your own implementation (subclass of
 ``oauth2_provider.models.Grant``).
 
+APPLICATION_ADMIN_CLASS
+~~~~~~~~~~~~~~~~~
+The import string of the class (model) representing your application admin class.
+Overwrite this value if you wrote your own implementation (subclass of
+``oauth2_provider.admin.ApplicationAdmin``).
+
+ACCESS_TOKEN_ADMIN_CLASS
+~~~~~~~~~~~~~~~~~
+The import string of the class (model) representing your access token admin class.
+Overwrite this value if you wrote your own implementation (subclass of
+``oauth2_provider.admin.AccessTokenAdmin``).
+
+GRANT_ADMIN_CLASS
+~~~~~~~~~~~~~~~~~
+The import string of the class (model) representing your grant admin class.
+Overwrite this value if you wrote your own implementation (subclass of
+``oauth2_provider.admin.GrantAdmin``).
+
+REFRESH_TOKEN_ADMIN_CLASS
+~~~~~~~~~~~~~~~~~
+The import string of the class (model) representing your refresh token admin class.
+Overwrite this value if you wrote your own implementation (subclass of
+``oauth2_provider.admin.RefreshTokenAdmin``).
+
 OAUTH2_SERVER_CLASS
 ~~~~~~~~~~~~~~~~~~~
 The import string for the ``server_class`` (or ``oauthlib.oauth2.Server`` subclass)
