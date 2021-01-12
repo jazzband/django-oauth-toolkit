@@ -480,20 +480,16 @@ class OAuth2Validator(RequestValidator):
 
         # Users on older app versions should get long-lived tokens for
         # backwards compatibility.
-        is_legacy_token = request.POST.get('is_legacy_token', False)
+        is_legacy_token = getattr(request, 'is_legacy_token', False)
 
         if is_legacy_token:
-            access_token_expire_seconds = (
-                settings.LEGACY_ACCESS_TOKEN_EXPIRE_SECONDS,
-            )
+            expire_seconds = oauth2_settings.LEGACY_ACCESS_TOKEN_EXPIRE_SECONDS
         else:
-            access_token_expire_seconds = app.access_token_expire_seconds
+            expire_seconds = app.access_token_expire_seconds
 
         # expires_in is passed to Server on initialization
         # custom server class can have logic to override this
-        expires = (
-            timezone.now() + timedelta(seconds=access_token_expire_seconds)
-        )
+        expires = timezone.now() + timedelta(seconds=expire_seconds)
 
         if request.grant_type == "client_credentials":
             request.user = None
