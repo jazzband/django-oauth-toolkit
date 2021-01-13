@@ -402,13 +402,14 @@ class AbstractRefreshToken(models.Model):
         refresh_token_model = get_refresh_token_model()
         with transaction.atomic():
             try:
-                self = refresh_token_model.objects.select_for_update().get(
+                token = refresh_token_model.objects.select_for_update().filter(
                     pk=self.pk, revoked__isnull=True
                 )
             except refresh_token_model.DoesNotExist:
                 return
-            if not self:
+            if not token:
                 return
+            self = list(token)[0]
 
             try:
                 access_token_model.objects.get(id=self.access_token_id).revoke()
