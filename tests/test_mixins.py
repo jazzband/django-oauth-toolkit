@@ -1,3 +1,4 @@
+import pytest
 from django.core.exceptions import ImproperlyConfigured
 from django.test import RequestFactory, TestCase
 from django.views.generic import View
@@ -8,6 +9,7 @@ from oauth2_provider.oauth2_validators import OAuth2Validator
 from oauth2_provider.views.mixins import OAuthLibMixin, ProtectedResourceMixin, ScopedResourceMixin
 
 
+@pytest.mark.usefixtures("oauth2_settings")
 class BaseTest(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -16,32 +18,55 @@ class BaseTest(TestCase):
 
 
 class TestOAuthLibMixin(BaseTest):
-    def test_missing_oauthlib_backend_class(self):
+    def test_missing_oauthlib_backend_class_uses_fallback(self):
+        class CustomOauthLibBackend:
+            def __init__(self, *args, **kwargs):
+                pass
+
+        self.oauth2_settings.OAUTH2_BACKEND_CLASS = CustomOauthLibBackend
+
         class TestView(OAuthLibMixin, View):
             server_class = Server
             validator_class = OAuth2Validator
 
         test_view = TestView()
 
-        self.assertRaises(ImproperlyConfigured, test_view.get_oauthlib_backend_class)
+        self.assertEqual(CustomOauthLibBackend, test_view.get_oauthlib_backend_class())
+        core = test_view.get_oauthlib_core()
+        self.assertTrue(isinstance(core, CustomOauthLibBackend))
 
-    def test_missing_server_class(self):
+    def test_missing_server_class_uses_fallback(self):
+        class CustomServer:
+            def __init__(self, *args, **kwargs):
+                pass
+
+        self.oauth2_settings.OAUTH2_SERVER_CLASS = CustomServer
+
         class TestView(OAuthLibMixin, View):
             validator_class = OAuth2Validator
             oauthlib_backend_class = OAuthLibCore
 
         test_view = TestView()
 
-        self.assertRaises(ImproperlyConfigured, test_view.get_server)
+        self.assertEqual(CustomServer, test_view.get_server_class())
+        core = test_view.get_oauthlib_core()
+        self.assertTrue(isinstance(core.server, CustomServer))
 
-    def test_missing_validator_class(self):
+    def test_missing_validator_class_uses_fallback(self):
+        class CustomValidator:
+            pass
+
+        self.oauth2_settings.OAUTH2_VALIDATOR_CLASS = CustomValidator
+
         class TestView(OAuthLibMixin, View):
             server_class = Server
             oauthlib_backend_class = OAuthLibCore
 
         test_view = TestView()
 
-        self.assertRaises(ImproperlyConfigured, test_view.get_server)
+        self.assertEqual(CustomValidator, test_view.get_validator_class())
+        core = test_view.get_oauthlib_core()
+        self.assertTrue(isinstance(core.server.request_validator, CustomValidator))
 
     def test_correct_server(self):
         class TestView(OAuthLibMixin, View):

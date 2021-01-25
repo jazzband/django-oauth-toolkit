@@ -1,14 +1,16 @@
 import json
 from urllib.parse import parse_qs, urlparse
 
+import pytest
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
-from jwcrypto import jwk, jwt
+from jwcrypto import jwt
 
 from oauth2_provider.models import get_application_model
-from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views import ProtectedResourceView
+
+from . import presets
 
 
 Application = get_application_model()
@@ -21,6 +23,7 @@ class ResourceView(ProtectedResourceView):
         return "This is a protected resource"
 
 
+@pytest.mark.usefixtures("oauth2_settings")
 class BaseTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
@@ -35,21 +38,13 @@ class BaseTest(TestCase):
             authorization_grant_type=Application.GRANT_IMPLICIT,
         )
 
-        oauth2_settings._SCOPES = ["read", "write", "openid"]
-        oauth2_settings._DEFAULT_SCOPES = ["read"]
-        oauth2_settings.SCOPES = {
-            "read": "Reading scope",
-            "write": "Writing scope",
-            "openid": "OpenID connect",
-        }
-        self.key = jwk.JWK.from_pem(oauth2_settings.OIDC_RSA_PRIVATE_KEY.encode("utf8"))
-
     def tearDown(self):
         self.application.delete()
         self.test_user.delete()
         self.dev_user.delete()
 
 
+@pytest.mark.oauth2_settings(presets.DEFAULT_SCOPES_RO)
 class TestImplicitAuthorizationCodeView(BaseTest):
     def test_pre_auth_valid_client_default_scopes(self):
         """
@@ -245,6 +240,7 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         self.assertEqual(response.status_code, 400)
 
 
+@pytest.mark.oauth2_settings(presets.DEFAULT_SCOPES_RO)
 class TestImplicitTokenView(BaseTest):
     def test_resource_access_allowed(self):
         self.client.login(username="test_user", password="123456")
@@ -275,6 +271,8 @@ class TestImplicitTokenView(BaseTest):
         self.assertEqual(response, "This is a protected resource")
 
 
+@pytest.mark.usefixtures("oidc_key")
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 class TestOpenIDConnectImplicitFlow(BaseTest):
     def test_id_token_post_auth_allow(self):
         """

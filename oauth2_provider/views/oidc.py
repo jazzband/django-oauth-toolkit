@@ -79,10 +79,6 @@ class UserInfoView(OAuthLibMixin, View):
     View used to show Claims about the authenticated End-User
     """
 
-    server_class = oauth2_settings.OAUTH2_SERVER_CLASS
-    validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
-    oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
-
     def get(self, request, *args, **kwargs):
         url, headers, body, status = self.create_userinfo_response(request)
         response = HttpResponse(content=body or "", status=status)

@@ -1,5 +1,6 @@
 import json
 
+import pytest
 from django.test import RequestFactory, TestCase
 
 from oauth2_provider.backends import get_oauthlib_core
@@ -12,15 +13,16 @@ except ImportError:
     import mock
 
 
+@pytest.mark.usefixtures("oauth2_settings")
 class TestOAuthLibCoreBackend(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.oauthlib_core = OAuthLibCore()
 
     def test_swappable_server_class(self):
-        with mock.patch("oauth2_provider.oauth2_backends.oauth2_settings.OAUTH2_SERVER_CLASS"):
-            oauthlib_core = OAuthLibCore()
-            self.assertTrue(isinstance(oauthlib_core.server, mock.MagicMock))
+        self.oauth2_settings.OAUTH2_SERVER_CLASS = mock.MagicMock
+        oauthlib_core = OAuthLibCore()
+        self.assertTrue(isinstance(oauthlib_core.server, mock.MagicMock))
 
     def test_form_urlencoded_extract_params(self):
         payload = "grant_type=password&username=john&password=123456"
@@ -67,9 +69,7 @@ class TestCustomOAuthLibCoreBackend(TestCase):
         payload = "grant_type=password&username=john&password=123456"
         request = self.factory.post("/o/token/", payload, content_type="application/x-www-form-urlencoded")
 
-        with mock.patch(
-            "oauthlib.openid.connect.core.endpoints.pre_configured.Server.create_token_response"
-        ) as create_token_response:
+        with mock.patch("oauthlib.oauth2.Server.create_token_response") as create_token_response:
             mocked = mock.MagicMock()
             create_token_response.return_value = mocked, mocked, mocked
             core = self.MyOAuthLibCore()

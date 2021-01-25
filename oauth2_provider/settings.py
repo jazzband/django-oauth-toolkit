@@ -37,7 +37,8 @@ DEFAULTS = {
     "ACCESS_TOKEN_GENERATOR": None,
     "REFRESH_TOKEN_GENERATOR": None,
     "EXTRA_SERVER_KWARGS": {},
-    "OAUTH2_SERVER_CLASS": "oauthlib.openid.connect.core.endpoints.pre_configured.Server",
+    "OAUTH2_SERVER_CLASS": "oauthlib.oauth2.Server",
+    "OIDC_SERVER_CLASS": "oauthlib.openid.connect.core.endpoints.pre_configured.Server",
     "OAUTH2_VALIDATOR_CLASS": "oauth2_provider.oauth2_validators.OAuth2Validator",
     "OAUTH2_BACKEND_CLASS": "oauth2_provider.oauth2_backends.OAuthLibCore",
     "SCOPES": {"read": "Reading scope", "write": "Writing scope"},
@@ -92,6 +93,9 @@ DEFAULTS = {
     "RESOURCE_SERVER_TOKEN_CACHING_SECONDS": 36000,
     # Whether or not PKCE is required
     "PKCE_REQUIRED": False,
+    # Whether to re-create OAuthlibCore on every request.
+    # Should only be required in testing.
+    "ALWAYS_RELOAD_OAUTHLIB_CORE": False,
 }
 
 # List of settings that cannot be empty
@@ -103,7 +107,6 @@ MANDATORY = (
     "OAUTH2_BACKEND_CLASS",
     "SCOPES",
     "ALLOWED_REDIRECT_URI_SCHEMES",
-    "OIDC_RSA_PRIVATE_KEY",
     "OIDC_RESPONSE_TYPES_SUPPORTED",
     "OIDC_SUBJECT_TYPES_SUPPORTED",
     "OIDC_ID_TOKEN_SIGNING_ALG_VALUES_SUPPORTED",
@@ -182,13 +185,17 @@ class OAuth2ProviderSettings:
     def __getattr__(self, attr):
         if attr not in self.defaults:
             raise AttributeError("Invalid OAuth2Provider setting: %s" % attr)
-
         try:
             # Check if present in user settings
             val = self.user_settings[attr]
         except KeyError:
             # Fall back to defaults
-            val = self.defaults[attr]
+            # Special case OAUTH2_SERVER_CLASS - if not specified, and OIDC is
+            # enabled, use the OIDC_SERVER_CLASS setting instead
+            if attr == "OAUTH2_SERVER_CLASS" and self.is_oidc_enabled:
+                val = self.defaults["OIDC_SERVER_CLASS"]
+            else:
+                val = self.defaults[attr]
 
         # Coerce import strings into classes
         if val and attr in self.import_strings:
@@ -253,6 +260,10 @@ class OAuth2ProviderSettings:
         self._cached_attrs.clear()
         if hasattr(self, "_user_settings"):
             delattr(self, "_user_settings")
+
+    @property
+    def is_oidc_enabled(self):
+        return bool(self.OIDC_RSA_PRIVATE_KEY)
 
 
 oauth2_settings = OAuth2ProviderSettings(USER_SETTINGS, DEFAULTS, IMPORT_STRINGS, MANDATORY)

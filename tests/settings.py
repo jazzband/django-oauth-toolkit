@@ -134,12 +134,6 @@ qoFyGycdsxZiPAIyZSECQQCZFn3Dl6hnJxWZH8Fsa9hj79kZ/WVkIXGmtdgt0fNr
 dTnvCVtA59ne4LEVie/PMH/odQWY0SxVm/76uBZv/1vY
 -----END RSA PRIVATE KEY-----"""
 
-OAUTH2_PROVIDER = {
-    "OIDC_ISS_ENDPOINT": "http://localhost",
-    "OIDC_USERINFO_ENDPOINT": "http://localhost/userinfo/",
-    "OIDC_RSA_PRIVATE_KEY": OIDC_RSA_PRIVATE_KEY,
-}
-
 OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL = "oauth2_provider.AccessToken"
 OAUTH2_PROVIDER_APPLICATION_MODEL = "oauth2_provider.Application"
 OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL = "oauth2_provider.RefreshToken"

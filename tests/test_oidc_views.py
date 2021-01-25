@@ -1,11 +1,14 @@
 from __future__ import unicode_literals
 
+import pytest
 from django.test import TestCase
 from django.urls import reverse
 
-from oauth2_provider.settings import oauth2_settings
+from . import presets
 
 
+@pytest.mark.usefixtures("oauth2_settings")
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 class TestConnectDiscoveryInfoView(TestCase):
     def test_get_connect_discovery_info(self):
         expected_response = {
@@ -32,8 +35,8 @@ class TestConnectDiscoveryInfoView(TestCase):
         assert response.json() == expected_response
 
     def test_get_connect_discovery_info_without_issuer_url(self):
-        oauth2_settings.OIDC_ISS_ENDPOINT = None
-        oauth2_settings.OIDC_USERINFO_ENDPOINT = None
+        self.oauth2_settings.OIDC_ISS_ENDPOINT = None
+        self.oauth2_settings.OIDC_USERINFO_ENDPOINT = None
         expected_response = {
             "issuer": "http://testserver/o",
             "authorization_endpoint": "http://testserver/o/authorize/",
@@ -56,10 +59,10 @@ class TestConnectDiscoveryInfoView(TestCase):
         response = self.client.get(reverse("oauth2_provider:oidc-connect-discovery-info"))
         self.assertEqual(response.status_code, 200)
         assert response.json() == expected_response
-        oauth2_settings.OIDC_ISS_ENDPOINT = "http://localhost"
-        oauth2_settings.OIDC_USERINFO_ENDPOINT = "http://localhost/userinfo/"
 
 
+@pytest.mark.usefixtures("oauth2_settings")
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 class TestJwksInfoView(TestCase):
     def test_get_jwks_info(self):
         expected_response = {

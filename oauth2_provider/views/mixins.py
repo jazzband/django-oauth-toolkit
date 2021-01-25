@@ -25,6 +25,9 @@ class OAuthLibMixin:
       * validator_class
       * oauthlib_backend_class
 
+    If these class variables are not set, it will fall back to using the classes
+    specified in oauth2_settings (OAUTH2_SERVER_CLASS, OAUTH2_VALIDATOR_CLASS
+    and OAUTH2_BACKEND_CLASS).
     """
 
     server_class = None
@@ -37,10 +40,7 @@ class OAuthLibMixin:
         Return the OAuthlib server class to use
         """
         if cls.server_class is None:
-            raise ImproperlyConfigured(
-                "OAuthLibMixin requires either a definition of 'server_class'"
-                " or an implementation of 'get_server_class()'"
-            )
+            return oauth2_settings.OAUTH2_SERVER_CLASS
         else:
             return cls.server_class
 
@@ -50,10 +50,7 @@ class OAuthLibMixin:
         Return the RequestValidator implementation class to use
         """
         if cls.validator_class is None:
-            raise ImproperlyConfigured(
-                "OAuthLibMixin requires either a definition of 'validator_class'"
-                " or an implementation of 'get_validator_class()'"
-            )
+            return oauth2_settings.OAUTH2_VALIDATOR_CLASS
         else:
             return cls.validator_class
 
@@ -63,10 +60,7 @@ class OAuthLibMixin:
         Return the OAuthLibCore implementation class to use
         """
         if cls.oauthlib_backend_class is None:
-            raise ImproperlyConfigured(
-                "OAuthLibMixin requires either a definition of 'oauthlib_backend_class'"
-                " or an implementation of 'get_oauthlib_backend_class()'"
-            )
+            return oauth2_settings.OAUTH2_BACKEND_CLASS
         else:
             return cls.oauthlib_backend_class
 
@@ -85,8 +79,9 @@ class OAuthLibMixin:
     def get_oauthlib_core(cls):
         """
         Cache and return `OAuthlibCore` instance so it will be created only on first request
+        unless ALWAYS_RELOAD_OAUTHLIB_CORE is True.
         """
-        if not hasattr(cls, "_oauthlib_core"):
+        if not hasattr(cls, "_oauthlib_core") or oauth2_settings.ALWAYS_RELOAD_OAUTHLIB_CORE:
             server = cls.get_server()
             core_class = cls.get_oauthlib_backend_class()
             cls._oauthlib_core = core_class(server)

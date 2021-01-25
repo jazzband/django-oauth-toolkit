@@ -3,6 +3,7 @@ import datetime
 import json
 from urllib.parse import parse_qs, urlencode, urlparse
 
+import pytest
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
@@ -15,9 +16,9 @@ from oauth2_provider.models import (
     get_grant_model,
     get_refresh_token_model,
 )
-from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views import ProtectedResourceView
 
+from . import presets
 from .utils import get_basic_auth_header
 
 
@@ -34,13 +35,14 @@ class ResourceView(ProtectedResourceView):
         return "This is a protected resource"
 
 
+@pytest.mark.usefixtures("oauth2_settings")
 class BaseTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.hy_test_user = UserModel.objects.create_user("hy_test_user", "test_hy@example.com", "123456")
         self.hy_dev_user = UserModel.objects.create_user("hy_dev_user", "dev_hy@example.com", "123456")
 
-        oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES = ["http", "custom-scheme"]
+        self.oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES = ["http", "custom-scheme"]
 
         self.application = Application(
             name="Hybrid Test Application",
@@ -53,20 +55,13 @@ class BaseTest(TestCase):
         )
         self.application.save()
 
-        oauth2_settings._SCOPES = ["read", "write", "openid"]
-        oauth2_settings._DEFAULT_SCOPES = ["read", "write"]
-        oauth2_settings.SCOPES = {
-            "read": "Reading scope",
-            "write": "Writing scope",
-            "openid": "OpenID connect",
-        }
-
     def tearDown(self):
         self.application.delete()
         self.hy_test_user.delete()
         self.hy_dev_user.delete()
 
 
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 class TestRegressionIssue315Hybrid(BaseTest):
     """
     Test to avoid regression for the issue 315: request object
@@ -127,6 +122,7 @@ class TestRegressionIssue315Hybrid(BaseTest):
         assert "request" not in response.context_data
 
 
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 class TestHybridView(BaseTest):
     def test_skip_authorization_completely(self):
         """
@@ -311,8 +307,8 @@ class TestHybridView(BaseTest):
         self.assertEqual(response.status_code, 200)
 
     def test_pre_auth_approval_prompt_default(self):
-        oauth2_settings.REQUEST_APPROVAL_PROMPT = "force"
-        self.assertEqual(oauth2_settings.REQUEST_APPROVAL_PROMPT, "force")
+        self.oauth2_settings.REQUEST_APPROVAL_PROMPT = "force"
+        self.assertEqual(self.oauth2_settings.REQUEST_APPROVAL_PROMPT, "force")
 
         AccessToken.objects.create(
             user=self.hy_test_user,
@@ -336,7 +332,7 @@ class TestHybridView(BaseTest):
         self.assertEqual(response.status_code, 200)
 
     def test_pre_auth_approval_prompt_default_override(self):
-        oauth2_settings.REQUEST_APPROVAL_PROMPT = "auto"
+        self.oauth2_settings.REQUEST_APPROVAL_PROMPT = "auto"
 
         AccessToken.objects.create(
             user=self.hy_test_user,
@@ -788,6 +784,7 @@ class TestHybridView(BaseTest):
         self.assertEqual(response.status_code, 400)
 
 
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 class TestHybridTokenView(BaseTest):
     def get_auth(self, scope="read write"):
         """
@@ -827,7 +824,7 @@ class TestHybridTokenView(BaseTest):
         content = json.loads(response.content.decode("utf-8"))
         self.assertEqual(content["token_type"], "Bearer")
         self.assertEqual(content["scope"], "read write")
-        self.assertEqual(content["expires_in"], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
+        self.assertEqual(content["expires_in"], self.oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
 
     def test_basic_auth_bad_authcode(self):
         """
@@ -942,7 +939,7 @@ class TestHybridTokenView(BaseTest):
         content = json.loads(response.content.decode("utf-8"))
         self.assertEqual(content["token_type"], "Bearer")
         self.assertEqual(content["scope"], "read write")
-        self.assertEqual(content["expires_in"], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
+        self.assertEqual(content["expires_in"], self.oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
 
     def test_public(self):
         """
@@ -967,7 +964,7 @@ class TestHybridTokenView(BaseTest):
         content = json.loads(response.content.decode("utf-8"))
         self.assertEqual(content["token_type"], "Bearer")
         self.assertEqual(content["scope"], "read write")
-        self.assertEqual(content["expires_in"], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
+        self.assertEqual(content["expires_in"], self.oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
 
     def test_id_token_public(self):
         """
@@ -995,7 +992,7 @@ class TestHybridTokenView(BaseTest):
         self.assertEqual(content["scope"], "openid")
         self.assertIn("access_token", content)
         self.assertIn("id_token", content)
-        self.assertEqual(content["expires_in"], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
+        self.assertEqual(content["expires_in"], self.oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
 
     def test_malicious_redirect_uri(self):
         """
@@ -1054,7 +1051,7 @@ class TestHybridTokenView(BaseTest):
         content = json.loads(response.content.decode("utf-8"))
         self.assertEqual(content["token_type"], "Bearer")
         self.assertEqual(content["scope"], "openid read write")
-        self.assertEqual(content["expires_in"], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
+        self.assertEqual(content["expires_in"], self.oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
 
     def test_code_exchange_fails_when_redirect_uri_does_not_match(self):
         """
@@ -1124,7 +1121,7 @@ class TestHybridTokenView(BaseTest):
         content = json.loads(response.content.decode("utf-8"))
         self.assertEqual(content["token_type"], "Bearer")
         self.assertEqual(content["scope"], "openid read write")
-        self.assertEqual(content["expires_in"], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
+        self.assertEqual(content["expires_in"], self.oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
 
     def test_id_token_code_exchange_succeed_when_redirect_uri_match_with_multiple_query_params(self):
         """
@@ -1163,9 +1160,10 @@ class TestHybridTokenView(BaseTest):
         self.assertEqual(content["scope"], "openid")
         self.assertIn("access_token", content)
         self.assertIn("id_token", content)
-        self.assertEqual(content["expires_in"], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
+        self.assertEqual(content["expires_in"], self.oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
 
 
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 class TestHybridProtectedResource(BaseTest):
     def test_resource_access_allowed(self):
         self.client.login(username="hy_test_user", password="123456")
@@ -1269,13 +1267,13 @@ class TestHybridProtectedResource(BaseTest):
         self.assertEqual(response.status_code, 403)
 
 
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RO)
 class TestDefaultScopesHybrid(BaseTest):
     def test_pre_auth_default_scopes(self):
         """
         Test response for a valid client_id with response_type: code using default scopes
         """
         self.client.login(username="hy_test_user", password="123456")
-        oauth2_settings._DEFAULT_SCOPES = ["read"]
 
         query_string = urlencode(
             {
@@ -1298,4 +1296,3 @@ class TestDefaultScopesHybrid(BaseTest):
         self.assertEqual(form["state"].value(), "random_state_string")
         self.assertEqual(form["scope"].value(), "read")
         self.assertEqual(form["client_id"].value(), self.application.client_id)
-        oauth2_settings._DEFAULT_SCOPES = ["read", "write"]

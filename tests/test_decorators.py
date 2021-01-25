@@ -6,7 +6,6 @@ from django.utils import timezone
 
 from oauth2_provider.decorators import protected_resource, rw_protected_resource
 from oauth2_provider.models import get_access_token_model, get_application_model
-from oauth2_provider.settings import oauth2_settings
 
 
 Application = get_application_model()
@@ -36,8 +35,6 @@ class TestProtectedResourceDecorator(TestCase):
             token="secret-access-token-key",
             application=self.application,
         )
-
-        oauth2_settings._SCOPES = ["read", "write"]
 
     def test_access_denied(self):
         @protected_resource()

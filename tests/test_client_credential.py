@@ -1,6 +1,7 @@
 import json
 from urllib.parse import quote_plus
 
+import pytest
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
@@ -10,10 +11,10 @@ from oauthlib.oauth2 import BackendApplicationServer
 from oauth2_provider.models import get_access_token_model, get_application_model
 from oauth2_provider.oauth2_backends import OAuthLibCore
 from oauth2_provider.oauth2_validators import OAuth2Validator
-from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views import ProtectedResourceView
 from oauth2_provider.views.mixins import OAuthLibMixin
 
+from . import presets
 from .utils import get_basic_auth_header
 
 
@@ -28,6 +29,8 @@ class ResourceView(ProtectedResourceView):
         return "This is a protected resource"
 
 
+@pytest.mark.usefixtures("oauth2_settings")
+@pytest.mark.oauth2_settings(presets.DEFAULT_SCOPES_RW)
 class BaseTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
@@ -40,9 +43,6 @@ class BaseTest(TestCase):
             client_type=Application.CLIENT_PUBLIC,
             authorization_grant_type=Application.GRANT_CLIENT_CREDENTIALS,
         )
-
-        oauth2_settings._SCOPES = ["read", "write"]
-        oauth2_settings._DEFAULT_SCOPES = ["read", "write"]
 
     def tearDown(self):
         self.application.delete()
