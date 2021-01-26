@@ -44,8 +44,8 @@ DEFAULTS = {
     "READ_SCOPE": "read",
     "WRITE_SCOPE": "write",
     "AUTHORIZATION_CODE_EXPIRE_SECONDS": 60,
-    "ACCESS_TOKEN_EXPIRE_SECONDS": 36000,  # 10 hours in seconds
-    "REFRESH_TOKEN_EXPIRE_SECONDS": 31556952,  # 1 year in seconds
+    "ACCESS_TOKEN_EXPIRE_SECONDS": 86400,  # 24 hours in seconds.
+    "REFRESH_TOKEN_EXPIRE_SECONDS": 31556952,  # 1 year in seconds.
 
     # Older app versions should get long-lived auth tokens.
     "LEGACY_ACCESS_TOKEN_EXPIRE_SECONDS": 315569520,  # 10 years
