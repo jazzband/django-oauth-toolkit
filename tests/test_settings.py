@@ -1,3 +1,5 @@
+import pytest
+from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase
 from django.test.utils import override_settings
 
@@ -8,7 +10,7 @@ from oauth2_provider.admin import (
     get_id_token_admin_class,
     get_refresh_token_admin_class,
 )
-from oauth2_provider.settings import OAuth2ProviderSettings, oauth2_settings
+from oauth2_provider.settings import OAuth2ProviderSettings, oauth2_settings, perform_import
 from tests.admin import (
     CustomAccessTokenAdmin,
     CustomApplicationAdmin,
@@ -106,3 +108,38 @@ class TestAdminClass(TestCase):
         """
         refresh_token_admin_class = get_refresh_token_admin_class()
         assert refresh_token_admin_class == CustomRefreshTokenAdmin
+
+
+def test_perform_import_when_none():
+    assert perform_import(None, "REFRESH_TOKEN_ADMIN_CLASS") is None
+
+
+def test_perform_import_list():
+    imports = ["tests.admin.CustomIDTokenAdmin", "tests.admin.CustomGrantAdmin"]
+    assert perform_import(imports, "SOME_CLASSES") == [CustomIDTokenAdmin, CustomGrantAdmin]
+
+
+def test_perform_import_already_imported():
+    cls = perform_import(CustomRefreshTokenAdmin, "REFRESH_TOKEN_ADMIN_CLASS")
+    assert cls == CustomRefreshTokenAdmin
+
+
+def test_invalid_scopes_raises_error():
+    settings = OAuth2ProviderSettings(
+        {
+            "SCOPES": {"foo": "foo scope"},
+            "DEFAULT_SCOPES": ["bar"],
+        }
+    )
+    with pytest.raises(ImproperlyConfigured) as exc:
+        settings._DEFAULT_SCOPES
+    assert str(exc.value) == "Defined DEFAULT_SCOPES not present in SCOPES"
+
+
+def test_missing_mandatory_setting_raises_error():
+    settings = OAuth2ProviderSettings(
+        user_settings={}, defaults={"very_important": None}, mandatory=["very_important"]
+    )
+    with pytest.raises(AttributeError) as exc:
+        settings.very_important
+    assert str(exc.value) == "OAuth2Provider setting: very_important is mandatory"
