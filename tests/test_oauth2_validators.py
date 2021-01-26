@@ -1,6 +1,7 @@
 import contextlib
 import datetime
 
+import pytest
 from django.contrib.auth import get_user_model
 from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
@@ -9,6 +10,8 @@ from oauthlib.common import Request
 from oauth2_provider.exceptions import FatalClientError
 from oauth2_provider.models import get_access_token_model, get_application_model, get_refresh_token_model
 from oauth2_provider.oauth2_validators import OAuth2Validator
+
+from . import presets
 
 
 try:
@@ -447,3 +450,15 @@ class TestOAuth2ValidatorErrorResourceToken(TestCase):
                 "Not Found.\nNoneType: None",
                 mock_log.output,
             )
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_oidc_endpoint_generation(oauth2_settings, rf):
+    oauth2_settings.OIDC_ISS_ENDPOINT = ""
+    django_request = rf.get("/")
+    request = mock.MagicMock(wraps=Request)
+    request.headers = django_request.META
+    validator = OAuth2Validator()
+    oidc_issuer_endpoint = validator.get_oidc_issuer_endpoint(request)
+    assert oidc_issuer_endpoint == "http://testserver/o"
