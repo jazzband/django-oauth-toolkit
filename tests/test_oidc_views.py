@@ -4,6 +4,8 @@ import pytest
 from django.test import TestCase
 from django.urls import reverse
 
+from oauth2_provider.oauth2_validators import OAuth2Validator
+
 from . import presets
 
 
@@ -80,3 +82,35 @@ class TestJwksInfoView(TestCase):
         response = self.client.get(reverse("oauth2_provider:jwks-info"))
         self.assertEqual(response.status_code, 200)
         assert response.json() == expected_response
+
+
+@pytest.mark.django_db
+def test_userinfo_endpoint(oidc_tokens, client):
+    # oidc_tokens.oauth2_settings.OAUTH2_VALIDATOR_CLASS =
+    auth_header = "Bearer %s" % oidc_tokens.access_token
+    rsp = client.get(
+        reverse("oauth2_provider:user-info"),
+        HTTP_AUTHORIZATION=auth_header,
+    )
+    data = rsp.json()
+    assert "sub" in data
+    assert data["sub"] == str(oidc_tokens.user.pk)
+
+
+@pytest.mark.django_db
+def test_userinfo_endpoint_custom_claims(oidc_tokens, client, oauth2_settings):
+    class CustomValidator(OAuth2Validator):
+        def get_additional_claims(self, request):
+            return {"state": "very nice"}
+
+    oidc_tokens.oauth2_settings.OAUTH2_VALIDATOR_CLASS = CustomValidator
+    auth_header = "Bearer %s" % oidc_tokens.access_token
+    rsp = client.get(
+        reverse("oauth2_provider:user-info"),
+        HTTP_AUTHORIZATION=auth_header,
+    )
+    data = rsp.json()
+    assert "sub" in data
+    assert data["sub"] == str(oidc_tokens.user.pk)
+    assert "state" in data
+    assert data["state"] == "very nice"
