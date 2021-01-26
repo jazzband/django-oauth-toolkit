@@ -5,6 +5,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
+from jwcrypto.jwt import JWTExpired
 from oauthlib.common import Request
 
 from oauth2_provider.exceptions import FatalClientError
@@ -452,7 +453,6 @@ class TestOAuth2ValidatorErrorResourceToken(TestCase):
             )
 
 
-@pytest.mark.django_db
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 def test_oidc_endpoint_generation(oauth2_settings, rf):
     oauth2_settings.OIDC_ISS_ENDPOINT = ""
@@ -462,3 +462,31 @@ def test_oidc_endpoint_generation(oauth2_settings, rf):
     validator = OAuth2Validator()
     oidc_issuer_endpoint = validator.get_oidc_issuer_endpoint(request)
     assert oidc_issuer_endpoint == "http://testserver/o"
+
+
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_get_jwt_bearer_token(oauth2_settings, mocker):
+    # oauthlib instructs us to make get_jwt_bearer_token call get_id_token
+    request = mocker.MagicMock(wraps=Request)
+    validator = OAuth2Validator()
+    mock_get_id_token = mocker.patch.object(validator, "get_id_token")
+    validator.get_jwt_bearer_token(None, None, request)
+    assert mock_get_id_token.call_count == 1
+    assert mock_get_id_token.call_args[0] == (None, None, request)
+    assert mock_get_id_token.call_args[1] == {}
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_validate_id_token_expired_jwt(oauth2_settings, mocker, oidc_tokens):
+    mocker.patch("oauth2_provider.oauth2_validators.jwt.JWT", side_effect=JWTExpired)
+    validator = OAuth2Validator()
+    status = validator.validate_id_token(oidc_tokens.id_token, ["openid"], mocker.sentinel.request)
+    assert status is False
+
+
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_validate_id_token_no_token(oauth2_settings, mocker):
+    validator = OAuth2Validator()
+    status = validator.validate_id_token("", ["openid"], mocker.sentinel.request)
+    assert status is False
