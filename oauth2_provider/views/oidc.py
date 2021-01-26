@@ -8,10 +8,10 @@ from django.views.generic import View
 from jwcrypto import jwk
 
 from ..settings import oauth2_settings
-from .mixins import OAuthLibMixin
+from .mixins import OAuthLibMixin, OIDCOnlyMixin
 
 
-class ConnectDiscoveryInfoView(View):
+class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
     """
     View used to show oidc provider configuration information
     """
@@ -57,7 +57,7 @@ class ConnectDiscoveryInfoView(View):
         return response
 
 
-class JwksInfoView(View):
+class JwksInfoView(OIDCOnlyMixin, View):
     """
     View used to show oidc json web key set document
     """
@@ -72,7 +72,7 @@ class JwksInfoView(View):
 
 
 @method_decorator(csrf_exempt, name="dispatch")
-class UserInfoView(OAuthLibMixin, View):
+class UserInfoView(OIDCOnlyMixin, OAuthLibMixin, View):
     """
     View used to show Claims about the authenticated End-User
     """

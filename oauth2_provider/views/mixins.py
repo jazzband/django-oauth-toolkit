@@ -1,7 +1,8 @@
 import logging
 
+from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponseNotFound
 
 from ..exceptions import FatalClientError
 from ..scopes import get_scopes_backend
@@ -298,3 +299,28 @@ class ClientProtectedResourceMixin(OAuthLibMixin):
             return HttpResponseForbidden()
         else:
             return super().dispatch(request, *args, **kwargs)
+
+
+class OIDCOnlyMixin:
+    """
+    Mixin for views that should only be accessible when OIDC is enabled.
+
+    If OIDC is not enabled:
+
+    * if DEBUG is True, raises an ImproperlyConfigured exception explaining why
+    * otherwise, returns a 404 response, logging the same warning
+    """
+
+    debug_error_message = (
+        "django-oauth-toolkit OIDC views are not enabled unless you "
+        "have configured an RSA private key with the setting "
+        "OIDC_RSA_PRIVATE_KEY"
+    )
+
+    def dispatch(self, *args, **kwargs):
+        if not oauth2_settings.is_oidc_enabled:
+            if settings.DEBUG:
+                raise ImproperlyConfigured(self.debug_error_message)
+            log.warning(self.debug_error_message)
+            return HttpResponseNotFound()
+        return super().dispatch(*args, **kwargs)
