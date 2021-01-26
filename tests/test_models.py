@@ -10,8 +10,11 @@ from oauth2_provider.models import (
     get_access_token_model,
     get_application_model,
     get_grant_model,
+    get_id_token_model,
     get_refresh_token_model,
 )
+
+from . import presets
 
 
 Application = get_application_model()
@@ -19,6 +22,7 @@ Grant = get_grant_model()
 AccessToken = get_access_token_model()
 RefreshToken = get_refresh_token_model()
 UserModel = get_user_model()
+IDToken = get_id_token_model()
 
 
 class BaseTestModels(TestCase):
@@ -338,3 +342,43 @@ class TestClearExpired(BaseTestModels):
         clear_expired()
         expiredt = AccessToken.objects.filter(expires__lte=timezone.now()).count()
         assert expiredt == 0
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_id_token_methods(oidc_tokens):
+    id_token = IDToken.objects.get(token=oidc_tokens.id_token)
+
+    # Token was just created, so should be valid
+    assert id_token.is_valid()
+
+    # if expires is None, it should always be expired
+    # the column is NOT NULL, but could be NULL in sub-classes
+    id_token.expires = None
+    assert id_token.is_expired()
+
+    # if no scopes are passed, they should be valid
+    assert id_token.allow_scopes(None)
+
+    # if the requested scopes are in the token, they should be valid
+    assert id_token.allow_scopes(["openid"])
+
+    # if the requested scopes are not in the token, they should not be valid
+    assert id_token.allow_scopes(["fizzbuzz"]) is False
+
+    # we should be able to get a list of the scopes on the token
+    assert id_token.scopes == {"openid": "OpenID connect"}
+
+    # we should be able to extract the claims on the token
+    # we only are checking the repeatable subset of claims..
+    assert id_token.claims
+    assert id_token.claims["sub"] == str(oidc_tokens.user.pk)
+    assert id_token.claims["aud"] == oidc_tokens.application.client_id
+    assert id_token.claims["iss"] == oidc_tokens.oauth2_settings.OIDC_ISS_ENDPOINT
+
+    # the id token should stringify as the JWT token
+    assert str(id_token) == oidc_tokens.id_token
+
+    # revoking the token should delete it
+    id_token.revoke()
+    assert IDToken.objects.filter(token=oidc_tokens.id_token).count() == 0
