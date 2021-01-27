@@ -84,7 +84,6 @@ class TestJwksInfoView(TestCase):
 
 @pytest.mark.django_db
 def test_userinfo_endpoint(oidc_tokens, client):
-    # oidc_tokens.oauth2_settings.OAUTH2_VALIDATOR_CLASS =
     auth_header = "Bearer %s" % oidc_tokens.access_token
     rsp = client.get(
         reverse("oauth2_provider:user-info"),
