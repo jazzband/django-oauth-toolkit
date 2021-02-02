@@ -450,8 +450,7 @@ class TestOAuth2ValidatorErrorResourceToken(TestCase):
 def test_oidc_endpoint_generation(oauth2_settings, rf):
     oauth2_settings.OIDC_ISS_ENDPOINT = ""
     django_request = rf.get("/")
-    request = mock.MagicMock(wraps=Request)
-    request.headers = django_request.META
+    request = Request("/", headers=django_request.META)
     validator = OAuth2Validator()
     oidc_issuer_endpoint = validator.get_oidc_issuer_endpoint(request)
     assert oidc_issuer_endpoint == "http://testserver/o"

@@ -13,8 +13,6 @@ from django.contrib.auth import authenticate, get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.db.models import Q
-from django.http import HttpRequest
-from django.urls import reverse
 from django.utils import dateformat, timezone
 from django.utils.timezone import make_aware
 from django.utils.translation import gettext_lazy as _
@@ -763,16 +761,7 @@ class OAuth2Validator(RequestValidator):
         return claims, expiration_time
 
     def get_oidc_issuer_endpoint(self, request):
-        if oauth2_settings.OIDC_ISS_ENDPOINT:
-            return oauth2_settings.OIDC_ISS_ENDPOINT
-
-        # generate it based on known URL
-        django_request = HttpRequest()
-        django_request.META = request.headers
-
-        abs_url = django_request.build_absolute_uri(reverse("oauth2_provider:oidc-connect-discovery-info"))
-        base_url = abs_url[: -len("/.well-known/openid-configuration/")]
-        return base_url
+        return oauth2_settings.oidc_issuer(request)
 
     def finalize_id_token(self, id_token, token, token_handler, request):
         key = jwk.JWK.from_pem(oauth2_settings.OIDC_RSA_PRIVATE_KEY.encode("utf8"))

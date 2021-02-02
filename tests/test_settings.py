@@ -2,6 +2,7 @@ import pytest
 from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase
 from django.test.utils import override_settings
+from oauthlib.common import Request
 
 from oauth2_provider.admin import (
     get_access_token_admin_class,
@@ -18,6 +19,8 @@ from tests.admin import (
     CustomIDTokenAdmin,
     CustomRefreshTokenAdmin,
 )
+
+from . import presets
 
 
 class TestAdminClass(TestCase):
@@ -143,3 +146,24 @@ def test_missing_mandatory_setting_raises_error():
     with pytest.raises(AttributeError) as exc:
         settings.very_important
     assert str(exc.value) == "OAuth2Provider setting: very_important is mandatory"
+
+
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+@pytest.mark.parametrize("issuer_setting", ["http://foo.com/", None])
+@pytest.mark.parametrize("request_type", ["django", "oauthlib"])
+def test_generating_iss_endpoint(oauth2_settings, issuer_setting, request_type, rf):
+    oauth2_settings.OIDC_ISS_ENDPOINT = issuer_setting
+    if request_type == "django":
+        request = rf.get("/")
+    elif request_type == "oauthlib":
+        request = Request("/", headers=rf.get("/").META)
+    expected = issuer_setting or "http://testserver/o"
+    assert oauth2_settings.oidc_issuer(request) == expected
+
+
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_generating_iss_endpoint_type_error(oauth2_settings):
+    oauth2_settings.OIDC_ISS_ENDPOINT = None
+    with pytest.raises(TypeError) as exc:
+        oauth2_settings.oidc_issuer(None)
+    assert str(exc.value) == "request must be a django or oauthlib request: got None"

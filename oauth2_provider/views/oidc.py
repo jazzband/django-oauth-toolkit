@@ -1,7 +1,7 @@
 import json
 
 from django.http import HttpResponse, JsonResponse
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
@@ -20,9 +20,7 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
         issuer_url = oauth2_settings.OIDC_ISS_ENDPOINT
 
         if not issuer_url:
-            abs_url = request.build_absolute_uri(reverse("oauth2_provider:oidc-connect-discovery-info"))
-            issuer_url = abs_url[: -len("/.well-known/openid-configuration/")]
-
+            issuer_url = oauth2_settings.oidc_issuer(request)
             authorization_endpoint = request.build_absolute_uri(reverse("oauth2_provider:authorize"))
             token_endpoint = request.build_absolute_uri(reverse("oauth2_provider:token"))
             userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or request.build_absolute_uri(
@@ -30,12 +28,12 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
             )
             jwks_uri = request.build_absolute_uri(reverse("oauth2_provider:jwks-info"))
         else:
-            authorization_endpoint = "{}{}".format(issuer_url, reverse_lazy("oauth2_provider:authorize"))
-            token_endpoint = "{}{}".format(issuer_url, reverse_lazy("oauth2_provider:token"))
+            authorization_endpoint = "{}{}".format(issuer_url, reverse("oauth2_provider:authorize"))
+            token_endpoint = "{}{}".format(issuer_url, reverse("oauth2_provider:token"))
             userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or "{}{}".format(
-                issuer_url, reverse_lazy("oauth2_provider:user-info")
+                issuer_url, reverse("oauth2_provider:user-info")
             )
-            jwks_uri = "{}{}".format(issuer_url, reverse_lazy("oauth2_provider:jwks-info"))
+            jwks_uri = "{}{}".format(issuer_url, reverse("oauth2_provider:jwks-info"))
 
         data = {
             "issuer": issuer_url,

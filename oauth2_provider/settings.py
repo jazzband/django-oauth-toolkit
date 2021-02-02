@@ -18,8 +18,11 @@ back to the defaults.
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+from django.http import HttpRequest
 from django.test.signals import setting_changed
+from django.urls import reverse
 from django.utils.module_loading import import_string
+from oauthlib.common import Request
 
 
 USER_SETTINGS = getattr(settings, "OAUTH2_PROVIDER", None)
@@ -264,6 +267,26 @@ class OAuth2ProviderSettings:
     @property
     def is_oidc_enabled(self):
         return bool(self.OIDC_RSA_PRIVATE_KEY)
+
+    def oidc_issuer(self, request):
+        """
+        Helper function to get the OIDC issuer URL, either from the settings
+        or constructing it from the passed request.
+
+        If only an oauthlib request is available, a dummy django request is
+        built from that and used to generate the URL.
+        """
+        if self.OIDC_ISS_ENDPOINT:
+            return self.OIDC_ISS_ENDPOINT
+        if isinstance(request, HttpRequest):
+            django_request = request
+        elif isinstance(request, Request):
+            django_request = HttpRequest()
+            django_request.META = request.headers
+        else:
+            raise TypeError("request must be a django or oauthlib request: got %r" % request)
+        abs_url = django_request.build_absolute_uri(reverse("oauth2_provider:oidc-connect-discovery-info"))
+        return abs_url[: -len("/.well-known/openid-configuration/")]
 
 
 oauth2_settings = OAuth2ProviderSettings(USER_SETTINGS, DEFAULTS, IMPORT_STRINGS, MANDATORY)
