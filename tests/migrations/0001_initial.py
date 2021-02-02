@@ -33,6 +33,8 @@ class Migration(migrations.Migration):
                 ('custom_field', models.CharField(max_length=255)),
                 ('application', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.OAUTH2_PROVIDER_APPLICATION_MODEL)),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tests_samplegrant', to=settings.AUTH_USER_MODEL)),
+                ("nonce", models.CharField(blank=True, max_length=255, default="")),
+                ("claims", models.TextField(blank=True)),
             ],
             options={
                 'abstract': False,

@@ -182,9 +182,20 @@ our custom validator::
 
 .. note::
     This ``request`` object is not a ``django.http.Request`` object, but an
-    ``oauthlib.common.Request`` object.
+    ``oauthlib.common.Request`` object. This has a number of attributes that
+    you can use to decide what claims to put in to the ID token:
 
-    The ``request.user`` object is however the django user object.
+    * ``request.scopes`` - a list of the scopes requested by the client when
+      making an authorization request.
+    * ``request.claims`` - a dictionary of the requested claims, using the
+      `OIDC claims requesting system`_. These must be requested by the client
+      when making an authorization request.
+    * ``request.user`` - the django user object.
+
+.. _OIDC claims requesting system: https://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
+
+What claims you decide to put in to the token is up to you to determine based
+upon what the scopes and / or claims means to your provider.
 
 
 Adding information to the ``UserInfo`` service

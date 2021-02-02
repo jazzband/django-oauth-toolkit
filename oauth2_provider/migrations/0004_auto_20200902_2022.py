@@ -45,4 +45,14 @@ class Migration(migrations.Migration):
             name='id_token',
             field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='access_token', to=oauth2_settings.ID_TOKEN_MODEL),
         ),
+        migrations.AddField(
+            model_name="grant",
+            name="nonce",
+            field=models.CharField(blank=True, max_length=255, default=""),
+        ),
+        migrations.AddField(
+            model_name="grant",
+            name="claims",
+            field=models.TextField(blank=True),
+        ),
     ]

@@ -11,3 +11,4 @@ class AllowForm(forms.Form):
     response_type = forms.CharField(widget=forms.HiddenInput())
     code_challenge = forms.CharField(required=False, widget=forms.HiddenInput())
     code_challenge_method = forms.CharField(required=False, widget=forms.HiddenInput())
+    claims = forms.CharField(required=False, widget=forms.HiddenInput())

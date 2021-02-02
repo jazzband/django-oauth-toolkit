@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 from django.utils import timezone
+from jwcrypto import jwt
 from oauthlib.oauth2.rfc6749 import errors as oauthlib_errors
 
 from oauth2_provider.models import (
@@ -16,10 +17,11 @@ from oauth2_provider.models import (
     get_grant_model,
     get_refresh_token_model,
 )
+from oauth2_provider.oauth2_validators import OAuth2Validator
 from oauth2_provider.views import ProtectedResourceView
 
 from . import presets
-from .utils import get_basic_auth_header
+from .utils import get_basic_auth_header, spy_on
 
 
 Application = get_application_model()
@@ -1296,3 +1298,121 @@ class TestDefaultScopesHybrid(BaseTest):
         self.assertEqual(form["state"].value(), "random_state_string")
         self.assertEqual(form["scope"].value(), "read")
         self.assertEqual(form["client_id"].value(), self.application.client_id)
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_id_token_nonce_in_token_response(oauth2_settings, test_user, hybrid_application, client, oidc_key):
+    client.force_login(test_user)
+    auth_rsp = client.post(
+        reverse("oauth2_provider:authorize"),
+        data={
+            "client_id": hybrid_application.client_id,
+            "state": "random_state_string",
+            "scope": "openid",
+            "redirect_uri": "http://example.org",
+            "response_type": "code id_token",
+            "nonce": "random_nonce_string",
+            "allow": True,
+        },
+    )
+    assert auth_rsp.status_code == 302
+    auth_data = parse_qs(urlparse(auth_rsp["Location"]).fragment)
+    assert "code" in auth_data
+    assert "id_token" in auth_data
+    # Decode the id token - is the nonce correct
+    jwt_token = jwt.JWT(key=oidc_key, jwt=auth_data["id_token"][0])
+    claims = json.loads(jwt_token.claims)
+    assert "nonce" in claims
+    assert claims["nonce"] == "random_nonce_string"
+    code = auth_data["code"][0]
+    client.logout()
+    # Get the token response using the code
+    token_rsp = client.post(
+        reverse("oauth2_provider:token"),
+        data={
+            "grant_type": "authorization_code",
+            "code": code,
+            "redirect_uri": "http://example.org",
+            "client_id": hybrid_application.client_id,
+            "client_secret": hybrid_application.client_secret,
+            "scope": "openid",
+        },
+    )
+    assert token_rsp.status_code == 200
+    token_data = token_rsp.json()
+    assert "id_token" in token_data
+    # The nonce should be present in this id token also
+    jwt_token = jwt.JWT(key=oidc_key, jwt=token_data["id_token"])
+    claims = json.loads(jwt_token.claims)
+    assert "nonce" in claims
+    assert claims["nonce"] == "random_nonce_string"
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_claims_passed_to_code_generation(
+    oauth2_settings, test_user, hybrid_application, client, mocker, oidc_key
+):
+    # Add a spy on to OAuth2Validator.finalize_id_token
+    mocker.patch.object(
+        OAuth2Validator,
+        "finalize_id_token",
+        spy_on(OAuth2Validator.finalize_id_token),
+    )
+    claims = {"id_token": {"email": {"essential": True}}}
+    client.force_login(test_user)
+    auth_form_rsp = client.get(
+        reverse("oauth2_provider:authorize"),
+        data={
+            "client_id": hybrid_application.client_id,
+            "state": "random_state_string",
+            "scope": "openid",
+            "redirect_uri": "http://example.org",
+            "response_type": "code id_token",
+            "nonce": "random_nonce_string",
+            "claims": json.dumps(claims),
+        },
+    )
+    # Check that claims has made it in to the form to be submitted
+    assert auth_form_rsp.status_code == 200
+    form_initial_data = auth_form_rsp.context_data["form"].initial
+    assert "claims" in form_initial_data
+    assert json.loads(form_initial_data["claims"]) == claims
+    # Filter out not specified values
+    form_data = {key: value for key, value in form_initial_data.items() if value is not None}
+    # Now submitting the form (with allow=True) should persist requested claims
+    auth_rsp = client.post(
+        reverse("oauth2_provider:authorize"),
+        data={"allow": True, **form_data},
+    )
+    assert auth_rsp.status_code == 302
+    auth_data = parse_qs(urlparse(auth_rsp["Location"]).fragment)
+    assert "code" in auth_data
+    assert "id_token" in auth_data
+    assert OAuth2Validator.finalize_id_token.spy.call_count == 1
+    oauthlib_request = OAuth2Validator.finalize_id_token.spy.call_args[0][4]
+    assert oauthlib_request.claims == claims
+    assert Grant.objects.get().claims == json.dumps(claims)
+    OAuth2Validator.finalize_id_token.spy.reset_mock()
+
+    # Get the token response using the code
+    client.logout()
+    code = auth_data["code"][0]
+    token_rsp = client.post(
+        reverse("oauth2_provider:token"),
+        data={
+            "grant_type": "authorization_code",
+            "code": code,
+            "redirect_uri": "http://example.org",
+            "client_id": hybrid_application.client_id,
+            "client_secret": hybrid_application.client_secret,
+            "scope": "openid",
+        },
+    )
+    assert token_rsp.status_code == 200
+    token_data = token_rsp.json()
+    assert "id_token" in token_data
+    assert OAuth2Validator.finalize_id_token.spy.call_count == 1
+    oauthlib_request = OAuth2Validator.finalize_id_token.spy.call_args[0][4]
+    assert oauthlib_request.claims == claims

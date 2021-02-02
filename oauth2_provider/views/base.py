@@ -104,6 +104,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             "response_type": self.oauth2_data.get("response_type", None),
             "code_challenge": self.oauth2_data.get("code_challenge", None),
             "code_challenge_method": self.oauth2_data.get("code_challenge_method", None),
+            "claims": self.oauth2_data.get("claims", None),
         }
         return initial_data
 
@@ -121,7 +122,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         if form.cleaned_data.get("code_challenge_method", False):
             credentials["code_challenge_method"] = form.cleaned_data.get("code_challenge_method")
 
-        body = {"nonce": form.cleaned_data.get("nonce")}
+        body = {"nonce": form.cleaned_data.get("nonce"), "claims": form.cleaned_data.get("claims")}
         scopes = form.cleaned_data.get("scope")
         allow = form.cleaned_data.get("allow")
 
@@ -171,6 +172,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         if "code_challenge_method" in credentials:
             kwargs["code_challenge_method"] = credentials["code_challenge_method"]
         kwargs["nonce"] = uri_query_params.get("nonce", None)
+        kwargs["claims"] = uri_query_params.get("claims", None)
 
         self.oauth2_data = kwargs
         # following two loc are here only because of https://code.djangoproject.com/ticket/17795

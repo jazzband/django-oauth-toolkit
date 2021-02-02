@@ -81,9 +81,16 @@ def oauth2_settings(request, settings):
     wrapper.finalize()
 
 
-@pytest.fixture(scope="class")
-def oidc_key(request):
-    request.cls.key = jwk.JWK.from_pem(test_settings.OIDC_RSA_PRIVATE_KEY.encode("utf8"))
+@pytest.fixture(scope="session")
+def oidc_key_():
+    return jwk.JWK.from_pem(test_settings.OIDC_RSA_PRIVATE_KEY.encode("utf8"))
+
+
+@pytest.fixture
+def oidc_key(request, oidc_key_):
+    if request.instance is not None:
+        request.instance.key = oidc_key_
+    return oidc_key_
 
 
 @pytest.fixture
@@ -94,6 +101,13 @@ def application():
         client_type=Application.CLIENT_CONFIDENTIAL,
         authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
     )
+
+
+@pytest.fixture
+def hybrid_application(application):
+    application.authorization_grant_type = application.GRANT_OPENID_HYBRID
+    application.save()
+    return application
 
 
 @pytest.fixture

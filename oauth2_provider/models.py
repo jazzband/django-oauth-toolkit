@@ -243,6 +243,9 @@ class AbstractGrant(models.Model):
         max_length=10, blank=True, default="", choices=CODE_CHALLENGE_METHODS
     )
 
+    nonce = models.CharField(max_length=255, blank=True, default="")
+    claims = models.TextField(blank=True)
+
     def is_expired(self):
         """
         Check token expiration with timezone awareness

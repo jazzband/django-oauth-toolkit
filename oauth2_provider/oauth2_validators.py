@@ -1,6 +1,5 @@
 import base64
 import binascii
-import hashlib
 import http.client
 import json
 import logging
@@ -22,8 +21,8 @@ from django.utils.translation import gettext_lazy as _
 from jwcrypto import jwk, jwt
 from jwcrypto.common import JWException
 from jwcrypto.jwt import JWTExpired
-from oauthlib.oauth2 import RequestValidator
 from oauthlib.oauth2.rfc6749 import utils
+from oauthlib.openid import RequestValidator
 
 from .exceptions import FatalClientError
 from .models import (
@@ -414,6 +413,9 @@ class OAuth2Validator(RequestValidator):
             if not grant.is_expired():
                 request.scopes = grant.scope.split(" ")
                 request.user = grant.user
+                request.nonce = grant.nonce
+                if grant.claims:
+                    request.claims = json.loads(grant.claims)
                 return True
             return False
 
@@ -628,7 +630,6 @@ class OAuth2Validator(RequestValidator):
     def _create_authorization_code(self, request, code, expires=None):
         if not expires:
             expires = timezone.now() + timedelta(seconds=oauth2_settings.AUTHORIZATION_CODE_EXPIRE_SECONDS)
-
         return Grant.objects.create(
             application=request.client,
             user=request.user,
@@ -638,6 +639,8 @@ class OAuth2Validator(RequestValidator):
             scope=" ".join(request.scopes),
             code_challenge=request.code_challenge or "",
             code_challenge_method=request.code_challenge_method or "",
+            nonce=request.nonce or "",
+            claims=json.dumps(request.claims or {}),
         )
 
     def _create_refresh_token(self, request, refresh_token_code, access_token):
@@ -714,6 +717,10 @@ class OAuth2Validator(RequestValidator):
 
     @transaction.atomic
     def _save_id_token(self, token, request, expires, *args, **kwargs):
+        # TODO: http://openid.net/specs/openid-connect-core-1_0.html#HybridIDToken2
+        # Save the id_token on database bound to code when the request come to
+        # Authorization Endpoint and return the same one when request come to
+        # Token Endpoint
 
         scopes = request.scope or " ".join(request.scopes)
 
@@ -744,12 +751,15 @@ class OAuth2Validator(RequestValidator):
         return claims
 
     def get_id_token_dictionary(self, token, token_handler, request):
-        # TODO: http://openid.net/specs/openid-connect-core-1_0.html#HybridIDToken2
-        # Save the id_token on database bound to code when the request come to
-        # Authorization Endpoint and return the same one when request come to
-        # Token Endpoint
+        """
+        Get the claims to put in the ID Token.
 
-        # TODO: Check if at this point this request parameters are alredy validated
+        These claims are in addition to the claims automatically added by
+        ``oauthlib`` - aud, iat, nonce, at_hash, c_hash.
+
+        This function adds in iss, exp and auth_time, plus any claims added from
+        calling ``get_oidc_claims()``
+        """
         claims = self.get_oidc_claims(token, token_handler, request)
 
         expiration_time = timezone.now() + timedelta(seconds=oauth2_settings.ID_TOKEN_EXPIRE_SECONDS)
@@ -757,38 +767,10 @@ class OAuth2Validator(RequestValidator):
         claims.update(
             **{
                 "iss": self.get_oidc_issuer_endpoint(request),
-                "aud": request.client_id,
                 "exp": int(dateformat.format(expiration_time, "U")),
-                "iat": int(dateformat.format(datetime.utcnow(), "U")),
                 "auth_time": int(dateformat.format(request.user.last_login, "U")),
             }
         )
-
-        nonce = getattr(request, "nonce", None)
-        if nonce:
-            claims["nonce"] = nonce
-
-        # TODO: create a function to check if we should add at_hash
-        # http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken
-        # http://openid.net/specs/openid-connect-core-1_0.html#ImplicitIDToken
-        # if request.grant_type in 'authorization_code' and 'access_token' in token:
-        if (
-            (request.grant_type == "authorization_code" and "access_token" in token)
-            or request.response_type == "code id_token token"
-            or (request.response_type == "id_token token" and "access_token" in token)
-        ):
-            acess_token = token["access_token"]
-            at_hash = self.generate_at_hash(acess_token)
-            claims["at_hash"] = at_hash
-
-        # TODO: create a function to check if we should include c_hash
-        # http://openid.net/specs/openid-connect-core-1_0.html#HybridIDToken
-        if request.response_type in ("code id_token", "code id_token token"):
-            code = token["code"]
-            sha256 = hashlib.sha256(code.encode("ascii"))
-            bits256 = sha256.hexdigest()[:32]
-            c_hash = base64.urlsafe_b64encode(bits256.encode("ascii"))
-            claims["c_hash"] = c_hash.decode("utf8")
 
         return claims, expiration_time
 
@@ -804,20 +786,19 @@ class OAuth2Validator(RequestValidator):
         base_url = abs_url[: -len("/.well-known/openid-configuration/")]
         return base_url
 
-    def generate_at_hash(self, access_token):
-        sha256 = hashlib.sha256(access_token.encode("ascii"))
-        bits128 = sha256.digest()[:16]
-        at_hash = base64.urlsafe_b64encode(bits128).decode("utf8").rstrip("=")
-        return at_hash
-
-    def get_id_token(self, token, token_handler, request):
+    def finalize_id_token(self, id_token, token, token_handler, request):
         key = jwk.JWK.from_pem(oauth2_settings.OIDC_RSA_PRIVATE_KEY.encode("utf8"))
 
         claims, expiration_time = self.get_id_token_dictionary(token, token_handler, request)
+        id_token.update(**claims)
+        # Workaround for oauthlib bug #746
+        # https://github.com/oauthlib/oauthlib/issues/746
+        if "nonce" not in id_token and request.nonce:
+            id_token["nonce"] = request.nonce
 
         jwt_token = jwt.JWT(
             header=json.dumps({"alg": "RS256"}, default=str),
-            claims=json.dumps(claims, default=str),
+            claims=json.dumps(id_token, default=str),
         )
         jwt_token.make_signed_token(key)
 
@@ -843,7 +824,6 @@ class OAuth2Validator(RequestValidator):
             jwt_token = jwt.JWT(key=key, jwt=token)
             id_token = IDToken.objects.get(token=jwt_token.serialize())
         except (JWException, JWTExpired):
-            # TODO: This is the base exception of all jwcrypto
             return False
         request.client = id_token.application
         request.user = id_token.user
@@ -876,8 +856,7 @@ class OAuth2Validator(RequestValidator):
         Method is used by:
             - Authorization Token Grant Dispatcher
         """
-        # TODO: Fix this ;)
-        return ""
+        return Grant.objects.filter(code=code).values_list("nonce", flat=True).first()
 
     def get_userinfo_claims(self, request):
         """
