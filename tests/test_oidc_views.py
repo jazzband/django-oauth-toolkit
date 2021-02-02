@@ -16,7 +16,7 @@ class TestConnectDiscoveryInfoView(TestCase):
             "authorization_endpoint": "http://localhost/o/authorize/",
             "token_endpoint": "http://localhost/o/token/",
             "userinfo_endpoint": "http://localhost/userinfo/",
-            "jwks_uri": "http://localhost/o/jwks/",
+            "jwks_uri": "http://localhost/o/.well-known/jwks.json",
             "response_types_supported": [
                 "code",
                 "token",
@@ -42,7 +42,7 @@ class TestConnectDiscoveryInfoView(TestCase):
             "authorization_endpoint": "http://testserver/o/authorize/",
             "token_endpoint": "http://testserver/o/token/",
             "userinfo_endpoint": "http://testserver/o/userinfo/",
-            "jwks_uri": "http://testserver/o/jwks/",
+            "jwks_uri": "http://testserver/o/.well-known/jwks.json",
             "response_types_supported": [
                 "code",
                 "token",
