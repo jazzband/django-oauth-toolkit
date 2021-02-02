@@ -817,7 +817,7 @@ class OAuth2Validator(RequestValidator):
         """
         unverified_token = jws.JWS()
         unverified_token.deserialize(token)
-        claims = json.loads(unverified_token.objects["payload"])
+        claims = json.loads(unverified_token.objects["payload"].decode("utf-8"))
         if "aud" not in claims:
             return None
         application = self._get_client_by_audience(claims["aud"])
