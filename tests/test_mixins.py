@@ -147,14 +147,14 @@ def oidc_only_view():
 
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 def test_oidc_only_mixin_oidc_enabled(oauth2_settings, rf, oidc_only_view):
-    assert oauth2_settings.is_oidc_enabled
+    assert oauth2_settings.OIDC_ENABLED
     rsp = oidc_only_view(rf.get("/"))
     assert rsp.status_code == 200
     assert rsp.content.decode("utf-8") == "OK"
 
 
 def test_oidc_only_mixin_oidc_disabled_debug(oauth2_settings, rf, settings, oidc_only_view):
-    assert oauth2_settings.is_oidc_enabled is False
+    assert oauth2_settings.OIDC_ENABLED is False
     settings.DEBUG = True
     with pytest.raises(ImproperlyConfigured) as exc:
         oidc_only_view(rf.get("/"))
@@ -162,7 +162,7 @@ def test_oidc_only_mixin_oidc_disabled_debug(oauth2_settings, rf, settings, oidc
 
 
 def test_oidc_only_mixin_oidc_disabled_no_debug(oauth2_settings, rf, settings, oidc_only_view, caplog):
-    assert oauth2_settings.is_oidc_enabled is False
+    assert oauth2_settings.OIDC_ENABLED is False
     settings.DEBUG = False
     with caplog.at_level(logging.WARNING, logger="oauth2_provider"):
         rsp = oidc_only_view(rf.get("/"))

@@ -11,6 +11,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from jwcrypto import jwk, jwt
+from jwcrypto.common import base64url_encode
 
 from .generators import generate_client_id, generate_client_secret
 from .scopes import get_scopes_backend
@@ -62,9 +63,11 @@ class AbstractApplication(models.Model):
         (GRANT_OPENID_HYBRID, _("OpenID connect hybrid")),
     )
 
+    NO_ALGORITHM = ""
     RS256_ALGORITHM = "RS256"
     HS256_ALGORITHM = "HS256"
     ALGORITHM_TYPES = (
+        (NO_ALGORITHM, _("No OIDC support")),
         (RS256_ALGORITHM, _("RSA with SHA-2 256")),
         (HS256_ALGORITHM, _("HMAC with SHA-2 256")),
     )
@@ -93,7 +96,7 @@ class AbstractApplication(models.Model):
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    algorithm = models.CharField(max_length=5, choices=ALGORITHM_TYPES, default=RS256_ALGORITHM)
+    algorithm = models.CharField(max_length=5, choices=ALGORITHM_TYPES, default=NO_ALGORITHM, blank=True)
 
     class Meta:
         abstract = True
@@ -146,6 +149,11 @@ class AbstractApplication(models.Model):
         grant_types = (
             AbstractApplication.GRANT_AUTHORIZATION_CODE,
             AbstractApplication.GRANT_IMPLICIT,
+            AbstractApplication.GRANT_OPENID_HYBRID,
+        )
+        hs_forbidden_grant_types = (
+            AbstractApplication.GRANT_IMPLICIT,
+            AbstractApplication.GRANT_OPENID_HYBRID,
         )
 
         redirect_uris = self.redirect_uris.strip().split()
@@ -165,6 +173,18 @@ class AbstractApplication(models.Model):
                     grant_type=self.authorization_grant_type
                 )
             )
+        if self.algorithm == AbstractApplication.RS256_ALGORITHM:
+            if not oauth2_settings.OIDC_RSA_PRIVATE_KEY:
+                raise ValidationError(_("You must set OIDC_RSA_PRIVATE_KEY to use RSA algorithm"))
+
+        if self.algorithm == AbstractApplication.HS256_ALGORITHM:
+            if any(
+                (
+                    self.authorization_grant_type in hs_forbidden_grant_types,
+                    self.client_type == Application.CLIENT_PUBLIC,
+                )
+            ):
+                raise ValidationError(_("You cannot use HS256 with public grants or clients"))
 
     def get_absolute_url(self):
         return reverse("oauth2_provider:detail", args=[str(self.id)])
@@ -186,6 +206,16 @@ class AbstractApplication(models.Model):
         :param request: The oauthlib.common.Request being processed.
         """
         return True
+
+    @property
+    def jwk_key(self):
+        if self.algorithm == AbstractApplication.RS256_ALGORITHM:
+            if not oauth2_settings.OIDC_RSA_PRIVATE_KEY:
+                raise ImproperlyConfigured("You must set OIDC_RSA_PRIVATE_KEY to use RSA algorithm")
+            return jwk.JWK.from_pem(oauth2_settings.OIDC_RSA_PRIVATE_KEY.encode("utf8"))
+        elif self.algorithm == AbstractApplication.HS256_ALGORITHM:
+            return jwk.JWK(kty="oct", k=base64url_encode(self.client_secret))
+        raise ImproperlyConfigured("This application does not support signed tokens")
 
 
 class ApplicationManager(models.Manager):
@@ -539,8 +569,7 @@ class AbstractIDToken(models.Model):
 
     @property
     def claims(self):
-        key = jwk.JWK.from_pem(oauth2_settings.OIDC_RSA_PRIVATE_KEY.encode("utf8"))
-        jwt_token = jwt.JWT(key=key, jwt=self.token)
+        jwt_token = jwt.JWT(key=self.application.jwk_key, jwt=self.token)
         return json.loads(jwt_token.claims)
 
     def __str__(self):

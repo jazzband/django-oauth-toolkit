@@ -47,7 +47,7 @@ class TestApplicationRegistrationView(BaseTest):
             "client_type": Application.CLIENT_CONFIDENTIAL,
             "redirect_uris": "http://example.com",
             "authorization_grant_type": Application.GRANT_AUTHORIZATION_CODE,
-            "algorithm": "RS256",
+            "algorithm": "",
         }
 
         response = self.client.post(reverse("oauth2_provider:register"), form_data)

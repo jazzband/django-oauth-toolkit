@@ -1,11 +1,12 @@
 import contextlib
 import datetime
+import json
 
 import pytest
 from django.contrib.auth import get_user_model
 from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
-from jwcrypto.jwt import JWTExpired
+from jwcrypto import jwt
 from oauthlib.common import Request
 
 from oauth2_provider.exceptions import FatalClientError
@@ -471,7 +472,7 @@ def test_get_jwt_bearer_token(oauth2_settings, mocker):
 @pytest.mark.django_db
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 def test_validate_id_token_expired_jwt(oauth2_settings, mocker, oidc_tokens):
-    mocker.patch("oauth2_provider.oauth2_validators.jwt.JWT", side_effect=JWTExpired)
+    mocker.patch("oauth2_provider.oauth2_validators.jwt.JWT", side_effect=jwt.JWTExpired)
     validator = OAuth2Validator()
     status = validator.validate_id_token(oidc_tokens.id_token, ["openid"], mocker.sentinel.request)
     assert status is False
@@ -481,4 +482,23 @@ def test_validate_id_token_expired_jwt(oauth2_settings, mocker, oidc_tokens):
 def test_validate_id_token_no_token(oauth2_settings, mocker):
     validator = OAuth2Validator()
     status = validator.validate_id_token("", ["openid"], mocker.sentinel.request)
+    assert status is False
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_validate_id_token_app_removed(oauth2_settings, mocker, oidc_tokens):
+    oidc_tokens.application.delete()
+    validator = OAuth2Validator()
+    status = validator.validate_id_token(oidc_tokens.id_token, ["openid"], mocker.sentinel.request)
+    assert status is False
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_validate_id_token_bad_token_no_aud(oauth2_settings, mocker, oidc_key):
+    token = jwt.JWT(header=json.dumps({"alg": "RS256"}), claims=json.dumps({"bad": "token"}))
+    token.make_signed_token(oidc_key)
+    validator = OAuth2Validator()
+    status = validator.validate_id_token(token.serialize(), ["openid"], mocker.sentinel.request)
     assert status is False

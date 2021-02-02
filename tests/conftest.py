@@ -100,6 +100,7 @@ def application():
         redirect_uris="http://example.org",
         client_type=Application.CLIENT_CONFIDENTIAL,
         authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+        algorithm=Application.RS256_ALGORITHM,
     )
 
 

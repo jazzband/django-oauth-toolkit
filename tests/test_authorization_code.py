@@ -11,6 +11,7 @@ from django.test import RequestFactory, TestCase
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.crypto import get_random_string
+from jwcrypto import jwt
 from oauthlib.oauth2.rfc6749 import errors as oauthlib_errors
 
 from oauth2_provider.models import (
@@ -1600,6 +1601,11 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
 
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 class TestOIDCAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
+    def setUp(self):
+        super().setUp()
+        self.application.algorithm = Application.RS256_ALGORITHM
+        self.application.save()
+
     def test_id_token_public(self):
         """
         Request an access token using client_type: public
@@ -1670,6 +1676,49 @@ class TestOIDCAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
         self.assertEqual(content["expires_in"], self.oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
 
 
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+class TestOIDCAuthorizationCodeHSAlgorithm(BaseAuthorizationCodeTokenView):
+    def setUp(self):
+        super().setUp()
+        self.oauth2_settings.OIDC_RSA_PRIVATE_KEY = None
+        self.application.algorithm = Application.HS256_ALGORITHM
+        self.application.save()
+
+    def test_id_token(self):
+        """
+        Request an access token using an HS256 application
+        """
+        self.client.login(username="test_user", password="123456")
+
+        authorization_code = self.get_auth(scope="openid")
+
+        token_request_data = {
+            "grant_type": "authorization_code",
+            "code": authorization_code,
+            "redirect_uri": "http://example.org",
+            "client_id": self.application.client_id,
+            "client_secret": self.application.client_secret,
+            "scope": "openid",
+        }
+
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data)
+        self.assertEqual(response.status_code, 200)
+
+        content = response.json()
+        self.assertEqual(content["token_type"], "Bearer")
+        self.assertEqual(content["scope"], "openid")
+        self.assertIn("access_token", content)
+        self.assertIn("id_token", content)
+        self.assertEqual(content["expires_in"], self.oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
+
+        # Check decoding JWT using HS256
+        key = self.application.jwk_key
+        assert key.key_type == "oct"
+        jwt_token = jwt.JWT(key=key, jwt=content["id_token"])
+        claims = json.loads(jwt_token.claims)
+        assert claims["sub"] == "1"
+
+
 @pytest.mark.oauth2_settings(presets.DEFAULT_SCOPES_RW)
 class TestAuthorizationCodeProtectedResource(BaseTest):
     def test_resource_access_allowed(self):
@@ -1725,6 +1774,11 @@ class TestAuthorizationCodeProtectedResource(BaseTest):
 
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 class TestOIDCAuthorizationCodeProtectedResource(BaseTest):
+    def setUp(self):
+        super().setUp()
+        self.application.algorithm = Application.RS256_ALGORITHM
+        self.application.save()
+
     def test_id_token_resource_access_allowed(self):
         self.client.login(username="test_user", password="123456")
 

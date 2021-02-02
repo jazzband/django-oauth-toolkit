@@ -383,3 +383,58 @@ def test_id_token_methods(oidc_tokens, rf):
     # revoking the token should delete it
     id_token.revoke()
     assert IDToken.objects.filter(token=oidc_tokens.id_token).count() == 0
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_application_key(oauth2_settings, application):
+    # RS256 key
+    key = application.jwk_key
+    assert key.key_type == "RSA"
+
+    # RS256 key, but not configured
+    oauth2_settings.OIDC_RSA_PRIVATE_KEY = None
+    with pytest.raises(ImproperlyConfigured) as exc:
+        application.jwk_key
+    assert "You must set OIDC_RSA_PRIVATE_KEY" in str(exc.value)
+
+    # HS256 key
+    application.algorithm = Application.HS256_ALGORITHM
+    key = application.jwk_key
+    assert key.key_type == "oct"
+
+    # No algorithm
+    application.algorithm = Application.NO_ALGORITHM
+    with pytest.raises(ImproperlyConfigured) as exc:
+        application.jwk_key
+    assert "This application does not support signed tokens" == str(exc.value)
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_application_clean(oauth2_settings, application):
+    # RS256, RSA key is configured
+    application.clean()
+
+    # RS256, RSA key is not configured
+    oauth2_settings.OIDC_RSA_PRIVATE_KEY = None
+    with pytest.raises(ValidationError) as exc:
+        application.clean()
+    assert "You must set OIDC_RSA_PRIVATE_KEY" in str(exc.value)
+
+    # HS256 algorithm, auth code + confidential -> allowed
+    application.algorithm = Application.HS256_ALGORITHM
+    application.clean()
+
+    # HS256, auth code + public -> forbidden
+    application.client_type = Application.CLIENT_PUBLIC
+    with pytest.raises(ValidationError) as exc:
+        application.clean()
+    assert "You cannot use HS256" in str(exc.value)
+
+    # HS256, hybrid + confidential -> forbidden
+    application.client_type = Application.CLIENT_CONFIDENTIAL
+    application.authorization_grant_type = Application.GRANT_OPENID_HYBRID
+    with pytest.raises(ValidationError) as exc:
+        application.clean()
+    assert "You cannot use HS256" in str(exc.value)

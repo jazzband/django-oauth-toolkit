@@ -54,6 +54,7 @@ class BaseTest(TestCase):
             user=self.hy_dev_user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_OPENID_HYBRID,
+            algorithm=Application.RS256_ALGORITHM,
         )
         self.application.save()
 

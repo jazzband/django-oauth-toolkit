@@ -68,6 +68,7 @@ DEFAULTS = {
     "REFRESH_TOKEN_ADMIN_CLASS": "oauth2_provider.admin.RefreshTokenAdmin",
     "REQUEST_APPROVAL_PROMPT": "force",
     "ALLOWED_REDIRECT_URI_SCHEMES": ["http", "https"],
+    "OIDC_ENABLED": False,
     "OIDC_ISS_ENDPOINT": "",
     "OIDC_USERINFO_ENDPOINT": "",
     "OIDC_RSA_PRIVATE_KEY": "",
@@ -81,7 +82,6 @@ DEFAULTS = {
         "code id_token token",
     ],
     "OIDC_SUBJECT_TYPES_SUPPORTED": ["public"],
-    "OIDC_ID_TOKEN_SIGNING_ALG_VALUES_SUPPORTED": ["RS256", "HS256"],
     "OIDC_TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED": [
         "client_secret_post",
         "client_secret_basic",
@@ -112,7 +112,6 @@ MANDATORY = (
     "ALLOWED_REDIRECT_URI_SCHEMES",
     "OIDC_RESPONSE_TYPES_SUPPORTED",
     "OIDC_SUBJECT_TYPES_SUPPORTED",
-    "OIDC_ID_TOKEN_SIGNING_ALG_VALUES_SUPPORTED",
     "OIDC_TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED",
 )
 
@@ -195,7 +194,7 @@ class OAuth2ProviderSettings:
             # Fall back to defaults
             # Special case OAUTH2_SERVER_CLASS - if not specified, and OIDC is
             # enabled, use the OIDC_SERVER_CLASS setting instead
-            if attr == "OAUTH2_SERVER_CLASS" and self.is_oidc_enabled:
+            if attr == "OAUTH2_SERVER_CLASS" and self.OIDC_ENABLED:
                 val = self.defaults["OIDC_SERVER_CLASS"]
             else:
                 val = self.defaults[attr]
@@ -263,10 +262,6 @@ class OAuth2ProviderSettings:
         self._cached_attrs.clear()
         if hasattr(self, "_user_settings"):
             delattr(self, "_user_settings")
-
-    @property
-    def is_oidc_enabled(self):
-        return bool(self.OIDC_RSA_PRIVATE_KEY)
 
     def oidc_issuer(self, request):
         """

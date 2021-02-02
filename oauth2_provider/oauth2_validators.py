@@ -16,7 +16,7 @@ from django.db.models import Q
 from django.utils import dateformat, timezone
 from django.utils.timezone import make_aware
 from django.utils.translation import gettext_lazy as _
-from jwcrypto import jwk, jwt
+from jwcrypto import jws, jwt
 from jwcrypto.common import JWException
 from jwcrypto.jwt import JWTExpired
 from oauthlib.oauth2.rfc6749 import utils
@@ -411,7 +411,8 @@ class OAuth2Validator(RequestValidator):
             if not grant.is_expired():
                 request.scopes = grant.scope.split(" ")
                 request.user = grant.user
-                request.nonce = grant.nonce
+                if grant.nonce:
+                    request.nonce = grant.nonce
                 if grant.claims:
                     request.claims = json.loads(grant.claims)
                 return True
@@ -717,7 +718,7 @@ class OAuth2Validator(RequestValidator):
             user=request.user,
             scope=scopes,
             expires=expires,
-            token=token.serialize(),
+            token=token,
             application=request.client,
         )
         return id_token
@@ -764,8 +765,6 @@ class OAuth2Validator(RequestValidator):
         return oauth2_settings.oidc_issuer(request)
 
     def finalize_id_token(self, id_token, token, token_handler, request):
-        key = jwk.JWK.from_pem(oauth2_settings.OIDC_RSA_PRIVATE_KEY.encode("utf8"))
-
         claims, expiration_time = self.get_id_token_dictionary(token, token_handler, request)
         id_token.update(**claims)
         # Workaround for oauthlib bug #746
@@ -774,16 +773,16 @@ class OAuth2Validator(RequestValidator):
             id_token["nonce"] = request.nonce
 
         jwt_token = jwt.JWT(
-            header=json.dumps({"alg": "RS256"}, default=str),
+            header=json.dumps({"alg": request.client.algorithm}, default=str),
             claims=json.dumps(id_token, default=str),
         )
-        jwt_token.make_signed_token(key)
-
-        id_token = self._save_id_token(jwt_token, request, expiration_time)
+        jwt_token.make_signed_token(request.client.jwk_key)
+        id_token_jwt = jwt_token.serialize()
+        id_token = self._save_id_token(id_token_jwt, request, expiration_time)
         # this is needed by django rest framework
         request.access_token = id_token
         request.id_token = id_token
-        return jwt_token.serialize()
+        return id_token_jwt
 
     def validate_jwt_bearer_token(self, token, scopes, request):
         return self.validate_id_token(token, scopes, request)
@@ -795,19 +794,45 @@ class OAuth2Validator(RequestValidator):
         if not token:
             return False
 
-        key = jwk.JWK.from_pem(oauth2_settings.OIDC_RSA_PRIVATE_KEY.encode("utf8"))
-
+        key = self._get_key_for_token(token)
+        if not key:
+            return False
         try:
             jwt_token = jwt.JWT(key=key, jwt=token)
             id_token = IDToken.objects.get(token=jwt_token.serialize())
         except (JWException, JWTExpired):
             return False
+
         request.client = id_token.application
         request.user = id_token.user
         request.scopes = scopes
         # this is needed by django rest framework
         request.access_token = id_token
         return True
+
+    def _get_key_for_token(self, token):
+        """
+        Peek at the unvalidated token to discover who it was issued for
+        and then use that to load that application and its key.
+        """
+        unverified_token = jws.JWS()
+        unverified_token.deserialize(token)
+        claims = json.loads(unverified_token.objects["payload"])
+        if "aud" not in claims:
+            return None
+        application = self._get_client_by_audience(claims["aud"])
+        if application:
+            return application.jwk_key
+
+    def _get_client_by_audience(self, audience):
+        """
+        Load a client by the aud claim in a JWT.
+        aud may be multi-valued, if your provider makes it so.
+        This function is separate to allow further customization.
+        """
+        if isinstance(audience, str):
+            audience = [audience]
+        return Application.objects.filter(client_id__in=audience).first()
 
     def validate_user_match(self, id_token_hint, scopes, claims, request):
         # TODO: Fix to validate when necessary acording
@@ -833,7 +858,9 @@ class OAuth2Validator(RequestValidator):
         Method is used by:
             - Authorization Token Grant Dispatcher
         """
-        return Grant.objects.filter(code=code).values_list("nonce", flat=True).first()
+        nonce = Grant.objects.filter(code=code).values_list("nonce", flat=True).first()
+        if nonce:
+            return nonce
 
     def get_userinfo_claims(self, request):
         """

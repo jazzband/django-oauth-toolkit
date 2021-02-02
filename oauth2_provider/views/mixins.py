@@ -313,12 +313,11 @@ class OIDCOnlyMixin:
 
     debug_error_message = (
         "django-oauth-toolkit OIDC views are not enabled unless you "
-        "have configured an RSA private key with the setting "
-        "OIDC_RSA_PRIVATE_KEY"
+        "have configured OIDC_ENABLED in the settings"
     )
 
     def dispatch(self, *args, **kwargs):
-        if not oauth2_settings.is_oidc_enabled:
+        if not oauth2_settings.OIDC_ENABLED:
             if settings.DEBUG:
                 raise ImproperlyConfigured(self.debug_error_message)
             log.warning(self.debug_error_message)

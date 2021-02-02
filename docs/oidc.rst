@@ -28,10 +28,28 @@ Configuration
 =============
 
 OIDC is not enabled by default because it requires additional configuration
-that must be provided.
+that must be provided. ``django-oauth-toolkit`` supports two different
+algorithms for signing JWT tokens, ``RS256``, which uses asymmetric RSA keys (a
+public key and a private key), and ``HS256``, which uses a symmetric key.
 
-OIDC requires an RSA private key, which is used for signing JWT. You can
-generate this using the ``openssl`` tool::
+It is preferrable to use ``RS256``, because this produces a token that can be
+verified by anyone using the public key (which is made available and
+discoverable by OIDC service auto-discovery, included with
+``django-oauth-toolkit``). ``HS256`` on the other hand uses the
+``client_secret`` in order to verify keys. This is simpler to implement, but
+makes it harder to safely verify tokens.
+
+Using ``HS256`` also means that you cannot use the Implicit or Hybrid flows,
+or verify the tokens in public clients, because you cannot disclose the
+``client_secret`` to a public client. If you are using a public client, you
+must use ``RS256``.
+
+
+Creating RSA private key
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+To use ``RS256`` requires an RSA private key, which is used for signing JWT. You
+can generate this using the ``openssl`` tool::
 
     openssl genrsa -out oidc.key 4096
 
@@ -63,6 +81,7 @@ be used. Assuming we have set an environment variable called
     import os.environ
 
     OAUTH2_PROVIDER = {
+        "OIDC_ENABLED": True,
         "OIDC_RSA_PRIVATE_KEY": os.environ.get("OIDC_RSA_PRIVATE_KEY"),
         "SCOPES": {
             "openid": "OpenID Connect scope",
@@ -77,13 +96,42 @@ change this class to derive from
 ``oauthlib.openid.connect.core.endpoints.pre_configured.Server`` instead of
 ``oauthlib.oauth2.Server``.
 
+With ``RSA`` key-pairs, the public key can be generated from the private key,
+so there is no need to add a setting for the public key.
+
+Using ``HS256`` keys
+~~~~~~~~~~~~~~~~~~~~
+
+If you would prefer to use just ``HS256`` keys, you don't need to create any
+additional keys, ``django-oauth-toolkit`` will just use the application's
+``client_secret`` to sign the JWT token.
+
+In this case, you just need to enable OIDC and add ``openid`` to your list of
+scopes in your ``settings.py``::
+
+    OAUTH2_PROVIDER = {
+        "OIDC_ENABLED": True,
+        "SCOPES": {
+            "openid": "OpenID Connect scope",
+            # ... any other scopes that you use
+        },
+        # ... any other settings you want
+    }
+
+.. info::
+    If you want to enable ``RS256`` at a later date, you can do so - just add
+    the private key as described above.
 
 Setting up OIDC enabled clients
 ===============================
 
 Setting up an OIDC client in ``django-oauth-toolkit`` is simple - in fact, all
 existing OAuth 2.0 Authorization Code Flow and Implicit Flow applications that
-are already configured are capable of using the OIDC version immediately.
+are already configured can be easily updated to use OIDC by setting the
+appropriate algorithm for them to use.
+
+You can also switch existing apps to use OIDC Hybrid Flow by changing their
+Authorization Grant Type and selecting a signing algorithm to use.
 
 You can read about the pros and cons of the different flows in `this excellent
 article`_ from Robert Broeckelmann.
@@ -94,7 +142,9 @@ OIDC Authorization Code Flow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To create an OIDC Authorization Code Flow client, create an ``Application``
-with the grant type ``Authorization code``.
+with the grant type ``Authorization code`` and select your desired signing
+algorithm.
+
 When making an authorization request, be sure to include ``openid`` as a
 scope. When the code is exchanged for the access token, the response will
 also contain an ID token JWT.
@@ -115,9 +165,9 @@ an OIDC flow and would fall back to being the same as OAuth 2.0 Implicit
 Grant.
 
 To setup an OIDC Implicit Flow client, simply create an ``Application`` with
-the a grant type of ``Implicit``, and configure the client to request the
-``openid`` scope and an OIDC ``response_type`` (``id_token`` or ``id_token
-token``).
+the a grant type of ``Implicit`` and select your desired signing algorithm,
+and configure the client to request the ``openid`` scope and an OIDC
+``response_type`` (``id_token`` or ``id_token token``).
 
 
 OIDC Hybrid Flow
@@ -129,7 +179,8 @@ allowing the backend to retrieve the ID token and an access token (not
 necessarily the same access token) on the backend.
 
 To setup an OIDC Hybrid Flow application, create an ``Application`` with a
-grant type of ``OpenID connect hybrid``.
+grant type of ``OpenID connect hybrid`` and select your desired signing
+algorithm.
 
 
 Customizing the OIDC responses
@@ -245,7 +296,7 @@ query, and other details.
 JwksInfoView
 ~~~~~~~~~~~~
 
-Available at ``/o/jwks/``, this view provides details of the key used to sign
+Available at ``/o/.well-known/jwks.json``, this view provides details of the key used to sign
 the JWTs generated for ID tokens, so that clients are able to verify them.
 
 

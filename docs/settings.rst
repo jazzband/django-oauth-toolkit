@@ -277,10 +277,10 @@ Default: ``""``
 The URL of the issuer that is used in the ID token JWT and advertised in the
 OIDC discovery metadata. Clients use this location to retrieve the OIDC
 discovery metadata from ``OIDC_ISS_ENDPOINT`` +
-``.well-known/openid-configuration/``.
+``/.well-known/openid-configuration/``.
 
 If unset, the default location is used, eg if ``django-oauth-toolkit`` is
-mounted at ``/o/``, it will be ``<server-address>/o/``.
+mounted at ``/o``, it will be ``<server-address>/o``.
 
 OIDC_RESPONSE_TYPES_SUPPORTED
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -304,12 +304,6 @@ OIDC_SUBJECT_TYPES_SUPPORTED
 Default: ``["public"]``
 
 The subject types that are advertised to be supported by this server.
-
-OIDC_ID_TOKEN_SIGNING_ALG_VALUES_SUPPORTED
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Default: ``["RS256", "HS256"]``
-
-The signing algorithms that are advertised to be supported by this server.
 
 OIDC_TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

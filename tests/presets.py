@@ -8,6 +8,7 @@ from django.conf import settings
 DEFAULT_SCOPES_RW = {"DEFAULT_SCOPES": ["read", "write"]}
 DEFAULT_SCOPES_RO = {"DEFAULT_SCOPES": ["read"]}
 OIDC_SETTINGS_RW = {
+    "OIDC_ENABLED": True,
     "OIDC_ISS_ENDPOINT": "http://localhost",
     "OIDC_USERINFO_ENDPOINT": "http://localhost/userinfo/",
     "OIDC_RSA_PRIVATE_KEY": settings.OIDC_RSA_PRIVATE_KEY,
@@ -20,6 +21,8 @@ OIDC_SETTINGS_RW = {
 }
 OIDC_SETTINGS_RO = deepcopy(OIDC_SETTINGS_RW)
 OIDC_SETTINGS_RO["DEFAULT_SCOPES"] = ["read"]
+OIDC_SETTINGS_HS256_ONLY = deepcopy(OIDC_SETTINGS_RW)
+del OIDC_SETTINGS_HS256_ONLY["OIDC_RSA_PRIVATE_KEY"]
 REST_FRAMEWORK_SCOPES = {
     "SCOPES": {
         "read": "Read scope",

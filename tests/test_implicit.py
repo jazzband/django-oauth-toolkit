@@ -274,6 +274,11 @@ class TestImplicitTokenView(BaseTest):
 @pytest.mark.usefixtures("oidc_key")
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 class TestOpenIDConnectImplicitFlow(BaseTest):
+    def setUp(self):
+        super().setUp()
+        self.application.algorithm = Application.RS256_ALGORITHM
+        self.application.save()
+
     def test_id_token_post_auth_allow(self):
         """
         Test authorization code is given for an allowed request with response_type: id_token
