@@ -83,9 +83,10 @@ class TestJwksInfoView(TestCase):
 
 
 @pytest.mark.django_db
-def test_userinfo_endpoint(oidc_tokens, client):
+@pytest.mark.parametrize("method", ["get", "post"])
+def test_userinfo_endpoint(oidc_tokens, client, method):
     auth_header = "Bearer %s" % oidc_tokens.access_token
-    rsp = client.get(
+    rsp = getattr(client, method)(
         reverse("oauth2_provider:user-info"),
         HTTP_AUTHORIZATION=auth_header,
     )

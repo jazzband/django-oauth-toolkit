@@ -78,6 +78,12 @@ class UserInfoView(OIDCOnlyMixin, OAuthLibMixin, View):
     """
 
     def get(self, request, *args, **kwargs):
+        return self._create_userinfo_response(request)
+
+    def post(self, request, *args, **kwargs):
+        return self._create_userinfo_response(request)
+
+    def _create_userinfo_response(self, request):
         url, headers, body, status = self.create_userinfo_response(request)
         response = HttpResponse(content=body or "", status=status)
 
