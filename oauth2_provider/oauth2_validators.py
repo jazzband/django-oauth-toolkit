@@ -488,22 +488,10 @@ class OAuth2Validator(RequestValidator):
         self._create_authorization_code(request, code)
 
     def get_authorization_code_scopes(self, client_id, code, redirect_uri, request):
-        scopes = []
-        fields = {
-            "code": code,
-        }
-
-        if client_id:
-            fields["application__client_id"] = client_id
-
-        if redirect_uri:
-            fields["redirect_uri"] = redirect_uri
-
-        grant = Grant.objects.filter(**fields).values()
-        if grant.exists():
-            grant_dict = dict(grant[0])
-            scopes = utils.scope_to_list(grant_dict["scope"])
-        return scopes
+        scopes = Grant.objects.filter(code=code).values_list("scope", flat=True).first()
+        if scopes:
+            return utils.scope_to_list(scopes)
+        return []
 
     def rotate_refresh_token(self, request):
         """
