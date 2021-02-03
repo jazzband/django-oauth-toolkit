@@ -103,7 +103,7 @@ class OAuthLibCore:
         except oauth2.OAuth2Error as error:
             raise OAuthToolkitError(error=error)
 
-    def create_authorization_response(self, uri, request, scopes, credentials, body, allow):
+    def create_authorization_response(self, request, scopes, credentials, allow):
         """
         A wrapper method that calls create_authorization_response on `server_class`
         instance.
@@ -112,7 +112,6 @@ class OAuthLibCore:
         :param scopes: A list of provided scopes
         :param credentials: Authorization credentials dictionary containing
                            `client_id`, `state`, `redirect_uri` and `response_type`
-        :param body: Other body parameters not used in credentials dictionary
         :param allow: True if the user authorize the client, otherwise False
         """
         try:
@@ -121,9 +120,10 @@ class OAuthLibCore:
 
             # add current user to credentials. this will be used by OAUTH2_VALIDATOR_CLASS
             credentials["user"] = request.user
+            uri = request.get_raw_uri()
 
             headers, body, status = self.server.create_authorization_response(
-                uri=uri, scopes=scopes, credentials=credentials, body=body
+                uri=uri, scopes=scopes, credentials=credentials
             )
             redirect_uri = headers.get("Location", None)
 

@@ -121,18 +121,19 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             credentials["code_challenge"] = form.cleaned_data.get("code_challenge")
         if form.cleaned_data.get("code_challenge_method", False):
             credentials["code_challenge_method"] = form.cleaned_data.get("code_challenge_method")
+        if form.cleaned_data.get("nonce", False):
+            credentials["nonce"] = form.cleaned_data.get("nonce")
+        if form.cleaned_data.get("claims", False):
+            credentials["claims"] = form.cleaned_data.get("claims")
 
-        body = {"nonce": form.cleaned_data.get("nonce"), "claims": form.cleaned_data.get("claims")}
         scopes = form.cleaned_data.get("scope")
         allow = form.cleaned_data.get("allow")
 
         try:
             uri, headers, body, status = self.create_authorization_response(
-                self.request.get_raw_uri(),
                 request=self.request,
                 scopes=scopes,
                 credentials=credentials,
-                body=body,
                 allow=allow,
             )
         except OAuthToolkitError as error:
@@ -157,11 +158,6 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         # TODO: Cache this!
         application = get_application_model().objects.get(client_id=credentials["client_id"])
 
-        uri_query = urllib.parse.urlparse(self.request.get_raw_uri()).query
-        uri_query_params = dict(
-            urllib.parse.parse_qsl(uri_query, keep_blank_values=True, strict_parsing=True)
-        )
-
         kwargs["application"] = application
         kwargs["client_id"] = credentials["client_id"]
         kwargs["redirect_uri"] = credentials["redirect_uri"]
@@ -171,8 +167,10 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             kwargs["code_challenge"] = credentials["code_challenge"]
         if "code_challenge_method" in credentials:
             kwargs["code_challenge_method"] = credentials["code_challenge_method"]
-        kwargs["nonce"] = uri_query_params.get("nonce", None)
-        kwargs["claims"] = uri_query_params.get("claims", None)
+        if "nonce" in credentials:
+            kwargs["nonce"] = credentials["nonce"]
+        if "claims" in credentials:
+            kwargs["claims"] = json.dumps(credentials["claims"])
 
         self.oauth2_data = kwargs
         # following two loc are here only because of https://code.djangoproject.com/ticket/17795
@@ -190,7 +188,6 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             # are already approved.
             if application.skip_authorization:
                 uri, headers, body, status = self.create_authorization_response(
-                    self.request.get_raw_uri(),
                     request=self.request,
                     scopes=" ".join(scopes),
                     credentials=credentials,
@@ -211,13 +208,12 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                 for token in tokens:
                     if token.allow_scopes(scopes):
                         uri, headers, body, status = self.create_authorization_response(
-                            self.request.get_raw_uri(),
                             request=self.request,
                             scopes=" ".join(scopes),
                             credentials=credentials,
                             allow=True,
                         )
-                        return self.redirect(uri, application)
+                        return self.redirect(uri, application, token)
 
         except OAuthToolkitError as error:
             return self.error_response(error, application)
