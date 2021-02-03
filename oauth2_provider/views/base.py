@@ -131,10 +131,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
 
         try:
             uri, headers, body, status = self.create_authorization_response(
-                request=self.request,
-                scopes=scopes,
-                credentials=credentials,
-                allow=allow,
+                request=self.request, scopes=scopes, credentials=credentials, allow=allow
             )
         except OAuthToolkitError as error:
             return self.error_response(error, application)
@@ -188,10 +185,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             # are already approved.
             if application.skip_authorization:
                 uri, headers, body, status = self.create_authorization_response(
-                    request=self.request,
-                    scopes=" ".join(scopes),
-                    credentials=credentials,
-                    allow=True,
+                    request=self.request, scopes=" ".join(scopes), credentials=credentials, allow=True
                 )
                 return self.redirect(uri, application)
 

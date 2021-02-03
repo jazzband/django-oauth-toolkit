@@ -154,12 +154,7 @@ def import_from_string(val, setting_name):
     try:
         return import_string(val)
     except ImportError as e:
-        msg = "Could not import %r for setting %r. %s: %s." % (
-            val,
-            setting_name,
-            e.__class__.__name__,
-            e,
-        )
+        msg = "Could not import %r for setting %r. %s: %s." % (val, setting_name, e.__class__.__name__, e)
         raise ImportError(msg)
 
 

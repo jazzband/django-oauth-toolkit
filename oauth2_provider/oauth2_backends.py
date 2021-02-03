@@ -111,7 +111,7 @@ class OAuthLibCore:
         :param request: The current django.http.HttpRequest object
         :param scopes: A list of provided scopes
         :param credentials: Authorization credentials dictionary containing
-                           `client_id`, `state`, `redirect_uri` and `response_type`
+                           `client_id`, `state`, `redirect_uri`, `response_type`
         :param allow: True if the user authorize the client, otherwise False
         """
         try:
@@ -120,14 +120,13 @@ class OAuthLibCore:
 
             # add current user to credentials. this will be used by OAUTH2_VALIDATOR_CLASS
             credentials["user"] = request.user
-            uri = request.get_raw_uri()
 
             headers, body, status = self.server.create_authorization_response(
-                uri=uri, scopes=scopes, credentials=credentials
+                uri=request.get_raw_uri(), scopes=scopes, credentials=credentials
             )
-            redirect_uri = headers.get("Location", None)
+            uri = headers.get("Location", None)
 
-            return redirect_uri, headers, body, status
+            return uri, headers, body, status
 
         except oauth2.FatalClientError as error:
             raise FatalClientError(error=error, redirect_uri=credentials["redirect_uri"])
