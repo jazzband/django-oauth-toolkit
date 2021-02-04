@@ -92,8 +92,7 @@ be used. Assuming we have set an environment variable called
 
 If you are adding OIDC support to an existing OAuth 2.0 provider site, and you
 are currently using a custom class for ``OAUTH2_SERVER_CLASS``, you must
-change this class to derive from
-``oauthlib.openid.connect.core.endpoints.pre_configured.Server`` instead of
+change this class to derive from ``oauthlib.openid.Server`` instead of
 ``oauthlib.oauth2.Server``.
 
 With ``RSA`` key-pairs, the public key can be generated from the private key,

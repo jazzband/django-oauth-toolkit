@@ -41,7 +41,7 @@ DEFAULTS = {
     "REFRESH_TOKEN_GENERATOR": None,
     "EXTRA_SERVER_KWARGS": {},
     "OAUTH2_SERVER_CLASS": "oauthlib.oauth2.Server",
-    "OIDC_SERVER_CLASS": "oauthlib.openid.connect.core.endpoints.pre_configured.Server",
+    "OIDC_SERVER_CLASS": "oauthlib.openid.Server",
     "OAUTH2_VALIDATOR_CLASS": "oauth2_provider.oauth2_validators.OAuth2Validator",
     "OAUTH2_BACKEND_CLASS": "oauth2_provider.oauth2_backends.OAuthLibCore",
     "SCOPES": {"read": "Reading scope", "write": "Writing scope"},
