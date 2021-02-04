@@ -126,7 +126,7 @@ OAUTH2_SERVER_CLASS
 The import string for the ``server_class`` (or ``oauthlib.oauth2.Server`` subclass)
 used in the ``OAuthLibMixin`` that implements OAuth2 grant types. It defaults
 to ``oauthlib.oauth2.Server``, except when OIDC support is enabled, when the
-default is ``oauthlib.openid.connect.core.endpoints.pre_configured.Server``.
+default is ``oauthlib.openid.Server``.
 
 OAUTH2_VALIDATOR_CLASS
 ~~~~~~~~~~~~~~~~~~~~~~
