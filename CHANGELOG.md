@@ -16,11 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Added
 * #898 Added the ability to customize classes for django admin
 * #903 Disable `redirect_uri` field length limit for `AbstractGrant`
-
-### Added
 * #884 Added support for Python 3.9
+* #690 Added pt-PT translations to HTML templates. This enables adding additional translations.
 
 ## [1.3.3] 2020-10-16
 
@@ -80,6 +80,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   If you are currently on a release < 1.2.0, you will need to first install 1.2.0 then `manage.py migrate` before
   upgrading to >= 1.3.0.
 * Improved the [tutorial](https://django-oauth-toolkit.readthedocs.io/en/latest/tutorial/tutorial.html).
+* Added pt-PT translation. This is the first translation.
 
 ### Removed
 * Remove support for Python 3.4
