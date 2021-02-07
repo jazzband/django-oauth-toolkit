@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 * #884 Added support for Python 3.9
 
+### Fixed
+* made token revocation not apply a limit to the `select_for_update` statement #866
+
 ## [1.3.3] 2020-10-16
 
 ### Added
