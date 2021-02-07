@@ -52,6 +52,32 @@ can also (largely) stop worrying about code style, although you should always
 check how the code looks after ``black`` has formatted it, and think if there
 is a better way to structure the code so that it is more readable.
 
+Documentation
+=============
+
+You can edit the documentation by editing files in ``docs/``. This project
+uses sphinx to turn ``ReStructuredText`` into the HTML docs you are reading.
+
+In order to build the docs in to HTML, you can run::
+
+    tox -e docs
+
+This will build the docs, and place the result in ``docs/_build/html``.
+Alternatively, you can run::
+
+    tox -e livedocs
+
+This will run ``sphinx`` in a live reload mode, so any changes that you make to
+the ``RST`` files will be automatically detected and the HTML files rebuilt.
+It will also run a simple HTTP server available at `<http://localhost:8000/>`_
+serving the HTML files, and auto-reload the page when changes are made.
+
+This allows you to edit the docs and see your changes instantly reflected in
+the browser.
+
+* `ReStructuredText primer
+  <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`_
+
 Pull requests
 =============
 
