@@ -78,6 +78,24 @@ the browser.
 * `ReStructuredText primer
   <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`_
 
+Translations
+============
+
+You can contribute international language translations using
+`django-admin makemessages <https://docs.djangoproject.com/en/dev/ref/django-admin/#makemessages>`_.
+
+For example, to add Deutsch::
+
+    cd oauth2_provider
+    django-admin makemessages --locale de
+
+Then edit ``locale/de/LC_MESSAGES/django.po`` to add your translations.
+
+When deploying your app, don't forget to compile the messages with::
+
+    django-admin compilemessages
+
+
 Pull requests
 =============
 
