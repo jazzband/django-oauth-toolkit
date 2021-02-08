@@ -16,15 +16,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-* #898 Added the ability to customize classes for django admin
-* #903 Disable `redirect_uri` field length limit for `AbstractGrant`
-* #690 Added pt-PT translations to HTML templates. This enables adding additional translations.
+## [1.4.0] 2021-02-08
 
 ### Added
+* #917 Documentation improvement for Access Token expiration.
+* #916 (for DOT contributors) Added `tox -e livedocs` which launches a local web server on `locahost:8000`
+  to display Sphinx documentation with live updates as you edit.
+* #891 (for DOT contributors) Added [details](https://django-oauth-toolkit.readthedocs.io/en/latest/contributing.html)
+  on how best to contribute to this project.
 * #884 Added support for Python 3.9
+* #898 Added the ability to customize classes for django admin
+* #690 Added pt-PT translations to HTML templates. This enables adding additional translations.
 
 ### Fixed
-* made token revocation not apply a limit to the `select_for_update` statement #866
+* #906 Made token revocation not apply a limit to the `select_for_update` statement (impacts Oracle 12c database).
+* #903 Disable `redirect_uri` field length limit for `AbstractGrant`
 
 ## [1.3.3] 2020-10-16
 
