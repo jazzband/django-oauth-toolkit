@@ -86,18 +86,20 @@ class TestOAuth2Middleware(BaseTest):
         super().setUp()
         self.anon_user = AnonymousUser()
 
-    def dummy_get_response(request):
-        return None
+    def dummy_get_response(self, request):
+        return HttpResponse()
 
     def test_middleware_wrong_headers(self):
         m = OAuth2TokenMiddleware(self.dummy_get_response)
         request = self.factory.get("/a-resource")
-        self.assertIsNone(m.process_request(request))
+        m(request)
+        self.assertFalse(hasattr(request, "user"))
         auth_headers = {
             "HTTP_AUTHORIZATION": "Beerer " + "badstring",  # a Beer token for you!
         }
         request = self.factory.get("/a-resource", **auth_headers)
-        self.assertIsNone(m.process_request(request))
+        m(request)
+        self.assertFalse(hasattr(request, "user"))
 
     def test_middleware_user_is_set(self):
         m = OAuth2TokenMiddleware(self.dummy_get_response)
@@ -106,9 +108,11 @@ class TestOAuth2Middleware(BaseTest):
         }
         request = self.factory.get("/a-resource", **auth_headers)
         request.user = self.user
-        self.assertIsNone(m.process_request(request))
+        m(request)
+        self.assertIs(request.user, self.user)
         request.user = self.anon_user
-        self.assertIsNone(m.process_request(request))
+        m(request)
+        self.assertEqual(request.user.pk, self.user.pk)
 
     def test_middleware_success(self):
         m = OAuth2TokenMiddleware(self.dummy_get_response)
@@ -116,7 +120,7 @@ class TestOAuth2Middleware(BaseTest):
             "HTTP_AUTHORIZATION": "Bearer " + "tokstr",
         }
         request = self.factory.get("/a-resource", **auth_headers)
-        m.process_request(request)
+        m(request)
         self.assertEqual(request.user, self.user)
 
     def test_middleware_response(self):
@@ -125,9 +129,8 @@ class TestOAuth2Middleware(BaseTest):
             "HTTP_AUTHORIZATION": "Bearer " + "tokstr",
         }
         request = self.factory.get("/a-resource", **auth_headers)
-        response = HttpResponse()
-        processed = m.process_response(request, response)
-        self.assertIs(response, processed)
+        response = m(request)
+        self.assertIsInstance(response, HttpResponse)
 
     def test_middleware_response_header(self):
         m = OAuth2TokenMiddleware(self.dummy_get_response)
@@ -135,7 +138,6 @@ class TestOAuth2Middleware(BaseTest):
             "HTTP_AUTHORIZATION": "Bearer " + "tokstr",
         }
         request = self.factory.get("/a-resource", **auth_headers)
-        response = HttpResponse()
-        m.process_response(request, response)
+        response = m(request)
         self.assertIn("Vary", response)
         self.assertIn("Authorization", response["Vary"])

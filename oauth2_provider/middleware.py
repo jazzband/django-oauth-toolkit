@@ -1,9 +1,8 @@
 from django.contrib.auth import authenticate
 from django.utils.cache import patch_vary_headers
-from django.utils.deprecation import MiddlewareMixin
 
 
-class OAuth2TokenMiddleware(MiddlewareMixin):
+class OAuth2TokenMiddleware:
     """
     Middleware for OAuth2 user authentication
 
@@ -22,8 +21,10 @@ class OAuth2TokenMiddleware(MiddlewareMixin):
     It also adds "Authorization" to the "Vary" header, so that django's cache middleware or a
     reverse proxy can create proper cache keys.
     """
+    def __init__(self, get_response):
+        self.get_response = get_response
 
-    def process_request(self, request):
+    def __call__(self, request):
         # do something only if request contains a Bearer token
         if request.META.get("HTTP_AUTHORIZATION", "").startswith("Bearer"):
             if not hasattr(request, "user") or request.user.is_anonymous:
@@ -31,6 +32,6 @@ class OAuth2TokenMiddleware(MiddlewareMixin):
                 if user:
                     request.user = request._cached_user = user
 
-    def process_response(self, request, response):
+        response = self.get_response(request)
         patch_vary_headers(response, ("Authorization",))
         return response
