@@ -347,7 +347,7 @@ class TestClearExpired(BaseTestModels):
 @pytest.mark.django_db
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 def test_id_token_methods(oidc_tokens, rf):
-    id_token = IDToken.objects.get(token=oidc_tokens.id_token)
+    id_token = IDToken.objects.get()
 
     # Token was just created, so should be valid
     assert id_token.is_valid()
@@ -369,20 +369,14 @@ def test_id_token_methods(oidc_tokens, rf):
     # we should be able to get a list of the scopes on the token
     assert id_token.scopes == {"openid": "OpenID connect"}
 
-    # we should be able to extract the claims on the token
-    # we only are checking the repeatable subset of claims..
-    issuer = oidc_tokens.oauth2_settings.oidc_issuer(rf.get("/"))
-    assert id_token.claims
-    assert id_token.claims["sub"] == str(oidc_tokens.user.pk)
-    assert id_token.claims["aud"] == oidc_tokens.application.client_id
-    assert id_token.claims["iss"] == issuer
-
     # the id token should stringify as the JWT token
-    assert str(id_token) == oidc_tokens.id_token
+    id_token_str = str(id_token)
+    assert str(id_token.jti) in id_token_str
+    assert id_token_str.endswith(str(id_token.user_id))
 
     # revoking the token should delete it
     id_token.revoke()
-    assert IDToken.objects.filter(token=oidc_tokens.id_token).count() == 0
+    assert IDToken.objects.filter(jti=id_token.jti).count() == 0
 
 
 @pytest.mark.django_db

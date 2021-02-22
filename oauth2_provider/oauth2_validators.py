@@ -3,6 +3,7 @@ import binascii
 import http.client
 import json
 import logging
+import uuid
 from collections import OrderedDict
 from datetime import datetime, timedelta
 from urllib.parse import unquote_plus
@@ -381,10 +382,7 @@ class OAuth2Validator(RequestValidator):
         introspection_token = oauth2_settings.RESOURCE_SERVER_AUTH_TOKEN
         introspection_credentials = oauth2_settings.RESOURCE_SERVER_INTROSPECTION_CREDENTIALS
 
-        try:
-            access_token = AccessToken.objects.select_related("application", "user").get(token=token)
-        except AccessToken.DoesNotExist:
-            access_token = None
+        access_token = self._load_access_token(token)
 
         # if there is no token or it's invalid then introspect the token if there's an external OAuth server
         if not access_token or not access_token.is_valid(scopes):
@@ -404,6 +402,9 @@ class OAuth2Validator(RequestValidator):
         else:
             self._set_oauth2_error_on_request(request, access_token, scopes)
             return False
+
+    def _load_access_token(self, token):
+        return AccessToken.objects.select_related("application", "user").filter(token=token).first()
 
     def validate_code(self, client_id, code, client, request, *args, **kwargs):
         try:
@@ -603,7 +604,7 @@ class OAuth2Validator(RequestValidator):
     def _create_access_token(self, expires, request, token, source_refresh_token=None):
         id_token = token.get("id_token", None)
         if id_token:
-            id_token = IDToken.objects.get(token=id_token)
+            id_token = self._load_id_token(id_token)
         return AccessToken.objects.create(
             user=request.user,
             scope=token["scope"],
@@ -703,7 +704,7 @@ class OAuth2Validator(RequestValidator):
         return rt.application == client
 
     @transaction.atomic
-    def _save_id_token(self, token, request, expires, *args, **kwargs):
+    def _save_id_token(self, jti, request, expires, *args, **kwargs):
         # TODO: http://openid.net/specs/openid-connect-core-1_0.html#HybridIDToken2
         # Save the id_token on database bound to code when the request come to
         # Authorization Endpoint and return the same one when request come to
@@ -718,7 +719,7 @@ class OAuth2Validator(RequestValidator):
             user=request.user,
             scope=scopes,
             expires=expires,
-            token=token,
+            jti=jti,
             application=request.client,
         )
         return id_token
@@ -756,6 +757,7 @@ class OAuth2Validator(RequestValidator):
                 "iss": self.get_oidc_issuer_endpoint(request),
                 "exp": int(dateformat.format(expiration_time, "U")),
                 "auth_time": int(dateformat.format(request.user.last_login, "U")),
+                "jti": str(uuid.uuid4()),
             }
         )
 
@@ -777,12 +779,11 @@ class OAuth2Validator(RequestValidator):
             claims=json.dumps(id_token, default=str),
         )
         jwt_token.make_signed_token(request.client.jwk_key)
-        id_token_jwt = jwt_token.serialize()
-        id_token = self._save_id_token(id_token_jwt, request, expiration_time)
+        id_token = self._save_id_token(id_token["jti"], request, expiration_time)
         # this is needed by django rest framework
         request.access_token = id_token
         request.id_token = id_token
-        return id_token_jwt
+        return jwt_token.serialize()
 
     def validate_jwt_bearer_token(self, token, scopes, request):
         return self.validate_id_token(token, scopes, request)
@@ -794,13 +795,11 @@ class OAuth2Validator(RequestValidator):
         if not token:
             return False
 
-        key = self._get_key_for_token(token)
-        if not key:
+        id_token = self._load_id_token(token)
+        if not id_token:
             return False
-        try:
-            jwt_token = jwt.JWT(key=key, jwt=token)
-            id_token = IDToken.objects.get(token=jwt_token.serialize())
-        except (JWException, JWTExpired):
+
+        if not id_token.allow_scopes(scopes):
             return False
 
         request.client = id_token.application
@@ -809,6 +808,17 @@ class OAuth2Validator(RequestValidator):
         # this is needed by django rest framework
         request.access_token = id_token
         return True
+
+    def _load_id_token(self, token):
+        key = self._get_key_for_token(token)
+        if not key:
+            return None
+        try:
+            jwt_token = jwt.JWT(key=key, jwt=token)
+            claims = json.loads(jwt_token.claims)
+            return IDToken.objects.get(jti=claims["jti"])
+        except (JWException, JWTExpired, IDToken.DoesNotExist):
+            return None
 
     def _get_key_for_token(self, token):
         """

@@ -18,7 +18,7 @@ from oauth2_provider.models import (
     get_refresh_token_model,
 )
 from oauth2_provider.oauth2_validators import OAuth2Validator
-from oauth2_provider.views import ProtectedResourceView
+from oauth2_provider.views import ProtectedResourceView, ScopedProtectedResourceView
 
 from . import presets
 from .utils import get_basic_auth_header, spy_on
@@ -33,6 +33,13 @@ UserModel = get_user_model()
 
 # mocking a protected resource view
 class ResourceView(ProtectedResourceView):
+    def get(self, request, *args, **kwargs):
+        return "This is a protected resource"
+
+
+class ScopedResourceView(ScopedProtectedResourceView):
+    required_scopes = ["read"]
+
     def get(self, request, *args, **kwargs):
         return "This is a protected resource"
 
@@ -1257,6 +1264,11 @@ class TestHybridProtectedResource(BaseTest):
         view = ResourceView.as_view()
         response = view(request)
         self.assertEqual(response, "This is a protected resource")
+
+        # If the resource requires more scopes than we requested, we should get an error
+        view = ScopedResourceView.as_view()
+        response = view(request)
+        self.assertEqual(response.status_code, 403)
 
     def test_resource_access_deny(self):
         auth_headers = {

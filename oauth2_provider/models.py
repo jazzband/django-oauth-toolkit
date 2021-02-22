@@ -1,5 +1,5 @@
-import json
 import logging
+import uuid
 from datetime import timedelta
 from urllib.parse import parse_qsl, urlparse
 
@@ -10,7 +10,7 @@ from django.db import models, transaction
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from jwcrypto import jwk, jwt
+from jwcrypto import jwk
 from jwcrypto.common import base64url_encode
 
 from .generators import generate_client_id, generate_client_secret
@@ -495,10 +495,12 @@ class AbstractIDToken(models.Model):
     Fields:
 
     * :attr:`user` The Django user representing resources' owner
-    * :attr:`token` ID token
+    * :attr:`jti` ID token JWT Token ID, to identify an individual token
     * :attr:`application` Application instance
     * :attr:`expires` Date and time of token expiration, in DateTime format
     * :attr:`scope` Allowed scopes
+    * :attr:`created` Date and time of token creation, in DateTime format
+    * :attr:`updated` Date and time of token update, in DateTime format
     """
 
     id = models.BigAutoField(primary_key=True)
@@ -509,7 +511,7 @@ class AbstractIDToken(models.Model):
         null=True,
         related_name="%(app_label)s_%(class)s",
     )
-    token = models.TextField(unique=True)
+    jti = models.UUIDField(unique=True, default=uuid.uuid4, editable=False, verbose_name="JWT Token ID")
     application = models.ForeignKey(
         oauth2_settings.APPLICATION_MODEL,
         on_delete=models.CASCADE,
@@ -569,13 +571,8 @@ class AbstractIDToken(models.Model):
         token_scopes = self.scope.split()
         return {name: desc for name, desc in all_scopes.items() if name in token_scopes}
 
-    @property
-    def claims(self):
-        jwt_token = jwt.JWT(key=self.application.jwk_key, jwt=self.token)
-        return json.loads(jwt_token.claims)
-
     def __str__(self):
-        return self.token
+        return "JTI: {self.jti} User: {self.user_id}".format(self=self)
 
     class Meta:
         abstract = True

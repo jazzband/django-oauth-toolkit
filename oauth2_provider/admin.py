@@ -35,7 +35,7 @@ class GrantAdmin(admin.ModelAdmin):
 
 
 class IDTokenAdmin(admin.ModelAdmin):
-    list_display = ("token", "user", "application", "expires")
+    list_display = ("jti", "user", "application", "expires")
     raw_id_fields = ("user",)
 
 

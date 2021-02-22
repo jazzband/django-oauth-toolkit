@@ -1,3 +1,5 @@
+import uuid
+
 from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
@@ -16,7 +18,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='application',
             name='algorithm',
-            field=models.CharField(choices=[("", "No OIDC support"), ('RS256', 'RSA with SHA-2 256'), ('HS256', 'HMAC with SHA-2 256')], default='', max_length=5),
+            field=models.CharField(blank=True, choices=[("", "No OIDC support"), ('RS256', 'RSA with SHA-2 256'), ('HS256', 'HMAC with SHA-2 256')], default='', max_length=5),
         ),
         migrations.AlterField(
             model_name='application',
@@ -27,7 +29,7 @@ class Migration(migrations.Migration):
             name='IDToken',
             fields=[
                 ('id', models.BigAutoField(primary_key=True, serialize=False)),
-                ('token', models.TextField(unique=True)),
+                ("jti", models.UUIDField(unique=True, default=uuid.uuid4, editable=False, verbose_name="JWT Token ID")),
                 ('expires', models.DateTimeField()),
                 ('scope', models.TextField(blank=True)),
                 ('created', models.DateTimeField(auto_now_add=True)),
