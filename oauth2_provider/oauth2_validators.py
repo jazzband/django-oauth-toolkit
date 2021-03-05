@@ -480,7 +480,8 @@ class OAuth2Validator(RequestValidator):
 
         # Users on older app versions should get long-lived tokens for
         # backwards compatibility.
-        is_legacy_token = getattr(request, 'is_legacy_token') == 'True'
+        TRUE_VALUES = [True, 'True', 'true']
+        is_legacy_token = getattr(request, 'is_legacy_token') in TRUE_VALUES
 
         if is_legacy_token:
             expire_seconds = oauth2_settings.LEGACY_ACCESS_TOKEN_EXPIRE_SECONDS
