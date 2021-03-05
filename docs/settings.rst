@@ -33,7 +33,7 @@ The number of seconds an access token remains valid. Requesting a protected
 resource after this duration will fail. Keep this value high enough so clients
 can cache the token for a reasonable amount of time. (default: 36000)
 
-ACCESS_TOKEN_MODEL
+OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL
 ~~~~~~~~~~~~~~~~~~
 The import string of the class (model) representing your access tokens. Overwrite
 this value if you wrote your own implementation (subclass of
@@ -56,7 +56,7 @@ Note that you may override ``Application.get_allowed_schemes()`` to set this on
 a per-application basis.
 
 
-APPLICATION_MODEL
+OAUTH2_PROVIDER_APPLICATION_MODEL
 ~~~~~~~~~~~~~~~~~
 The import string of the class (model) representing your applications. Overwrite
 this value if you wrote your own implementation (subclass of
@@ -91,7 +91,7 @@ refresh_token_generator. There's no extra processing so callables (every one
 of those three can be a callable) must be passed here directly and classes
 must be instantiated (callables should accept request as their only argument).
 
-GRANT_MODEL
+OAUTH2_PROVIDER_GRANT_MODEL
 ~~~~~~~~~~~~~~~~~
 The import string of the class (model) representing your grants. Overwrite
 this value if you wrote your own implementation (subclass of
@@ -154,7 +154,7 @@ period the application, the app then has only a consumed refresh token and the
 only recourse is to have the user re-authenticate. A suggested value, if this
 is enabled, is 2 minutes.
 
-REFRESH_TOKEN_MODEL
+OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL
 ~~~~~~~~~~~~~~~~~~~
 The import string of the class (model) representing your refresh tokens. Overwrite
 this value if you wrote your own implementation (subclass of
