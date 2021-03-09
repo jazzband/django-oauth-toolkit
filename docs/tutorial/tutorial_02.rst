@@ -34,7 +34,7 @@ URL this view will respond to:
 
 .. code-block:: python
 
-    from django.conf.urls import url, include
+    from django.urls import path, include
     import oauth2_provider.views as oauth2_views
     from django.conf import settings
     from .views import ApiEndpoint
