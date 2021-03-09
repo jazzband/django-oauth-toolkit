@@ -21,6 +21,7 @@ class OAuth2TokenMiddleware:
     It also adds "Authorization" to the "Vary" header, so that django's cache middleware or a
     reverse proxy can create proper cache keys.
     """
+
     def __init__(self, get_response):
         self.get_response = get_response
 
