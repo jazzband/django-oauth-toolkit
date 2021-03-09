@@ -158,6 +158,13 @@ def import_from_string(val, setting_name):
         raise ImportError(msg)
 
 
+class _PhonyHttpRequest(HttpRequest):
+    _scheme = "http"
+
+    def _get_scheme(self):
+        return self._scheme
+
+
 class OAuth2ProviderSettings:
     """
     A settings object, that allows OAuth2 Provider settings to be accessed as properties.
@@ -271,8 +278,10 @@ class OAuth2ProviderSettings:
         if isinstance(request, HttpRequest):
             django_request = request
         elif isinstance(request, Request):
-            django_request = HttpRequest()
+            django_request = _PhonyHttpRequest()
             django_request.META = request.headers
+            if request.headers.get("X_DJANGO_OAUTH_TOOLKIT_SECURE", False):
+                django_request._scheme = "https"
         else:
             raise TypeError("request must be a django or oauthlib request: got %r" % request)
         abs_url = django_request.build_absolute_uri(reverse("oauth2_provider:oidc-connect-discovery-info"))
