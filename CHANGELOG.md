@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Removed
+* Remove support for Python 3.5
+
 ## [1.4.1]
 
 ### Changed

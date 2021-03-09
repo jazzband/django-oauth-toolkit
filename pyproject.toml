@@ -1,6 +1,6 @@
 [tool.black]
 line-length = 110
-target-version = ['py35']
+target-version = ['py38']
 exclude = '''
 ^/(
         oauth2_provider/migrations/
