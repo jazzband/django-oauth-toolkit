@@ -21,7 +21,7 @@ msgstr "Autorizar"
 
 #: docs/_build/html/_sources/templates.rst.txt:103
 #: oauth2_provider/templates/oauth2_provider/authorize.html:17
-msgid "Application requires following permissions"
+msgid "Application requires the following permissions"
 msgstr "A aplicação requer as seguintes permissões"
 
 #: oauth2_provider/models.py:41
