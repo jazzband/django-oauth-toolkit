@@ -705,15 +705,7 @@ class OAuth2Validator(RequestValidator):
 
     @transaction.atomic
     def _save_id_token(self, jti, request, expires, *args, **kwargs):
-        # TODO: http://openid.net/specs/openid-connect-core-1_0.html#HybridIDToken2
-        # Save the id_token on database bound to code when the request come to
-        # Authorization Endpoint and return the same one when request come to
-        # Token Endpoint
-
         scopes = request.scope or " ".join(request.scopes)
-
-        if request.grant_type == "client_credentials":
-            request.user = None
 
         id_token = IDToken.objects.create(
             user=request.user,

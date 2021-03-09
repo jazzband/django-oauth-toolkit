@@ -288,13 +288,10 @@ class ClientProtectedResourceMixin(OAuthLibMixin):
         if not valid:
             # Alternatively allow access tokens
             # check if the request is valid and the protected resource may be accessed
-            try:
-                valid, r = self.verify_request(request)
-                if valid:
-                    request.resource_owner = r.user
-                    return super().dispatch(request, *args, **kwargs)
-            except ValueError:
-                pass
+            valid, r = self.verify_request(request)
+            if valid:
+                request.resource_owner = r.user
+                return super().dispatch(request, *args, **kwargs)
             return HttpResponseForbidden()
         else:
             return super().dispatch(request, *args, **kwargs)

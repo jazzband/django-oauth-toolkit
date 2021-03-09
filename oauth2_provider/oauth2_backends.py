@@ -122,7 +122,7 @@ class OAuthLibCore:
             credentials["user"] = request.user
 
             headers, body, status = self.server.create_authorization_response(
-                uri=request.get_raw_uri(), scopes=scopes, credentials=credentials
+                uri=self._get_escaped_full_path(request), scopes=scopes, credentials=credentials
             )
             uri = headers.get("Location", None)
 
