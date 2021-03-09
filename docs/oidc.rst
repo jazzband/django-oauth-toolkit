@@ -49,11 +49,13 @@ Creating RSA private key
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 To use ``RS256`` requires an RSA private key, which is used for signing JWT. You
-can generate this using the ``openssl`` tool::
+can generate this using the `openssl`_ tool::
 
     openssl genrsa -out oidc.key 4096
 
 This will generate a 4096-bit RSA key, which will be sufficient for our needs.
+
+.. _openssl: https://www.openssl.org
 
 .. warning::
     The contents of this key *must* be kept a secret. Don't put it in your
