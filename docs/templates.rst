@@ -100,7 +100,7 @@ Example (this is the default page you may find on ``templates/oauth2_provider/au
                         {% endif %}
                     {% endfor %}
 
-                    <p>{% trans "Application requires following permissions" %}</p>
+                    <p>{% trans "Application requires the following permissions" %}</p>
                     <ul>
                         {% for scope in scopes_descriptions %}
                             <li>{{ scope }}</li>
