@@ -41,7 +41,7 @@ Please report any security issues to the JazzBand security team at <security@jaz
 Requirements
 ------------
 
-* Python 3.5+
+* Python 3.6+
 * Django 2.1+
 * oauthlib 3.1+
 

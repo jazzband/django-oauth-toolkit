@@ -16,7 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Added
 * #915 Add optional OpenID Connect support.
+
+### Removed
+* Remove support for Python 3.5
 
 ## [1.4.1]
 
