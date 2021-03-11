@@ -401,9 +401,7 @@ class AbstractRefreshToken(models.Model):
         access_token_model = get_access_token_model()
         refresh_token_model = get_refresh_token_model()
         with transaction.atomic():
-            token = refresh_token_model.objects.select_for_update().filter(
-                pk=self.pk, revoked__isnull=True
-            )
+            token = refresh_token_model.objects.select_for_update().filter(pk=self.pk, revoked__isnull=True)
             if not token:
                 return
             self = list(token)[0]
