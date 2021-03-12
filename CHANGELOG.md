@@ -16,13 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-### Removed
-* Remove support for Python 3.5
-
 ## [1.4.1]
 
 ### Changed
 * #925 OAuth2TokenMiddleware converted to new style middleware, and no longer extends MiddlewareMixin.
+
+### Removed
+* #936 Remove support for Python 3.5
 
 ## [1.4.0] 2021-02-08
 
