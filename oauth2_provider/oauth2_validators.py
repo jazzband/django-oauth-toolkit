@@ -357,7 +357,7 @@ class OAuth2Validator(RequestValidator):
                 expires = max_caching_time
 
             scope = content.get("scope", "")
-            expires = make_aware(expires)
+            expires = make_aware(expires) if settings.USE_TZ else expires
 
             access_token, _created = AccessToken.objects.update_or_create(
                 token=token,
