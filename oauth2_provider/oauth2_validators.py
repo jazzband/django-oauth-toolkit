@@ -770,7 +770,7 @@ class OAuth2Validator(RequestValidator):
             "typ": "JWT",
             "alg": request.client.algorithm,
         }
-        # PyJWKClient expects a kid in the header for varifying the token
+        # RS256 consumers expect a kid in the header for verifying the token
         if request.client.algorithm == AbstractApplication.RS256_ALGORITHM:
             header["kid"] = request.client.jwk_key.thumbprint()
 
