@@ -766,7 +766,6 @@ class OAuth2Validator(RequestValidator):
         if "nonce" not in id_token and request.nonce:
             id_token["nonce"] = request.nonce
 
-
         header = {
             "typ": "JWT",
             "alg": request.client.algorithm,
