@@ -108,6 +108,19 @@ def test_userinfo_endpoint(oidc_tokens, client, method):
 
 
 @pytest.mark.django_db
+def test_userinfo_endpoint_bad_token(oidc_tokens, client):
+    # No access token
+    rsp = client.get(reverse("oauth2_provider:user-info"))
+    assert rsp.status_code == 401
+    # Bad access token
+    rsp = client.get(
+        reverse("oauth2_provider:user-info"),
+        HTTP_AUTHORIZATION="Bearer not-a-real-token",
+    )
+    assert rsp.status_code == 401
+
+
+@pytest.mark.django_db
 def test_userinfo_endpoint_custom_claims(oidc_tokens, client, oauth2_settings):
     class CustomValidator(OAuth2Validator):
         def get_additional_claims(self, request):

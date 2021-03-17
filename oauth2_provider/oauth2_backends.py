@@ -4,6 +4,7 @@ from urllib.parse import urlparse, urlunparse
 from oauthlib import oauth2
 from oauthlib.common import Request as OauthlibRequest
 from oauthlib.common import quote, urlencode, urlencoded
+from oauthlib.oauth2 import OAuth2Error
 
 from .exceptions import FatalClientError, OAuthToolkitError
 from .settings import oauth2_settings
@@ -180,10 +181,12 @@ class OAuthLibCore:
         :param request: The current django.http.HttpRequest object
         """
         uri, http_method, body, headers = self._extract_params(request)
-        headers, body, status = self.server.create_userinfo_response(uri, http_method, body, headers)
-        uri = headers.get("Location", None)
-
-        return uri, headers, body, status
+        try:
+            headers, body, status = self.server.create_userinfo_response(uri, http_method, body, headers)
+            uri = headers.get("Location", None)
+            return uri, headers, body, status
+        except OAuth2Error as exc:
+            return None, exc.headers, exc.json, exc.status_code
 
     def verify_request(self, request, scopes):
         """
