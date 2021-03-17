@@ -1,10 +1,11 @@
+import pytest
 from django.core.validators import ValidationError
 from django.test import TestCase
 
-from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.validators import RedirectURIValidator
 
 
+@pytest.mark.usefixtures("oauth2_settings")
 class TestValidators(TestCase):
     def test_validate_good_uris(self):
         validator = RedirectURIValidator(allowed_schemes=["https"])
@@ -37,7 +38,7 @@ class TestValidators(TestCase):
 
     def test_validate_bad_uris(self):
         validator = RedirectURIValidator(allowed_schemes=["https"])
-        oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES = ["https", "good"]
+        self.oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES = ["https", "good"]
         bad_uris = [
             "http:/example.com",
             "HTTP://localhost",

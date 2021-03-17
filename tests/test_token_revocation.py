@@ -6,7 +6,6 @@ from django.urls import reverse
 from django.utils import timezone
 
 from oauth2_provider.models import get_access_token_model, get_application_model, get_refresh_token_model
-from oauth2_provider.settings import oauth2_settings
 
 
 Application = get_application_model()
@@ -28,8 +27,6 @@ class BaseTest(TestCase):
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
         )
-
-        oauth2_settings._SCOPES = ["read", "write"]
 
     def tearDown(self):
         self.application.delete()

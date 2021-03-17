@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+import pytest
 from django.conf.urls import include
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
@@ -22,13 +23,8 @@ from oauth2_provider.contrib.rest_framework import (
     TokenMatchesOASRequirements,
 )
 from oauth2_provider.models import get_access_token_model, get_application_model
-from oauth2_provider.settings import oauth2_settings
 
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+from . import presets
 
 
 Application = get_application_model()
@@ -131,10 +127,10 @@ urlpatterns = [
 
 
 @override_settings(ROOT_URLCONF=__name__)
+@pytest.mark.usefixtures("oauth2_settings")
+@pytest.mark.oauth2_settings(presets.REST_FRAMEWORK_SCOPES)
 class TestOAuth2Authentication(TestCase):
     def setUp(self):
-        oauth2_settings._SCOPES = ["read", "write", "scope1", "scope2", "resource1"]
-
         self.test_user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
         self.dev_user = UserModel.objects.create_user("dev_user", "dev@example.com", "123456")
 
@@ -153,9 +149,6 @@ class TestOAuth2Authentication(TestCase):
             token="secret-access-token-key",
             application=self.application,
         )
-
-    def tearDown(self):
-        oauth2_settings._SCOPES = ["read", "write"]
 
     def _create_authorization_header(self, token):
         return "Bearer {0}".format(token)
@@ -311,8 +304,8 @@ class TestOAuth2Authentication(TestCase):
         response = self.client.post("/oauth2-resource-scoped-test/", HTTP_AUTHORIZATION=auth)
         self.assertEqual(response.status_code, 403)
 
-    @mock.patch.object(oauth2_settings, "ERROR_RESPONSE_WITH_SCOPES", new=True)
     def test_required_scope_in_response(self):
+        self.oauth2_settings.ERROR_RESPONSE_WITH_SCOPES = True
         self.access_token.scope = "scope2"
         self.access_token.save()
 

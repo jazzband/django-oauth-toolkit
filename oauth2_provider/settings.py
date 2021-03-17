@@ -18,14 +18,18 @@ back to the defaults.
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+from django.http import HttpRequest
 from django.test.signals import setting_changed
+from django.urls import reverse
 from django.utils.module_loading import import_string
+from oauthlib.common import Request
 
 
 USER_SETTINGS = getattr(settings, "OAUTH2_PROVIDER", None)
 
 APPLICATION_MODEL = getattr(settings, "OAUTH2_PROVIDER_APPLICATION_MODEL", "oauth2_provider.Application")
 ACCESS_TOKEN_MODEL = getattr(settings, "OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL", "oauth2_provider.AccessToken")
+ID_TOKEN_MODEL = getattr(settings, "OAUTH2_PROVIDER_ID_TOKEN_MODEL", "oauth2_provider.IDToken")
 GRANT_MODEL = getattr(settings, "OAUTH2_PROVIDER_GRANT_MODEL", "oauth2_provider.Grant")
 REFRESH_TOKEN_MODEL = getattr(settings, "OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL", "oauth2_provider.RefreshToken")
 
@@ -37,6 +41,7 @@ DEFAULTS = {
     "REFRESH_TOKEN_GENERATOR": None,
     "EXTRA_SERVER_KWARGS": {},
     "OAUTH2_SERVER_CLASS": "oauthlib.oauth2.Server",
+    "OIDC_SERVER_CLASS": "oauthlib.openid.Server",
     "OAUTH2_VALIDATOR_CLASS": "oauth2_provider.oauth2_validators.OAuth2Validator",
     "OAUTH2_BACKEND_CLASS": "oauth2_provider.oauth2_backends.OAuthLibCore",
     "SCOPES": {"read": "Reading scope", "write": "Writing scope"},
@@ -46,20 +51,41 @@ DEFAULTS = {
     "WRITE_SCOPE": "write",
     "AUTHORIZATION_CODE_EXPIRE_SECONDS": 60,
     "ACCESS_TOKEN_EXPIRE_SECONDS": 36000,
+    "ID_TOKEN_EXPIRE_SECONDS": 36000,
     "REFRESH_TOKEN_EXPIRE_SECONDS": None,
     "REFRESH_TOKEN_GRACE_PERIOD_SECONDS": 0,
     "ROTATE_REFRESH_TOKEN": True,
     "ERROR_RESPONSE_WITH_SCOPES": False,
     "APPLICATION_MODEL": APPLICATION_MODEL,
     "ACCESS_TOKEN_MODEL": ACCESS_TOKEN_MODEL,
+    "ID_TOKEN_MODEL": ID_TOKEN_MODEL,
     "GRANT_MODEL": GRANT_MODEL,
     "REFRESH_TOKEN_MODEL": REFRESH_TOKEN_MODEL,
     "APPLICATION_ADMIN_CLASS": "oauth2_provider.admin.ApplicationAdmin",
     "ACCESS_TOKEN_ADMIN_CLASS": "oauth2_provider.admin.AccessTokenAdmin",
     "GRANT_ADMIN_CLASS": "oauth2_provider.admin.GrantAdmin",
+    "ID_TOKEN_ADMIN_CLASS": "oauth2_provider.admin.IDTokenAdmin",
     "REFRESH_TOKEN_ADMIN_CLASS": "oauth2_provider.admin.RefreshTokenAdmin",
     "REQUEST_APPROVAL_PROMPT": "force",
     "ALLOWED_REDIRECT_URI_SCHEMES": ["http", "https"],
+    "OIDC_ENABLED": False,
+    "OIDC_ISS_ENDPOINT": "",
+    "OIDC_USERINFO_ENDPOINT": "",
+    "OIDC_RSA_PRIVATE_KEY": "",
+    "OIDC_RESPONSE_TYPES_SUPPORTED": [
+        "code",
+        "token",
+        "id_token",
+        "id_token token",
+        "code token",
+        "code id_token",
+        "code id_token token",
+    ],
+    "OIDC_SUBJECT_TYPES_SUPPORTED": ["public"],
+    "OIDC_TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED": [
+        "client_secret_post",
+        "client_secret_basic",
+    ],
     # Special settings that will be evaluated at runtime
     "_SCOPES": [],
     "_DEFAULT_SCOPES": [],
@@ -70,6 +96,9 @@ DEFAULTS = {
     "RESOURCE_SERVER_TOKEN_CACHING_SECONDS": 36000,
     # Whether or not PKCE is required
     "PKCE_REQUIRED": False,
+    # Whether to re-create OAuthlibCore on every request.
+    # Should only be required in testing.
+    "ALWAYS_RELOAD_OAUTHLIB_CORE": False,
 }
 
 # List of settings that cannot be empty
@@ -81,6 +110,9 @@ MANDATORY = (
     "OAUTH2_BACKEND_CLASS",
     "SCOPES",
     "ALLOWED_REDIRECT_URI_SCHEMES",
+    "OIDC_RESPONSE_TYPES_SUPPORTED",
+    "OIDC_SUBJECT_TYPES_SUPPORTED",
+    "OIDC_TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED",
 )
 
 # List of settings that may be in string import notation.
@@ -96,6 +128,7 @@ IMPORT_STRINGS = (
     "APPLICATION_ADMIN_CLASS",
     "ACCESS_TOKEN_ADMIN_CLASS",
     "GRANT_ADMIN_CLASS",
+    "ID_TOKEN_ADMIN_CLASS",
     "REFRESH_TOKEN_ADMIN_CLASS",
 )
 
@@ -125,6 +158,13 @@ def import_from_string(val, setting_name):
         raise ImportError(msg)
 
 
+class _PhonyHttpRequest(HttpRequest):
+    _scheme = "http"
+
+    def _get_scheme(self):
+        return self._scheme
+
+
 class OAuth2ProviderSettings:
     """
     A settings object, that allows OAuth2 Provider settings to be accessed as properties.
@@ -149,13 +189,17 @@ class OAuth2ProviderSettings:
     def __getattr__(self, attr):
         if attr not in self.defaults:
             raise AttributeError("Invalid OAuth2Provider setting: %s" % attr)
-
         try:
             # Check if present in user settings
             val = self.user_settings[attr]
         except KeyError:
             # Fall back to defaults
-            val = self.defaults[attr]
+            # Special case OAUTH2_SERVER_CLASS - if not specified, and OIDC is
+            # enabled, use the OIDC_SERVER_CLASS setting instead
+            if attr == "OAUTH2_SERVER_CLASS" and self.OIDC_ENABLED:
+                val = self.defaults["OIDC_SERVER_CLASS"]
+            else:
+                val = self.defaults[attr]
 
         # Coerce import strings into classes
         if val and attr in self.import_strings:
@@ -220,6 +264,28 @@ class OAuth2ProviderSettings:
         self._cached_attrs.clear()
         if hasattr(self, "_user_settings"):
             delattr(self, "_user_settings")
+
+    def oidc_issuer(self, request):
+        """
+        Helper function to get the OIDC issuer URL, either from the settings
+        or constructing it from the passed request.
+
+        If only an oauthlib request is available, a dummy django request is
+        built from that and used to generate the URL.
+        """
+        if self.OIDC_ISS_ENDPOINT:
+            return self.OIDC_ISS_ENDPOINT
+        if isinstance(request, HttpRequest):
+            django_request = request
+        elif isinstance(request, Request):
+            django_request = _PhonyHttpRequest()
+            django_request.META = request.headers
+            if request.headers.get("X_DJANGO_OAUTH_TOOLKIT_SECURE", False):
+                django_request._scheme = "https"
+        else:
+            raise TypeError("request must be a django or oauthlib request: got %r" % request)
+        abs_url = django_request.build_absolute_uri(reverse("oauth2_provider:oidc-connect-discovery-info"))
+        return abs_url[: -len("/.well-known/openid-configuration/")]
 
 
 oauth2_settings = OAuth2ProviderSettings(USER_SETTINGS, DEFAULTS, IMPORT_STRINGS, MANDATORY)

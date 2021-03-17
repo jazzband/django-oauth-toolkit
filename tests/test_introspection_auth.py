@@ -1,6 +1,7 @@
 import calendar
 import datetime
 
+import pytest
 from django.conf.urls import include
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
@@ -11,8 +12,9 @@ from oauthlib.common import Request
 
 from oauth2_provider.models import get_access_token_model, get_application_model
 from oauth2_provider.oauth2_validators import OAuth2Validator
-from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views import ScopedProtectedResourceView
+
+from . import presets
 
 
 try:
@@ -78,6 +80,8 @@ urlpatterns = [
 
 
 @override_settings(ROOT_URLCONF=__name__)
+@pytest.mark.usefixtures("oauth2_settings")
+@pytest.mark.oauth2_settings(presets.INTROSPECTION_SETTINGS)
 class TestTokenIntrospectionAuth(TestCase):
     """
     Tests for Authorization through token introspection
@@ -114,16 +118,9 @@ class TestTokenIntrospectionAuth(TestCase):
             scope="read write dolphin",
         )
 
-        oauth2_settings._SCOPES = ["read", "write", "introspection", "dolphin"]
-        oauth2_settings.RESOURCE_SERVER_INTROSPECTION_URL = "http://example.org/introspection"
-        oauth2_settings.RESOURCE_SERVER_AUTH_TOKEN = self.resource_server_token.token
-        oauth2_settings.READ_SCOPE = "read"
-        oauth2_settings.WRITE_SCOPE = "write"
+        self.oauth2_settings.RESOURCE_SERVER_AUTH_TOKEN = self.resource_server_token.token
 
     def tearDown(self):
-        oauth2_settings._SCOPES = ["read", "write"]
-        oauth2_settings.RESOURCE_SERVER_INTROSPECTION_URL = None
-        oauth2_settings.RESOURCE_SERVER_AUTH_TOKEN = None
         self.resource_server_token.delete()
         self.application.delete()
         AccessToken.objects.all().delete()
@@ -136,9 +133,9 @@ class TestTokenIntrospectionAuth(TestCase):
         """
         token = self.validator._get_token_from_authentication_server(
             self.resource_server_token.token,
-            oauth2_settings.RESOURCE_SERVER_INTROSPECTION_URL,
-            oauth2_settings.RESOURCE_SERVER_AUTH_TOKEN,
-            oauth2_settings.RESOURCE_SERVER_INTROSPECTION_CREDENTIALS,
+            self.oauth2_settings.RESOURCE_SERVER_INTROSPECTION_URL,
+            self.oauth2_settings.RESOURCE_SERVER_AUTH_TOKEN,
+            self.oauth2_settings.RESOURCE_SERVER_INTROSPECTION_CREDENTIALS,
         )
         self.assertIsNone(token)
 
@@ -149,9 +146,9 @@ class TestTokenIntrospectionAuth(TestCase):
         """
         token = self.validator._get_token_from_authentication_server(
             "foo",
-            oauth2_settings.RESOURCE_SERVER_INTROSPECTION_URL,
-            oauth2_settings.RESOURCE_SERVER_AUTH_TOKEN,
-            oauth2_settings.RESOURCE_SERVER_INTROSPECTION_CREDENTIALS,
+            self.oauth2_settings.RESOURCE_SERVER_INTROSPECTION_URL,
+            self.oauth2_settings.RESOURCE_SERVER_AUTH_TOKEN,
+            self.oauth2_settings.RESOURCE_SERVER_INTROSPECTION_CREDENTIALS,
         )
         self.assertIsInstance(token, AccessToken)
         self.assertEqual(token.user.username, "foo_user")
