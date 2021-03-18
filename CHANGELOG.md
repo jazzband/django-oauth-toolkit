@@ -14,12 +14,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
   -->
 
-## [unreleased]
+## [1.5.0] 2021-03-18
 
 ### Added
 * #915 Add optional OpenID Connect support.
 
-## [1.4.1]
+### Changed
+* #942 Help via defunct Google group replaced with using GitHub issues
+
+## [1.4.1] 2021-03-12
 
 ### Changed
 * #925 OAuth2TokenMiddleware converted to new style middleware, and no longer extends MiddlewareMixin.
