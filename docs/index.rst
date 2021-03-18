@@ -40,6 +40,7 @@ Index
    views/details
    models
    advanced_topics
+   oidc
    signals
    settings
    resource_server

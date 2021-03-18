@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Added
+* #915 Add optional OpenID Connect support.
+
 ## [1.4.1]
 
 ### Changed

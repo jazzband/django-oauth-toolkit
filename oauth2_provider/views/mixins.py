@@ -1,7 +1,8 @@
 import logging
 
+from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponseNotFound
 
 from ..exceptions import FatalClientError
 from ..scopes import get_scopes_backend
@@ -25,6 +26,9 @@ class OAuthLibMixin:
       * validator_class
       * oauthlib_backend_class
 
+    If these class variables are not set, it will fall back to using the classes
+    specified in oauth2_settings (OAUTH2_SERVER_CLASS, OAUTH2_VALIDATOR_CLASS
+    and OAUTH2_BACKEND_CLASS).
     """
 
     server_class = None
@@ -37,10 +41,7 @@ class OAuthLibMixin:
         Return the OAuthlib server class to use
         """
         if cls.server_class is None:
-            raise ImproperlyConfigured(
-                "OAuthLibMixin requires either a definition of 'server_class'"
-                " or an implementation of 'get_server_class()'"
-            )
+            return oauth2_settings.OAUTH2_SERVER_CLASS
         else:
             return cls.server_class
 
@@ -50,10 +51,7 @@ class OAuthLibMixin:
         Return the RequestValidator implementation class to use
         """
         if cls.validator_class is None:
-            raise ImproperlyConfigured(
-                "OAuthLibMixin requires either a definition of 'validator_class'"
-                " or an implementation of 'get_validator_class()'"
-            )
+            return oauth2_settings.OAUTH2_VALIDATOR_CLASS
         else:
             return cls.validator_class
 
@@ -63,10 +61,7 @@ class OAuthLibMixin:
         Return the OAuthLibCore implementation class to use
         """
         if cls.oauthlib_backend_class is None:
-            raise ImproperlyConfigured(
-                "OAuthLibMixin requires either a definition of 'oauthlib_backend_class'"
-                " or an implementation of 'get_oauthlib_backend_class()'"
-            )
+            return oauth2_settings.OAUTH2_BACKEND_CLASS
         else:
             return cls.oauthlib_backend_class
 
@@ -85,8 +80,9 @@ class OAuthLibMixin:
     def get_oauthlib_core(cls):
         """
         Cache and return `OAuthlibCore` instance so it will be created only on first request
+        unless ALWAYS_RELOAD_OAUTHLIB_CORE is True.
         """
-        if not hasattr(cls, "_oauthlib_core"):
+        if not hasattr(cls, "_oauthlib_core") or oauth2_settings.ALWAYS_RELOAD_OAUTHLIB_CORE:
             server = cls.get_server()
             core_class = cls.get_oauthlib_backend_class()
             cls._oauthlib_core = core_class(server)
@@ -109,7 +105,7 @@ class OAuthLibMixin:
         :param request: The current django.http.HttpRequest object
         :param scopes: A space-separated string of provided scopes
         :param credentials: Authorization credentials dictionary containing
-                           `client_id`, `state`, `redirect_uri`, `response_type`
+                           `client_id`, `state`, `redirect_uri` and `response_type`
         :param allow: True if the user authorize the client, otherwise False
         """
         # TODO: move this scopes conversion from and to string into a utils function
@@ -136,6 +132,16 @@ class OAuthLibMixin:
         """
         core = self.get_oauthlib_core()
         return core.create_revocation_response(request)
+
+    def create_userinfo_response(self, request):
+        """
+        A wrapper method that calls create_userinfo_response on the
+        `server_class` instance.
+
+        :param request: The current django.http.HttpRequest object
+        """
+        core = self.get_oauthlib_core()
+        return core.create_userinfo_response(request)
 
     def verify_request(self, request):
         """
@@ -286,7 +292,30 @@ class ClientProtectedResourceMixin(OAuthLibMixin):
             if valid:
                 request.resource_owner = r.user
                 return super().dispatch(request, *args, **kwargs)
-            else:
-                return HttpResponseForbidden()
+            return HttpResponseForbidden()
         else:
             return super().dispatch(request, *args, **kwargs)
+
+
+class OIDCOnlyMixin:
+    """
+    Mixin for views that should only be accessible when OIDC is enabled.
+
+    If OIDC is not enabled:
+
+    * if DEBUG is True, raises an ImproperlyConfigured exception explaining why
+    * otherwise, returns a 404 response, logging the same warning
+    """
+
+    debug_error_message = (
+        "django-oauth-toolkit OIDC views are not enabled unless you "
+        "have configured OIDC_ENABLED in the settings"
+    )
+
+    def dispatch(self, *args, **kwargs):
+        if not oauth2_settings.OIDC_ENABLED:
+            if settings.DEBUG:
+                raise ImproperlyConfigured(self.debug_error_message)
+            log.warning(self.debug_error_message)
+            return HttpResponseNotFound()
+        return super().dispatch(*args, **kwargs)

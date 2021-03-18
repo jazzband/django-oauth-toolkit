@@ -90,10 +90,6 @@ class AuthorizationView(BaseAuthorizationView, FormView):
     template_name = "oauth2_provider/authorize.html"
     form_class = AllowForm
 
-    server_class = oauth2_settings.OAUTH2_SERVER_CLASS
-    validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
-    oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
-
     skip_authorization_completely = False
 
     def get_initial(self):
@@ -102,11 +98,13 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         initial_data = {
             "redirect_uri": self.oauth2_data.get("redirect_uri", None),
             "scope": " ".join(scopes),
+            "nonce": self.oauth2_data.get("nonce", None),
             "client_id": self.oauth2_data.get("client_id", None),
             "state": self.oauth2_data.get("state", None),
             "response_type": self.oauth2_data.get("response_type", None),
             "code_challenge": self.oauth2_data.get("code_challenge", None),
             "code_challenge_method": self.oauth2_data.get("code_challenge_method", None),
+            "claims": self.oauth2_data.get("claims", None),
         }
         return initial_data
 
@@ -123,6 +121,11 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             credentials["code_challenge"] = form.cleaned_data.get("code_challenge")
         if form.cleaned_data.get("code_challenge_method", False):
             credentials["code_challenge_method"] = form.cleaned_data.get("code_challenge_method")
+        if form.cleaned_data.get("nonce", False):
+            credentials["nonce"] = form.cleaned_data.get("nonce")
+        if form.cleaned_data.get("claims", False):
+            credentials["claims"] = form.cleaned_data.get("claims")
+
         scopes = form.cleaned_data.get("scope")
         allow = form.cleaned_data.get("allow")
 
@@ -161,6 +164,10 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             kwargs["code_challenge"] = credentials["code_challenge"]
         if "code_challenge_method" in credentials:
             kwargs["code_challenge_method"] = credentials["code_challenge_method"]
+        if "nonce" in credentials:
+            kwargs["nonce"] = credentials["nonce"]
+        if "claims" in credentials:
+            kwargs["claims"] = json.dumps(credentials["claims"])
 
         self.oauth2_data = kwargs
         # following two loc are here only because of https://code.djangoproject.com/ticket/17795
@@ -195,7 +202,10 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                 for token in tokens:
                     if token.allow_scopes(scopes):
                         uri, headers, body, status = self.create_authorization_response(
-                            request=self.request, scopes=" ".join(scopes), credentials=credentials, allow=True
+                            request=self.request,
+                            scopes=" ".join(scopes),
+                            credentials=credentials,
+                            allow=True,
                         )
                         return self.redirect(uri, application, token)
 
@@ -245,10 +255,6 @@ class TokenView(OAuthLibMixin, View):
     * Client credentials
     """
 
-    server_class = oauth2_settings.OAUTH2_SERVER_CLASS
-    validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
-    oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
-
     @method_decorator(sensitive_post_parameters("password"))
     def post(self, request, *args, **kwargs):
         url, headers, body, status = self.create_token_response(request)
@@ -269,10 +275,6 @@ class RevokeTokenView(OAuthLibMixin, View):
     """
     Implements an endpoint to revoke access or refresh tokens
     """
-
-    server_class = oauth2_settings.OAUTH2_SERVER_CLASS
-    validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
-    oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
 
     def post(self, request, *args, **kwargs):
         url, headers, body, status = self.create_revocation_response(request)

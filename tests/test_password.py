@@ -1,11 +1,11 @@
 import json
 
+import pytest
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
 from oauth2_provider.models import get_application_model
-from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views import ProtectedResourceView
 
 from .utils import get_basic_auth_header
@@ -21,6 +21,7 @@ class ResourceView(ProtectedResourceView):
         return "This is a protected resource"
 
 
+@pytest.mark.usefixtures("oauth2_settings")
 class BaseTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
@@ -33,9 +34,6 @@ class BaseTest(TestCase):
             client_type=Application.CLIENT_PUBLIC,
             authorization_grant_type=Application.GRANT_PASSWORD,
         )
-
-        oauth2_settings._SCOPES = ["read", "write"]
-        oauth2_settings._DEFAULT_SCOPES = ["read", "write"]
 
     def tearDown(self):
         self.application.delete()
@@ -60,8 +58,8 @@ class TestPasswordTokenView(BaseTest):
 
         content = json.loads(response.content.decode("utf-8"))
         self.assertEqual(content["token_type"], "Bearer")
-        self.assertEqual(content["scope"], "read write")
-        self.assertEqual(content["expires_in"], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
+        self.assertEqual(set(content["scope"].split()), {"read", "write"})
+        self.assertEqual(content["expires_in"], self.oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
 
     def test_bad_credentials(self):
         """

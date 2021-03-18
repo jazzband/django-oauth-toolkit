@@ -1,14 +1,15 @@
 import calendar
 import datetime
 
+import pytest
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
 from oauth2_provider.models import get_access_token_model, get_application_model
-from oauth2_provider.settings import oauth2_settings
 
+from . import presets
 from .utils import get_basic_auth_header
 
 
@@ -17,6 +18,8 @@ AccessToken = get_access_token_model()
 UserModel = get_user_model()
 
 
+@pytest.mark.usefixtures("oauth2_settings")
+@pytest.mark.oauth2_settings(presets.INTROSPECTION_SETTINGS)
 class TestTokenIntrospectionViews(TestCase):
     """
     Tests for Authorized Token Introspection Views
@@ -74,12 +77,7 @@ class TestTokenIntrospectionViews(TestCase):
             scope="read write dolphin",
         )
 
-        oauth2_settings._SCOPES = ["read", "write", "introspection", "dolphin"]
-        oauth2_settings.READ_SCOPE = "read"
-        oauth2_settings.WRITE_SCOPE = "write"
-
     def tearDown(self):
-        oauth2_settings._SCOPES = ["read", "write"]
         AccessToken.objects.all().delete()
         Application.objects.all().delete()
         UserModel.objects.all().delete()
