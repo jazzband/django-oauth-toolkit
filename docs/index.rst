@@ -16,7 +16,7 @@ See our :doc:`Changelog <changelog>` for information on updates.
 Support
 -------
 
-If you need support please send a message to the `Django OAuth Toolkit Google Group <http://groups.google.com/group/django-oauth-toolkit>`_
+If you need help please submit a `question <https://github.com/jazzband/django-oauth-toolkit/issues/new?assignees=&labels=question&template=question.md&title=>`_.
 
 Requirements
 ------------
