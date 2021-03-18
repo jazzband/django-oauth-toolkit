@@ -124,7 +124,9 @@ Overwrite this value if you wrote your own implementation (subclass of
 OAUTH2_SERVER_CLASS
 ~~~~~~~~~~~~~~~~~~~
 The import string for the ``server_class`` (or ``oauthlib.oauth2.Server`` subclass)
-used in the ``OAuthLibMixin`` that implements OAuth2 grant types.
+used in the ``OAuthLibMixin`` that implements OAuth2 grant types. It defaults
+to ``oauthlib.oauth2.Server``, except when OIDC support is enabled, when the
+default is ``oauthlib.openid.Server``.
 
 OAUTH2_VALIDATOR_CLASS
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -247,3 +249,64 @@ PKCE_REQUIRED
 Default: ``False``
 
 Whether or not PKCE is required. Can be either a bool or a callable that takes a client id and returns a bool.
+
+
+OIDC_RSA_PRIVATE_KEY
+~~~~~~~~~~~~~~~~~~~~
+Default: ``""``
+
+The RSA private key used to sign OIDC ID tokens. If not set, OIDC is disabled.
+
+
+OIDC_USERINFO_ENDPOINT
+~~~~~~~~~~~~~~~~~~~~~~
+Default: ``""``
+
+The url of the userinfo endpoint. Used to advertise the location of the
+endpoint in the OIDC discovery metadata. Changing this does not change the URL
+that ``django-oauth-toolkit`` adds for the userinfo endpoint, so if you change
+this you must also provide the service at that endpoint.
+
+If unset, the default location is used, eg if ``django-oauth-toolkit`` is
+mounted at ``/o/``, it will be ``<server-address>/o/userinfo/``.
+
+OIDC_ISS_ENDPOINT
+~~~~~~~~~~~~~~~~~
+Default: ``""``
+
+The URL of the issuer that is used in the ID token JWT and advertised in the
+OIDC discovery metadata. Clients use this location to retrieve the OIDC
+discovery metadata from ``OIDC_ISS_ENDPOINT`` +
+``/.well-known/openid-configuration/``.
+
+If unset, the default location is used, eg if ``django-oauth-toolkit`` is
+mounted at ``/o``, it will be ``<server-address>/o``.
+
+OIDC_RESPONSE_TYPES_SUPPORTED
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Default::
+
+    [
+        "code",
+        "token",
+        "id_token",
+        "id_token token",
+        "code token",
+        "code id_token",
+        "code id_token token",
+    ]
+
+
+The response types that are advertised to be supported by this server.
+
+OIDC_SUBJECT_TYPES_SUPPORTED
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Default: ``["public"]``
+
+The subject types that are advertised to be supported by this server.
+
+OIDC_TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Default: ``["client_secret_post", "client_secret_basic"]``
+
+The authentication methods that are advertised to be supported by this server.

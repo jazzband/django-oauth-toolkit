@@ -8,7 +8,7 @@ indent_size = 4
 insert_final_newline = true
 trim_trailing_whitespace = true
 
-[{Makefile,tox.ini,setup.cfg}]
+[{Makefile,setup.cfg}]
 indent_style = tab
 
 [*.{yml,yaml}]

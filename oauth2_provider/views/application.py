@@ -37,6 +37,7 @@ class ApplicationRegistration(LoginRequiredMixin, CreateView):
                 "client_type",
                 "authorization_grant_type",
                 "redirect_uris",
+                "algorithm",
             ),
         )
 
@@ -94,5 +95,6 @@ class ApplicationUpdate(ApplicationOwnerIsUserMixin, UpdateView):
                 "client_type",
                 "authorization_grant_type",
                 "redirect_uris",
+                "algorithm",
             ),
         )

@@ -1,6 +1,5 @@
 from django.views.generic import View
 
-from ..settings import oauth2_settings
 from .mixins import (
     ClientProtectedResourceMixin,
     OAuthLibMixin,
@@ -10,16 +9,7 @@ from .mixins import (
 )
 
 
-class InitializationMixin(OAuthLibMixin):
-
-    """Initializer for OauthLibMixin"""
-
-    server_class = oauth2_settings.OAUTH2_SERVER_CLASS
-    validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
-    oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
-
-
-class ProtectedResourceView(ProtectedResourceMixin, InitializationMixin, View):
+class ProtectedResourceView(ProtectedResourceMixin, OAuthLibMixin, View):
     """
     Generic view protecting resources by providing OAuth2 authentication out of the box
     """
@@ -45,7 +35,7 @@ class ReadWriteScopedResourceView(ReadWriteScopedResourceMixin, ProtectedResourc
     pass
 
 
-class ClientProtectedResourceView(ClientProtectedResourceMixin, InitializationMixin, View):
+class ClientProtectedResourceView(ClientProtectedResourceMixin, OAuthLibMixin, View):
 
     """View for protecting a resource with client-credentials method.
     This involves allowing access tokens, Basic Auth and plain credentials in request body.

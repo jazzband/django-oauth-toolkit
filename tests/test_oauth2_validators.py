@@ -1,14 +1,20 @@
 import contextlib
 import datetime
+import json
 
+import pytest
 from django.contrib.auth import get_user_model
 from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
+from jwcrypto import jwt
 from oauthlib.common import Request
 
 from oauth2_provider.exceptions import FatalClientError
 from oauth2_provider.models import get_access_token_model, get_application_model, get_refresh_token_model
+from oauth2_provider.oauth2_backends import get_oauthlib_core
 from oauth2_provider.oauth2_validators import OAuth2Validator
+
+from . import presets
 
 
 try:
@@ -440,3 +446,77 @@ class TestOAuth2ValidatorErrorResourceToken(TestCase):
                 "Not Found.\nNoneType: None",
                 mock_log.output,
             )
+
+
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_oidc_endpoint_generation(oauth2_settings, rf):
+    oauth2_settings.OIDC_ISS_ENDPOINT = ""
+    django_request = rf.get("/")
+    request = Request("/", headers=django_request.META)
+    validator = OAuth2Validator()
+    oidc_issuer_endpoint = validator.get_oidc_issuer_endpoint(request)
+    assert oidc_issuer_endpoint == "http://testserver/o"
+
+
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_oidc_endpoint_generation_ssl(oauth2_settings, rf, settings):
+    oauth2_settings.OIDC_ISS_ENDPOINT = ""
+    django_request = rf.get("/", secure=True)
+    # Calling the settings method with a django https request should generate a https url
+    oidc_issuer_endpoint = oauth2_settings.oidc_issuer(django_request)
+    assert oidc_issuer_endpoint == "https://testserver/o"
+
+    # Should also work with an oauthlib request (via validator)
+    core = get_oauthlib_core()
+    uri, http_method, body, headers = core._extract_params(django_request)
+    request = Request(uri=uri, http_method=http_method, body=body, headers=headers)
+    validator = OAuth2Validator()
+    oidc_issuer_endpoint = validator.get_oidc_issuer_endpoint(request)
+    assert oidc_issuer_endpoint == "https://testserver/o"
+
+
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_get_jwt_bearer_token(oauth2_settings, mocker):
+    # oauthlib instructs us to make get_jwt_bearer_token call get_id_token
+    request = mocker.MagicMock(wraps=Request)
+    validator = OAuth2Validator()
+    mock_get_id_token = mocker.patch.object(validator, "get_id_token")
+    validator.get_jwt_bearer_token(None, None, request)
+    assert mock_get_id_token.call_count == 1
+    assert mock_get_id_token.call_args[0] == (None, None, request)
+    assert mock_get_id_token.call_args[1] == {}
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_validate_id_token_expired_jwt(oauth2_settings, mocker, oidc_tokens):
+    mocker.patch("oauth2_provider.oauth2_validators.jwt.JWT", side_effect=jwt.JWTExpired)
+    validator = OAuth2Validator()
+    status = validator.validate_id_token(oidc_tokens.id_token, ["openid"], mocker.sentinel.request)
+    assert status is False
+
+
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_validate_id_token_no_token(oauth2_settings, mocker):
+    validator = OAuth2Validator()
+    status = validator.validate_id_token("", ["openid"], mocker.sentinel.request)
+    assert status is False
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_validate_id_token_app_removed(oauth2_settings, mocker, oidc_tokens):
+    oidc_tokens.application.delete()
+    validator = OAuth2Validator()
+    status = validator.validate_id_token(oidc_tokens.id_token, ["openid"], mocker.sentinel.request)
+    assert status is False
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_validate_id_token_bad_token_no_aud(oauth2_settings, mocker, oidc_key):
+    token = jwt.JWT(header=json.dumps({"alg": "RS256"}), claims=json.dumps({"bad": "token"}))
+    token.make_signed_token(oidc_key)
+    validator = OAuth2Validator()
+    status = validator.validate_id_token(token.serialize(), ["openid"], mocker.sentinel.request)
+    assert status is False

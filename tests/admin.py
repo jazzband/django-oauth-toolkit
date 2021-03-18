@@ -13,5 +13,9 @@ class CustomGrantAdmin(admin.ModelAdmin):
     list_display = ("id",)
 
 
+class CustomIDTokenAdmin(admin.ModelAdmin):
+    list_display = ("id",)
+
+
 class CustomRefreshTokenAdmin(admin.ModelAdmin):
     list_display = ("id",)
