@@ -13,6 +13,7 @@ from oauthlib.common import Request
 
 from oauth2_provider.models import get_access_token_model, get_application_model
 from oauth2_provider.oauth2_validators import OAuth2Validator
+from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views import ScopedProtectedResourceView
 
 from . import presets
