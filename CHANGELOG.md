@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
   -->
 
+## [unreleased]
+* #712, #636, #808. Calls to `django.contrib.auth.authenticate()` now pass a `request`
+  to provide compatibility with backends that need one.
+
 ## [1.5.0] 2021-03-18
 
 ### Added
