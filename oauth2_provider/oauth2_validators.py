@@ -14,6 +14,7 @@ from django.contrib.auth import authenticate, get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.db.models import Q
+from django.http import HttpRequest
 from django.utils import dateformat, timezone
 from django.utils.timezone import make_aware
 from django.utils.translation import gettext_lazy as _
@@ -664,7 +665,15 @@ class OAuth2Validator(RequestValidator):
         """
         Check username and password correspond to a valid and active User
         """
-        u = authenticate(username=username, password=password)
+        # Passing the optional HttpRequest adds compatibility for backends
+        # which depend on its presence. Create one with attributes likely
+        # to be used.
+        http_request = HttpRequest()
+        http_request.path = request.uri
+        http_request.method = request.http_method
+        getattr(http_request, request.http_method).update(dict(request.decoded_body))
+        http_request.META = request.headers
+        u = authenticate(http_request, username=username, password=password)
         if u is not None and u.is_active:
             request.user = u
             return True

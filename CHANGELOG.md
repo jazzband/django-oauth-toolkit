@@ -14,12 +14,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
   -->
 
+## [unreleased]
+
+### Added
+* #712, #636, #808. Calls to `django.contrib.auth.authenticate()` now pass a `request`
+  to provide compatibility with backends that need one.
+  
+### Fixed
+* #524 Restrict usage of timezone aware expire dates to Django projects with USE_TZ set to True.
+
 ## [1.5.0] 2021-03-18
 
 ### Added
 * #915 Add optional OpenID Connect support.
-### Fixed
-* #524 Restrict usage of timezone aware expire dates to Django projects with USE_TZ set to True.
 
 ### Changed
 * #942 Help via defunct Google group replaced with using GitHub issues
