@@ -2,6 +2,7 @@ import calendar
 import datetime
 
 import pytest
+from django.conf import settings
 from django.conf.urls import include
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
@@ -12,6 +13,7 @@ from oauthlib.common import Request
 
 from oauth2_provider.models import get_access_token_model, get_application_model
 from oauth2_provider.oauth2_validators import OAuth2Validator
+from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views import ScopedProtectedResourceView
 
 from . import presets
@@ -153,6 +155,25 @@ class TestTokenIntrospectionAuth(TestCase):
         self.assertIsInstance(token, AccessToken)
         self.assertEqual(token.user.username, "foo_user")
         self.assertEqual(token.scope, "read write dolphin")
+
+    @mock.patch("requests.post", side_effect=mocked_requests_post)
+    def test_get_token_from_authentication_server_expires_timezone(self, mock_get):
+        """
+        Test method _get_token_from_authentication_server for projects with USE_TZ False
+        """
+        settings_use_tz_backup = settings.USE_TZ
+        settings.USE_TZ = False
+        try:
+            self.validator._get_token_from_authentication_server(
+                "foo",
+                oauth2_settings.RESOURCE_SERVER_INTROSPECTION_URL,
+                oauth2_settings.RESOURCE_SERVER_AUTH_TOKEN,
+                oauth2_settings.RESOURCE_SERVER_INTROSPECTION_CREDENTIALS,
+            )
+        except ValueError as exception:
+            self.fail(str(exception))
+        finally:
+            settings.USE_TZ = settings_use_tz_backup
 
     @mock.patch("requests.post", side_effect=mocked_requests_post)
     def test_validate_bearer_token(self, mock_get):

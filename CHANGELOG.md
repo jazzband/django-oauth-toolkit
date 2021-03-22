@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 * #915 Add optional OpenID Connect support.
+### Fixed
+* #524 Restrict usage of timezone aware expire dates to Django projects with USE_TZ set to True.
 
 ### Changed
 * #942 Help via defunct Google group replaced with using GitHub issues

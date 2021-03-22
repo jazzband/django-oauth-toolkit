@@ -310,3 +310,12 @@ OIDC_TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED
 Default: ``["client_secret_post", "client_secret_basic"]``
 
 The authentication methods that are advertised to be supported by this server.
+
+
+Settings imported from Django project
+--------------------------
+
+USE_TZ
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Used to determine whether or not to make token expire dates timezone aware.
