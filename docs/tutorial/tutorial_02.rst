@@ -65,7 +65,9 @@ URL this view will respond to:
 
     urlpatterns = [
         # OAuth 2 endpoints:
-        path('o/', include(oauth2_endpoint_views, namespace="oauth2_provider")),
+        # need to pass in a tuple of the endpoints as well as the app's name
+        # because the app_name attribute is not set in the included module
+        path('o/', include((oauth2_endpoint_views, 'oauth2_provider'), namespace="oauth2_provider")),
         path('api/hello', ApiEndpoint.as_view()),  # an example resource endpoint
     ]
 
