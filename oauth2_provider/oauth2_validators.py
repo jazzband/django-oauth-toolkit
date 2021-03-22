@@ -671,10 +671,7 @@ class OAuth2Validator(RequestValidator):
         http_request = HttpRequest()
         http_request.path = request.uri
         http_request.method = request.http_method
-        if request.http_method == "GET":
-            http_request.GET.update(dict(request.decoded_body))
-        elif request.http_method == "POST":
-            http_request.POST.update(dict(request.decoded_body))
+        getattr(http_request, request.http_method).update(dict(request.decoded_body))
         http_request.META = request.headers
         u = authenticate(http_request, username=username, password=password)
         if u is not None and u.is_active:
