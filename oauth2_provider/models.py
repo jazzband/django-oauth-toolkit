@@ -131,6 +131,11 @@ class AbstractApplication(models.Model):
             parsed_allowed_uri = urlparse(allowed_uri)
 
             if (
+                parsed_allowed_uri.scheme == parsed_uri.scheme == "http"
+                and parsed_uri.hostname in ["127.0.0.1", "::1"]
+                and parsed_allowed_uri.hostname == parsed_uri.hostname
+                and parsed_allowed_uri.path == parsed_uri.path
+            ) or (
                 parsed_allowed_uri.scheme == parsed_uri.scheme
                 and parsed_allowed_uri.netloc == parsed_uri.netloc
                 and parsed_allowed_uri.path == parsed_uri.path
