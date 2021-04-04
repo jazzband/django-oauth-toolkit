@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 * #524 Restrict usage of timezone aware expire dates to Django projects with USE_TZ set to True.
-* #953 Allow loopback redirect URIs with ports using http scheme and localhost address for Oauth2 Applications
+* #953 Allow loopback redirect URIs with random ports using http scheme, localhost address and no pinned port for Oauth2 Applications (RFC8252)
 
 ## [1.5.0] 2021-03-18
 

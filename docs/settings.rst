@@ -52,6 +52,10 @@ Default: ``["http", "https"]``
 A list of schemes that the ``redirect_uri`` field will be validated against.
 Setting this to ``["https"]`` only in production is strongly recommended.
 
+For Native Apps the ``http`` scheme can be used without port specification in the
+``redirect_uri`` field, so that the Application accepts randomly assigned ports.
+If a port is specified, it requires a match.
+
 Note that you may override ``Application.get_allowed_schemes()`` to set this on
 a per-application basis.
 

@@ -133,6 +133,7 @@ class AbstractApplication(models.Model):
             if (
                 parsed_allowed_uri.scheme == parsed_uri.scheme == "http"
                 and parsed_uri.hostname in ["127.0.0.1", "::1"]
+                and isinstance(parsed_allowed_uri.port, type(None))
                 and parsed_allowed_uri.hostname == parsed_uri.hostname
                 and parsed_allowed_uri.path == parsed_uri.path
             ) or (
