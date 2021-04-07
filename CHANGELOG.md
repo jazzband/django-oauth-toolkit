@@ -22,7 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 * #524 Restrict usage of timezone aware expire dates to Django projects with USE_TZ set to True.
-* #955 Avoid doubling of `oauth2_provider` urls mountpath in json response for OIDC view `ConnectDiscoveryInfoView`
+* #955 Avoid doubling of `oauth2_provider` urls mountpath in json response for OIDC view `ConnectDiscoveryInfoView`.
+  Breaks existing OIDC discovery output
 
 ## [1.5.0] 2021-03-18
 
