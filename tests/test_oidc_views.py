@@ -12,10 +12,10 @@ from . import presets
 class TestConnectDiscoveryInfoView(TestCase):
     def test_get_connect_discovery_info(self):
         expected_response = {
-            "issuer": "http://localhost",
+            "issuer": "http://localhost/o",
             "authorization_endpoint": "http://localhost/o/authorize/",
             "token_endpoint": "http://localhost/o/token/",
-            "userinfo_endpoint": "http://localhost/userinfo/",
+            "userinfo_endpoint": "http://localhost/o/userinfo/",
             "jwks_uri": "http://localhost/o/.well-known/jwks.json",
             "response_types_supported": [
                 "code",
