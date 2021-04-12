@@ -52,6 +52,11 @@ Default: ``["http", "https"]``
 A list of schemes that the ``redirect_uri`` field will be validated against.
 Setting this to ``["https"]`` only in production is strongly recommended.
 
+For Native Apps the ``http`` scheme can be safely used with loopback addresses in the
+Application (``[::1]`` or ``127.0.0.1``). In this case the ``redirect_uri`` can be
+configured without explicit port specification, so that the Application accepts randomly
+assigned ports.
+
 Note that you may override ``Application.get_allowed_schemes()`` to set this on
 a per-application basis.
 

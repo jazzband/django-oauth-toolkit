@@ -125,23 +125,7 @@ class AbstractApplication(models.Model):
 
         :param uri: Url to check
         """
-        parsed_uri = urlparse(uri)
-        uqs_set = set(parse_qsl(parsed_uri.query))
-        for allowed_uri in self.redirect_uris.split():
-            parsed_allowed_uri = urlparse(allowed_uri)
-
-            if (
-                parsed_allowed_uri.scheme == parsed_uri.scheme
-                and parsed_allowed_uri.netloc == parsed_uri.netloc
-                and parsed_allowed_uri.path == parsed_uri.path
-            ):
-
-                aqs_set = set(parse_qsl(parsed_allowed_uri.query))
-
-                if aqs_set.issubset(uqs_set):
-                    return True
-
-        return False
+        return redirect_to_uri_allowed(uri, self.redirect_uris.split())
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -674,3 +658,50 @@ def clear_expired():
 
         access_tokens.delete()
         grants.delete()
+
+
+def redirect_to_uri_allowed(uri, allowed_uris):
+    """
+    Checks if a given uri can be redirected to based on the provided allowed_uris configuration.
+
+    On top of exact matches, this function also handles loopback IPs based on RFC 8252.
+
+    :param uri: URI to check
+    :param allowed_uris: A list of URIs that are allowed
+    """
+
+    parsed_uri = urlparse(uri)
+    uqs_set = set(parse_qsl(parsed_uri.query))
+    for allowed_uri in allowed_uris:
+        parsed_allowed_uri = urlparse(allowed_uri)
+
+        # From RFC 8252 (Section 7.3)
+        #
+        # Loopback redirect URIs use the "http" scheme
+        # [...]
+        # The authorization server MUST allow any port to be specified at the
+        # time of the request for loopback IP redirect URIs, to accommodate
+        # clients that obtain an available ephemeral port from the operating
+        # system at the time of the request.
+
+        allowed_uri_is_loopback = (
+            parsed_allowed_uri.scheme == "http"
+            and parsed_allowed_uri.hostname in ["127.0.0.1", "::1"]
+            and parsed_allowed_uri.port is None
+        )
+        if (
+            allowed_uri_is_loopback
+            and parsed_allowed_uri.scheme == parsed_uri.scheme
+            and parsed_allowed_uri.hostname == parsed_uri.hostname
+            and parsed_allowed_uri.path == parsed_uri.path
+        ) or (
+            parsed_allowed_uri.scheme == parsed_uri.scheme
+            and parsed_allowed_uri.netloc == parsed_uri.netloc
+            and parsed_allowed_uri.path == parsed_uri.path
+        ):
+
+            aqs_set = set(parse_qsl(parsed_allowed_uri.query))
+            if aqs_set.issubset(uqs_set):
+                return True
+
+    return False

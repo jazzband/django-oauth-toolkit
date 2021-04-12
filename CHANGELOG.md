@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #524 Restrict usage of timezone aware expire dates to Django projects with USE_TZ set to True.
 * #955 Avoid doubling of `oauth2_provider` urls mountpath in json response for OIDC view `ConnectDiscoveryInfoView`.
   Breaks existing OIDC discovery output
+* #953 Allow loopback redirect URIs with random ports using http scheme, localhost address and no explicit port
+  configuration in the allowed redirect_uris for Oauth2 Applications (RFC8252)
 
 ## [1.5.0] 2021-03-18
 

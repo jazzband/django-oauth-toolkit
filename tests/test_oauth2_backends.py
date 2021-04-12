@@ -4,6 +4,7 @@ import pytest
 from django.test import RequestFactory, TestCase
 
 from oauth2_provider.backends import get_oauthlib_core
+from oauth2_provider.models import redirect_to_uri_allowed
 from oauth2_provider.oauth2_backends import JSONOAuthLibCore, OAuthLibCore
 
 
@@ -110,3 +111,23 @@ class TestOAuthLibCore(TestCase):
 
         oauthlib_core = get_oauthlib_core()
         oauthlib_core.verify_request(request, scopes=[])
+
+
+@pytest.mark.parametrize(
+    "uri, expected_result",
+    # localhost is _not_ a loopback URI
+    [
+        ("http://localhost:3456", False),
+        # only http scheme is supported for loopback URIs
+        ("https://127.0.0.1:3456", False),
+        ("http://127.0.0.1:3456", True),
+        ("http://[::1]", True),
+        ("http://[::1]:34", True),
+    ],
+)
+def test_uri_loopback_redirect_check(uri, expected_result):
+    allowed_uris = ["http://127.0.0.1", "http://[::1]"]
+    if expected_result:
+        assert redirect_to_uri_allowed(uri, allowed_uris)
+    else:
+        assert not redirect_to_uri_allowed(uri, allowed_uris)
