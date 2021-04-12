@@ -9,8 +9,8 @@ DEFAULT_SCOPES_RW = {"DEFAULT_SCOPES": ["read", "write"]}
 DEFAULT_SCOPES_RO = {"DEFAULT_SCOPES": ["read"]}
 OIDC_SETTINGS_RW = {
     "OIDC_ENABLED": True,
-    "OIDC_ISS_ENDPOINT": "http://localhost",
-    "OIDC_USERINFO_ENDPOINT": "http://localhost/userinfo/",
+    "OIDC_ISS_ENDPOINT": "http://localhost/o",
+    "OIDC_USERINFO_ENDPOINT": "http://localhost/o/userinfo/",
     "OIDC_RSA_PRIVATE_KEY": settings.OIDC_RSA_PRIVATE_KEY,
     "SCOPES": {
         "read": "Reading scope",
