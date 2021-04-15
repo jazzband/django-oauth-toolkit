@@ -17,8 +17,8 @@ class OAuth2Backend:
         if request is not None:
             try:
                 valid, request = OAuthLibCore.verify_request(request, scopes=[])
-            except ValueError as err:
-                raise SuspiciousOperation(err)
+            except ValueError as error:
+                raise SuspiciousOperation(error)
             else:
                 if valid:
                     return request.user
