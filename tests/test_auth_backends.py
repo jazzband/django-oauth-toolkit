@@ -1,5 +1,7 @@
+import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
+from django.core.exceptions import SuspiciousOperation
 from django.http import HttpResponse
 from django.test import RequestFactory, TestCase
 from django.test.utils import modify_settings, override_settings
@@ -8,7 +10,6 @@ from django.utils.timezone import now, timedelta
 from oauth2_provider.backends import OAuth2Backend
 from oauth2_provider.middleware import OAuth2TokenMiddleware
 from oauth2_provider.models import get_access_token_model, get_application_model
-
 
 UserModel = get_user_model()
 ApplicationModel = get_application_model()
@@ -50,6 +51,16 @@ class TestOAuth2Backend(BaseTest):
         credentials = {"request": request}
         u = backend.authenticate(**credentials)
         self.assertEqual(u, self.user)
+
+    def test_authenticate_raises_error_with_invalid_hex_in_query_params(self):
+        auth_headers = {
+            "HTTP_AUTHORIZATION": "Bearer " + "tokstr",
+        }
+        request = self.factory.get("/a-resource?auth_token=%%7A", **auth_headers)
+        credentials = {"request": request}
+
+        with pytest.raises(SuspiciousOperation):
+            OAuth2Backend().authenticate(**credentials)
 
     def test_authenticate_fail(self):
         auth_headers = {

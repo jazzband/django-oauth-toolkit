@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.core.exceptions import SuspiciousOperation
 
 from .oauth2_backends import get_oauthlib_core
 
@@ -14,9 +15,14 @@ class OAuth2Backend:
 
     def authenticate(self, request=None, **credentials):
         if request is not None:
-            valid, r = OAuthLibCore.verify_request(request, scopes=[])
-            if valid:
-                return r.user
+            try:
+                valid, request = OAuthLibCore.verify_request(request, scopes=[])
+            except ValueError as err:
+                raise SuspiciousOperation(err)
+            else:
+                if valid:
+                    return request.user
+
         return None
 
     def get_user(self, user_id):
