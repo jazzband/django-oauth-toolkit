@@ -196,8 +196,12 @@ class OAuthLibCore:
         :param scopes: A list of scopes required to verify so that request is verified
         """
         uri, http_method, body, headers = self._extract_params(request)
-
-        valid, r = self.server.verify_request(uri, http_method, body, headers, scopes=scopes)
+        # Oauthlib has an assumption (without confirming) that the only kind of Authorization header is a Bearer.
+        # It's entirely possible to have multiple authentication classes that include Basic as well. See #964.
+        if "Authorization" in headers and headers["Authorization"].startswith("Bearer "):
+            valid, r = self.server.verify_request(uri, http_method, body, headers, scopes=scopes)
+        else:
+            valid, r = False, None
         return valid, r
 
     def authenticate_client(self, request):
