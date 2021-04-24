@@ -337,6 +337,18 @@ Default: ``["client_secret_post", "client_secret_basic"]``
 
 The authentication methods that are advertised to be supported by this server.
 
+CLEAR_EXPIRED_TOKENS_BATCH_SIZE
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Default: ``10000``
+
+The size of delete batches used by ``cleartokens`` management command.
+
+CLEAR_EXPIRED_TOKENS_BATCH_INTERVAL
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Default: ``0.1``
+
+Time of sleep in seconds used by ``cleartokens`` management command between batch deletions.
+
 
 Settings imported from Django project
 --------------------------
