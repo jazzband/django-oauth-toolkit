@@ -18,7 +18,10 @@ class OAuth2Backend:
             try:
                 valid, request = OAuthLibCore.verify_request(request, scopes=[])
             except ValueError as error:
-                raise SuspiciousOperation(error)
+                if str(error) == "Invalid hex encoding in query string.":
+                    raise SuspiciousOperation(error)
+                else:
+                    raise
             else:
                 if valid:
                     return request.user

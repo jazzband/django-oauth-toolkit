@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
@@ -61,6 +63,13 @@ class TestOAuth2Backend(BaseTest):
 
         with pytest.raises(SuspiciousOperation):
             OAuth2Backend().authenticate(**credentials)
+
+    @patch('oauth2_provider.backends.OAuthLibCore.verify_request')
+    def test_value_errors_are_reraised(self, patched_verify_request):
+        patched_verify_request.side_effect = ValueError('Generic error')
+
+        with pytest.raises(ValueError):
+            OAuth2Backend().authenticate(request={})
 
     def test_authenticate_fail(self):
         auth_headers = {

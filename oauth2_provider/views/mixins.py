@@ -154,7 +154,10 @@ class OAuthLibMixin:
         try:
             return core.verify_request(request, scopes=self.get_scopes())
         except ValueError as error:
-            raise SuspiciousOperation(error)
+            if str(error) == "Invalid hex encoding in query string.":
+                raise SuspiciousOperation(error)
+            else:
+                raise
 
     def get_scopes(self):
         """
