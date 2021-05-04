@@ -15,7 +15,7 @@ from django.contrib.auth.hashers import check_password
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.db.models import Q
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponseBadRequest
 from django.utils import dateformat, timezone
 from django.utils.timezone import make_aware
 from django.utils.translation import gettext_lazy as _
@@ -300,7 +300,10 @@ class OAuth2Validator(RequestValidator):
         return self._load_application(client_id, request) is not None
 
     def get_default_redirect_uri(self, client_id, request, *args, **kwargs):
-        return request.client.default_redirect_uri
+        try:
+            return request.client.default_redirect_uri
+        except Exception as e:
+            raise HttpResponseBadRequest(e)
 
     def _get_token_from_authentication_server(
         self, token, introspection_url, introspection_token, introspection_credentials
