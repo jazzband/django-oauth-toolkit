@@ -71,12 +71,23 @@ class JwksInfoView(OIDCOnlyMixin, View):
     def get(self, request, *args, **kwargs):
         keys = []
         if oauth2_settings.OIDC_RSA_PRIVATE_KEY:
-            key = jwk.JWK.from_pem(oauth2_settings.OIDC_RSA_PRIVATE_KEY.encode("utf8"))
-            data = {"alg": "RS256", "use": "sig", "kid": key.thumbprint()}
-            data.update(json.loads(key.export_public()))
-            keys.append(data)
+            for pem in [
+                oauth2_settings.OIDC_RSA_PRIVATE_KEY,
+                *oauth2_settings.OIDC_RSA_PRIVATE_KEYS_INACTIVE,
+            ]:
+
+                key = jwk.JWK.from_pem(pem.encode("utf8"))
+                data = {"alg": "RS256", "use": "sig", "kid": key.thumbprint()}
+                data.update(json.loads(key.export_public()))
+                keys.append(data)
         response = JsonResponse({"keys": keys})
         response["Access-Control-Allow-Origin"] = "*"
+        response["Cache-Control"] = (
+            "Cache-Control: public, "
+            + f"max-age={oauth2_settings.OIDC_JWKS_MAX_AGE_SECONDS}, "
+            + f"stale-while-revalidate={oauth2_settings.OIDC_JWKS_MAX_AGE_SECONDS}, "
+            + f"stale-if-error={oauth2_settings.OIDC_JWKS_MAX_AGE_SECONDS}"
+        )
         return response
 
 

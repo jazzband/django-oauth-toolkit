@@ -72,6 +72,8 @@ DEFAULTS = {
     "OIDC_ISS_ENDPOINT": "",
     "OIDC_USERINFO_ENDPOINT": "",
     "OIDC_RSA_PRIVATE_KEY": "",
+    "OIDC_RSA_PRIVATE_KEYS_INACTIVE": [],
+    "OIDC_JWKS_MAX_AGE_SECONDS": 3600,
     "OIDC_RESPONSE_TYPES_SUPPORTED": [
         "code",
         "token",
