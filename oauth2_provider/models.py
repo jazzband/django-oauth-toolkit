@@ -563,56 +563,56 @@ class IDToken(AbstractIDToken):
 
 
 def get_application_model():
-    """ Return the Application model that is active in this project. """
+    """Return the Application model that is active in this project."""
     return apps.get_model(oauth2_settings.APPLICATION_MODEL)
 
 
 def get_grant_model():
-    """ Return the Grant model that is active in this project. """
+    """Return the Grant model that is active in this project."""
     return apps.get_model(oauth2_settings.GRANT_MODEL)
 
 
 def get_access_token_model():
-    """ Return the AccessToken model that is active in this project. """
+    """Return the AccessToken model that is active in this project."""
     return apps.get_model(oauth2_settings.ACCESS_TOKEN_MODEL)
 
 
 def get_id_token_model():
-    """ Return the AccessToken model that is active in this project. """
+    """Return the AccessToken model that is active in this project."""
     return apps.get_model(oauth2_settings.ID_TOKEN_MODEL)
 
 
 def get_refresh_token_model():
-    """ Return the RefreshToken model that is active in this project. """
+    """Return the RefreshToken model that is active in this project."""
     return apps.get_model(oauth2_settings.REFRESH_TOKEN_MODEL)
 
 
 def get_application_admin_class():
-    """ Return the Application admin class that is active in this project. """
+    """Return the Application admin class that is active in this project."""
     application_admin_class = oauth2_settings.APPLICATION_ADMIN_CLASS
     return application_admin_class
 
 
 def get_access_token_admin_class():
-    """ Return the AccessToken admin class that is active in this project. """
+    """Return the AccessToken admin class that is active in this project."""
     access_token_admin_class = oauth2_settings.ACCESS_TOKEN_ADMIN_CLASS
     return access_token_admin_class
 
 
 def get_grant_admin_class():
-    """ Return the Grant admin class that is active in this project. """
+    """Return the Grant admin class that is active in this project."""
     grant_admin_class = oauth2_settings.GRANT_ADMIN_CLASS
     return grant_admin_class
 
 
 def get_id_token_admin_class():
-    """ Return the IDToken admin class that is active in this project. """
+    """Return the IDToken admin class that is active in this project."""
     id_token_admin_class = oauth2_settings.ID_TOKEN_ADMIN_CLASS
     return id_token_admin_class
 
 
 def get_refresh_token_admin_class():
-    """ Return the RefreshToken admin class that is active in this project. """
+    """Return the RefreshToken admin class that is active in this project."""
     refresh_token_admin_class = oauth2_settings.REFRESH_TOKEN_ADMIN_CLASS
     return refresh_token_admin_class
 
