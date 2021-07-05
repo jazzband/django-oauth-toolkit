@@ -8,10 +8,15 @@ from django.test.utils import override_settings
 from django.utils import timezone
 
 from oauth2_provider.models import (
-    clear_expired, get_access_token_model, get_application_model,
-    get_grant_model, get_refresh_token_model
+    clear_expired,
+    get_access_token_model,
+    get_application_model,
+    get_grant_model,
+    get_id_token_model,
+    get_refresh_token_model,
 )
-from oauth2_provider.settings import oauth2_settings
+
+from . import presets
 
 
 Application = get_application_model()
@@ -19,13 +24,18 @@ Grant = get_grant_model()
 AccessToken = get_access_token_model()
 RefreshToken = get_refresh_token_model()
 UserModel = get_user_model()
+IDToken = get_id_token_model()
 
 
-class TestModels(TestCase):
-
+class BaseTestModels(TestCase):
     def setUp(self):
         self.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
 
+    def tearDown(self):
+        self.user.delete()
+
+
+class TestModels(BaseTestModels):
     def test_allow_scopes(self):
         self.client.login(username="test_user", password="123456")
         app = Application.objects.create(
@@ -36,13 +46,7 @@ class TestModels(TestCase):
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
         )
 
-        access_token = AccessToken(
-            user=self.user,
-            scope="read write",
-            expires=0,
-            token="",
-            application=app
-        )
+        access_token = AccessToken(user=self.user, scope="read write", expires=0, token="", application=app)
 
         self.assertTrue(access_token.allow_scopes(["read", "write"]))
         self.assertTrue(access_token.allow_scopes(["write", "read"]))
@@ -95,21 +99,9 @@ class TestModels(TestCase):
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
         )
 
-        access_token = AccessToken(
-            user=self.user,
-            scope="read write",
-            expires=0,
-            token="",
-            application=app
-        )
+        access_token = AccessToken(user=self.user, scope="read write", expires=0, token="", application=app)
 
-        access_token2 = AccessToken(
-            user=self.user,
-            scope="write",
-            expires=0,
-            token="",
-            application=app
-        )
+        access_token2 = AccessToken(user=self.user, scope="write", expires=0, token="", application=app)
 
         self.assertEqual(access_token.scopes, {"read": "Reading scope", "write": "Writing scope"})
         self.assertEqual(access_token2.scopes, {"write": "Writing scope"})
@@ -119,13 +111,10 @@ class TestModels(TestCase):
     OAUTH2_PROVIDER_APPLICATION_MODEL="tests.SampleApplication",
     OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL="tests.SampleAccessToken",
     OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL="tests.SampleRefreshToken",
-    OAUTH2_PROVIDER_GRANT_MODEL="tests.SampleGrant"
+    OAUTH2_PROVIDER_GRANT_MODEL="tests.SampleGrant",
 )
-class TestCustomModels(TestCase):
-
-    def setUp(self):
-        self.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
-
+@pytest.mark.usefixtures("oauth2_settings")
+class TestCustomModels(BaseTestModels):
     def test_custom_application_model(self):
         """
         If a custom application model is installed, it should be present in
@@ -134,7 +123,8 @@ class TestCustomModels(TestCase):
         See issue #90 (https://github.com/jazzband/django-oauth-toolkit/issues/90)
         """
         related_object_names = [
-            f.name for f in UserModel._meta.get_fields()
+            f.name
+            for f in UserModel._meta.get_fields()
             if (f.one_to_many or f.one_to_one) and f.auto_created and not f.concrete
         ]
         self.assertNotIn("oauth2_provider:application", related_object_names)
@@ -142,21 +132,15 @@ class TestCustomModels(TestCase):
 
     def test_custom_application_model_incorrect_format(self):
         # Patch oauth2 settings to use a custom Application model
-        oauth2_settings.APPLICATION_MODEL = "IncorrectApplicationFormat"
+        self.oauth2_settings.APPLICATION_MODEL = "IncorrectApplicationFormat"
 
         self.assertRaises(ValueError, get_application_model)
 
-        # Revert oauth2 settings
-        oauth2_settings.APPLICATION_MODEL = "oauth2_provider.Application"
-
     def test_custom_application_model_not_installed(self):
         # Patch oauth2 settings to use a custom Application model
-        oauth2_settings.APPLICATION_MODEL = "tests.ApplicationNotInstalled"
+        self.oauth2_settings.APPLICATION_MODEL = "tests.ApplicationNotInstalled"
 
         self.assertRaises(LookupError, get_application_model)
-
-        # Revert oauth2 settings
-        oauth2_settings.APPLICATION_MODEL = "oauth2_provider.Application"
 
     def test_custom_access_token_model(self):
         """
@@ -165,7 +149,8 @@ class TestCustomModels(TestCase):
         """
         # Django internals caches the related objects.
         related_object_names = [
-            f.name for f in UserModel._meta.get_fields()
+            f.name
+            for f in UserModel._meta.get_fields()
             if (f.one_to_many or f.one_to_one) and f.auto_created and not f.concrete
         ]
         self.assertNotIn("oauth2_provider:access_token", related_object_names)
@@ -173,21 +158,15 @@ class TestCustomModels(TestCase):
 
     def test_custom_access_token_model_incorrect_format(self):
         # Patch oauth2 settings to use a custom AccessToken model
-        oauth2_settings.ACCESS_TOKEN_MODEL = "IncorrectAccessTokenFormat"
+        self.oauth2_settings.ACCESS_TOKEN_MODEL = "IncorrectAccessTokenFormat"
 
         self.assertRaises(ValueError, get_access_token_model)
 
-        # Revert oauth2 settings
-        oauth2_settings.ACCESS_TOKEN_MODEL = "oauth2_provider.AccessToken"
-
     def test_custom_access_token_model_not_installed(self):
         # Patch oauth2 settings to use a custom AccessToken model
-        oauth2_settings.ACCESS_TOKEN_MODEL = "tests.AccessTokenNotInstalled"
+        self.oauth2_settings.ACCESS_TOKEN_MODEL = "tests.AccessTokenNotInstalled"
 
         self.assertRaises(LookupError, get_access_token_model)
-
-        # Revert oauth2 settings
-        oauth2_settings.ACCESS_TOKEN_MODEL = "oauth2_provider.AccessToken"
 
     def test_custom_refresh_token_model(self):
         """
@@ -196,7 +175,8 @@ class TestCustomModels(TestCase):
         """
         # Django internals caches the related objects.
         related_object_names = [
-            f.name for f in UserModel._meta.get_fields()
+            f.name
+            for f in UserModel._meta.get_fields()
             if (f.one_to_many or f.one_to_one) and f.auto_created and not f.concrete
         ]
         self.assertNotIn("oauth2_provider:refresh_token", related_object_names)
@@ -204,21 +184,15 @@ class TestCustomModels(TestCase):
 
     def test_custom_refresh_token_model_incorrect_format(self):
         # Patch oauth2 settings to use a custom RefreshToken model
-        oauth2_settings.REFRESH_TOKEN_MODEL = "IncorrectRefreshTokenFormat"
+        self.oauth2_settings.REFRESH_TOKEN_MODEL = "IncorrectRefreshTokenFormat"
 
         self.assertRaises(ValueError, get_refresh_token_model)
 
-        # Revert oauth2 settings
-        oauth2_settings.REFRESH_TOKEN_MODEL = "oauth2_provider.RefreshToken"
-
     def test_custom_refresh_token_model_not_installed(self):
         # Patch oauth2 settings to use a custom AccessToken model
-        oauth2_settings.REFRESH_TOKEN_MODEL = "tests.RefreshTokenNotInstalled"
+        self.oauth2_settings.REFRESH_TOKEN_MODEL = "tests.RefreshTokenNotInstalled"
 
         self.assertRaises(LookupError, get_refresh_token_model)
-
-        # Revert oauth2 settings
-        oauth2_settings.REFRESH_TOKEN_MODEL = "oauth2_provider.RefreshToken"
 
     def test_custom_grant_model(self):
         """
@@ -227,7 +201,8 @@ class TestCustomModels(TestCase):
         """
         # Django internals caches the related objects.
         related_object_names = [
-            f.name for f in UserModel._meta.get_fields()
+            f.name
+            for f in UserModel._meta.get_fields()
             if (f.one_to_many or f.one_to_one) and f.auto_created and not f.concrete
         ]
         self.assertNotIn("oauth2_provider:grant", related_object_names)
@@ -235,24 +210,31 @@ class TestCustomModels(TestCase):
 
     def test_custom_grant_model_incorrect_format(self):
         # Patch oauth2 settings to use a custom Grant model
-        oauth2_settings.GRANT_MODEL = "IncorrectGrantFormat"
+        self.oauth2_settings.GRANT_MODEL = "IncorrectGrantFormat"
 
         self.assertRaises(ValueError, get_grant_model)
 
-        # Revert oauth2 settings
-        oauth2_settings.GRANT_MODEL = "oauth2_provider.Grant"
-
     def test_custom_grant_model_not_installed(self):
         # Patch oauth2 settings to use a custom AccessToken model
-        oauth2_settings.GRANT_MODEL = "tests.GrantNotInstalled"
+        self.oauth2_settings.GRANT_MODEL = "tests.GrantNotInstalled"
 
         self.assertRaises(LookupError, get_grant_model)
 
-        # Revert oauth2 settings
-        oauth2_settings.GRANT_MODEL = "oauth2_provider.Grant"
 
+class TestGrantModel(BaseTestModels):
+    def setUp(self):
+        super().setUp()
+        self.application = Application.objects.create(
+            name="Test Application",
+            redirect_uris="",
+            user=self.user,
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+        )
 
-class TestGrantModel(TestCase):
+    def tearDown(self):
+        self.application.delete()
+        super().tearDown()
 
     def test_str(self):
         grant = Grant(code="test_code")
@@ -263,12 +245,26 @@ class TestGrantModel(TestCase):
         self.assertIsNone(grant.expires)
         self.assertTrue(grant.is_expired())
 
+    def test_redirect_uri_can_be_longer_than_255_chars(self):
+        long_redirect_uri = "http://example.com/{}".format("authorized/" * 25)
+        self.assertTrue(len(long_redirect_uri) > 255)
+        grant = Grant.objects.create(
+            user=self.user,
+            code="test_code",
+            application=self.application,
+            expires=timezone.now(),
+            redirect_uri=long_redirect_uri,
+            scope="",
+        )
+        grant.refresh_from_db()
 
-class TestAccessTokenModel(TestCase):
+        # It would be necessary to run test using another DB engine than sqlite
+        # that transform varchar(255) into text data type.
+        # https://sqlite.org/datatype3.html#affinity_name_examples
+        self.assertEqual(grant.redirect_uri, long_redirect_uri)
 
-    def setUp(self):
-        self.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
 
+class TestAccessTokenModel(BaseTestModels):
     def test_str(self):
         access_token = AccessToken(token="test_token")
         self.assertEqual("%s" % access_token, access_token.token)
@@ -290,17 +286,16 @@ class TestAccessTokenModel(TestCase):
         self.assertTrue(access_token.is_expired())
 
 
-class TestRefreshTokenModel(TestCase):
-
+class TestRefreshTokenModel(BaseTestModels):
     def test_str(self):
         refresh_token = RefreshToken(token="test_token")
         self.assertEqual("%s" % refresh_token, refresh_token.token)
 
 
-class TestClearExpired(TestCase):
-
+@pytest.mark.usefixtures("oauth2_settings")
+class TestClearExpired(BaseTestModels):
     def setUp(self):
-        self.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
+        super().setUp()
         # Insert two tokens on database.
         app = Application.objects.create(
             name="test_app",
@@ -317,7 +312,7 @@ class TestClearExpired(TestCase):
             user=self.user,
             created=timezone.now(),
             updated=timezone.now(),
-            )
+        )
         AccessToken.objects.create(
             token="666",
             expires=timezone.now(),
@@ -326,14 +321,14 @@ class TestClearExpired(TestCase):
             user=self.user,
             created=timezone.now(),
             updated=timezone.now(),
-            )
+        )
 
     def test_clear_expired_tokens(self):
-        oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS = 60
+        self.oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS = 60
         assert clear_expired() is None
 
     def test_clear_expired_tokens_incorect_timetype(self):
-        oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS = "A"
+        self.oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS = "A"
         with pytest.raises(ImproperlyConfigured) as excinfo:
             clear_expired()
         result = excinfo.value.__class__.__name__
@@ -535,3 +530,93 @@ class TestClearExpired(TestCase):
         refresh_token_count = RefreshToken.objects.count()
         assert expired_token_count == 2
         assert refresh_token_count == 2
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_id_token_methods(oidc_tokens, rf):
+    id_token = IDToken.objects.get()
+
+    # Token was just created, so should be valid
+    assert id_token.is_valid()
+
+    # if expires is None, it should always be expired
+    # the column is NOT NULL, but could be NULL in sub-classes
+    id_token.expires = None
+    assert id_token.is_expired()
+
+    # if no scopes are passed, they should be valid
+    assert id_token.allow_scopes(None)
+
+    # if the requested scopes are in the token, they should be valid
+    assert id_token.allow_scopes(["openid"])
+
+    # if the requested scopes are not in the token, they should not be valid
+    assert id_token.allow_scopes(["fizzbuzz"]) is False
+
+    # we should be able to get a list of the scopes on the token
+    assert id_token.scopes == {"openid": "OpenID connect"}
+
+    # the id token should stringify as the JWT token
+    id_token_str = str(id_token)
+    assert str(id_token.jti) in id_token_str
+    assert id_token_str.endswith(str(id_token.user_id))
+
+    # revoking the token should delete it
+    id_token.revoke()
+    assert IDToken.objects.filter(jti=id_token.jti).count() == 0
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_application_key(oauth2_settings, application):
+    # RS256 key
+    key = application.jwk_key
+    assert key.key_type == "RSA"
+
+    # RS256 key, but not configured
+    oauth2_settings.OIDC_RSA_PRIVATE_KEY = None
+    with pytest.raises(ImproperlyConfigured) as exc:
+        application.jwk_key
+    assert "You must set OIDC_RSA_PRIVATE_KEY" in str(exc.value)
+
+    # HS256 key
+    application.algorithm = Application.HS256_ALGORITHM
+    key = application.jwk_key
+    assert key.key_type == "oct"
+
+    # No algorithm
+    application.algorithm = Application.NO_ALGORITHM
+    with pytest.raises(ImproperlyConfigured) as exc:
+        application.jwk_key
+    assert "This application does not support signed tokens" == str(exc.value)
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_application_clean(oauth2_settings, application):
+    # RS256, RSA key is configured
+    application.clean()
+
+    # RS256, RSA key is not configured
+    oauth2_settings.OIDC_RSA_PRIVATE_KEY = None
+    with pytest.raises(ValidationError) as exc:
+        application.clean()
+    assert "You must set OIDC_RSA_PRIVATE_KEY" in str(exc.value)
+
+    # HS256 algorithm, auth code + confidential -> allowed
+    application.algorithm = Application.HS256_ALGORITHM
+    application.clean()
+
+    # HS256, auth code + public -> forbidden
+    application.client_type = Application.CLIENT_PUBLIC
+    with pytest.raises(ValidationError) as exc:
+        application.clean()
+    assert "You cannot use HS256" in str(exc.value)
+
+    # HS256, hybrid + confidential -> forbidden
+    application.client_type = Application.CLIENT_CONFIDENTIAL
+    application.authorization_grant_type = Application.GRANT_OPENID_HYBRID
+    with pytest.raises(ValidationError) as exc:
+        application.clean()
+    assert "You cannot use HS256" in str(exc.value)

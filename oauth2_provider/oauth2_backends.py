@@ -2,19 +2,22 @@ import json
 from urllib.parse import urlparse, urlunparse
 
 from oauthlib import oauth2
+from oauthlib.common import Request as OauthlibRequest
 from oauthlib.common import quote, urlencode, urlencoded
+from oauthlib.oauth2 import OAuth2Error
 
 from .exceptions import FatalClientError, OAuthToolkitError
 from .settings import oauth2_settings
 
 
-class OAuthLibCore(object):
+class OAuthLibCore:
     """
     Wrapper for oauth Server providing django-specific interfaces.
 
     Meant for things like extracting request data and converting
     everything to formats more palatable for oauthlib's Server.
     """
+
     def __init__(self, server=None):
         """
         :params server: An instance of oauthlib.oauth2.Server class
@@ -22,9 +25,7 @@ class OAuthLibCore(object):
         validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
         validator = validator_class()
         server_kwargs = oauth2_settings.server_kwargs
-        self.server = server or oauth2_settings.OAUTH2_SERVER_CLASS(
-            validator, **server_kwargs
-        )
+        self.server = server or oauth2_settings.OAUTH2_SERVER_CLASS(validator, **server_kwargs)
 
     def _get_escaped_full_path(self, request):
         """
@@ -74,6 +75,10 @@ class OAuthLibCore(object):
             del headers["wsgi.errors"]
         if "HTTP_AUTHORIZATION" in headers:
             headers["Authorization"] = headers["HTTP_AUTHORIZATION"]
+        if request.is_secure():
+            headers["X_DJANGO_OAUTH_TOOLKIT_SECURE"] = "1"
+        elif "X_DJANGO_OAUTH_TOOLKIT_SECURE" in headers:
+            del headers["X_DJANGO_OAUTH_TOOLKIT_SECURE"]
 
         return headers
 
@@ -94,7 +99,8 @@ class OAuthLibCore(object):
         try:
             uri, http_method, body, headers = self._extract_params(request)
             scopes, credentials = self.server.validate_authorization_request(
-                uri, http_method=http_method, body=body, headers=headers)
+                uri, http_method=http_method, body=body, headers=headers
+            )
 
             return scopes, credentials
         except oauth2.FatalClientError as error:
@@ -115,14 +121,19 @@ class OAuthLibCore(object):
         """
         try:
             if not allow:
-                raise oauth2.AccessDeniedError(
-                    state=credentials.get("state", None))
+                raise oauth2.AccessDeniedError(state=credentials.get("state", None))
 
             # add current user to credentials. this will be used by OAUTH2_VALIDATOR_CLASS
             credentials["user"] = request.user
+            request_uri, http_method, _, request_headers = self._extract_params(request)
 
             headers, body, status = self.server.create_authorization_response(
-                uri=credentials["redirect_uri"], scopes=scopes, credentials=credentials)
+                uri=request_uri,
+                http_method=http_method,
+                headers=request_headers,
+                scopes=scopes,
+                credentials=credentials,
+            )
             uri = headers.get("Location", None)
 
             return uri, headers, body, status
@@ -141,8 +152,9 @@ class OAuthLibCore(object):
         uri, http_method, body, headers = self._extract_params(request)
         extra_credentials = self._get_extra_credentials(request)
 
-        headers, body, status = self.server.create_token_response(uri, http_method, body,
-                                                                  headers, extra_credentials)
+        headers, body, status = self.server.create_token_response(
+            uri, http_method, body, headers, extra_credentials
+        )
         uri = headers.get("Location", None)
 
         return uri, headers, body, status
@@ -156,11 +168,25 @@ class OAuthLibCore(object):
         """
         uri, http_method, body, headers = self._extract_params(request)
 
-        headers, body, status = self.server.create_revocation_response(
-            uri, http_method, body, headers)
+        headers, body, status = self.server.create_revocation_response(uri, http_method, body, headers)
         uri = headers.get("Location", None)
 
         return uri, headers, body, status
+
+    def create_userinfo_response(self, request):
+        """
+        A wrapper method that calls create_userinfo_response on a
+        `server_class` instance.
+
+        :param request: The current django.http.HttpRequest object
+        """
+        uri, http_method, body, headers = self._extract_params(request)
+        try:
+            headers, body, status = self.server.create_userinfo_response(uri, http_method, body, headers)
+            uri = headers.get("Location", None)
+            return uri, headers, body, status
+        except OAuth2Error as exc:
+            return None, exc.headers, exc.json, exc.status_code
 
     def verify_request(self, request, scopes):
         """
@@ -174,11 +200,21 @@ class OAuthLibCore(object):
         valid, r = self.server.verify_request(uri, http_method, body, headers, scopes=scopes)
         return valid, r
 
+    def authenticate_client(self, request):
+        """Wrapper to call  `authenticate_client` on `server_class` instance.
+
+        :param request: The current django.http.HttpRequest object
+        """
+        uri, http_method, body, headers = self._extract_params(request)
+        oauth_request = OauthlibRequest(uri, http_method, body, headers)
+        return self.server.request_validator.authenticate_client(oauth_request)
+
 
 class JSONOAuthLibCore(OAuthLibCore):
     """
     Extends the default OAuthLibCore to parse correctly application/json requests
     """
+
     def extract_body(self, request):
         """
         Extracts the JSON body from the Django request object

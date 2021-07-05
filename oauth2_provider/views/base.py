@@ -1,8 +1,11 @@
 import json
 import logging
+import urllib.parse
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -12,7 +15,7 @@ from django.views.generic import FormView, View
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
 from ..http import OAuth2ResponseRedirect
-from ..models import get_access_token_model, get_application_model, get_refresh_token_model
+from ..models import get_access_token_model, get_application_model
 from ..scopes import get_scopes_backend
 from ..settings import oauth2_settings
 from ..signals import app_authorized
@@ -60,6 +63,9 @@ class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
         return OAuth2ResponseRedirect(redirect_to, allowed_schemes)
 
 
+RFC3339 = "%Y-%m-%dT%H:%M:%SZ"
+
+
 class AuthorizationView(BaseAuthorizationView, FormView):
     """
     Implements an endpoint to handle *Authorization Requests* as in :rfc:`4.1.1` and prompting the
@@ -80,12 +86,9 @@ class AuthorizationView(BaseAuthorizationView, FormView):
     * Authorization code
     * Implicit grant
     """
+
     template_name = "oauth2_provider/authorize.html"
     form_class = AllowForm
-
-    server_class = oauth2_settings.OAUTH2_SERVER_CLASS
-    validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
-    oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
 
     skip_authorization_completely = False
 
@@ -95,11 +98,13 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         initial_data = {
             "redirect_uri": self.oauth2_data.get("redirect_uri", None),
             "scope": " ".join(scopes),
+            "nonce": self.oauth2_data.get("nonce", None),
             "client_id": self.oauth2_data.get("client_id", None),
             "state": self.oauth2_data.get("state", None),
             "response_type": self.oauth2_data.get("response_type", None),
             "code_challenge": self.oauth2_data.get("code_challenge", None),
             "code_challenge_method": self.oauth2_data.get("code_challenge_method", None),
+            "claims": self.oauth2_data.get("claims", None),
         }
         return initial_data
 
@@ -110,12 +115,17 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             "client_id": form.cleaned_data.get("client_id"),
             "redirect_uri": form.cleaned_data.get("redirect_uri"),
             "response_type": form.cleaned_data.get("response_type", None),
-            "state": form.cleaned_data.get("state", None)
+            "state": form.cleaned_data.get("state", None),
         }
         if form.cleaned_data.get("code_challenge", False):
             credentials["code_challenge"] = form.cleaned_data.get("code_challenge")
         if form.cleaned_data.get("code_challenge_method", False):
             credentials["code_challenge_method"] = form.cleaned_data.get("code_challenge_method")
+        if form.cleaned_data.get("nonce", False):
+            credentials["nonce"] = form.cleaned_data.get("nonce")
+        if form.cleaned_data.get("claims", False):
+            credentials["claims"] = form.cleaned_data.get("claims")
+
         scopes = form.cleaned_data.get("scope")
         allow = form.cleaned_data.get("allow")
 
@@ -133,16 +143,6 @@ class AuthorizationView(BaseAuthorizationView, FormView):
     def get(self, request, *args, **kwargs):
         try:
             scopes, credentials = self.validate_authorization_request(request)
-            # TODO: Remove the two following lines after oauthlib updates its implementation
-            # https://github.com/jazzband/django-oauth-toolkit/pull/707#issuecomment-485011945
-            credentials["code_challenge"] = credentials.get(
-                "code_challenge",
-                request.GET.get("code_challenge", None)
-            )
-            credentials["code_challenge_method"] = credentials.get(
-                "code_challenge_method",
-                request.GET.get("code_challenge_method", None)
-            )
         except OAuthToolkitError as error:
             # Application is not available at this time.
             return self.error_response(error, application=None)
@@ -160,8 +160,14 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         kwargs["redirect_uri"] = credentials["redirect_uri"]
         kwargs["response_type"] = credentials["response_type"]
         kwargs["state"] = credentials["state"]
-        kwargs["code_challenge"] = credentials["code_challenge"]
-        kwargs["code_challenge_method"] = credentials["code_challenge_method"]
+        if "code_challenge" in credentials:
+            kwargs["code_challenge"] = credentials["code_challenge"]
+        if "code_challenge_method" in credentials:
+            kwargs["code_challenge_method"] = credentials["code_challenge_method"]
+        if "nonce" in credentials:
+            kwargs["nonce"] = credentials["nonce"]
+        if "claims" in credentials:
+            kwargs["claims"] = json.dumps(credentials["claims"])
 
         self.oauth2_data = kwargs
         # following two loc are here only because of https://code.djangoproject.com/ticket/17795
@@ -179,37 +185,63 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             # are already approved.
             if application.skip_authorization:
                 uri, headers, body, status = self.create_authorization_response(
-                    request=self.request, scopes=" ".join(scopes),
-                    credentials=credentials, allow=True
+                    request=self.request, scopes=" ".join(scopes), credentials=credentials, allow=True
                 )
                 return self.redirect(uri, application)
 
             elif require_approval == "auto":
-                tokens = get_access_token_model().objects.filter(
-                    user=request.user,
-                    application=kwargs["application"],
-                    expires__gt=timezone.now()
-                ).all()
-
-                refresh_tokens = get_refresh_token_model().objects.filter(
-                    user=request.user,
-                    application=kwargs["application"]
-                ).exclude(revoked__lt=timezone.now()).all()
-                tokens = list(tokens) + [r.access_token for r in refresh_tokens]
+                tokens = (
+                    get_access_token_model()
+                    .objects.filter(
+                        user=request.user, application=kwargs["application"], expires__gt=timezone.now()
+                    )
+                    .all()
+                )
 
                 # check past authorizations regarded the same scopes as the current one
                 for token in tokens:
                     if token.allow_scopes(scopes):
                         uri, headers, body, status = self.create_authorization_response(
-                            request=self.request, scopes=" ".join(scopes),
-                            credentials=credentials, allow=True
+                            request=self.request,
+                            scopes=" ".join(scopes),
+                            credentials=credentials,
+                            allow=True,
                         )
-                        return self.redirect(uri, application)
+                        return self.redirect(uri, application, token)
 
         except OAuthToolkitError as error:
             return self.error_response(error, application)
 
         return self.render_to_response(self.get_context_data(**kwargs))
+
+    def redirect(self, redirect_to, application, token=None):
+
+        if not redirect_to.startswith("urn:ietf:wg:oauth:2.0:oob"):
+            return super().redirect(redirect_to, application)
+
+        parsed_redirect = urllib.parse.urlparse(redirect_to)
+        code = urllib.parse.parse_qs(parsed_redirect.query)["code"][0]
+
+        if redirect_to.startswith("urn:ietf:wg:oauth:2.0:oob:auto"):
+
+            response = {
+                "access_token": code,
+                "token_uri": redirect_to,
+                "client_id": application.client_id,
+                "client_secret": application.client_secret,
+                "revoke_uri": reverse("oauth2_provider:revoke-token"),
+            }
+
+            return JsonResponse(response)
+
+        else:
+            return render(
+                request=self.request,
+                template_name="oauth2_provider/authorized-oob.html",
+                context={
+                    "code": code,
+                },
+            )
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -222,9 +254,6 @@ class TokenView(OAuthLibMixin, View):
     * Password
     * Client credentials
     """
-    server_class = oauth2_settings.OAUTH2_SERVER_CLASS
-    validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
-    oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
 
     @method_decorator(sensitive_post_parameters("password"))
     def post(self, request, *args, **kwargs):
@@ -232,11 +261,8 @@ class TokenView(OAuthLibMixin, View):
         if status == 200:
             access_token = json.loads(body).get("access_token")
             if access_token is not None:
-                token = get_access_token_model().objects.get(
-                    token=access_token)
-                app_authorized.send(
-                    sender=self, request=request,
-                    token=token)
+                token = get_access_token_model().objects.get(token=access_token)
+                app_authorized.send(sender=self, request=request, token=token)
         response = HttpResponse(content=body, status=status)
 
         for k, v in headers.items():
@@ -249,9 +275,6 @@ class RevokeTokenView(OAuthLibMixin, View):
     """
     Implements an endpoint to revoke access or refresh tokens
     """
-    server_class = oauth2_settings.OAUTH2_SERVER_CLASS
-    validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
-    oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
 
     def post(self, request, *args, **kwargs):
         url, headers, body, status = self.create_revocation_response(request)

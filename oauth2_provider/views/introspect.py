@@ -1,17 +1,16 @@
 import calendar
-import json
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponse
+from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
 from oauth2_provider.models import get_access_token_model
-from oauth2_provider.views import ScopedProtectedResourceView
+from oauth2_provider.views.generic import ClientProtectedScopedResourceView
 
 
 @method_decorator(csrf_exempt, name="dispatch")
-class IntrospectTokenView(ScopedProtectedResourceView):
+class IntrospectTokenView(ClientProtectedScopedResourceView):
     """
     Implements an endpoint for token introspection based
     on RFC 7662 https://tools.ietf.org/html/rfc7662
@@ -19,18 +18,17 @@ class IntrospectTokenView(ScopedProtectedResourceView):
     To access this view the request must pass a OAuth2 Bearer Token
     which is allowed to access the scope `introspection`.
     """
+
     required_scopes = ["introspection"]
 
     @staticmethod
     def get_token_response(token_value=None):
         try:
-            token = get_access_token_model().objects.get(token=token_value)
-        except ObjectDoesNotExist:
-            return HttpResponse(
-                content=json.dumps({"active": False}),
-                status=401,
-                content_type="application/json"
+            token = (
+                get_access_token_model().objects.select_related("user", "application").get(token=token_value)
             )
+        except ObjectDoesNotExist:
+            return JsonResponse({"active": False}, status=401)
         else:
             if token.is_valid():
                 data = {
@@ -42,11 +40,9 @@ class IntrospectTokenView(ScopedProtectedResourceView):
                     data["client_id"] = token.application.client_id
                 if token.user:
                     data["username"] = token.user.get_username()
-                return HttpResponse(content=json.dumps(data), status=200, content_type="application/json")
+                return JsonResponse(data)
             else:
-                return HttpResponse(content=json.dumps({
-                    "active": False,
-                }), status=200, content_type="application/json")
+                return JsonResponse({"active": False})
 
     def get(self, request, *args, **kwargs):
         """

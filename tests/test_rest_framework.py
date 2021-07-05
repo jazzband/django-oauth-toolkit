@@ -1,11 +1,13 @@
 from datetime import timedelta
 
-from django.conf.urls import include, url
+import pytest
+from django.conf.urls import include
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponse
 from django.test import TestCase
 from django.test.utils import override_settings
+from django.urls import path, re_path
 from django.utils import timezone
 from rest_framework import permissions
 from rest_framework.authentication import BaseAuthentication
@@ -13,18 +15,16 @@ from rest_framework.test import APIRequestFactory, force_authenticate
 from rest_framework.views import APIView
 
 from oauth2_provider.contrib.rest_framework import (
-    IsAuthenticatedOrTokenHasScope, OAuth2Authentication,
-    TokenHasReadWriteScope, TokenHasResourceScope,
-    TokenHasScope, TokenMatchesOASRequirements
+    IsAuthenticatedOrTokenHasScope,
+    OAuth2Authentication,
+    TokenHasReadWriteScope,
+    TokenHasResourceScope,
+    TokenHasScope,
+    TokenMatchesOASRequirements,
 )
 from oauth2_provider.models import get_access_token_model, get_application_model
-from oauth2_provider.settings import oauth2_settings
 
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+from . import presets
 
 
 Application = get_application_model()
@@ -84,7 +84,10 @@ class MethodScopeAltViewBad(OAuth2View):
 
 class MissingAuthentication(BaseAuthentication):
     def authenticate(self, request):
-        return ("junk", "junk",)
+        return (
+            "junk",
+            "junk",
+        )
 
 
 class BrokenOAuth2View(MockView):
@@ -98,34 +101,36 @@ class TokenHasScopeViewWrongAuth(BrokenOAuth2View):
 class MethodScopeAltViewWrongAuth(BrokenOAuth2View):
     permission_classes = [TokenMatchesOASRequirements]
 
+
 class AuthenticationNone(OAuth2Authentication):
     def authenticate(self, request):
         return None
+
 
 class AuthenticationNoneOAuth2View(MockView):
     authentication_classes = [AuthenticationNone]
 
 
 urlpatterns = [
-    url(r"^oauth2/", include("oauth2_provider.urls")),
-    url(r"^oauth2-test/$", OAuth2View.as_view()),
-    url(r"^oauth2-scoped-test/$", ScopedView.as_view()),
-    url(r"^oauth2-scoped-missing-auth/$", TokenHasScopeViewWrongAuth.as_view()),
-    url(r"^oauth2-read-write-test/$", ReadWriteScopedView.as_view()),
-    url(r"^oauth2-resource-scoped-test/$", ResourceScopedView.as_view()),
-    url(r"^oauth2-authenticated-or-scoped-test/$", AuthenticatedOrScopedView.as_view()),
-    url(r"^oauth2-method-scope-test/.*$", MethodScopeAltView.as_view()),
-    url(r"^oauth2-method-scope-fail/$", MethodScopeAltViewBad.as_view()),
-    url(r"^oauth2-method-scope-missing-auth/$", MethodScopeAltViewWrongAuth.as_view()),
-    url(r"^oauth2-authentication-none/$", AuthenticationNoneOAuth2View.as_view()),
+    path("oauth2/", include("oauth2_provider.urls")),
+    path("oauth2-test/", OAuth2View.as_view()),
+    path("oauth2-scoped-test/", ScopedView.as_view()),
+    path("oauth2-scoped-missing-auth/", TokenHasScopeViewWrongAuth.as_view()),
+    path("oauth2-read-write-test/", ReadWriteScopedView.as_view()),
+    path("oauth2-resource-scoped-test/", ResourceScopedView.as_view()),
+    path("oauth2-authenticated-or-scoped-test/", AuthenticatedOrScopedView.as_view()),
+    re_path(r"oauth2-method-scope-test/.*$", MethodScopeAltView.as_view()),
+    path("oauth2-method-scope-fail/", MethodScopeAltViewBad.as_view()),
+    path("oauth2-method-scope-missing-auth/", MethodScopeAltViewWrongAuth.as_view()),
+    path("oauth2-authentication-none/", AuthenticationNoneOAuth2View.as_view()),
 ]
 
 
 @override_settings(ROOT_URLCONF=__name__)
+@pytest.mark.usefixtures("oauth2_settings")
+@pytest.mark.oauth2_settings(presets.REST_FRAMEWORK_SCOPES)
 class TestOAuth2Authentication(TestCase):
     def setUp(self):
-        oauth2_settings._SCOPES = ["read", "write", "scope1", "scope2", "resource1"]
-
         self.test_user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
         self.dev_user = UserModel.objects.create_user("dev_user", "dev@example.com", "123456")
 
@@ -142,11 +147,8 @@ class TestOAuth2Authentication(TestCase):
             scope="read write",
             expires=timezone.now() + timedelta(seconds=300),
             token="secret-access-token-key",
-            application=self.application
+            application=self.application,
         )
-
-    def tearDown(self):
-        oauth2_settings._SCOPES = ["read", "write"]
 
     def _create_authorization_header(self, token):
         return "Bearer {0}".format(token)
@@ -302,8 +304,8 @@ class TestOAuth2Authentication(TestCase):
         response = self.client.post("/oauth2-resource-scoped-test/", HTTP_AUTHORIZATION=auth)
         self.assertEqual(response.status_code, 403)
 
-    @mock.patch.object(oauth2_settings, "ERROR_RESPONSE_WITH_SCOPES", new=True)
     def test_required_scope_in_response(self):
+        self.oauth2_settings.ERROR_RESPONSE_WITH_SCOPES = True
         self.access_token.scope = "scope2"
         self.access_token.save()
 

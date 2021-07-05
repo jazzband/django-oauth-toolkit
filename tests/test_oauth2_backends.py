@@ -1,8 +1,10 @@
 import json
 
+import pytest
 from django.test import RequestFactory, TestCase
 
 from oauth2_provider.backends import get_oauthlib_core
+from oauth2_provider.models import redirect_to_uri_allowed
 from oauth2_provider.oauth2_backends import JSONOAuthLibCore, OAuthLibCore
 
 
@@ -12,16 +14,16 @@ except ImportError:
     import mock
 
 
+@pytest.mark.usefixtures("oauth2_settings")
 class TestOAuthLibCoreBackend(TestCase):
-
     def setUp(self):
         self.factory = RequestFactory()
         self.oauthlib_core = OAuthLibCore()
 
     def test_swappable_server_class(self):
-        with mock.patch("oauth2_provider.oauth2_backends.oauth2_settings.OAUTH2_SERVER_CLASS"):
-            oauthlib_core = OAuthLibCore()
-            self.assertTrue(isinstance(oauthlib_core.server, mock.MagicMock))
+        self.oauth2_settings.OAUTH2_SERVER_CLASS = mock.MagicMock
+        oauthlib_core = OAuthLibCore()
+        self.assertTrue(isinstance(oauthlib_core.server, mock.MagicMock))
 
     def test_form_urlencoded_extract_params(self):
         payload = "grant_type=password&username=john&password=123456"
@@ -33,11 +35,13 @@ class TestOAuthLibCoreBackend(TestCase):
         self.assertIn("password=123456", body)
 
     def test_application_json_extract_params(self):
-        payload = json.dumps({
-            "grant_type": "password",
-            "username": "john",
-            "password": "123456",
-        })
+        payload = json.dumps(
+            {
+                "grant_type": "password",
+                "username": "john",
+                "password": "123456",
+            }
+        )
         request = self.factory.post("/o/token/", payload, content_type="application/json")
 
         uri, http_method, body, headers = self.oauthlib_core._extract_params(request)
@@ -51,6 +55,7 @@ class TestCustomOAuthLibCoreBackend(TestCase):
     Tests that the public API behaves as expected when we override
     the OAuthLibCoreBackend core methods.
     """
+
     class MyOAuthLibCore(OAuthLibCore):
         def _get_extra_credentials(self, request):
             return 1
@@ -79,11 +84,13 @@ class TestJSONOAuthLibCoreBackend(TestCase):
         self.oauthlib_core = JSONOAuthLibCore()
 
     def test_application_json_extract_params(self):
-        payload = json.dumps({
-            "grant_type": "password",
-            "username": "john",
-            "password": "123456",
-        })
+        payload = json.dumps(
+            {
+                "grant_type": "password",
+                "username": "john",
+                "password": "123456",
+            }
+        )
         request = self.factory.post("/o/token/", payload, content_type="application/json")
 
         uri, http_method, body, headers = self.oauthlib_core._extract_params(request)
@@ -104,3 +111,23 @@ class TestOAuthLibCore(TestCase):
 
         oauthlib_core = get_oauthlib_core()
         oauthlib_core.verify_request(request, scopes=[])
+
+
+@pytest.mark.parametrize(
+    "uri, expected_result",
+    # localhost is _not_ a loopback URI
+    [
+        ("http://localhost:3456", False),
+        # only http scheme is supported for loopback URIs
+        ("https://127.0.0.1:3456", False),
+        ("http://127.0.0.1:3456", True),
+        ("http://[::1]", True),
+        ("http://[::1]:34", True),
+    ],
+)
+def test_uri_loopback_redirect_check(uri, expected_result):
+    allowed_uris = ["http://127.0.0.1", "http://[::1]"]
+    if expected_result:
+        assert redirect_to_uri_allowed(uri, allowed_uris)
+    else:
+        assert not redirect_to_uri_allowed(uri, allowed_uris)

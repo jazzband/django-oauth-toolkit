@@ -1,6 +1,9 @@
 import base64
 import binascii
+import http.client
+import json
 import logging
+import uuid
 from collections import OrderedDict
 from datetime import datetime, timedelta
 from urllib.parse import unquote_plus
@@ -11,15 +14,24 @@ from django.contrib.auth import authenticate, get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.db.models import Q
-from django.utils import timezone
+from django.http import HttpRequest
+from django.utils import dateformat, timezone
 from django.utils.timezone import make_aware
 from django.utils.translation import gettext_lazy as _
-from oauthlib.oauth2 import RequestValidator
+from jwcrypto import jws, jwt
+from jwcrypto.common import JWException
+from jwcrypto.jwt import JWTExpired
+from oauthlib.oauth2.rfc6749 import utils
+from oauthlib.openid import RequestValidator
 
 from .exceptions import FatalClientError
 from .models import (
-    AbstractApplication, get_access_token_model,
-    get_application_model, get_grant_model, get_refresh_token_model
+    AbstractApplication,
+    get_access_token_model,
+    get_application_model,
+    get_grant_model,
+    get_id_token_model,
+    get_refresh_token_model,
 )
 from .scopes import get_scopes_backend
 from .settings import oauth2_settings
@@ -28,18 +40,23 @@ from .settings import oauth2_settings
 log = logging.getLogger("oauth2_provider")
 
 GRANT_TYPE_MAPPING = {
-    "authorization_code": (AbstractApplication.GRANT_AUTHORIZATION_CODE, ),
-    "password": (AbstractApplication.GRANT_PASSWORD, ),
-    "client_credentials": (AbstractApplication.GRANT_CLIENT_CREDENTIALS, ),
+    "authorization_code": (
+        AbstractApplication.GRANT_AUTHORIZATION_CODE,
+        AbstractApplication.GRANT_OPENID_HYBRID,
+    ),
+    "password": (AbstractApplication.GRANT_PASSWORD,),
+    "client_credentials": (AbstractApplication.GRANT_CLIENT_CREDENTIALS,),
     "refresh_token": (
         AbstractApplication.GRANT_AUTHORIZATION_CODE,
         AbstractApplication.GRANT_PASSWORD,
         AbstractApplication.GRANT_CLIENT_CREDENTIALS,
-    )
+        AbstractApplication.GRANT_OPENID_HYBRID,
+    ),
 }
 
 Application = get_application_model()
 AccessToken = get_access_token_model()
+IDToken = get_id_token_model()
 Grant = get_grant_model()
 RefreshToken = get_refresh_token_model()
 UserModel = get_user_model()
@@ -90,10 +107,7 @@ class OAuth2Validator(RequestValidator):
         try:
             auth_string_decoded = b64_decoded.decode(encoding)
         except UnicodeDecodeError:
-            log.debug(
-                "Failed basic auth: %r can't be decoded as unicode by %r",
-                auth_string, encoding
-            )
+            log.debug("Failed basic auth: %r can't be decoded as unicode by %r", auth_string, encoding)
             return False
 
         try:
@@ -161,25 +175,33 @@ class OAuth2Validator(RequestValidator):
 
     def _set_oauth2_error_on_request(self, request, access_token, scopes):
         if access_token is None:
-            error = OrderedDict([
-                ("error", "invalid_token", ),
-                ("error_description", _("The access token is invalid."), ),
-            ])
+            error = OrderedDict(
+                [
+                    ("error", "invalid_token"),
+                    ("error_description", _("The access token is invalid.")),
+                ]
+            )
         elif access_token.is_expired():
-            error = OrderedDict([
-                ("error", "invalid_token", ),
-                ("error_description", _("The access token has expired."), ),
-            ])
+            error = OrderedDict(
+                [
+                    ("error", "invalid_token"),
+                    ("error_description", _("The access token has expired.")),
+                ]
+            )
         elif not access_token.allow_scopes(scopes):
-            error = OrderedDict([
-                ("error", "insufficient_scope", ),
-                ("error_description", _("The access token is valid but does not have enough scope."), ),
-            ])
+            error = OrderedDict(
+                [
+                    ("error", "insufficient_scope"),
+                    ("error_description", _("The access token is valid but does not have enough scope.")),
+                ]
+            )
         else:
             log.warning("OAuth2 access token is invalid for an unknown reason.")
-            error = OrderedDict([
-                ("error", "invalid_token", ),
-            ])
+            error = OrderedDict(
+                [
+                    ("error", "invalid_token"),
+                ]
+            )
         request.oauth2_error = error
         return request
 
@@ -269,7 +291,7 @@ class OAuth2Validator(RequestValidator):
         return request.client.default_redirect_uri
 
     def _get_token_from_authentication_server(
-            self, token, introspection_url, introspection_token, introspection_credentials
+        self, token, introspection_url, introspection_token, introspection_credentials
     ):
         """Use external introspection endpoint to "crack open" the token.
         :param introspection_url: introspection endpoint URL
@@ -296,12 +318,18 @@ class OAuth2Validator(RequestValidator):
             headers = {"Authorization": "Basic {}".format(basic_auth.decode("utf-8"))}
 
         try:
-            response = requests.post(
-                introspection_url,
-                data={"token": token}, headers=headers
-            )
+            response = requests.post(introspection_url, data={"token": token}, headers=headers)
         except requests.exceptions.RequestException:
             log.exception("Introspection: Failed POST to %r in token lookup", introspection_url)
+            return None
+
+        # Log an exception when response from auth server is not successful
+        if response.status_code != http.client.OK:
+            log.exception(
+                "Introspection: Failed to get a valid response "
+                "from authentication server. Status code: {}, "
+                "Reason: {}.".format(response.status_code, response.reason)
+            )
             return None
 
         try:
@@ -330,7 +358,7 @@ class OAuth2Validator(RequestValidator):
                 expires = max_caching_time
 
             scope = content.get("scope", "")
-            expires = make_aware(expires)
+            expires = make_aware(expires) if settings.USE_TZ else expires
 
             access_token, _created = AccessToken.objects.update_or_create(
                 token=token,
@@ -339,7 +367,8 @@ class OAuth2Validator(RequestValidator):
                     "application": None,
                     "scope": scope,
                     "expires": expires,
-                })
+                },
+            )
 
             return access_token
 
@@ -354,19 +383,13 @@ class OAuth2Validator(RequestValidator):
         introspection_token = oauth2_settings.RESOURCE_SERVER_AUTH_TOKEN
         introspection_credentials = oauth2_settings.RESOURCE_SERVER_INTROSPECTION_CREDENTIALS
 
-        try:
-            access_token = AccessToken.objects.select_related("application", "user").get(token=token)
-        except AccessToken.DoesNotExist:
-            access_token = None
+        access_token = self._load_access_token(token)
 
         # if there is no token or it's invalid then introspect the token if there's an external OAuth server
         if not access_token or not access_token.is_valid(scopes):
             if introspection_url and (introspection_token or introspection_credentials):
                 access_token = self._get_token_from_authentication_server(
-                    token,
-                    introspection_url,
-                    introspection_token,
-                    introspection_credentials
+                    token, introspection_url, introspection_token, introspection_credentials
                 )
 
         if access_token and access_token.is_valid(scopes):
@@ -381,12 +404,19 @@ class OAuth2Validator(RequestValidator):
             self._set_oauth2_error_on_request(request, access_token, scopes)
             return False
 
+    def _load_access_token(self, token):
+        return AccessToken.objects.select_related("application", "user").filter(token=token).first()
+
     def validate_code(self, client_id, code, client, request, *args, **kwargs):
         try:
             grant = Grant.objects.get(code=code, application=client)
             if not grant.is_expired():
                 request.scopes = grant.scope.split(" ")
                 request.user = grant.user
+                if grant.nonce:
+                    request.nonce = grant.nonce
+                if grant.claims:
+                    request.claims = json.loads(grant.claims)
                 return True
             return False
 
@@ -397,7 +427,7 @@ class OAuth2Validator(RequestValidator):
         """
         Validate both grant_type is a valid string and grant_type is allowed for current workflow
         """
-        assert(grant_type in GRANT_TYPE_MAPPING)  # mapping misconfiguration
+        assert grant_type in GRANT_TYPE_MAPPING  # mapping misconfiguration
         return request.client.allows_grant_type(*GRANT_TYPE_MAPPING[grant_type])
 
     def validate_response_type(self, client_id, response_type, client, request, *args, **kwargs):
@@ -409,6 +439,16 @@ class OAuth2Validator(RequestValidator):
             return client.allows_grant_type(AbstractApplication.GRANT_AUTHORIZATION_CODE)
         elif response_type == "token":
             return client.allows_grant_type(AbstractApplication.GRANT_IMPLICIT)
+        elif response_type == "id_token":
+            return client.allows_grant_type(AbstractApplication.GRANT_IMPLICIT)
+        elif response_type == "id_token token":
+            return client.allows_grant_type(AbstractApplication.GRANT_IMPLICIT)
+        elif response_type == "code id_token":
+            return client.allows_grant_type(AbstractApplication.GRANT_OPENID_HYBRID)
+        elif response_type == "code token":
+            return client.allows_grant_type(AbstractApplication.GRANT_OPENID_HYBRID)
+        elif response_type == "code id_token token":
+            return client.allows_grant_type(AbstractApplication.GRANT_OPENID_HYBRID)
         else:
             return False
 
@@ -446,18 +486,13 @@ class OAuth2Validator(RequestValidator):
         return grant.code_challenge_method or None
 
     def save_authorization_code(self, client_id, code, request, *args, **kwargs):
-        expires = timezone.now() + timedelta(
-            seconds=oauth2_settings.AUTHORIZATION_CODE_EXPIRE_SECONDS)
-        Grant.objects.create(
-            application=request.client,
-            user=request.user,
-            code=code["code"],
-            expires=expires,
-            redirect_uri=request.redirect_uri,
-            scope=" ".join(request.scopes),
-            code_challenge=request.code_challenge or "",
-            code_challenge_method=request.code_challenge_method or ""
-        )
+        self._create_authorization_code(request, code)
+
+    def get_authorization_code_scopes(self, client_id, code, redirect_uri, request):
+        scopes = Grant.objects.filter(code=code).values_list("scope", flat=True).first()
+        if scopes:
+            return utils.scope_to_list(scopes)
+        return []
 
     def rotate_refresh_token(self, request):
         """
@@ -479,9 +514,12 @@ class OAuth2Validator(RequestValidator):
 
         # expires_in is passed to Server on initialization
         # custom server class can have logic to override this
-        expires = timezone.now() + timedelta(seconds=token.get(
-            'expires_in', oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS,
-        ))
+        expires = timezone.now() + timedelta(
+            seconds=token.get(
+                "expires_in",
+                oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS,
+            )
+        )
 
         if request.grant_type == "client_credentials":
             request.user = None
@@ -499,9 +537,11 @@ class OAuth2Validator(RequestValidator):
             refresh_token_instance = getattr(request, "refresh_token_instance", None)
 
             # If we are to reuse tokens, and we can: do so
-            if not self.rotate_refresh_token(request) and \
-                isinstance(refresh_token_instance, RefreshToken) and \
-                    refresh_token_instance.access_token:
+            if (
+                not self.rotate_refresh_token(request)
+                and isinstance(refresh_token_instance, RefreshToken)
+                and refresh_token_instance.access_token
+            ):
 
                 access_token = AccessToken.objects.select_for_update().get(
                     pk=refresh_token_instance.access_token.pk
@@ -553,9 +593,9 @@ class OAuth2Validator(RequestValidator):
                     # make sure that the token data we're returning matches
                     # the existing token
                     token["access_token"] = previous_access_token.token
-                    token["refresh_token"] = RefreshToken.objects.filter(
-                        access_token=previous_access_token
-                    ).first().token
+                    token["refresh_token"] = (
+                        RefreshToken.objects.filter(access_token=previous_access_token).first().token
+                    )
                     token["scope"] = previous_access_token.scope
 
         # No refresh token should be created, just access token
@@ -563,21 +603,38 @@ class OAuth2Validator(RequestValidator):
             self._create_access_token(expires, request, token)
 
     def _create_access_token(self, expires, request, token, source_refresh_token=None):
+        id_token = token.get("id_token", None)
+        if id_token:
+            id_token = self._load_id_token(id_token)
         return AccessToken.objects.create(
             user=request.user,
             scope=token["scope"],
             expires=expires,
             token=token["access_token"],
+            id_token=id_token,
             application=request.client,
             source_refresh_token=source_refresh_token,
         )
 
+    def _create_authorization_code(self, request, code, expires=None):
+        if not expires:
+            expires = timezone.now() + timedelta(seconds=oauth2_settings.AUTHORIZATION_CODE_EXPIRE_SECONDS)
+        return Grant.objects.create(
+            application=request.client,
+            user=request.user,
+            code=code["code"],
+            expires=expires,
+            redirect_uri=request.redirect_uri,
+            scope=" ".join(request.scopes),
+            code_challenge=request.code_challenge or "",
+            code_challenge_method=request.code_challenge_method or "",
+            nonce=request.nonce or "",
+            claims=json.dumps(request.claims or {}),
+        )
+
     def _create_refresh_token(self, request, refresh_token_code, access_token):
         return RefreshToken.objects.create(
-            user=request.user,
-            token=refresh_token_code,
-            application=request.client,
-            access_token=access_token
+            user=request.user, token=refresh_token_code, application=request.client, access_token=access_token
         )
 
     def revoke_token(self, token, token_type_hint, request, *args, **kwargs):
@@ -608,7 +665,15 @@ class OAuth2Validator(RequestValidator):
         """
         Check username and password correspond to a valid and active User
         """
-        u = authenticate(request, username=username, password=password)
+        # Passing the optional HttpRequest adds compatibility for backends
+        # which depend on its presence. Create one with attributes likely
+        # to be used.
+        http_request = HttpRequest()
+        http_request.path = request.uri
+        http_request.method = request.http_method
+        getattr(http_request, request.http_method).update(dict(request.decoded_body))
+        http_request.META = request.headers
+        u = authenticate(http_request, username=username, password=password)
         if u is not None and u.is_active:
             request.user = u
             return True
@@ -630,11 +695,13 @@ class OAuth2Validator(RequestValidator):
         """
 
         null_or_recent = Q(revoked__isnull=True) | Q(
-            revoked__gt=timezone.now() - timedelta(
-                seconds=oauth2_settings.REFRESH_TOKEN_GRACE_PERIOD_SECONDS
-            )
+            revoked__gt=timezone.now() - timedelta(seconds=oauth2_settings.REFRESH_TOKEN_GRACE_PERIOD_SECONDS)
         )
-        rt = RefreshToken.objects.filter(null_or_recent, token=refresh_token).first()
+        rt = (
+            RefreshToken.objects.filter(null_or_recent, token=refresh_token)
+            .select_related("access_token")
+            .first()
+        )
 
         if not rt:
             return False
@@ -644,3 +711,183 @@ class OAuth2Validator(RequestValidator):
         # Temporary store RefreshToken instance to be reused by get_original_scopes and save_bearer_token.
         request.refresh_token_instance = rt
         return rt.application == client
+
+    @transaction.atomic
+    def _save_id_token(self, jti, request, expires, *args, **kwargs):
+        scopes = request.scope or " ".join(request.scopes)
+
+        id_token = IDToken.objects.create(
+            user=request.user,
+            scope=scopes,
+            expires=expires,
+            jti=jti,
+            application=request.client,
+        )
+        return id_token
+
+    def get_jwt_bearer_token(self, token, token_handler, request):
+        return self.get_id_token(token, token_handler, request)
+
+    def get_oidc_claims(self, token, token_handler, request):
+        # Required OIDC claims
+        claims = {
+            "sub": str(request.user.id),
+        }
+
+        # https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+        claims.update(**self.get_additional_claims(request))
+
+        return claims
+
+    def get_id_token_dictionary(self, token, token_handler, request):
+        """
+        Get the claims to put in the ID Token.
+
+        These claims are in addition to the claims automatically added by
+        ``oauthlib`` - aud, iat, nonce, at_hash, c_hash.
+
+        This function adds in iss, exp and auth_time, plus any claims added from
+        calling ``get_oidc_claims()``
+        """
+        claims = self.get_oidc_claims(token, token_handler, request)
+
+        expiration_time = timezone.now() + timedelta(seconds=oauth2_settings.ID_TOKEN_EXPIRE_SECONDS)
+        # Required ID Token claims
+        claims.update(
+            **{
+                "iss": self.get_oidc_issuer_endpoint(request),
+                "exp": int(dateformat.format(expiration_time, "U")),
+                "auth_time": int(dateformat.format(request.user.last_login, "U")),
+                "jti": str(uuid.uuid4()),
+            }
+        )
+
+        return claims, expiration_time
+
+    def get_oidc_issuer_endpoint(self, request):
+        return oauth2_settings.oidc_issuer(request)
+
+    def finalize_id_token(self, id_token, token, token_handler, request):
+        claims, expiration_time = self.get_id_token_dictionary(token, token_handler, request)
+        id_token.update(**claims)
+        # Workaround for oauthlib bug #746
+        # https://github.com/oauthlib/oauthlib/issues/746
+        if "nonce" not in id_token and request.nonce:
+            id_token["nonce"] = request.nonce
+
+        header = {
+            "typ": "JWT",
+            "alg": request.client.algorithm,
+        }
+        # RS256 consumers expect a kid in the header for verifying the token
+        if request.client.algorithm == AbstractApplication.RS256_ALGORITHM:
+            header["kid"] = request.client.jwk_key.thumbprint()
+
+        jwt_token = jwt.JWT(
+            header=json.dumps(header, default=str),
+            claims=json.dumps(id_token, default=str),
+        )
+        jwt_token.make_signed_token(request.client.jwk_key)
+        id_token = self._save_id_token(id_token["jti"], request, expiration_time)
+        # this is needed by django rest framework
+        request.access_token = id_token
+        request.id_token = id_token
+        return jwt_token.serialize()
+
+    def validate_jwt_bearer_token(self, token, scopes, request):
+        return self.validate_id_token(token, scopes, request)
+
+    def validate_id_token(self, token, scopes, request):
+        """
+        When users try to access resources, check that provided id_token is valid
+        """
+        if not token:
+            return False
+
+        id_token = self._load_id_token(token)
+        if not id_token:
+            return False
+
+        if not id_token.allow_scopes(scopes):
+            return False
+
+        request.client = id_token.application
+        request.user = id_token.user
+        request.scopes = scopes
+        # this is needed by django rest framework
+        request.access_token = id_token
+        return True
+
+    def _load_id_token(self, token):
+        key = self._get_key_for_token(token)
+        if not key:
+            return None
+        try:
+            jwt_token = jwt.JWT(key=key, jwt=token)
+            claims = json.loads(jwt_token.claims)
+            return IDToken.objects.get(jti=claims["jti"])
+        except (JWException, JWTExpired, IDToken.DoesNotExist):
+            return None
+
+    def _get_key_for_token(self, token):
+        """
+        Peek at the unvalidated token to discover who it was issued for
+        and then use that to load that application and its key.
+        """
+        unverified_token = jws.JWS()
+        unverified_token.deserialize(token)
+        claims = json.loads(unverified_token.objects["payload"].decode("utf-8"))
+        if "aud" not in claims:
+            return None
+        application = self._get_client_by_audience(claims["aud"])
+        if application:
+            return application.jwk_key
+
+    def _get_client_by_audience(self, audience):
+        """
+        Load a client by the aud claim in a JWT.
+        aud may be multi-valued, if your provider makes it so.
+        This function is separate to allow further customization.
+        """
+        if isinstance(audience, str):
+            audience = [audience]
+        return Application.objects.filter(client_id__in=audience).first()
+
+    def validate_user_match(self, id_token_hint, scopes, claims, request):
+        # TODO: Fix to validate when necessary acording
+        # https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/request_validator.py#L556
+        # http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest id_token_hint section
+        return True
+
+    def get_authorization_code_nonce(self, client_id, code, redirect_uri, request):
+        """Extracts nonce from saved authorization code.
+        If present in the Authentication Request, Authorization
+        Servers MUST include a nonce Claim in the ID Token with the
+        Claim Value being the nonce value sent in the Authentication
+        Request. Authorization Servers SHOULD perform no other
+        processing on nonce values used. The nonce value is a
+        case-sensitive string.
+        Only code param should be sufficient to retrieve grant code from
+        any storage you are using. However, `client_id` and `redirect_uri`
+        have been validated and can be used also.
+        :param client_id: Unicode client identifier
+        :param code: Unicode authorization code grant
+        :param redirect_uri: Unicode absolute URI
+        :return: Unicode nonce
+        Method is used by:
+            - Authorization Token Grant Dispatcher
+        """
+        nonce = Grant.objects.filter(code=code).values_list("nonce", flat=True).first()
+        if nonce:
+            return nonce
+
+    def get_userinfo_claims(self, request):
+        """
+        Generates and saves a new JWT for this request, and returns it as the
+        current user's claims.
+
+        """
+        return self.get_oidc_claims(None, None, request)
+
+    def get_additional_claims(self, request):
+        return {}

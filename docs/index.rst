@@ -6,7 +6,7 @@
 Welcome to Django OAuth Toolkit Documentation
 =============================================
 
-Django OAuth Toolkit can help you providing out of the box all the endpoints, data and logic needed to add OAuth2
+Django OAuth Toolkit can help you by providing, out of the box, all the endpoints, data, and logic needed to add OAuth2
 capabilities to your Django projects. Django OAuth Toolkit makes extensive use of the excellent
 `OAuthLib <https://github.com/idan/oauthlib>`_, so that everything is
 `rfc-compliant <http://tools.ietf.org/html/rfc6749>`_.
@@ -16,13 +16,14 @@ See our :doc:`Changelog <changelog>` for information on updates.
 Support
 -------
 
-If you need support please send a message to the `Django OAuth Toolkit Google Group <http://groups.google.com/group/django-oauth-toolkit>`_
+If you need help please submit a `question <https://github.com/jazzband/django-oauth-toolkit/issues/new?assignees=&labels=question&template=question.md&title=>`_.
 
 Requirements
 ------------
 
-* Python 3.4+
-* Django 2.0+
+* Python 3.6+
+* Django 2.2+
+* oauthlib 3.1+
 
 Index
 =====
@@ -31,6 +32,7 @@ Index
    :maxdepth: 2
 
    install
+   getting_started
    tutorial/tutorial
    rest-framework/rest-framework
    views/views
@@ -38,6 +40,7 @@ Index
    views/details
    models
    advanced_topics
+   oidc
    signals
    settings
    resource_server

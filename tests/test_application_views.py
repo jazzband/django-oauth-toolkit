@@ -1,12 +1,13 @@
+import pytest
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
 from oauth2_provider.models import get_application_model
-from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views.application import ApplicationRegistration
 
 from .models import SampleApplication
+
 
 Application = get_application_model()
 UserModel = get_user_model()
@@ -22,22 +23,19 @@ class BaseTest(TestCase):
         self.bar_user.delete()
 
 
+@pytest.mark.usefixtures("oauth2_settings")
 class TestApplicationRegistrationView(BaseTest):
-
+    @pytest.mark.oauth2_settings({"APPLICATION_MODEL": "tests.SampleApplication"})
     def test_get_form_class(self):
         """
         Tests that the form class returned by the "get_form_class" method is
         bound to custom application model defined in the
         "OAUTH2_PROVIDER_APPLICATION_MODEL" setting.
         """
-        # Patch oauth2 settings to use a custom Application model
-        oauth2_settings.APPLICATION_MODEL = "tests.SampleApplication"
         # Create a registration view and tests that the model form is bound
         # to the custom Application model
         application_form_class = ApplicationRegistration().get_form_class()
         self.assertEqual(SampleApplication, application_form_class._meta.model)
-        # Revert oauth2 settings
-        oauth2_settings.APPLICATION_MODEL = "oauth2_provider.Application"
 
     def test_application_registration_user(self):
         self.client.login(username="foo_user", password="123456")
@@ -49,6 +47,7 @@ class TestApplicationRegistrationView(BaseTest):
             "client_type": Application.CLIENT_CONFIDENTIAL,
             "redirect_uris": "http://example.com",
             "authorization_grant_type": Application.GRANT_AUTHORIZATION_CODE,
+            "algorithm": "",
         }
 
         response = self.client.post(reverse("oauth2_provider:register"), form_data)
@@ -61,15 +60,16 @@ class TestApplicationRegistrationView(BaseTest):
 class TestApplicationViews(BaseTest):
     def _create_application(self, name, user):
         app = Application.objects.create(
-            name=name, redirect_uris="http://example.com",
+            name=name,
+            redirect_uris="http://example.com",
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
-            user=user
+            user=user,
         )
         return app
 
     def setUp(self):
-        super(TestApplicationViews, self).setUp()
+        super().setUp()
         self.app_foo_1 = self._create_application("app foo_user 1", self.foo_user)
         self.app_foo_2 = self._create_application("app foo_user 2", self.foo_user)
         self.app_foo_3 = self._create_application("app foo_user 3", self.foo_user)
@@ -78,7 +78,7 @@ class TestApplicationViews(BaseTest):
         self.app_bar_2 = self._create_application("app bar_user 2", self.bar_user)
 
     def tearDown(self):
-        super(TestApplicationViews, self).tearDown()
+        super().tearDown()
         get_application_model().objects.all().delete()
 
     def test_application_list(self):

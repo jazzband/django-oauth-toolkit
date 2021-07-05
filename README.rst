@@ -7,17 +7,24 @@ Django OAuth Toolkit
 
 *OAuth2 goodies for the Djangonauts!*
 
-.. image:: https://badge.fury.io/py/django-oauth-toolkit.png
+.. image:: https://badge.fury.io/py/django-oauth-toolkit.svg
     :target: http://badge.fury.io/py/django-oauth-toolkit
 
-.. image:: https://travis-ci.org/jazzband/django-oauth-toolkit.png
-   :alt: Build Status
-   :target: https://travis-ci.org/jazzband/django-oauth-toolkit
+.. image:: https://github.com/jazzband/django-oauth-toolkit/workflows/Test/badge.svg
+   :target: https://github.com/jazzband/django-oauth-toolkit/actions
+   :alt: GitHub Actions
 
-.. image:: https://coveralls.io/repos/github/jazzband/django-oauth-toolkit/badge.svg?branch=master
-   :alt: Coverage Status
-   :target: https://coveralls.io/github/jazzband/django-oauth-toolkit?branch=master
+.. image:: https://codecov.io/gh/jazzband/django-oauth-toolkit/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/jazzband/django-oauth-toolkit
+   :alt: Coverage
 
+.. image:: https://img.shields.io/pypi/pyversions/django-oauth-toolkit.svg
+   :target: https://pypi.org/project/django-oauth-toolkit/
+   :alt: Supported Python versions
+
+.. image:: https://img.shields.io/pypi/djversions/django-oauth-toolkit.svg
+   :target: https://pypi.org/project/django-oauth-toolkit/
+   :alt: Supported Django versions
 
 If you are facing one or more of the following:
  * Your Django app exposes a web API you want to protect with OAuth2 authentication,
@@ -42,8 +49,9 @@ Please report any security issues to the JazzBand security team at <security@jaz
 Requirements
 ------------
 
-* Python 3.4+
-* Django 2.0+
+* Python 3.6+
+* Django 2.2+
+* oauthlib 3.1+
 
 Installation
 ------------
@@ -69,7 +77,7 @@ Notice that `oauth2_provider` namespace is mandatory.
 
     urlpatterns = [
         ...
-        url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+        path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     ]
 
 Changelog

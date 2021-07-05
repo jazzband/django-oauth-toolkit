@@ -34,8 +34,8 @@ Include the Django OAuth Toolkit urls in your `urls.py`, choosing the urlspace y
 .. code-block:: python
 
     urlpatterns = [
-        url(r"^admin/", admin.site.urls),
-        url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+        path("admin", admin.site.urls),
+        path("o/", include('oauth2_provider.urls', namespace='oauth2_provider')),
         # ...
     ]
 
@@ -46,13 +46,6 @@ CorsMiddleware should be placed as high as possible, especially before any middl
 .. code-block:: python
 
     MIDDLEWARE = (
-        # ...
-        'corsheaders.middleware.CorsMiddleware',
-        # ...
-    )
-
-    # Or on Django < 1.10:
-    MIDDLEWARE_CLASSES = (
         # ...
         'corsheaders.middleware.CorsMiddleware',
         # ...

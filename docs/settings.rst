@@ -31,7 +31,7 @@ ACCESS_TOKEN_EXPIRE_SECONDS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The number of seconds an access token remains valid. Requesting a protected
 resource after this duration will fail. Keep this value high enough so clients
-can cache the token for a reasonable amount of time.
+can cache the token for a reasonable amount of time. (default: 36000)
 
 ACCESS_TOKEN_MODEL
 ~~~~~~~~~~~~~~~~~~
@@ -51,6 +51,11 @@ Default: ``["http", "https"]``
 
 A list of schemes that the ``redirect_uri`` field will be validated against.
 Setting this to ``["https"]`` only in production is strongly recommended.
+
+For Native Apps the ``http`` scheme can be safely used with loopback addresses in the
+Application (``[::1]`` or ``127.0.0.1``). In this case the ``redirect_uri`` can be
+configured without explicit port specification, so that the Application accepts randomly
+assigned ports.
 
 Note that you may override ``Application.get_allowed_schemes()`` to set this on
 a per-application basis.
@@ -97,10 +102,36 @@ The import string of the class (model) representing your grants. Overwrite
 this value if you wrote your own implementation (subclass of
 ``oauth2_provider.models.Grant``).
 
+APPLICATION_ADMIN_CLASS
+~~~~~~~~~~~~~~~~~
+The import string of the class (model) representing your application admin class.
+Overwrite this value if you wrote your own implementation (subclass of
+``oauth2_provider.admin.ApplicationAdmin``).
+
+ACCESS_TOKEN_ADMIN_CLASS
+~~~~~~~~~~~~~~~~~
+The import string of the class (model) representing your access token admin class.
+Overwrite this value if you wrote your own implementation (subclass of
+``oauth2_provider.admin.AccessTokenAdmin``).
+
+GRANT_ADMIN_CLASS
+~~~~~~~~~~~~~~~~~
+The import string of the class (model) representing your grant admin class.
+Overwrite this value if you wrote your own implementation (subclass of
+``oauth2_provider.admin.GrantAdmin``).
+
+REFRESH_TOKEN_ADMIN_CLASS
+~~~~~~~~~~~~~~~~~
+The import string of the class (model) representing your refresh token admin class.
+Overwrite this value if you wrote your own implementation (subclass of
+``oauth2_provider.admin.RefreshTokenAdmin``).
+
 OAUTH2_SERVER_CLASS
 ~~~~~~~~~~~~~~~~~~~
 The import string for the ``server_class`` (or ``oauthlib.oauth2.Server`` subclass)
-used in the ``OAuthLibMixin`` that implements OAuth2 grant types.
+used in the ``OAuthLibMixin`` that implements OAuth2 grant types. It defaults
+to ``oauthlib.oauth2.Server``, except when OIDC support is enabled, when the
+default is ``oauthlib.openid.Server``.
 
 OAUTH2_VALIDATOR_CLASS
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -118,7 +149,7 @@ The number of seconds before a refresh token gets removed from the database by
 the ``cleartokens`` management command. Check :ref:`cleartokens` management command for further info.
 NOTE: This value is completely ignored when validating refresh tokens.
 If you don't change the validator code and don't run cleartokens all refresh
-tokens will last until revoked or the end of time.
+tokens will last until revoked or the end of time. You should change this.
 
 REFRESH_TOKEN_GRACE_PERIOD_SECONDS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -198,12 +229,18 @@ Only applicable when used with `Django REST Framework <http://django-rest-framew
 
 RESOURCE_SERVER_INTROSPECTION_URL
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The introspection endpoint for validating token remotely (RFC7662).
+The introspection endpoint for validating token remotely (RFC7662). This URL requires either an authorization
+token (RESOURCE_SERVER_AUTH_TOKEN)
+or HTTP Basic Auth client credentials (RESOURCE_SERVER_INTROSPECTION_CREDENTIALS):
 
 RESOURCE_SERVER_AUTH_TOKEN
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 The bearer token to authenticate the introspection request towards the introspection endpoint (RFC7662).
 
+RESOURCE_SERVER_INTROSPECTION_CREDENTIALS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The HTTP Basic Auth Client_ID and Client_Secret to authenticate the introspection request
+towards the introspect endpoint (RFC7662) as a tuple: (client_id,client_secret).
 
 RESOURCE_SERVER_TOKEN_CACHING_SECONDS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -217,3 +254,73 @@ PKCE_REQUIRED
 Default: ``False``
 
 Whether or not PKCE is required. Can be either a bool or a callable that takes a client id and returns a bool.
+
+
+OIDC_RSA_PRIVATE_KEY
+~~~~~~~~~~~~~~~~~~~~
+Default: ``""``
+
+The RSA private key used to sign OIDC ID tokens. If not set, OIDC is disabled.
+
+
+OIDC_USERINFO_ENDPOINT
+~~~~~~~~~~~~~~~~~~~~~~
+Default: ``""``
+
+The url of the userinfo endpoint. Used to advertise the location of the
+endpoint in the OIDC discovery metadata. Changing this does not change the URL
+that ``django-oauth-toolkit`` adds for the userinfo endpoint, so if you change
+this you must also provide the service at that endpoint.
+
+If unset, the default location is used, eg if ``django-oauth-toolkit`` is
+mounted at ``/o/``, it will be ``<server-address>/o/userinfo/``.
+
+OIDC_ISS_ENDPOINT
+~~~~~~~~~~~~~~~~~
+Default: ``""``
+
+The URL of the issuer that is used in the ID token JWT and advertised in the
+OIDC discovery metadata. Clients use this location to retrieve the OIDC
+discovery metadata from ``OIDC_ISS_ENDPOINT`` +
+``/.well-known/openid-configuration/``.
+
+If unset, the default location is used, eg if ``django-oauth-toolkit`` is
+mounted at ``/o``, it will be ``<server-address>/o``.
+
+OIDC_RESPONSE_TYPES_SUPPORTED
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Default::
+
+    [
+        "code",
+        "token",
+        "id_token",
+        "id_token token",
+        "code token",
+        "code id_token",
+        "code id_token token",
+    ]
+
+
+The response types that are advertised to be supported by this server.
+
+OIDC_SUBJECT_TYPES_SUPPORTED
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Default: ``["public"]``
+
+The subject types that are advertised to be supported by this server.
+
+OIDC_TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Default: ``["client_secret_post", "client_secret_basic"]``
+
+The authentication methods that are advertised to be supported by this server.
+
+
+Settings imported from Django project
+--------------------------
+
+USE_TZ
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Used to determine whether or not to make token expire dates timezone aware.
