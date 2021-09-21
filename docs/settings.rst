@@ -147,6 +147,8 @@ REFRESH_TOKEN_EXPIRE_SECONDS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The number of seconds before a refresh token gets removed from the database by
 the ``cleartokens`` management command. Check :ref:`cleartokens` management command for further info.
+Can be an ``Int`` or ``datetime.timedelta``.
+
 NOTE: This value is completely ignored when validating refresh tokens.
 If you don't change the validator code and don't run cleartokens all refresh
 tokens will last until revoked or the end of time. You should change this.
