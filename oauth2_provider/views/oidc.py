@@ -1,4 +1,5 @@
 import json
+from urllib.parse import urlparse
 
 from django.http import HttpResponse, JsonResponse
 from django.urls import reverse
@@ -32,12 +33,15 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
             )
             jwks_uri = request.build_absolute_uri(reverse("oauth2_provider:jwks-info"))
         else:
-            authorization_endpoint = "{}{}".format(issuer_url, reverse("oauth2_provider:authorize"))
-            token_endpoint = "{}{}".format(issuer_url, reverse("oauth2_provider:token"))
+            parsed_url = urlparse(oauth2_settings.OIDC_ISS_ENDPOINT)
+            host = parsed_url.scheme + "://" + parsed_url.netloc
+            authorization_endpoint = "{}{}".format(host, reverse("oauth2_provider:authorize"))
+            token_endpoint = "{}{}".format(host, reverse("oauth2_provider:token"))
             userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or "{}{}".format(
-                issuer_url, reverse("oauth2_provider:user-info")
+                host, reverse("oauth2_provider:user-info")
             )
-            jwks_uri = "{}{}".format(issuer_url, reverse("oauth2_provider:jwks-info"))
+            jwks_uri = "{}{}".format(host, reverse("oauth2_provider:jwks-info"))
+
         signing_algorithms = [Application.HS256_ALGORITHM]
         if oauth2_settings.OIDC_RSA_PRIVATE_KEY:
             signing_algorithms = [Application.RS256_ALGORITHM, Application.HS256_ALGORITHM]

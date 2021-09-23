@@ -114,7 +114,7 @@ class AbstractApplication(models.Model):
             return self.redirect_uris.split().pop(0)
 
         assert False, (
-            "If you are using implicit, authorization_code"
+            "If you are using implicit, authorization_code "
             "or all-in-one grant_type, you must define "
             "redirect_uris field in your Application model"
         )
@@ -125,23 +125,7 @@ class AbstractApplication(models.Model):
 
         :param uri: Url to check
         """
-        parsed_uri = urlparse(uri)
-        uqs_set = set(parse_qsl(parsed_uri.query))
-        for allowed_uri in self.redirect_uris.split():
-            parsed_allowed_uri = urlparse(allowed_uri)
-
-            if (
-                parsed_allowed_uri.scheme == parsed_uri.scheme
-                and parsed_allowed_uri.netloc == parsed_uri.netloc
-                and parsed_allowed_uri.path == parsed_uri.path
-            ):
-
-                aqs_set = set(parse_qsl(parsed_allowed_uri.query))
-
-                if aqs_set.issubset(uqs_set):
-                    return True
-
-        return False
+        return redirect_to_uri_allowed(uri, self.redirect_uris.split())
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -579,56 +563,56 @@ class IDToken(AbstractIDToken):
 
 
 def get_application_model():
-    """ Return the Application model that is active in this project. """
+    """Return the Application model that is active in this project."""
     return apps.get_model(oauth2_settings.APPLICATION_MODEL)
 
 
 def get_grant_model():
-    """ Return the Grant model that is active in this project. """
+    """Return the Grant model that is active in this project."""
     return apps.get_model(oauth2_settings.GRANT_MODEL)
 
 
 def get_access_token_model():
-    """ Return the AccessToken model that is active in this project. """
+    """Return the AccessToken model that is active in this project."""
     return apps.get_model(oauth2_settings.ACCESS_TOKEN_MODEL)
 
 
 def get_id_token_model():
-    """ Return the AccessToken model that is active in this project. """
+    """Return the AccessToken model that is active in this project."""
     return apps.get_model(oauth2_settings.ID_TOKEN_MODEL)
 
 
 def get_refresh_token_model():
-    """ Return the RefreshToken model that is active in this project. """
+    """Return the RefreshToken model that is active in this project."""
     return apps.get_model(oauth2_settings.REFRESH_TOKEN_MODEL)
 
 
 def get_application_admin_class():
-    """ Return the Application admin class that is active in this project. """
+    """Return the Application admin class that is active in this project."""
     application_admin_class = oauth2_settings.APPLICATION_ADMIN_CLASS
     return application_admin_class
 
 
 def get_access_token_admin_class():
-    """ Return the AccessToken admin class that is active in this project. """
+    """Return the AccessToken admin class that is active in this project."""
     access_token_admin_class = oauth2_settings.ACCESS_TOKEN_ADMIN_CLASS
     return access_token_admin_class
 
 
 def get_grant_admin_class():
-    """ Return the Grant admin class that is active in this project. """
+    """Return the Grant admin class that is active in this project."""
     grant_admin_class = oauth2_settings.GRANT_ADMIN_CLASS
     return grant_admin_class
 
 
 def get_id_token_admin_class():
-    """ Return the IDToken admin class that is active in this project. """
+    """Return the IDToken admin class that is active in this project."""
     id_token_admin_class = oauth2_settings.ID_TOKEN_ADMIN_CLASS
     return id_token_admin_class
 
 
 def get_refresh_token_admin_class():
-    """ Return the RefreshToken admin class that is active in this project. """
+    """Return the RefreshToken admin class that is active in this project."""
     refresh_token_admin_class = oauth2_settings.REFRESH_TOKEN_ADMIN_CLASS
     return refresh_token_admin_class
 
@@ -674,3 +658,50 @@ def clear_expired():
 
         access_tokens.delete()
         grants.delete()
+
+
+def redirect_to_uri_allowed(uri, allowed_uris):
+    """
+    Checks if a given uri can be redirected to based on the provided allowed_uris configuration.
+
+    On top of exact matches, this function also handles loopback IPs based on RFC 8252.
+
+    :param uri: URI to check
+    :param allowed_uris: A list of URIs that are allowed
+    """
+
+    parsed_uri = urlparse(uri)
+    uqs_set = set(parse_qsl(parsed_uri.query))
+    for allowed_uri in allowed_uris:
+        parsed_allowed_uri = urlparse(allowed_uri)
+
+        # From RFC 8252 (Section 7.3)
+        #
+        # Loopback redirect URIs use the "http" scheme
+        # [...]
+        # The authorization server MUST allow any port to be specified at the
+        # time of the request for loopback IP redirect URIs, to accommodate
+        # clients that obtain an available ephemeral port from the operating
+        # system at the time of the request.
+
+        allowed_uri_is_loopback = (
+            parsed_allowed_uri.scheme == "http"
+            and parsed_allowed_uri.hostname in ["127.0.0.1", "::1"]
+            and parsed_allowed_uri.port is None
+        )
+        if (
+            allowed_uri_is_loopback
+            and parsed_allowed_uri.scheme == parsed_uri.scheme
+            and parsed_allowed_uri.hostname == parsed_uri.hostname
+            and parsed_allowed_uri.path == parsed_uri.path
+        ) or (
+            parsed_allowed_uri.scheme == parsed_uri.scheme
+            and parsed_allowed_uri.netloc == parsed_uri.netloc
+            and parsed_allowed_uri.path == parsed_uri.path
+        ):
+
+            aqs_set = set(parse_qsl(parsed_allowed_uri.query))
+            if aqs_set.issubset(uqs_set):
+                return True
+
+    return False

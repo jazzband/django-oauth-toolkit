@@ -52,6 +52,11 @@ Default: ``["http", "https"]``
 A list of schemes that the ``redirect_uri`` field will be validated against.
 Setting this to ``["https"]`` only in production is strongly recommended.
 
+For Native Apps the ``http`` scheme can be safely used with loopback addresses in the
+Application (``[::1]`` or ``127.0.0.1``). In this case the ``redirect_uri`` can be
+configured without explicit port specification, so that the Application accepts randomly
+assigned ports.
+
 Note that you may override ``Application.get_allowed_schemes()`` to set this on
 a per-application basis.
 
@@ -142,6 +147,8 @@ REFRESH_TOKEN_EXPIRE_SECONDS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The number of seconds before a refresh token gets removed from the database by
 the ``cleartokens`` management command. Check :ref:`cleartokens` management command for further info.
+Can be an ``Int`` or ``datetime.timedelta``.
+
 NOTE: This value is completely ignored when validating refresh tokens.
 If you don't change the validator code and don't run cleartokens all refresh
 tokens will last until revoked or the end of time. You should change this.
