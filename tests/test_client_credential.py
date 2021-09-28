@@ -152,9 +152,9 @@ class TestExtendedRequest(BaseTest):
         with pytest.raises(SuspiciousOperation):
             TestView().verify_request(request)
 
-    @patch('oauth2_provider.views.mixins.OAuthLibMixin.get_oauthlib_core')
+    @patch("oauth2_provider.views.mixins.OAuthLibMixin.get_oauthlib_core")
     def test_reraises_value_errors_as_is(self, patched_core):
-        patched_core.return_value.verify_request.side_effect = ValueError('Generic error')
+        patched_core.return_value.verify_request.side_effect = ValueError("Generic error")
 
         request = self.request_factory.get("/fake-req")
 

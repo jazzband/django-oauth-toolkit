@@ -13,6 +13,7 @@ from oauth2_provider.backends import OAuth2Backend
 from oauth2_provider.middleware import OAuth2TokenMiddleware
 from oauth2_provider.models import get_access_token_model, get_application_model
 
+
 UserModel = get_user_model()
 ApplicationModel = get_application_model()
 AccessTokenModel = get_access_token_model()
@@ -64,9 +65,9 @@ class TestOAuth2Backend(BaseTest):
         with pytest.raises(SuspiciousOperation):
             OAuth2Backend().authenticate(**credentials)
 
-    @patch('oauth2_provider.backends.OAuthLibCore.verify_request')
+    @patch("oauth2_provider.backends.OAuthLibCore.verify_request")
     def test_value_errors_are_reraised(self, patched_verify_request):
-        patched_verify_request.side_effect = ValueError('Generic error')
+        patched_verify_request.side_effect = ValueError("Generic error")
 
         with pytest.raises(ValueError):
             OAuth2Backend().authenticate(request={})
