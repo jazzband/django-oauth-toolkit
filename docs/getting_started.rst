@@ -87,7 +87,7 @@ Edit :file:`users/models.py` adding the code below:
 .. code-block:: python
 
     from django.contrib.auth.models import AbstractUser
-  
+
     class User(AbstractUser):
         pass
 
@@ -213,8 +213,8 @@ Create a user::
 
     Username: wiliam
     Email address: me@wiliam.dev
-    Password: 
-    Password (again): 
+    Password:
+    Password (again):
     Superuser created successfully.
 
 OAuth2 Authorization Grants
