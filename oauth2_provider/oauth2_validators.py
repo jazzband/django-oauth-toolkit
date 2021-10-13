@@ -11,6 +11,7 @@ from urllib.parse import unquote_plus
 import requests
 from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth.hashers import check_password
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.db.models import Q
@@ -122,6 +123,11 @@ class OAuth2Validator(RequestValidator):
         elif request.client.client_id != client_id:
             log.debug("Failed basic auth: wrong client id %s" % client_id)
             return False
+        elif "$" in request.client.client_secret:
+            if not check_password(client_secret, request.client.client_secret):
+                log.debug("Failed basic auth: wrong hashed client secret %s" % client_secret)
+                return False
+            return True
         elif request.client.client_secret != client_secret:
             log.debug("Failed basic auth: wrong client secret %s" % client_secret)
             return False
