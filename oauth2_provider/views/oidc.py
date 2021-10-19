@@ -64,7 +64,7 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
             "token_endpoint_auth_methods_supported": (
                 oauth2_settings.OIDC_TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED
             ),
-            "claims_supported": oidc_claims
+            "claims_supported": oidc_claims,
         }
         response = JsonResponse(data)
         response["Access-Control-Allow-Origin"] = "*"

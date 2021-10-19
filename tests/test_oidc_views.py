@@ -29,7 +29,7 @@ class TestConnectDiscoveryInfoView(TestCase):
             "subject_types_supported": ["public"],
             "id_token_signing_alg_values_supported": ["RS256", "HS256"],
             "token_endpoint_auth_methods_supported": ["client_secret_post", "client_secret_basic"],
-            "claims_supported": ['sub']
+            "claims_supported": ["sub"],
         }
         response = self.client.get(reverse("oauth2_provider:oidc-connect-discovery-info"))
         self.assertEqual(response.status_code, 200)
@@ -56,7 +56,7 @@ class TestConnectDiscoveryInfoView(TestCase):
             "subject_types_supported": ["public"],
             "id_token_signing_alg_values_supported": ["RS256", "HS256"],
             "token_endpoint_auth_methods_supported": ["client_secret_post", "client_secret_basic"],
-            "claims_supported": ['sub']
+            "claims_supported": ["sub"],
         }
         response = self.client.get(reverse("oauth2_provider:oidc-connect-discovery-info"))
         self.assertEqual(response.status_code, 200)
@@ -149,8 +149,11 @@ def test_userinfo_endpoint_bad_token(oidc_tokens, client):
 
 
 EXAMPLE_EMAIL = "example.email@example.com"
+
+
 def claim_user_email(request):
     return EXAMPLE_EMAIL
+
 
 @pytest.mark.django_db
 def test_userinfo_endpoint_custom_claims(oidc_tokens, client, oauth2_settings):

@@ -732,7 +732,7 @@ class OAuth2Validator(RequestValidator):
         def get_sub_code(request):
             return str(request.user.id)
 
-        list = [ ("sub", get_sub_code) ]
+        list = [("sub", get_sub_code)]
 
         # https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
         add = self.get_additional_claims()
