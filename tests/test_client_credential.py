@@ -1,8 +1,10 @@
 import json
+from unittest.mock import patch
 from urllib.parse import quote_plus
 
 import pytest
 from django.contrib.auth import get_user_model
+from django.core.exceptions import SuspiciousOperation
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 from django.views.generic import View
@@ -101,6 +103,15 @@ class TestClientCredential(BaseTest):
         self.assertIsNone(access_token.user)
 
 
+class TestView(OAuthLibMixin, View):
+    server_class = BackendApplicationServer
+    validator_class = OAuth2Validator
+    oauthlib_backend_class = OAuthLibCore
+
+    def get_scopes(self):
+        return ["read", "write"]
+
+
 class TestExtendedRequest(BaseTest):
     @classmethod
     def setUpClass(cls):
@@ -108,14 +119,6 @@ class TestExtendedRequest(BaseTest):
         super().setUpClass()
 
     def test_extended_request(self):
-        class TestView(OAuthLibMixin, View):
-            server_class = BackendApplicationServer
-            validator_class = OAuth2Validator
-            oauthlib_backend_class = OAuthLibCore
-
-            def get_scopes(self):
-                return ["read", "write"]
-
         token_request_data = {
             "grant_type": "client_credentials",
         }
@@ -142,6 +145,21 @@ class TestExtendedRequest(BaseTest):
         self.assertIsNone(r.user)
         self.assertEqual(r.client, self.application)
         self.assertEqual(r.scopes, ["read", "write"])
+
+    def test_raises_error_with_invalid_hex_in_query_params(self):
+        request = self.request_factory.get("/fake-req?auth_token=%%7A")
+
+        with pytest.raises(SuspiciousOperation):
+            TestView().verify_request(request)
+
+    @patch("oauth2_provider.views.mixins.OAuthLibMixin.get_oauthlib_core")
+    def test_reraises_value_errors_as_is(self, patched_core):
+        patched_core.return_value.verify_request.side_effect = ValueError("Generic error")
+
+        request = self.request_factory.get("/fake-req")
+
+        with pytest.raises(ValueError):
+            TestView().verify_request(request)
 
 
 class TestClientResourcePasswordBased(BaseTest):

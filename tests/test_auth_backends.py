@@ -1,5 +1,9 @@
+from unittest.mock import patch
+
+import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
+from django.core.exceptions import SuspiciousOperation
 from django.http import HttpResponse
 from django.test import RequestFactory, TestCase
 from django.test.utils import modify_settings, override_settings
@@ -50,6 +54,23 @@ class TestOAuth2Backend(BaseTest):
         credentials = {"request": request}
         u = backend.authenticate(**credentials)
         self.assertEqual(u, self.user)
+
+    def test_authenticate_raises_error_with_invalid_hex_in_query_params(self):
+        auth_headers = {
+            "HTTP_AUTHORIZATION": "Bearer " + "tokstr",
+        }
+        request = self.factory.get("/a-resource?auth_token=%%7A", **auth_headers)
+        credentials = {"request": request}
+
+        with pytest.raises(SuspiciousOperation):
+            OAuth2Backend().authenticate(**credentials)
+
+    @patch("oauth2_provider.backends.OAuthLibCore.verify_request")
+    def test_value_errors_are_reraised(self, patched_verify_request):
+        patched_verify_request.side_effect = ValueError("Generic error")
+
+        with pytest.raises(ValueError):
+            OAuth2Backend().authenticate(request={})
 
     def test_authenticate_fail(self):
         auth_headers = {

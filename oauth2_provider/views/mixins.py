@@ -1,7 +1,7 @@
 import logging
 
 from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured, SuspiciousOperation
 from django.http import HttpResponseForbidden, HttpResponseNotFound
 
 from ..exceptions import FatalClientError
@@ -150,7 +150,14 @@ class OAuthLibMixin:
         :param request: The current django.http.HttpRequest object
         """
         core = self.get_oauthlib_core()
-        return core.verify_request(request, scopes=self.get_scopes())
+
+        try:
+            return core.verify_request(request, scopes=self.get_scopes())
+        except ValueError as error:
+            if str(error) == "Invalid hex encoding in query string.":
+                raise SuspiciousOperation(error)
+            else:
+                raise
 
     def get_scopes(self):
         """
