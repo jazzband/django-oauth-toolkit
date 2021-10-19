@@ -100,6 +100,30 @@ change this class to derive from ``oauthlib.openid.Server`` instead of
 With ``RSA`` key-pairs, the public key can be generated from the private key,
 so there is no need to add a setting for the public key.
 
+
+Rotating the RSA private key
+~~~~~~~~~~~~~~~~~~~~~~~~
+Extra keys can be published in the jwks_uri with the ``OIDC_RSA_PRIVATE_KEYS_INACTIVE``
+setting. For example:::
+
+    OAUTH2_PROVIDER = {
+        "OIDC_RSA_PRIVATE_KEY": os.environ.get("OIDC_RSA_PRIVATE_KEY"),
+        "OIDC_RSA_PRIVATE_KEYS_INACTIVE": [
+            os.environ.get("OIDC_RSA_PRIVATE_KEY_2"),
+            os.environ.get("OIDC_RSA_PRIVATE_KEY_3")
+        ]
+        # ... other settings
+    }
+
+To rotate, follow these steps:
+
+#. Generate a new key, and add it to the inactive set. Then deploy the app.
+#. Swap the active and inactive keys, then re-deploy.
+#. After some reasonable amount of time, remove the inactive key. At a minimum,
+   you should wait ``ID_TOKEN_EXPIRE_SECONDS`` to ensure the key isn't removed
+   before valid tokens expire.
+
+
 Using ``HS256`` keys
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -297,7 +321,7 @@ query, and other details.
 JwksInfoView
 ~~~~~~~~~~~~
 
-Available at ``/o/.well-known/jwks.json``, this view provides details of the key used to sign
+Available at ``/o/.well-known/jwks.json``, this view provides details of the keys used to sign
 the JWTs generated for ID tokens, so that clients are able to verify them.
 
 

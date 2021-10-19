@@ -117,7 +117,7 @@ class AbstractApplication(models.Model):
             raise errors.MissingRedirectURIError()
 
         assert False, (
-            "If you are using implicit, authorization_code"
+            "If you are using implicit, authorization_code "
             "or all-in-one grant_type, you must define "
             "redirect_uris field in your Application model"
         )
