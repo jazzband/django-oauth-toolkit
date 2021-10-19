@@ -87,7 +87,7 @@ Edit :file:`users/models.py` adding the code below:
 .. code-block:: python
 
     from django.contrib.auth.models import AbstractUser
-  
+
     class User(AbstractUser):
         pass
 
@@ -213,8 +213,8 @@ Create a user::
 
     Username: wiliam
     Email address: me@wiliam.dev
-    Password: 
-    Password (again): 
+    Password:
+    Password (again):
     Superuser created successfully.
 
 OAuth2 Authorization Grants
@@ -358,7 +358,7 @@ Export the credential as an environment variable
 
     export CREDENTIAL=YXhYU1NCVnV2T3lHVnpoNFB1cnZLYXE1TUhYTW03RnRySGdETWk0dToxZnV2NVdWZlI3QTVCbEYwbzE1NUg3czViTGdYbHdXTGhpM1k3cGRKOWFKdUNkbDBYVjVDeGdkMHRyaTduU3pDODBxeXJvdmg4cUZYRkhnRkFBYzBsZFBObjVaWUxhbnhTbTFTSTFyeGxScldVUDU5MXdwSERHYTNwU3BCNmRDWg==
 
-To start the Client Credential flow you call ``/token/`` endpoint direct::
+To start the Client Credential flow you call ``/token/`` endpoint directly::
 
     curl -X POST -H "Authorization: Basic ${CREDENTIAL}" -H "Cache-Control: no-cache" -H "Content-Type: application/x-www-form-urlencoded" "http://127.0.0.1:8000/o/token/" -d "grant_type=client_credentials"
 

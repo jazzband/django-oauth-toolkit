@@ -15,21 +15,21 @@ which takes care of token verification. In your settings.py:
 
 .. code-block:: python
 
-    AUTHENTICATION_BACKENDS = (
+    AUTHENTICATION_BACKENDS = [
         'oauth2_provider.backends.OAuth2Backend',
         # Uncomment following if you want to access the admin
-        #'django.contrib.auth.backends.ModelBackend'
+        #'django.contrib.auth.backends.ModelBackend',
         '...',
-    )
+    ]
 
-    MIDDLEWARE = (
+    MIDDLEWARE = [
         '...',
         # If you use SessionAuthenticationMiddleware, be sure it appears before OAuth2TokenMiddleware.
         # SessionAuthenticationMiddleware is NOT required for using django-oauth-toolkit.
         'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
         'oauth2_provider.middleware.OAuth2TokenMiddleware',
         '...',
-    )
+    ]
 
 You will likely use the `django.contrib.auth.backends.ModelBackend` along with the OAuth2 backend
 (or you might not be able to log in into the admin), only pay attention to the order in which

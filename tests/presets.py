@@ -12,6 +12,7 @@ OIDC_SETTINGS_RW = {
     "OIDC_ISS_ENDPOINT": "http://localhost/o",
     "OIDC_USERINFO_ENDPOINT": "http://localhost/o/userinfo/",
     "OIDC_RSA_PRIVATE_KEY": settings.OIDC_RSA_PRIVATE_KEY,
+    "OIDC_RSA_PRIVATE_KEYS_INACTIVE": settings.OIDC_RSA_PRIVATE_KEYS_INACTIVE,
     "SCOPES": {
         "read": "Reading scope",
         "write": "Writing scope",

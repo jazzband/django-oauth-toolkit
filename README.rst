@@ -18,6 +18,14 @@ Django OAuth Toolkit
    :target: https://codecov.io/gh/jazzband/django-oauth-toolkit
    :alt: Coverage
 
+.. image:: https://img.shields.io/pypi/pyversions/django-oauth-toolkit.svg
+   :target: https://pypi.org/project/django-oauth-toolkit/
+   :alt: Supported Python versions
+
+.. image:: https://img.shields.io/pypi/djversions/django-oauth-toolkit.svg
+   :target: https://pypi.org/project/django-oauth-toolkit/
+   :alt: Supported Django versions
+
 If you are facing one or more of the following:
  * Your Django app exposes a web API you want to protect with OAuth2 authentication,
  * You need to implement an OAuth2 authorization server to provide tokens management for your infrastructure,
@@ -42,7 +50,7 @@ Requirements
 ------------
 
 * Python 3.6+
-* Django 2.1+
+* Django 2.2+
 * oauthlib 3.1+
 
 Installation

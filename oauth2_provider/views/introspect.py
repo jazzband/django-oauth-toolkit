@@ -1,8 +1,7 @@
 import calendar
-import json
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponse
+from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
@@ -29,9 +28,7 @@ class IntrospectTokenView(ClientProtectedScopedResourceView):
                 get_access_token_model().objects.select_related("user", "application").get(token=token_value)
             )
         except ObjectDoesNotExist:
-            return HttpResponse(
-                content=json.dumps({"active": False}), status=401, content_type="application/json"
-            )
+            return JsonResponse({"active": False}, status=401)
         else:
             if token.is_valid():
                 data = {
@@ -43,17 +40,9 @@ class IntrospectTokenView(ClientProtectedScopedResourceView):
                     data["client_id"] = token.application.client_id
                 if token.user:
                     data["username"] = token.user.get_username()
-                return HttpResponse(content=json.dumps(data), status=200, content_type="application/json")
+                return JsonResponse(data)
             else:
-                return HttpResponse(
-                    content=json.dumps(
-                        {
-                            "active": False,
-                        }
-                    ),
-                    status=200,
-                    content_type="application/json",
-                )
+                return JsonResponse({"active": False})
 
     def get(self, request, *args, **kwargs):
         """

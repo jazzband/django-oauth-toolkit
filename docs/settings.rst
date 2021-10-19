@@ -147,6 +147,8 @@ REFRESH_TOKEN_EXPIRE_SECONDS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The number of seconds before a refresh token gets removed from the database by
 the ``cleartokens`` management command. Check :ref:`cleartokens` management command for further info.
+Can be an ``Int`` or ``datetime.timedelta``.
+
 NOTE: This value is completely ignored when validating refresh tokens.
 If you don't change the validator code and don't run cleartokens all refresh
 tokens will last until revoked or the end of time. You should change this.
@@ -262,6 +264,25 @@ Default: ``""``
 
 The RSA private key used to sign OIDC ID tokens. If not set, OIDC is disabled.
 
+OIDC_RSA_PRIVATE_KEYS_INACTIVE
+~~~~~~~~~~~~~~~~~~~~
+Default: ``[]``
+
+An array of *inactive* RSA private keys. These keys are not used to sign tokens,
+but are published in the jwks_uri location.
+
+This is useful for providing a smooth transition during key rotation.
+``OIDC_RSA_PRIVATE_KEY`` can be replaced, and recently decommissioned keys
+should be retained in this inactive list.
+
+OIDC_JWKS_MAX_AGE_SECONDS
+~~~~~~~~~~~~~~~~~~~~~~
+Default: ``3600``
+
+The max-age value for the Cache-Control header on jwks_uri.
+
+This enables the verifier to safely cache the JWK Set and not have to re-download
+the document for every token.
 
 OIDC_USERINFO_ENDPOINT
 ~~~~~~~~~~~~~~~~~~~~~~

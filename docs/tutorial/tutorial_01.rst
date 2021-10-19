@@ -9,14 +9,14 @@ Start Your App
 --------------
 During this tutorial you will make an XHR POST from a Heroku deployed app to your localhost instance.
 Since the domain that will originate the request (the app on Heroku) is different from the destination domain (your local instance),
-you will need to install the `django-cors-middleware <https://github.com/zestedesavoir/django-cors-middleware>`_ app.
+you will need to install the `django-cors-headers <https://github.com/adamchainz/django-cors-headers>`_ app.
 These "cross-domain" requests are by default forbidden by web browsers unless you use `CORS <http://en.wikipedia.org/wiki/Cross-origin_resource_sharing>`_.
 
-Create a virtualenv and install `django-oauth-toolkit` and `django-cors-middleware`:
+Create a virtualenv and install `django-oauth-toolkit` and `django-cors-headers`:
 
 ::
 
-    pip install django-oauth-toolkit django-cors-middleware
+    pip install django-oauth-toolkit django-cors-headers
 
 Start a Django project, add `oauth2_provider` and `corsheaders` to the installed apps, and enable admin:
 
@@ -32,6 +32,8 @@ Start a Django project, add `oauth2_provider` and `corsheaders` to the installed
 Include the Django OAuth Toolkit urls in your `urls.py`, choosing the urlspace you prefer. For example:
 
 .. code-block:: python
+
+    from django.urls import path, include
 
     urlpatterns = [
         path("admin", admin.site.urls),
@@ -78,7 +80,7 @@ the API, subject to approval by its users.
 
 Let's register your application.
 
-You need to be logged in before registration. So, go to http://localhost:8000/admin and log in. After that 
+You need to be logged in before registration. So, go to http://localhost:8000/admin and log in. After that
 point your browser to http://localhost:8000/o/applications/ and add an Application instance.
 `Client id` and `Client Secret` are automatically generated; you have to provide the rest of the informations:
 

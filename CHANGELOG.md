@@ -15,10 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   -->
 
 ## [unreleased]
+* Remove support for Django 3.0
+* Add support for Django 3.2
+* #989 Change any HttpResponse to JsonResponse if possible
 
 ### Added
 * #712, #636, #808. Calls to `django.contrib.auth.authenticate()` now pass a `request`
   to provide compatibility with backends that need one.
+* #950 Add support for RSA key rotation.
 
 ### Fixed
 * #524 Restrict usage of timezone aware expire dates to Django projects with USE_TZ set to True.
