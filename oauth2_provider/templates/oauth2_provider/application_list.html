@@ -13,7 +13,7 @@
 
             <a class="btn btn-success" href="{% url "oauth2_provider:register" %}">{% trans "New Application" %}</a>
         {% else %}
-            
+
             <p>{% trans "No applications defined" %}. <a href="{% url 'oauth2_provider:register' %}">{% trans "Click here" %}</a> {% trans "if you want to register a new one" %}</p>
         {% endif %}
     </div>
