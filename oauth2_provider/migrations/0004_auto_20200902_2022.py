@@ -42,6 +42,17 @@ class Migration(migrations.Migration):
                 'swappable': 'OAUTH2_PROVIDER_ID_TOKEN_MODEL',
             },
         ),
+        migrations.RunSQL(
+            # For some reason, the oauth2_provider_idtoken.application_id field is a bigint(20)
+            # but it should be int(11) in order to match the type of oauth2_provider_application.id
+            # to which it will be made an FK in the next AddField statement.
+            #
+            # Without this, the migration fails on the next AddField with:
+            # django.db.utils.IntegrityError: (1215, 'Cannot add foreign key constraint')
+            #
+            sql='alter table oauth2_provider_idtoken modify column application_id int(11) NOT NULL;',
+            reverse_sql=migrations.RunSQL.noop,
+        ),
         migrations.AddField(
             model_name='accesstoken',
             name='id_token',
@@ -58,3 +69,15 @@ class Migration(migrations.Migration):
             field=models.TextField(blank=True),
         ),
     ]
+
+# Debug SQL for unapplying a broken 0003 -> 0004 migration, which I had to do
+# so. many. times. while patching this because MySQL lacks transactional DDL.
+"""
+delete from django_migrations where app = 'oauth2_provider' and name = '0004_auto_20200902_2022';
+alter table oauth2_provider_grant drop column claims;
+alter table oauth2_provider_grant drop column nonce;
+alter table oauth2_provider_accesstoken drop column id_token_id;
+drop table oauth2_provider_idtoken;
+alter table oauth2_provider_application drop column authorization_grant_type;
+alter table oauth2_provider_application drop column algorithm;
+"""
