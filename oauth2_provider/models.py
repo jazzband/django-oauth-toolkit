@@ -12,6 +12,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from jwcrypto import jwk
 from jwcrypto.common import base64url_encode
+from oauthlib.oauth2.rfc6749 import errors
 
 from .generators import generate_client_id, generate_client_secret
 from .scopes import get_scopes_backend
@@ -107,11 +108,13 @@ class AbstractApplication(models.Model):
     @property
     def default_redirect_uri(self):
         """
-        Returns the default redirect_uri extracting the first item from
-        the :attr:`redirect_uris` string
+        Returns the default redirect_uri, *if* only one is registered.
         """
         if self.redirect_uris:
-            return self.redirect_uris.split().pop(0)
+            uris = self.redirect_uris.split()
+            if len(uris) == 1:
+                return self.redirect_uris.split().pop(0)
+            raise errors.MissingRedirectURIError()
 
         assert False, (
             "If you are using implicit, authorization_code "

@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Remove support for Django 3.0
 * Add support for Django 3.2
 * #989 Change any HttpResponse to JsonResponse if possible
+* #981 redirect_uri is now required in authorization requests when multiple URIs are registered.
 
 ### Added
 * #712, #636, #808. Calls to `django.contrib.auth.authenticate()` now pass a `request`

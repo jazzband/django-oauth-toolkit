@@ -370,6 +370,8 @@ class TestHybridView(BaseTest):
         Test for default redirect uri if omitted from query string with response_type: code
         """
         self.client.login(username="hy_test_user", password="123456")
+        self.application.redirect_uris = "http://localhost"
+        self.application.save()
 
         query_string = urlencode(
             {
@@ -413,6 +415,7 @@ class TestHybridView(BaseTest):
             {
                 "client_id": self.application.client_id,
                 "response_type": "WRONG",
+                "redirect_uri": "http://example.org",
             }
         )
         url = "{url}?{qs}".format(url=reverse("oauth2_provider:authorize"), qs=query_string)

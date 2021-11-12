@@ -1,6 +1,3 @@
-import pkg_resources
-
-
-__version__ = pkg_resources.require("django-oauth-toolkit")[0].version
+__version__ = "1.5.0"
 
 default_app_config = "oauth2_provider.apps.DOTConfig"
