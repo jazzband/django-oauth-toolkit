@@ -127,7 +127,6 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             credentials["claims"] = form.cleaned_data.get("claims")
 
         scopes = form.cleaned_data.get("scope")
-        
 
         if application.skip_authorization:
             allow = True
