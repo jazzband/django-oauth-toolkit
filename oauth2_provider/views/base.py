@@ -127,7 +127,12 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             credentials["claims"] = form.cleaned_data.get("claims")
 
         scopes = form.cleaned_data.get("scope")
-        allow = form.cleaned_data.get("allow")
+        
+
+        if application.skip_authorization:
+            allow = True
+        else:
+            allow = form.cleaned_data.get("allow")
 
         try:
             uri, headers, body, status = self.create_authorization_response(
