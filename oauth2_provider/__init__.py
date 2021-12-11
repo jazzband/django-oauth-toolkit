@@ -1,3 +1,7 @@
+import django
+
+
 __version__ = "1.5.0"
 
-default_app_config = "oauth2_provider.apps.DOTConfig"
+if django.VERSION < (3, 2):
+    default_app_config = "oauth2_provider.apps.DOTConfig"
