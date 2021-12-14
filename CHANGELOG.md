@@ -15,10 +15,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   -->
 
 ## [unreleased]
-* Remove support for Django 3.0
-* Add support for Django 3.2
-* #989 Change any HttpResponse to JsonResponse if possible
-* #981 redirect_uri is now required in authorization requests when multiple URIs are registered.
+
+## [Added]
+* #968 Add support for Django 3.2
+* #949 Provide django.contrib.auth.authenticate() with a request for compatibiity with more backends.
+* #953 Allow loopback redirect URIs using ports as described in RFC8252
+* #972 Add Farsi/fa language support
+* #978 Multiple rsa keys
+* #967 OpenID: Add claims to Well know
+* #1019 #1024 #1026 #1030 #1033 #1036 [pre-commit.ci] pre-commit autoupdate
+* #1021 Jazzband: Synced file(s) with jazzband/.github
+
+## [Changed]
+* #1022 Replaced pkg_resources usage with importlib.metadata
+* #981 Require redirect_uri if multiple URIs are registered
+* #963 Handles ValueErrors with invalid hex values in query strings (#954)
+* #989 Change remaining HttpResponse to JsonResponse
+* #988 Optimize DB access in AccessTokenAdmin
+* #973 Use django-cors-headers in docs
+* #1009 Add missing space in assertion error
+* #1025 Moved version info from setup.cfg into package
+* #991 Update settings.rst with text
+* #956 doc: missing argument to get_userinfo_claims
+* #985 Documentation grammar
+* #977 doc: Add missing import
+* #1014 Update tutorial_03.rst to use arrays instead of tuples in the settings.py file
+
+## [Fixed]
+* #948 Fix #524 - Restrict usage of timezone aware expire dates to Django projects with USE_TZ set to True
+* #957 Fix double oauth2_provider mountpoint in oidc view
+
+## [Removed]
+* #968 Remove support for Django 3.0
+* #1035 Removes default_app_config for Django Deprecation Warning
+* #1023 six should be dropped
+
+## [1.6.0] 2021-12-14
 
 ### Added
 * #712, #636, #808. Calls to `django.contrib.auth.authenticate()` now pass a `request`
