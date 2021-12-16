@@ -14,7 +14,8 @@ from oauth2_provider.models import (
     get_refresh_token_model,
 )
 
-has_email = hasattr(get_user_model(), 'email')
+
+has_email = hasattr(get_user_model(), "email")
 
 
 class ApplicationAdmin(admin.ModelAdmin):
@@ -42,11 +43,9 @@ class GrantAdmin(admin.ModelAdmin):
 
 class IDTokenAdmin(admin.ModelAdmin):
     list_display = ("jti", "user", "application", "expires")
-    raw_id_fields = ("user", )
+    raw_id_fields = ("user",)
     search_fields = ("token",) + (("user__email",) if has_email else ())
     list_filter = ("application",)
-
-
 
 
 class RefreshTokenAdmin(admin.ModelAdmin):
