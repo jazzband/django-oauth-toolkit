@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #967 OpenID: Add claims to Well know
 * #1019 #1024 #1026 #1030 #1033 #1036 [pre-commit.ci] pre-commit autoupdate
 * #1021 Jazzband: Synced file(s) with jazzband/.github
+* #1041 Admin: make extensive fields raw_id, add search fields
 
 ## [Changed]
 * #1022 Replaced pkg_resources usage with importlib.metadata
