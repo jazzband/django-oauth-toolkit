@@ -14,9 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
   -->
 
-## [unreleased]
+## [Unreleased]
 
-## [Added]
+## [1.6.0] - 2021-12-14
+### Added
+* #712, #636, #808. Calls to `django.contrib.auth.authenticate()` now pass a `request`
+  to provide compatibility with backends that need one.
+* #950 Add support for RSA key rotation.
 * #968 Add support for Django 3.2
 * #949 Provide django.contrib.auth.authenticate() with a request for compatibiity with more backends.
 * #953 Allow loopback redirect URIs using ports as described in RFC8252
@@ -27,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #1021 Jazzband: Synced file(s) with jazzband/.github
 * #1041 Admin: make extensive fields raw_id, add search fields
 
-## [Changed]
+### Changed
 * #1022 Replaced pkg_resources usage with importlib.metadata
 * #981 Require redirect_uri if multiple URIs are registered
 * #963 Handles ValueErrors with invalid hex values in query strings (#954)
@@ -42,29 +46,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #977 doc: Add missing import
 * #1014 Update tutorial_03.rst to use arrays instead of tuples in the settings.py file
 
-## [Fixed]
+### Fixed
 * #948 Fix #524 - Restrict usage of timezone aware expire dates to Django projects with USE_TZ set to True
 * #957 Fix double oauth2_provider mountpoint in oidc view
-
-## [Removed]
-* #968 Remove support for Django 3.0
-* #1035 Removes default_app_config for Django Deprecation Warning
-* #1023 six should be dropped
-
-## [1.6.0] 2021-12-14
-
-### Added
-* #712, #636, #808. Calls to `django.contrib.auth.authenticate()` now pass a `request`
-  to provide compatibility with backends that need one.
-* #950 Add support for RSA key rotation.
-
-### Fixed
 * #524 Restrict usage of timezone aware expire dates to Django projects with USE_TZ set to True.
 * #953 Allow loopback redirect URIs with random ports using http scheme, localhost address and no explicit port
   configuration in the allowed redirect_uris for Oauth2 Applications (RFC8252)
 * #954 Query strings with invalid hex values now raise a SuspiciousOperation exception
 * #955 Avoid doubling of `oauth2_provider` urls mountpath in json response for OIDC view `ConnectDiscoveryInfoView`.
   Breaks existing OIDC discovery output
+
+## Removed
+* #968 Remove support for Django 3.0
+* #1035 Removes default_app_config for Django Deprecation Warning
+* #1023 six should be dropped
 
 ## [1.5.0] 2021-03-18
 
