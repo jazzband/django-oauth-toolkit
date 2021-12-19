@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.6.0] - 2021-12-14
+## [1.6.0] 2021-12-14
 ### Added
 * #712, #636, #808. Calls to `django.contrib.auth.authenticate()` now pass a `request`
   to provide compatibility with backends that need one.
@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #967 OpenID: Add claims to Well know
 * #1019 #1024 #1026 #1030 #1033 #1036 [pre-commit.ci] pre-commit autoupdate
 * #1021 Jazzband: Synced file(s) with jazzband/.github
+* #1039 Add support for Dj40, drop Py36 and Dj31
 * #1041 Admin: make extensive fields raw_id, add search fields
 
 ### Changed
