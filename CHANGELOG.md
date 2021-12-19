@@ -16,50 +16,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.6.0] - 2021-12-14
+## [1.6.0] 2021-12-19
 ### Added
-* #712, #636, #808. Calls to `django.contrib.auth.authenticate()` now pass a `request`
-  to provide compatibility with backends that need one.
-* #950 Add support for RSA key rotation.
-* #968 Add support for Django 3.2
-* #949 Provide django.contrib.auth.authenticate() with a request for compatibiity with more backends.
-* #953 Allow loopback redirect URIs using ports as described in RFC8252
-* #972 Add Farsi/fa language support
-* #978 Multiple rsa keys
-* #967 OpenID: Add claims to Well know
-* #1019 #1024 #1026 #1030 #1033 #1036 [pre-commit.ci] pre-commit autoupdate
-* #1021 Jazzband: Synced file(s) with jazzband/.github
-* #1041 Admin: make extensive fields raw_id, add search fields
+* #949 Provide django.contrib.auth.authenticate() with a `request` for compatibiity with more backends (like django-axes).
+* #968, #1039 Add support for Django 3.2 and 4.0.
+* #953 Allow loopback redirect URIs using random ports as described in [RFC8252 section 7.3](https://datatracker.ietf.org/doc/html/rfc8252#section-7.3).
+* #972 Add Farsi/fa language support.
+* #978 OIDC: Add support for [rotating multiple RSA private keys](https://django-oauth-toolkit.readthedocs.io/en/latest/oidc.html#rotating-the-rsa-private-key).
+* #978 OIDC: Add new [OIDC_JWKS_MAX_AGE_SECONDS](https://django-oauth-toolkit.readthedocs.io/en/latest/settings.html#oidc-jwks-max-age-seconds) to improve `jwks_uri` caching.
+* #967 OIDC: Add [additional claims](https://django-oauth-toolkit.readthedocs.io/en/latest/oidc.html#adding-claims-to-the-id-token) beyond `sub` to the id_token.
+* #1041 Add a search field to the Admin UI (e.g. for search for tokens by email address).
 
 ### Changed
-* #1022 Replaced pkg_resources usage with importlib.metadata
-* #981 Require redirect_uri if multiple URIs are registered
-* #963 Handles ValueErrors with invalid hex values in query strings (#954)
-* #989 Change remaining HttpResponse to JsonResponse
-* #988 Optimize DB access in AccessTokenAdmin
-* #973 Use django-cors-headers in docs
-* #1009 Add missing space in assertion error
-* #1025 Moved version info from setup.cfg into package
-* #991 Update settings.rst with text
-* #956 doc: missing argument to get_userinfo_claims
-* #985 Documentation grammar
-* #977 doc: Add missing import
-* #1014 Update tutorial_03.rst to use arrays instead of tuples in the settings.py file
-
-### Fixed
-* #948 Fix #524 - Restrict usage of timezone aware expire dates to Django projects with USE_TZ set to True
-* #957 Fix double oauth2_provider mountpoint in oidc view
-* #524 Restrict usage of timezone aware expire dates to Django projects with USE_TZ set to True.
-* #953 Allow loopback redirect URIs with random ports using http scheme, localhost address and no explicit port
-  configuration in the allowed redirect_uris for Oauth2 Applications (RFC8252)
-* #954 Query strings with invalid hex values now raise a SuspiciousOperation exception
-* #955 Avoid doubling of `oauth2_provider` urls mountpath in json response for OIDC view `ConnectDiscoveryInfoView`.
-  Breaks existing OIDC discovery output
+* #981 Require redirect_uri if multiple URIs are registered per [RFC6749 section 3.1.2.3](https://datatracker.ietf.org/doc/html/rfc6749#section-3.1.2.3)
+* #991 Update documentation of [REFRESH_TOKEN_EXPIRE_SECONDS](https://django-oauth-toolkit.readthedocs.io/en/latest/settings.html#refresh-token-expire-seconds) to indicate it may be `int` or `datetime.timedelta`.
+* #977 Update [Tutorial](https://django-oauth-toolkit.readthedocs.io/en/stable/tutorial/tutorial_01.html#) to show required `include`.
 
 ## Removed
-* #968 Remove support for Django 3.0
+* #968 Remove support for Django 3.0 & 3.1 and Python 3.6
 * #1035 Removes default_app_config for Django Deprecation Warning
 * #1023 six should be dropped
+
+### Fixed
+* #963 Fix handling invalid hex values in client query strings with a 400 error rather than 500.
+* #973 [Tutorial](https://django-oauth-toolkit.readthedocs.io/en/latest/tutorial/tutorial_01.html#start-your-app) updated to use `django-cors-headers`.
+* #956 OIDC: Update documentation of [get_userinfo_claims](https://django-oauth-toolkit.readthedocs.io/en/latest/oidc.html#adding-information-to-the-userinfo-service) to add the missing argument.
+
 
 ## [1.5.0] 2021-03-18
 
