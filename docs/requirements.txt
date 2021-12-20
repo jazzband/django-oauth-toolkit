@@ -1,4 +1,5 @@
-Django>=3.0,<3.1
+Django>=3.2,<4.0
+setuptools>=39.0
 oauthlib>=3.1.0
 m2r>=0.2.1
 mistune<2
