@@ -10,6 +10,7 @@ repos:
       - id: check-ast
       - id: trailing-whitespace
       - id: check-merge-conflict
+        exclude: AUTHORS
       - id: check-json
       - id: check-xml
       - id: check-yaml
