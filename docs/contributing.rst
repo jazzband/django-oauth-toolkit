@@ -154,7 +154,8 @@ When you begin your PR, you'll be asked to provide the following:
 If your PR is not yet ready to be merged mark it as a Work-in-Progress
 By prepending `WIP:` to the PR title so that it doesn't get inadvertently approved and merged.
 
-The repo managers will be notified of your pull request and it will be reviewed, in the meantime you can continue to add
+Make sure to request a review by assigning Reviewer `jazzband/django-oauth-toolkit`.
+This will assign the review to the project team and a member will review it. In the meantime you can continue to add
 commits to your topic branch (and push them up to GitHub) either if you see something that needs changing, or in
 response to a reviewer's comments.  If a reviewer asks for changes, you do not need to close the pull and reissue it
 after making changes. Just make the changes locally, push them to GitHub, then add a comment to the discussion section
