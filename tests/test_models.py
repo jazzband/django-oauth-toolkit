@@ -1,7 +1,8 @@
+import subprocess
+
 import pytest
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured, ValidationError
-from django.core.management import call_command
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils import timezone
@@ -36,7 +37,8 @@ class BaseTestModels(TestCase):
 
 class TestModels(BaseTestModels):
     def test_makemigrations(self):
-        self.assertTrue(call_command("makemigrations", "--check"))
+        process = subprocess.run(["django-admin", "makemigrations", "--check"])
+        self.assertEqual(process.returncode, 0)
 
     def test_allow_scopes(self):
         self.client.login(username="test_user", password="123456")
