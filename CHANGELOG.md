@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 * #949 Provide django.contrib.auth.authenticate() with a `request` for compatibiity with more backends (like django-axes).
 * #968, #1039 Add support for Django 3.2 and 4.0.
+   * Note: Only Django 4.0.1+ is supported due to a regression in Django 4.0.0. [Explanation](https://github.com/jazzband/django-oauth-toolkit/pull/1046#issuecomment-998015272)
 * #953 Allow loopback redirect URIs using random ports as described in [RFC8252 section 7.3](https://datatracker.ietf.org/doc/html/rfc8252#section-7.3).
 * #972 Add Farsi/fa language support.
 * #978 OIDC: Add support for [rotating multiple RSA private keys](https://django-oauth-toolkit.readthedocs.io/en/latest/oidc.html#rotating-the-rsa-private-key).
