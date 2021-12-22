@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.1] unreleased
+### Changed
+* Miscellaneous packaging issues.
+
 ## [1.6.0] 2021-12-19
 ### Added
 * #949 Provide django.contrib.auth.authenticate() with a `request` for compatibiity with more backends (like django-axes).
@@ -33,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #991 Update documentation of [REFRESH_TOKEN_EXPIRE_SECONDS](https://django-oauth-toolkit.readthedocs.io/en/latest/settings.html#refresh-token-expire-seconds) to indicate it may be `int` or `datetime.timedelta`.
 * #977 Update [Tutorial](https://django-oauth-toolkit.readthedocs.io/en/stable/tutorial/tutorial_01.html#) to show required `include`.
 
-## Removed
+### Removed
 * #968 Remove support for Django 3.0 & 3.1 and Python 3.6
 * #1035 Removes default_app_config for Django Deprecation Warning
 * #1023 six should be dropped
