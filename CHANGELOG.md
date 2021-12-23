@@ -16,11 +16,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.1] 2021-12-23
+
+### Changed
+* Note: Only Django 4.0.1+ is supported due to a regression in Django 4.0.0. [Explanation](https://github.com/jazzband/django-oauth-toolkit/pull/1046#issuecomment-998015272)
+
+### Fixed
+* Miscellaneous 1.6.0 packaging issues.
+
 ## [1.6.0] 2021-12-19
 ### Added
 * #949 Provide django.contrib.auth.authenticate() with a `request` for compatibiity with more backends (like django-axes).
 * #968, #1039 Add support for Django 3.2 and 4.0.
-   * Note: Only Django 4.0.1+ is supported due to a regression in Django 4.0.0. [Explanation](https://github.com/jazzband/django-oauth-toolkit/pull/1046#issuecomment-998015272)
 * #953 Allow loopback redirect URIs using random ports as described in [RFC8252 section 7.3](https://datatracker.ietf.org/doc/html/rfc8252#section-7.3).
 * #972 Add Farsi/fa language support.
 * #978 OIDC: Add support for [rotating multiple RSA private keys](https://django-oauth-toolkit.readthedocs.io/en/latest/oidc.html#rotating-the-rsa-private-key).
@@ -33,7 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #991 Update documentation of [REFRESH_TOKEN_EXPIRE_SECONDS](https://django-oauth-toolkit.readthedocs.io/en/latest/settings.html#refresh-token-expire-seconds) to indicate it may be `int` or `datetime.timedelta`.
 * #977 Update [Tutorial](https://django-oauth-toolkit.readthedocs.io/en/stable/tutorial/tutorial_01.html#) to show required `include`.
 
-## Removed
+### Removed
 * #968 Remove support for Django 3.0 & 3.1 and Python 3.6
 * #1035 Removes default_app_config for Django Deprecation Warning
 * #1023 six should be dropped
