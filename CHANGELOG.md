@@ -16,11 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.6.1] unreleased
+## [1.6.1] 2021-12-23
 
 ### Changed
-* Miscellaneous packaging issues.
 * Note: Only Django 4.0.1+ is supported due to a regression in Django 4.0.0. [Explanation](https://github.com/jazzband/django-oauth-toolkit/pull/1046#issuecomment-998015272)
+
+### Fixed
+* Miscellaneous 1.6.0 packaging issues.
 
 ## [1.6.0] 2021-12-19
 ### Added
