@@ -609,7 +609,10 @@ class OAuth2Validator(RequestValidator):
 
         access_token = (
             AccessToken.objects.select_for_update()
-            .filter(user=request.user, application=request.client,)
+            .filter(
+                user=request.user,
+                application=request.client,
+            )
             .last()
         )
 
