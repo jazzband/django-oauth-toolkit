@@ -606,15 +606,26 @@ class OAuth2Validator(RequestValidator):
         id_token = token.get("id_token", None)
         if id_token:
             id_token = self._load_id_token(id_token)
-        return AccessToken.objects.create(
+
+        access_token = AccessToken.objects.select_for_update().filter(
             user=request.user,
-            scope=token["scope"],
-            expires=expires,
-            token=token["access_token"],
-            id_token=id_token,
             application=request.client,
-            source_refresh_token=source_refresh_token,
-        )
+        ).last()
+
+        # if there is no access token in the database for a specific user,
+        # or there is an access token but it is expired, a new access token is created.
+        if access_token is None or (access_token and access_token.is_expired()):
+            return AccessToken.objects.create(
+                user=request.user,
+                scope=token["scope"],
+                expires=expires,
+                token=token["access_token"],
+                id_token=id_token,
+                application=request.client,
+                source_refresh_token=source_refresh_token,
+            )
+        # if access token exists and it is not expired.
+        return access_token
 
     def _create_authorization_code(self, request, code, expires=None):
         if not expires:
@@ -633,9 +644,27 @@ class OAuth2Validator(RequestValidator):
         )
 
     def _create_refresh_token(self, request, refresh_token_code, access_token):
-        return RefreshToken.objects.create(
-            user=request.user, token=refresh_token_code, application=request.client, access_token=access_token
-        )
+        refresh_token = RefreshToken.objects.select_for_update().filter(
+            user=request.user,
+            application=request.client,
+            access_token=access_token
+        ).last()
+
+        # if there is no refresh_token associated with a user and application,
+        # or there is a refresh token but it's revoked, a new refresh token is created.
+        if refresh_token is None or (refresh_token and refresh_token.is_expired()):
+            # as RefreshToken model has a OneToOneField to Access Token,
+            # is an access token linked to a refresh token is valid, but the refresh token
+            # is revoked, the refresh token is deleted and a new refresh token is created
+            # with the still valid access token.
+            refresh_token.delete()
+            return RefreshToken.objects.create(
+                user=request.user,
+                token=refresh_token_code,
+                application=request.client,
+                access_token=access_token,
+            )
+        return refresh_token
 
     def revoke_token(self, token, token_type_hint, request, *args, **kwargs):
         """
