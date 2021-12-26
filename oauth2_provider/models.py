@@ -453,6 +453,15 @@ class AbstractRefreshToken(models.Model):
             self.revoked = timezone.now()
             self.save()
 
+    def is_expired(self):
+        """
+        Check token expiration with timezone awareness
+        """
+        if not self.revoked:
+            return False
+
+        return timezone.now() >= self.revoked
+
     def __str__(self):
         return self.token
 
