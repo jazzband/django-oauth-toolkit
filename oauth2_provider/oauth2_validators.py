@@ -644,11 +644,11 @@ class OAuth2Validator(RequestValidator):
         )
 
     def _create_refresh_token(self, request, refresh_token_code, access_token):
-        refresh_token = RefreshToken.objects.select_for_update().filter(
-            user=request.user,
-            application=request.client,
-            access_token=access_token
-        ).last()
+        refresh_token = (
+            RefreshToken.objects.select_for_update()
+            .filter(user=request.user, application=request.client, access_token=access_token)
+            .last()
+        )
 
         # if there is no refresh_token associated with a user and application,
         # or there is a refresh token but it's revoked, a new refresh token is created.
