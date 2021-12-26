@@ -607,10 +607,11 @@ class OAuth2Validator(RequestValidator):
         if id_token:
             id_token = self._load_id_token(id_token)
 
-        access_token = AccessToken.objects.select_for_update().filter(
-            user=request.user,
-            application=request.client,
-        ).last()
+        access_token = (
+            AccessToken.objects.select_for_update()
+            .filter(user=request.user, application=request.client,)
+            .last()
+        )
 
         # if there is no access token in the database for a specific user,
         # or there is an access token but it is expired, a new access token is created.
