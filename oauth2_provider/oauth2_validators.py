@@ -658,7 +658,9 @@ class OAuth2Validator(RequestValidator):
             # is an access token linked to a refresh token is valid, but the refresh token
             # is revoked, the refresh token is deleted and a new refresh token is created
             # with the still valid access token.
-            refresh_token.delete()
+            if refresh_token:
+                refresh_token.delete()
+
             return RefreshToken.objects.create(
                 user=request.user,
                 token=refresh_token_code,
