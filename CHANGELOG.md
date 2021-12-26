@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+* Only saves AccessToken and RefreshToken -- at OAuth2Validator level -- if they do not exist in database or if they are
+expired or revoked.
+
 ## [1.6.1] 2021-12-23
 
 ### Changed
