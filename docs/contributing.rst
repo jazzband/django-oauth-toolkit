@@ -256,7 +256,7 @@ The following notes are to remind the project maintainers and leads of the steps
 review and merge PRs and to publish a new release.
 
 Reviewing and Merging PRs
-------------------------
+-------------------------
 
 - Make sure the PR description includes the `pull request template
   <https://github.com/jazzband/django-oauth-toolkit/blob/master/.github/pull_request_template.md>`_
@@ -272,18 +272,25 @@ PRs that are incorrectly merged may (reluctantly) be reverted by the Project Lea
 Publishing a Release
 --------------------
 
-Only Project Leads can publish a release to pypi.org and rtfd.io. This checklist is a reminder
-of steps.
+Only Project Leads can `publish a release <https://jazzband.co/about/releases>`_ to pypi.org
+and rtfd.io. This checklist is a reminder of the required steps.
 
 - When planning a new release, create a `milestone
   <https://github.com/jazzband/django-oauth-toolkit/milestones>`_
   and assign issues, PRs, etc. to that milestone.
 - Review all commits since the last release and confirm that they are properly
-  documented in the CHANGELOG. (Unfortunately, this has not always been the case
-  so you may be stuck documenting things that should have been documented as part of their PRs.)
+  documented in the CHANGELOG. Reword entries as appropriate with links to docs
+  to make them meaningful to users.
 - Make a final PR for the release that updates:
 
   - CHANGELOG to show the release date.
-  - setup.cfg to set `version = ...`
+  - `oauth2_provider/__init__.py` to set `__version__ = "..."`
 
-- Once the final PR is committed push the new release to pypi and rtfd.io.
+- Once the final PR is merged, create and push a tag for the release. You'll shortly
+  get a notification from Jazzband of the availability of two pypi packages (source tgz
+  and wheel). Download these locally before releasing them.
+- Do a `tox -e build` and extract the downloaded and bullt wheel zip and tgz files into
+  temp directories and do a `diff -r` to make sure they have the same content.
+  (Unfortunately the checksums do not match due to timestamps in the metadata
+  so you need to compare all the files.)
+- Once happy that the above comparison checks out, approve the releases to Pypi.org.
