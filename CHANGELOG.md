@@ -17,10 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 * #651 Batch expired token deletions in `cleartokens` management command
-
-### Added
-
 * Added pt-BR translations.
+
+### Fixed
+* #1012 Return status for introspecting a nonexistent token from 401 to the correct value of 200 per [RFC 7662](https://datatracker.ietf.org/doc/html/rfc7662#section-2.2).
 
 ## [1.6.1] 2021-12-23
 
