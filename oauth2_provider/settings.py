@@ -101,6 +101,8 @@ DEFAULTS = {
     # Whether to re-create OAuthlibCore on every request.
     # Should only be required in testing.
     "ALWAYS_RELOAD_OAUTHLIB_CORE": False,
+    "CLEAR_EXPIRED_TOKENS_BATCH_SIZE": 10000,
+    "CLEAR_EXPIRED_TOKENS_BATCH_INTERVAL": 0.1,
 }
 
 # List of settings that cannot be empty
