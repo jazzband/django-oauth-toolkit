@@ -28,7 +28,7 @@ class IntrospectTokenView(ClientProtectedScopedResourceView):
                 get_access_token_model().objects.select_related("user", "application").get(token=token_value)
             )
         except ObjectDoesNotExist:
-            return JsonResponse({"active": False}, status=401)
+            return JsonResponse({"active": False}, status=200)
         else:
             if token.is_valid():
                 data = {
@@ -42,7 +42,7 @@ class IntrospectTokenView(ClientProtectedScopedResourceView):
                     data["username"] = token.user.get_username()
                 return JsonResponse(data)
             else:
-                return JsonResponse({"active": False})
+                return JsonResponse({"active": False}, status=200)
 
     def get(self, request, *args, **kwargs):
         """
