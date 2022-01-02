@@ -257,6 +257,8 @@ class TestAuthorizationCodeView(BaseTest):
         Test for default redirect uri if omitted from query string with response_type: code
         """
         self.client.login(username="test_user", password="123456")
+        self.application.redirect_uris = "http://localhost"
+        self.application.save()
 
         query_data = {
             "client_id": self.application.client_id,
@@ -268,6 +270,21 @@ class TestAuthorizationCodeView(BaseTest):
 
         form = response.context["form"]
         self.assertEqual(form["redirect_uri"].value(), "http://localhost")
+
+    def test_pre_auth_missing_redirect(self):
+        """
+        Test response if redirect_uri is missing and multiple URIs are registered.
+        @see https://datatracker.ietf.org/doc/html/rfc6749#section-3.1.2.3
+        """
+        self.client.login(username="test_user", password="123456")
+
+        query_data = {
+            "client_id": self.application.client_id,
+            "response_type": "code",
+        }
+
+        response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
+        self.assertEqual(response.status_code, 400)
 
     def test_pre_auth_forbibben_redirect(self):
         """
@@ -293,6 +310,7 @@ class TestAuthorizationCodeView(BaseTest):
         query_data = {
             "client_id": self.application.client_id,
             "response_type": "WRONG",
+            "redirect_uri": "http://example.org",
         }
 
         response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)

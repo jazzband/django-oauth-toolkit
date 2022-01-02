@@ -199,7 +199,7 @@ class TestTokenIntrospectionViews(TestCase):
             reverse("oauth2_provider:introspect"), {"token": "kaudawelsch"}, **auth_headers
         )
 
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 200)
         content = response.json()
         self.assertIsInstance(content, dict)
         self.assertDictEqual(
@@ -269,7 +269,7 @@ class TestTokenIntrospectionViews(TestCase):
             reverse("oauth2_provider:introspect"), {"token": "kaudawelsch"}, **auth_headers
         )
 
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 200)
         content = response.json()
         self.assertIsInstance(content, dict)
         self.assertDictEqual(

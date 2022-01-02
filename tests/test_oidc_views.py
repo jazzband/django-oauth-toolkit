@@ -29,6 +29,7 @@ class TestConnectDiscoveryInfoView(TestCase):
             "subject_types_supported": ["public"],
             "id_token_signing_alg_values_supported": ["RS256", "HS256"],
             "token_endpoint_auth_methods_supported": ["client_secret_post", "client_secret_basic"],
+            "claims_supported": ["sub"],
         }
         response = self.client.get(reverse("oauth2_provider:oidc-connect-discovery-info"))
         self.assertEqual(response.status_code, 200)
@@ -55,6 +56,7 @@ class TestConnectDiscoveryInfoView(TestCase):
             "subject_types_supported": ["public"],
             "id_token_signing_alg_values_supported": ["RS256", "HS256"],
             "token_endpoint_auth_methods_supported": ["client_secret_post", "client_secret_basic"],
+            "claims_supported": ["sub"],
         }
         response = self.client.get(reverse("oauth2_provider:oidc-connect-discovery-info"))
         self.assertEqual(response.status_code, 200)
@@ -146,11 +148,21 @@ def test_userinfo_endpoint_bad_token(oidc_tokens, client):
     assert rsp.status_code == 401
 
 
+EXAMPLE_EMAIL = "example.email@example.com"
+
+
+def claim_user_email(request):
+    return EXAMPLE_EMAIL
+
+
 @pytest.mark.django_db
 def test_userinfo_endpoint_custom_claims(oidc_tokens, client, oauth2_settings):
     class CustomValidator(OAuth2Validator):
-        def get_additional_claims(self, request):
-            return {"state": "very nice"}
+        def get_additional_claims(self):
+            return [
+                ("username", claim_user_email),
+                ("email", claim_user_email),
+            ]
 
     oidc_tokens.oauth2_settings.OAUTH2_VALIDATOR_CLASS = CustomValidator
     auth_header = "Bearer %s" % oidc_tokens.access_token
@@ -161,5 +173,9 @@ def test_userinfo_endpoint_custom_claims(oidc_tokens, client, oauth2_settings):
     data = rsp.json()
     assert "sub" in data
     assert data["sub"] == str(oidc_tokens.user.pk)
-    assert "state" in data
-    assert data["state"] == "very nice"
+
+    assert "username" in data
+    assert data["username"] == EXAMPLE_EMAIL
+
+    assert "email" in data
+    assert data["email"] == EXAMPLE_EMAIL

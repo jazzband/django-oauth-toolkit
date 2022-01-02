@@ -14,24 +14,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
   -->
 
-## [unreleased]
-* Remove support for Django 3.0
-* Add support for Django 3.2
-* #989 Change any HttpResponse to JsonResponse if possible
+## [Unreleased]
+### Added
+* #651 Batch expired token deletions in `cleartokens` management command
+* Added pt-BR translations.
 
+### Fixed
+* #1012 Return status for introspecting a nonexistent token from 401 to the correct value of 200 per [RFC 7662](https://datatracker.ietf.org/doc/html/rfc7662#section-2.2).
+
+## [1.6.1] 2021-12-23
+
+### Changed
+* Note: Only Django 4.0.1+ is supported due to a regression in Django 4.0.0. [Explanation](https://github.com/jazzband/django-oauth-toolkit/pull/1046#issuecomment-998015272)
+
+### Fixed
+* Miscellaneous 1.6.0 packaging issues.
+
+## [1.6.0] 2021-12-19
 ### Added
 * #712, #636, #808. Calls to `django.contrib.auth.authenticate()` now pass a `request`
   to provide compatibility with backends that need one.
 * #950 Add support for RSA key rotation.
 * #729 Add support for hashed client_secret values.
+* #949 Provide django.contrib.auth.authenticate() with a `request` for compatibiity with more backends (like django-axes).
+* #968, #1039 Add support for Django 3.2 and 4.0.
+* #953 Allow loopback redirect URIs using random ports as described in [RFC8252 section 7.3](https://datatracker.ietf.org/doc/html/rfc8252#section-7.3).
+* #972 Add Farsi/fa language support.
+* #978 OIDC: Add support for [rotating multiple RSA private keys](https://django-oauth-toolkit.readthedocs.io/en/latest/oidc.html#rotating-the-rsa-private-key).
+* #978 OIDC: Add new [OIDC_JWKS_MAX_AGE_SECONDS](https://django-oauth-toolkit.readthedocs.io/en/latest/settings.html#oidc-jwks-max-age-seconds) to improve `jwks_uri` caching.
+* #967 OIDC: Add [additional claims](https://django-oauth-toolkit.readthedocs.io/en/latest/oidc.html#adding-claims-to-the-id-token) beyond `sub` to the id_token.
+* #1041 Add a search field to the Admin UI (e.g. for search for tokens by email address).
+
+### Changed
+* #981 Require redirect_uri if multiple URIs are registered per [RFC6749 section 3.1.2.3](https://datatracker.ietf.org/doc/html/rfc6749#section-3.1.2.3)
+* #991 Update documentation of [REFRESH_TOKEN_EXPIRE_SECONDS](https://django-oauth-toolkit.readthedocs.io/en/latest/settings.html#refresh-token-expire-seconds) to indicate it may be `int` or `datetime.timedelta`.
+* #977 Update [Tutorial](https://django-oauth-toolkit.readthedocs.io/en/stable/tutorial/tutorial_01.html#) to show required `include`.
+
+### Removed
+* #968 Remove support for Django 3.0 & 3.1 and Python 3.6
+* #1035 Removes default_app_config for Django Deprecation Warning
+* #1023 six should be dropped
 
 ### Fixed
-* #524 Restrict usage of timezone aware expire dates to Django projects with USE_TZ set to True.
-* #953 Allow loopback redirect URIs with random ports using http scheme, localhost address and no explicit port
-  configuration in the allowed redirect_uris for Oauth2 Applications (RFC8252)
-* #954 Query strings with invalid hex values now raise a SuspiciousOperation exception
-* #955 Avoid doubling of `oauth2_provider` urls mountpath in json response for OIDC view `ConnectDiscoveryInfoView`.
-  Breaks existing OIDC discovery output
+* #963 Fix handling invalid hex values in client query strings with a 400 error rather than 500.
+* #973 [Tutorial](https://django-oauth-toolkit.readthedocs.io/en/latest/tutorial/tutorial_01.html#start-your-app) updated to use `django-cors-headers`.
+* #956 OIDC: Update documentation of [get_userinfo_claims](https://django-oauth-toolkit.readthedocs.io/en/latest/oidc.html#adding-information-to-the-userinfo-service) to add the missing argument.
+
 
 ## [1.5.0] 2021-03-18
 
