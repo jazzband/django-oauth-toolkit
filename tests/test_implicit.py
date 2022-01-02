@@ -110,6 +110,8 @@ class TestImplicitAuthorizationCodeView(BaseTest):
         Test for default redirect uri if omitted from query string with response_type: token
         """
         self.client.login(username="test_user", password="123456")
+        self.application.redirect_uris = "http://localhost"
+        self.application.save()
 
         query_data = {
             "client_id": self.application.client_id,
