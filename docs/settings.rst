@@ -90,9 +90,10 @@ secrets may become subject to bruteforce guessing.
 
 CLIENT_SECRET_HASHER
 ~~~~~~~~~~~~~~~~~~~~
-If set to one of the Django password hasher algorithm names, client_secret
-values will be stored as hashed Django passwords. See the official list
-in the django.contrib.auth.hashers namespace. Default is none (stored as plain text).
+If set to one of the Django password hasher algorithm names, client_secret values will be
+[stored as hashed Django passwords](https://docs.djangoproject.com/en/stable/topics/auth/passwords/#how-django-stores-passwords).
+See the official list in the django.contrib.auth.hashers namespace.
+Default is none (stored as plain text).
 
 EXTRA_SERVER_KWARGS
 ~~~~~~~~~~~~~~~~~~~
