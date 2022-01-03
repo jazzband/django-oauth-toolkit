@@ -164,7 +164,7 @@ class TestOAuth2Middleware(BaseTest):
         self.assertIn("Authorization", response["Vary"])
 
     def test_get_default_redirect_uri_empty_redirect_uri_raise_exception(self):
-        self.application.authorization_grant_type = Application.GRANT_AUTHORIZATION_CODE
+        self.application.authorization_grant_type = ApplicationModel.GRANT_AUTHORIZATION_CODE
         self.application.redirect_uris = None
 
         with self.assertRaises(Exception):
