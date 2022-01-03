@@ -6,6 +6,7 @@ from urllib.parse import parse_qsl, urlparse
 
 from django.apps import apps
 from django.conf import settings
+from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models, transaction
 from django.urls import reverse
@@ -22,6 +23,19 @@ from .validators import RedirectURIValidator, WildcardSet
 
 
 logger = logging.getLogger(__name__)
+
+
+class ClientSecretField(models.CharField):
+    def pre_save(self, model_instance, add):
+        if oauth2_settings.CLIENT_SECRET_HASHER:
+            plain_secret = getattr(model_instance, self.attname)
+            if "$" not in plain_secret:  # not yet hashed
+                hashed_secret = make_password(
+                    plain_secret, salt=model_instance.client_id, hasher=oauth2_settings.CLIENT_SECRET_HASHER
+                )
+                setattr(model_instance, self.attname, hashed_secret)
+                return hashed_secret
+        return super().pre_save(model_instance, add)
 
 
 class AbstractApplication(models.Model):
@@ -90,7 +104,7 @@ class AbstractApplication(models.Model):
     )
     client_type = models.CharField(max_length=32, choices=CLIENT_TYPES)
     authorization_grant_type = models.CharField(max_length=32, choices=GRANT_TYPES)
-    client_secret = models.CharField(
+    client_secret = ClientSecretField(
         max_length=255, blank=True, default=generate_client_secret, db_index=True
     )
     name = models.CharField(max_length=255, blank=True)
