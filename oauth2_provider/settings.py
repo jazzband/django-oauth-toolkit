@@ -37,6 +37,7 @@ DEFAULTS = {
     "CLIENT_ID_GENERATOR_CLASS": "oauth2_provider.generators.ClientIdGenerator",
     "CLIENT_SECRET_GENERATOR_CLASS": "oauth2_provider.generators.ClientSecretGenerator",
     "CLIENT_SECRET_GENERATOR_LENGTH": 128,
+    "CLIENT_SECRET_HASHER": None,
     "ACCESS_TOKEN_GENERATOR": None,
     "REFRESH_TOKEN_GENERATOR": None,
     "EXTRA_SERVER_KWARGS": {},

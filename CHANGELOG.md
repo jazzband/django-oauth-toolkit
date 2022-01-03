@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
   -->
 
+## [unreleased]
+
+### Added
+* #729 Add support for [hashed client_secret values](https://django-oauth-toolkit.readthedocs.io/en/latest/settings.html#client-secret-hasher).
+
 ## [1.7.0] 2022-01-23
 
 ### Added
@@ -26,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #1069 OIDC: Add an alternate form of
   [get_additional_claims()](https://django-oauth-toolkit.readthedocs.io/en/latest/oidc.html#adding-claims-to-the-id-token)
   which makes the list of additional `claims_supported` available at the OIDC auto-discovery endpoint (`.well-known/openid-configuration`).
+* #1070 Add a Celery task for clearing expired tokens, e.g. to be scheduled as a [periodic task](https://docs.celeryproject.org/en/stable/userguide/periodic-tasks.html)
 
 ### Fixed
 * #1012 Return 200 status code with `{"active": false}` when introspecting a nonexistent token
