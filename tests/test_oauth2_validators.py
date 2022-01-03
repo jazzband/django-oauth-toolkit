@@ -4,7 +4,6 @@ import json
 
 import pytest
 from django.contrib.auth import get_user_model
-from django.http import HttpResponseBadRequest
 from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
 from jwcrypto import jwt
