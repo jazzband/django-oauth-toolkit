@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 * #651 Batch expired token deletions in `cleartokens` management command
 * Added pt-BR translations.
+* #729 Add support for hashed client_secret values.
 
 ### Fixed
 * #1012 Return status for introspecting a nonexistent token from 401 to the correct value of 200 per [RFC 7662](https://datatracker.ietf.org/doc/html/rfc7662#section-2.2).
@@ -32,10 +33,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.6.0] 2021-12-19
 ### Added
-* #712, #636, #808. Calls to `django.contrib.auth.authenticate()` now pass a `request`
-  to provide compatibility with backends that need one.
-* #950 Add support for RSA key rotation.
-* #729 Add support for hashed client_secret values.
 * #949 Provide django.contrib.auth.authenticate() with a `request` for compatibiity with more backends (like django-axes).
 * #968, #1039 Add support for Django 3.2 and 4.0.
 * #953 Allow loopback redirect URIs using random ports as described in [RFC8252 section 7.3](https://datatracker.ietf.org/doc/html/rfc8252#section-7.3).
