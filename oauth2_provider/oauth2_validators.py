@@ -728,24 +728,24 @@ class OAuth2Validator(RequestValidator):
     def get_jwt_bearer_token(self, token, token_handler, request):
         return self.get_id_token(token, token_handler, request)
 
-    def get_claim_list(self):
-        def get_sub_code(request):
-            return str(request.user.id)
+    def get_claim_dict(self, request):
+        def get_sub_code(inner_request):
+            return str(inner_request.user.id)
 
-        list = [ ("sub", get_sub_code) ]
+        claims = {"sub": get_sub_code}
 
         # https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
-        add = self.get_additional_claims()
-        list.extend(add)
+        add = self.get_additional_claims(request)
+        claims.update(add)
 
-        return list
+        return claims
 
     def get_oidc_claims(self, token, token_handler, request):
-        data = self.get_claim_list()
+        data = self.get_claim_dict(request)
         claims = {}
 
-        for k, call in data:
-            claims[k] = call(request)
+        for k, v in data.items():
+            claims[k] = v(request) if callable(v) else v
         return claims
 
     def get_id_token_dictionary(self, token, token_handler, request):
@@ -898,5 +898,5 @@ class OAuth2Validator(RequestValidator):
         """
         return self.get_oidc_claims(None, None, request)
 
-    def get_additional_claims(self):
-        return []
+    def get_additional_claims(self, request):
+        return {}
