@@ -45,13 +45,6 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
         signing_algorithms = [Application.HS256_ALGORITHM]
         if oauth2_settings.OIDC_RSA_PRIVATE_KEY:
             signing_algorithms = [Application.RS256_ALGORITHM, Application.HS256_ALGORITHM]
-
-        validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
-        validator = validator_class()
-        oidc_claims = []
-        for el, _ in validator.get_claim_list():
-            oidc_claims.append(el)
-
         data = {
             "issuer": issuer_url,
             "authorization_endpoint": authorization_endpoint,
@@ -64,7 +57,6 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
             "token_endpoint_auth_methods_supported": (
                 oauth2_settings.OIDC_TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED
             ),
-            "claims_supported": oidc_claims,
         }
         response = JsonResponse(data)
         response["Access-Control-Allow-Origin"] = "*"

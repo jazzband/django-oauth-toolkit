@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 * #1056 Add missing migration triggered by [Django 4.0 changes to the migrations autodetector](https://docs.djangoproject.com/en/4.0/releases/4.0/#migrations-autodetector-changes).
+* #1068 Revert #967 which incorrectly changed an API. See #1066.
 
 ## [1.6.1] 2021-12-23
 
