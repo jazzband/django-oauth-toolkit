@@ -245,22 +245,45 @@ required claims, eg ``iss``, ``aud``, ``exp``, ``iat``, ``auth_time`` etc),
 and the ``sub`` claim will use the primary key of the user as the value.
 You'll probably want to customize this and add additional claims or change
 what is sent for the ``sub`` claim. To do so, you will need to add a method to
-our custom validator. It should return a dictionary mapping a claim name to
-either the claim data, or a callable that will be called with the request to
-produce the claim data.
-Standard claim ``sub`` is included by default, to remove it override ``get_claim_list``::
+our custom validator. It takes one of two forms:
+
+The first form gets passed a request object, and should return a dictionary
+mapping a claim name to claim data::
     class CustomOAuth2Validator(OAuth2Validator):
         def get_additional_claims(self, request):
+            claims = {}
+            claims["email"] = request.user.get_user_email()
+            claims["username"] = request.user.get_full_name()
+
+            return claims
+
+The second form gets no request object, and should return a dictionary
+mapping a claim name to a callable, accepting a request and producing
+the claim data::
+    class CustomOAuth2Validator(OAuth2Validator):
+        def get_additional_claims(self):
             def get_user_email(request):
                 return request.user.get_user_email()
 
             claims = {}
-            # Element name, callback to obtain data
             claims["email"] = get_user_email
-            # Element name, plain data returned
-            claims["username"] = request.user.get_full_name()
+            claims["username"] = lambda r: r.user.get_full_name()
 
             return claims
+
+Standard claim ``sub`` is included by default, to remove it override ``get_claim_dict``.
+
+In some cases, it might be desirable to not list all claims in discovery info. To customize
+which claims are advertised, you can override the ``get_discovery_claims`` method to return
+a list of claim names to advertise. If your ``get_additional_claims`` uses the first form
+and you still want to advertise claims, you can also override ``get_discovery_claims``.
+
+In order to help lcients discover claims early, they can be advertised in the discovery
+info, under the ``claims_supported`` key. In order for the discovery info view to automatically
+add all claims your validator returns, you need to use the second form (producing callables),
+because the discovery info views are requested with an unauthenticated request, so directly
+producing claim data would fail. If you use the first form, producing claim data directly,
+your claims will not be added to discovery info.
 
 .. note::
     This ``request`` object is not a ``django.http.Request`` object, but an
