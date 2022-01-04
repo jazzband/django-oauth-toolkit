@@ -158,7 +158,7 @@ def claim_user_email(request):
 @pytest.mark.django_db
 def test_userinfo_endpoint_custom_claims_callable(oidc_tokens, client, oauth2_settings):
     class CustomValidator(OAuth2Validator):
-        def get_additional_claims(self, request):
+        def get_additional_claims(self):
             return {
                 "username": claim_user_email,
                 "email": claim_user_email,

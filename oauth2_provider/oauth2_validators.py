@@ -1,6 +1,7 @@
 import base64
 import binascii
 import http.client
+import inspect
 import json
 import logging
 import uuid
@@ -725,19 +726,32 @@ class OAuth2Validator(RequestValidator):
         )
         return id_token
 
+    @classmethod
+    def _get_additional_claims_is_request_agnostic(cls):
+        return len(inspect.signature(cls.get_additional_claims).parameters) == 1
+
     def get_jwt_bearer_token(self, token, token_handler, request):
         return self.get_id_token(token, token_handler, request)
 
     def get_claim_dict(self, request):
-        def get_sub_code(inner_request):
-            return str(inner_request.user.id)
-
-        claims = {"sub": get_sub_code}
+        if self._get_additional_claims_is_request_agnostic():
+            claims = {"sub": lambda r: str(r.user.id)}
+        else:
+            claims = {"sub": str(request.user.id)}
 
         # https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
-        add = self.get_additional_claims(request)
+        if self._get_additional_claims_is_request_agnostic():
+            add = self.get_additional_claims()
+        else:
+            add = self.get_additional_claims(request)
         claims.update(add)
 
+        return claims
+
+    def get_discovery_claims(self, request):
+        claims = ["sub"]
+        if self._get_additional_claims_is_request_agnostic():
+            claims += list(self.get_claim_dict(request).keys())
         return claims
 
     def get_oidc_claims(self, token, token_handler, request):
