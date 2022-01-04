@@ -245,17 +245,22 @@ required claims, eg ``iss``, ``aud``, ``exp``, ``iat``, ``auth_time`` etc),
 and the ``sub`` claim will use the primary key of the user as the value.
 You'll probably want to customize this and add additional claims or change
 what is sent for the ``sub`` claim. To do so, you will need to add a method to
-our custom validator.
+our custom validator. It should return a dictionary mapping a claim name to
+either the claim data, or a callable that will be called with the request to
+produce the claim data.
 Standard claim ``sub`` is included by default, to remove it override ``get_claim_list``::
     class CustomOAuth2Validator(OAuth2Validator):
-        def get_additional_claims(self):
+        def get_additional_claims(self, request):
             def get_user_email(request):
-                return request.user.get_full_name()
+                return request.user.get_user_email()
 
+            claims = {}
             # Element name, callback to obtain data
-            claims_list = [ ("email", get_sub_cod),
-                        ("username", get_user_email) ]
-            return claims_list
+            claims["email"] = get_user_email
+            # Element name, plain data returned
+            claims["username"] = request.user.get_full_name()
+
+            return claims
 
 .. note::
     This ``request`` object is not a ``django.http.Request`` object, but an
