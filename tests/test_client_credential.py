@@ -105,6 +105,11 @@ class TestClientCredential(BaseTest):
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 401)
 
+        # sending the hashed secret should return a 401
+        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 401)
+
     def test_client_credential_does_not_issue_refresh_token(self):
         token_request_data = {
             "grant_type": "client_credentials",
