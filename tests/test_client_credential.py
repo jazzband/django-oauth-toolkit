@@ -24,8 +24,6 @@ Application = get_application_model()
 AccessToken = get_access_token_model()
 UserModel = get_user_model()
 
-CLIENT_SECRET = "abcdefghijklmnopqrstuvwxyz1234567890"
-
 
 # mocking a protected resource view
 class ResourceView(ProtectedResourceView):
@@ -46,7 +44,6 @@ class BaseTest(TestCase):
             user=self.dev_user,
             client_type=Application.CLIENT_PUBLIC,
             authorization_grant_type=Application.GRANT_CLIENT_CREDENTIALS,
-            client_secret=CLIENT_SECRET,
         )
 
     def tearDown(self):
@@ -81,29 +78,6 @@ class TestClientCredential(BaseTest):
         view = ResourceView.as_view()
         response = view(request)
         self.assertEqual(response, "This is a protected resource")
-
-    @pytest.mark.oauth2_settings(presets.CLIENT_SECRET_HASHER)
-    def test_client_credential_with_hashed_client_secret(self):
-        """
-        Verify client_secret is hashed before writing to the db,
-        and comparison on request uses same hashing algo.
-        """
-        self.assertNotEqual(self.application.client_secret, CLIENT_SECRET)
-        self.assertIn("$", self.application.client_secret)
-        self.assertIn(presets.CLIENT_SECRET_HASHER["CLIENT_SECRET_HASHER"], self.application.client_secret)
-
-        token_request_data = {
-            "grant_type": "client_credentials",
-        }
-        auth_headers = get_basic_auth_header(self.application.client_id, CLIENT_SECRET)
-
-        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
-        self.assertEqual(response.status_code, 200)
-
-        # secret mismatch should return a 401
-        auth_headers = get_basic_auth_header(self.application.client_id, "not-the-secret")
-        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
-        self.assertEqual(response.status_code, 401)
 
     def test_client_credential_does_not_issue_refresh_token(self):
         token_request_data = {
