@@ -129,15 +129,16 @@ class OAuth2Validator(RequestValidator):
         # used by our default generator does not include the "$" character.
         # However, if a different character set was used to generate the secret, this sentinel
         # might be a false positive.
-        elif (
-            "$" in request.client.client_secret
-            and "$" not in client_secret
-            and request.client.client_secret != client_secret
-        ):
-            if not check_password(client_secret, request.client.client_secret):
-                log.debug("Failed basic auth: wrong hashed client secret %s" % client_secret)
-                return False
-            return True
+        # If a hashed secret were passed verbatim in the header and it contained a "+" it will be decoded
+        # as a space, which is also not part of the default character set.
+        elif "$" in client_secret or " " in client_secret:
+            log.debug("client_secret passed in HTTP header appears to be hashed secret")
+            return False
+        elif "$" in request.client.client_secret and request.client.client_secret != client_secret:
+            if check_password(client_secret, request.client.client_secret):
+                return True
+            log.debug("Failed basic auth: wrong hashed client secret %s" % client_secret)
+            return False
         elif request.client.client_secret != client_secret:
             log.debug("Failed basic auth: wrong client secret %s" % client_secret)
             return False
