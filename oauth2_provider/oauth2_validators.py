@@ -127,14 +127,15 @@ class OAuth2Validator(RequestValidator):
         # whether a secret has been hashed like a Django password or not.
         # We can do this because the default oauthlib.common.UNICODE_ASCII_CHARACTER_SET
         # used by our default generator does not include the "$" character.
-        # However, if a different character set was used to generate the secret, this sentinel
+        # If a different character set was used to generate the secret, this sentinel
         # might be a false positive.
-        # If a hashed secret were passed verbatim in the header and it contained a "+" it will be decoded
-        # as a space, which is also not part of the default character set.
-        elif "$" in client_secret or " " in client_secret:
+        # However, the django password storage pattern contains exactly 3 "$" characters.
+        # <algorithm>$<iterations>$<salt>$<hash>
+        # The 3 $ pattern is therefore a strong indication of a hashed secret.
+        elif client_secret.count("$") == 3:
             log.debug("client_secret passed in HTTP header appears to be hashed secret")
             return False
-        elif "$" in request.client.client_secret and request.client.client_secret != client_secret:
+        elif request.client.client_secret.count("$") == 3 and request.client.client_secret != client_secret:
             if check_password(client_secret, request.client.client_secret):
                 return True
             log.debug("Failed basic auth: wrong hashed client secret %s" % client_secret)
