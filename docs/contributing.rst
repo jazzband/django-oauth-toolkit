@@ -96,6 +96,24 @@ When deploying your app, don't forget to compile the messages with::
     django-admin compilemessages
 
 
+Migrations
+==========
+
+If you alter any models, a new migration will need to be generated. This step is frequently missed
+by new contributors. You can check if a new migration is needed with::
+
+    tox -e migrations
+
+And, if a new migration is needed, use::
+
+    django-admin makemigrations --settings tests.mig_settings
+
+Auto migrations frequently have ugly names like `0004_auto_20200902_2022`. You can make your migration
+name "better" by adding the `-n name` option::
+
+    django-admin makemigrations --settings tests.mig_settings -n widget
+
+
 Pull requests
 =============
 
