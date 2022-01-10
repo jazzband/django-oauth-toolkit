@@ -1,14 +1,24 @@
+from datetime import timedelta
 from io import StringIO
 
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import TestCase
+from django.utils import timezone
 
-from oauth2_provider.models import get_application_model
+from oauth2_provider.models import (
+    get_access_token_model,
+    get_application_model,
+    get_grant_model,
+    get_refresh_token_model,
+)
 
 
 Application = get_application_model()
+AccesstokenModel = get_access_token_model()
+RefreshtokenModel = get_refresh_token_model()
+GrantModel = get_grant_model()
 
 
 class CreateApplicationTest(TestCase):
@@ -125,3 +135,60 @@ class CreateApplicationTest(TestCase):
         self.assertIn("user", output.getvalue())
         self.assertIn("783", output.getvalue())
         self.assertIn("does not exist", output.getvalue())
+
+
+class ClearTokensTest(TestCase):
+    def setUp(self):
+        now = timezone.now()
+        earlier = now - timedelta(seconds=100)
+        later = now + timedelta(seconds=100)
+        UserModel = get_user_model()
+        user = UserModel.objects.create()
+
+        app = Application.objects.create(
+            client_type="confidential",
+            authorization_grant_type="client-credentials",
+            name="The App",
+        )
+        for i in range(100):
+            old = AccesstokenModel.objects.create(token="old access token {}".format(i), expires=earlier)
+            new = AccesstokenModel.objects.create(token="current access token {}".format(i), expires=later)
+            # make half of these Access Tokens have related Refresh Tokens, which prevent their deletion.
+            if i % 2:
+                RefreshtokenModel.objects.create(
+                    token="old refresh token {}".format(i),
+                    application=app,
+                    access_token=old,
+                    user=user,
+                )
+                RefreshtokenModel.objects.create(
+                    token="current refresh token {}".format(i),
+                    application=app,
+                    access_token=new,
+                    user=user,
+                )
+            GrantModel.objects.create(
+                user=user,
+                code="old grant code {}".format(i),
+                application=app,
+                expires=earlier,
+                redirect_uri="https://localhost/redirect",
+            )
+            GrantModel.objects.create(
+                user=user,
+                code="new grant code {}".format(i),
+                application=app,
+                expires=later,
+                redirect_uri="https://localhost/redirect",
+            )
+
+    def test_command_clear_tokens(self):
+        self.assertEqual(AccesstokenModel.objects.count(), 200)
+        self.assertEqual(RefreshtokenModel.objects.count(), 100)
+        self.assertEqual(GrantModel.objects.count(), 200)
+        call_command(
+            "cleartokens",
+        )
+        self.assertEqual(AccesstokenModel.objects.count(), 150)
+        self.assertEqual(RefreshtokenModel.objects.count(), 100)
+        self.assertEqual(GrantModel.objects.count(), 100)
