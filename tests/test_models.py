@@ -307,37 +307,52 @@ class TestClearExpired(BaseTestModels):
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
         )
-        for i in range(100):
-            old = AccessToken.objects.create(token="old access token {}".format(i), expires=earlier)
-            new = AccessToken.objects.create(token="current access token {}".format(i), expires=later)
-            # make half of these Access Tokens have related Refresh Tokens, which prevent their deletion.
-            if i % 2:
-                RefreshToken.objects.create(
-                    token="old refresh token {}".format(i),
-                    application=app,
-                    access_token=old,
-                    user=self.user,
-                )
-                RefreshToken.objects.create(
-                    token="current refresh token {}".format(i),
-                    application=app,
-                    access_token=new,
-                    user=self.user,
-                )
-            Grant.objects.create(
+
+        expired_access_tokens = AccessToken.objects.bulk_create(
+            AccessToken(token="expired AccessToken {}".format(i), expires=earlier) for i in range(100)
+        )
+        current_access_tokens = AccessToken.objects.bulk_create(
+            AccessToken(token="current AccessToken {}".format(i), expires=later) for i in range(100)
+        )
+
+        RefreshToken.objects.bulk_create(
+            RefreshToken(
+                token="expired AT's refresh token {}".format(i),
+                application=app,
+                access_token=expired_access_tokens[i],
+                user=self.user,
+            )
+            for i in range(100, 2)
+        )
+        RefreshToken.objects.bulk_create(
+            RefreshToken(
+                token="current AT's refresh token {}".format(i),
+                application=app,
+                access_token=expired_access_tokens[i],
+                user=self.user,
+            )
+            for i in range(49, 100, 2)
+        )
+        Grant.objects.bulk_create(
+            Grant(
                 user=self.user,
                 code="old grant code {}".format(i),
                 application=app,
-                expires=earlier,
+                expires=expired_access_tokens[i],
                 redirect_uri="https://localhost/redirect",
             )
-            Grant.objects.create(
+            for i in range(100)
+        )
+        Grant.objects.bulk_create(
+            Grant(
                 user=self.user,
                 code="new grant code {}".format(i),
                 application=app,
-                expires=later,
+                expires=current_access_tokens[i],
                 redirect_uri="https://localhost/redirect",
             )
+            for i in range(100)
+        )
 
     def test_clear_expired_tokens(self):
         self.oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS = 60
