@@ -46,7 +46,7 @@ class GrantAdmin(admin.ModelAdmin):
 class IDTokenAdmin(admin.ModelAdmin):
     list_display = ("jti", "user", "application", "expires")
     raw_id_fields = ("user",)
-    search_fields = (("user__email",) if has_email else ())
+    search_fields = ("user__email",) if has_email else ()
     list_filter = ("application",)
 
 
