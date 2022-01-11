@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import pytest
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured, ValidationError
@@ -294,7 +296,10 @@ class TestRefreshTokenModel(BaseTestModels):
 class TestClearExpired(BaseTestModels):
     def setUp(self):
         super().setUp()
-        # Insert two tokens on database.
+        # Insert many tokens, both expired and not, and grants.
+        now = timezone.now()
+        earlier = now - timedelta(seconds=100)
+        later = now + timedelta(seconds=100)
         app = Application.objects.create(
             name="test_app",
             redirect_uris="http://localhost http://example.com http://example.org",
@@ -302,24 +307,37 @@ class TestClearExpired(BaseTestModels):
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
         )
-        AccessToken.objects.create(
-            token="555",
-            expires=timezone.now(),
-            scope=2,
-            application=app,
-            user=self.user,
-            created=timezone.now(),
-            updated=timezone.now(),
-        )
-        AccessToken.objects.create(
-            token="666",
-            expires=timezone.now(),
-            scope=2,
-            application=app,
-            user=self.user,
-            created=timezone.now(),
-            updated=timezone.now(),
-        )
+        for i in range(100):
+            old = AccessToken.objects.create(token="old access token {}".format(i), expires=earlier)
+            new = AccessToken.objects.create(token="current access token {}".format(i), expires=later)
+            # make half of these Access Tokens have related Refresh Tokens, which prevent their deletion.
+            if i % 2:
+                RefreshToken.objects.create(
+                    token="old refresh token {}".format(i),
+                    application=app,
+                    access_token=old,
+                    user=self.user,
+                )
+                RefreshToken.objects.create(
+                    token="current refresh token {}".format(i),
+                    application=app,
+                    access_token=new,
+                    user=self.user,
+                )
+            Grant.objects.create(
+                user=self.user,
+                code="old grant code {}".format(i),
+                application=app,
+                expires=earlier,
+                redirect_uri="https://localhost/redirect",
+            )
+            Grant.objects.create(
+                user=self.user,
+                code="new grant code {}".format(i),
+                application=app,
+                expires=later,
+                redirect_uri="https://localhost/redirect",
+            )
 
     def test_clear_expired_tokens(self):
         self.oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS = 60
@@ -333,15 +351,13 @@ class TestClearExpired(BaseTestModels):
         assert result == "ImproperlyConfigured"
 
     def test_clear_expired_tokens_with_tokens(self):
-        self.client.login(username="test_user", password="123456")
-        self.oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS = 0
-        ttokens = AccessToken.objects.count()
-        expiredt = AccessToken.objects.filter(expires__lte=timezone.now()).count()
-        assert ttokens == 2
-        assert expiredt == 2
+        assert AccessToken.objects.count() == 200
+        assert RefreshToken.objects.count() == 100
+        assert Grant.objects.count() == 200
         clear_expired()
-        expiredt = AccessToken.objects.filter(expires__lte=timezone.now()).count()
-        assert expiredt == 0
+        assert AccessToken.objects.count() == 150
+        assert RefreshToken.objects.count() == 100
+        assert Grant.objects.count() == 100
 
 
 @pytest.mark.django_db
