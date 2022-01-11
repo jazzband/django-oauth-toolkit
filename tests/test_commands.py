@@ -17,7 +17,7 @@ from oauth2_provider.models import (
 
 Application = get_application_model()
 AccesstokenModel = get_access_token_model()
-RefreshtokenModel = get_refresh_token_model()
+RefreshTokenModel = get_refresh_token_model()
 GrantModel = get_grant_model()
 
 
