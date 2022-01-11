@@ -351,6 +351,8 @@ class TestClearExpired(BaseTestModels):
         assert result == "ImproperlyConfigured"
 
     def test_clear_expired_tokens_with_tokens(self):
+        self.oauth2_settings.CLEAR_EXPIRED_TOKENS_BATCH_SIZE = 10
+        self.oauth2_settings.CLEAR_EXPIRED_TOKENS_BATCH_INTERVAL = 0.0
         assert AccessToken.objects.count() == 200
         assert RefreshToken.objects.count() == 100
         assert Grant.objects.count() == 200
