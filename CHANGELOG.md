@@ -16,6 +16,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.3] 2022-01-11
+
+### Fixed
+* #1085 Fix for #1083 admin UI search for idtoken results in `django.core.exceptions.FieldError: Cannot resolve keyword 'token' into field.`
+
+### Added
+* #1085 Add admin UI search fields for additional models.
+
 ## [1.6.2] 2022-01-06
 
 **NOTE: This release reverts an inadvertently-added breaking change.**
