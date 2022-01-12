@@ -319,7 +319,7 @@ class TestClearExpired(BaseTestModels):
             RefreshToken(
                 token=f"expired AT's refresh token {i}",
                 application=app,
-                access_token_pk=expired_access_tokens[i].pk,
+                access_token=expired_access_tokens[i].pk,
                 user=self.user,
             )
             for i in range(100, 2)
@@ -328,7 +328,7 @@ class TestClearExpired(BaseTestModels):
             RefreshToken(
                 token=f"current AT's refresh token {i}",
                 application=app,
-                access_token_pk=expired_access_tokens[i].pk,
+                access_token=expired_access_tokens[i].pk,
                 user=self.user,
             )
             for i in range(49, 100, 2)
