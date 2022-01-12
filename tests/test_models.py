@@ -368,13 +368,19 @@ class TestClearExpired(BaseTestModels):
     def test_clear_expired_tokens_with_tokens(self):
         self.oauth2_settings.CLEAR_EXPIRED_TOKENS_BATCH_SIZE = 10
         self.oauth2_settings.CLEAR_EXPIRED_TOKENS_BATCH_INTERVAL = 0.0
-        assert AccessToken.objects.count() == 200
-        assert RefreshToken.objects.count() == 100
-        assert Grant.objects.count() == 200
+        at_count = AccessToken.objects.count()
+        assert at_count == 200
+        rt_count = RefreshToken.objects.count()
+        assert rt_count == 100
+        gt_count = Grant.objects.count()
+        assert gt_count == 200
         clear_expired()
-        assert AccessToken.objects.count() == 150
-        assert RefreshToken.objects.count() == 100
-        assert Grant.objects.count() == 100
+        at_count = AccessToken.objects.count()
+        assert at_count == 150
+        rt_count = RefreshToken.objects.count()
+        assert rt_count == 100
+        gt_count = Grant.objects.count()
+        assert gt_count == 100
 
 
 @pytest.mark.django_db
