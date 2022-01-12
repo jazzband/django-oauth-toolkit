@@ -312,23 +312,23 @@ class TestClearExpired(BaseTestModels):
             AccessToken(token="expired AccessToken {}".format(i), expires=earlier) for i in range(100)
         )
         current_access_tokens = AccessToken.objects.bulk_create(
-            AccessToken(token="current AccessToken {}".format(i), expires=later) for i in range(100)
+            AccessToken(token=f"current AccessToken {i}", expires=later) for i in range(100)
         )
 
         RefreshToken.objects.bulk_create(
             RefreshToken(
-                token="expired AT's refresh token {}".format(i),
+                token=f"expired AT's refresh token {i}",
                 application=app,
-                access_token=expired_access_tokens[i],
+                access_token_pk=expired_access_tokens[i].pk,
                 user=self.user,
             )
             for i in range(100, 2)
         )
         RefreshToken.objects.bulk_create(
             RefreshToken(
-                token="current AT's refresh token {}".format(i),
+                token=f"current AT's refresh token {i}",
                 application=app,
-                access_token=expired_access_tokens[i],
+                access_token_pk=expired_access_tokens[i].pk,
                 user=self.user,
             )
             for i in range(49, 100, 2)
@@ -336,9 +336,9 @@ class TestClearExpired(BaseTestModels):
         Grant.objects.bulk_create(
             Grant(
                 user=self.user,
-                code="old grant code {}".format(i),
+                code=f"old grant code {i}",
                 application=app,
-                expires=expired_access_tokens[i],
+                expires=expired_access_tokens[i].expires,
                 redirect_uri="https://localhost/redirect",
             )
             for i in range(100)
@@ -346,9 +346,9 @@ class TestClearExpired(BaseTestModels):
         Grant.objects.bulk_create(
             Grant(
                 user=self.user,
-                code="new grant code {}".format(i),
+                code=f"new grant code {i}",
                 application=app,
-                expires=current_access_tokens[i],
+                expires=current_access_tokens[i].expires,
                 redirect_uri="https://localhost/redirect",
             )
             for i in range(100)
