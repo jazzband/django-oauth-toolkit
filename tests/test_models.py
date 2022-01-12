@@ -297,6 +297,7 @@ class TestClearExpired(BaseTestModels):
     def setUp(self):
         super().setUp()
         # Insert many tokens, both expired and not, and grants.
+        self.num_tokens = 100
         now = timezone.now()
         earlier = now - timedelta(seconds=100)
         later = now + timedelta(seconds=100)
@@ -307,14 +308,16 @@ class TestClearExpired(BaseTestModels):
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
         )
-
+        # make 200 access tokens, half current and half expired.
         expired_access_tokens = AccessToken.objects.bulk_create(
-            AccessToken(token="expired AccessToken {}".format(i), expires=earlier) for i in range(100)
+            AccessToken(token="expired AccessToken {}".format(i), expires=earlier)
+            for i in range(self.num_tokens)
         )
         current_access_tokens = AccessToken.objects.bulk_create(
-            AccessToken(token=f"current AccessToken {i}", expires=later) for i in range(100)
+            AccessToken(token=f"current AccessToken {i}", expires=later) for i in range(self.num_tokens)
         )
-
+        # Give the first half of the access tokens a refresh token,
+        # alternating between current and expired ones.
         RefreshToken.objects.bulk_create(
             RefreshToken(
                 token=f"expired AT's refresh token {i}",
@@ -322,36 +325,37 @@ class TestClearExpired(BaseTestModels):
                 access_token=expired_access_tokens[i].pk,
                 user=self.user,
             )
-            for i in range(100, 2)
+            for i in range(0, len(expired_access_tokens) // 2, 2)
         )
         RefreshToken.objects.bulk_create(
             RefreshToken(
                 token=f"current AT's refresh token {i}",
                 application=app,
-                access_token=expired_access_tokens[i].pk,
+                access_token=current_access_tokens[i].pk,
                 user=self.user,
             )
-            for i in range(49, 100, 2)
+            for i in range(1, len(current_access_tokens) // 2, 2)
         )
+        # Make some grants, half of which are expired.
         Grant.objects.bulk_create(
             Grant(
                 user=self.user,
                 code=f"old grant code {i}",
                 application=app,
-                expires=expired_access_tokens[i].expires,
+                expires=earlier,
                 redirect_uri="https://localhost/redirect",
             )
-            for i in range(100)
+            for i in range(self.num_tokens)
         )
         Grant.objects.bulk_create(
             Grant(
                 user=self.user,
                 code=f"new grant code {i}",
                 application=app,
-                expires=current_access_tokens[i].expires,
+                expires=later,
                 redirect_uri="https://localhost/redirect",
             )
-            for i in range(100)
+            for i in range(self.num_tokens)
         )
 
     def test_clear_expired_tokens(self):
@@ -369,18 +373,18 @@ class TestClearExpired(BaseTestModels):
         self.oauth2_settings.CLEAR_EXPIRED_TOKENS_BATCH_SIZE = 10
         self.oauth2_settings.CLEAR_EXPIRED_TOKENS_BATCH_INTERVAL = 0.0
         at_count = AccessToken.objects.count()
-        assert at_count == 200
+        assert at_count == 2 * self.num_tokens, f"{2 * self.num_tokens} access tokens should exist."
         rt_count = RefreshToken.objects.count()
-        assert rt_count == 100
+        assert rt_count == self.num_tokens // 2, f"{self.num_tokens // 2} refresh tokens should exist."
         gt_count = Grant.objects.count()
-        assert gt_count == 200
+        assert gt_count == self.num_tokens * 2, f"{self.num_tokens * 2} grants should exist."
         clear_expired()
         at_count = AccessToken.objects.count()
-        assert at_count == 150
+        assert at_count == self.num_tokens, "Half the access tokens should not have been deleted."
         rt_count = RefreshToken.objects.count()
-        assert rt_count == 100
+        assert rt_count == self.num_tokens // 2, "Half of the refresh tokens should have been deleted."
         gt_count = Grant.objects.count()
-        assert gt_count == 100
+        assert gt_count == self.num_tokens, "Half the grants should have been deleted."
 
 
 @pytest.mark.django_db
