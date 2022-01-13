@@ -345,9 +345,12 @@ The size of delete batches used by ``cleartokens`` management command.
 
 CLEAR_EXPIRED_TOKENS_BATCH_INTERVAL
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Default: ``0.1``
+Default: ``0``
 
 Time of sleep in seconds used by ``cleartokens`` management command between batch deletions.
+
+Set this to a non-zero value (e.g. `0.1`) to add a pause between batch sizes to reduce system
+load when clearing large batches of expired tokens.
 
 
 Settings imported from Django project
