@@ -18,6 +18,8 @@ AccessToken = get_access_token_model()
 Grant = get_grant_model()
 UserModel = get_user_model()
 
+CLEARTEXT_SECRET = "1234567890abcdefghijklmnopqrstuvwxyz"
+
 
 # mocking a protected resource view
 class ScopeResourceView(ScopedProtectedResourceView):
@@ -67,6 +69,7 @@ class BaseTest(TestCase):
             user=self.dev_user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+            client_secret=CLEARTEXT_SECRET,
         )
 
     def tearDown(self):
@@ -123,7 +126,7 @@ class TestScopesSave(BaseTest):
             "code": authorization_code,
             "redirect_uri": "http://example.org",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
@@ -159,7 +162,7 @@ class TestScopesProtection(BaseTest):
             "code": authorization_code,
             "redirect_uri": "http://example.org",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
@@ -201,7 +204,7 @@ class TestScopesProtection(BaseTest):
             "code": authorization_code,
             "redirect_uri": "http://example.org",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
@@ -243,7 +246,7 @@ class TestScopesProtection(BaseTest):
             "code": authorization_code,
             "redirect_uri": "http://example.org",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
@@ -285,7 +288,7 @@ class TestScopesProtection(BaseTest):
             "code": authorization_code,
             "redirect_uri": "http://example.org",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
@@ -326,7 +329,7 @@ class TestReadWriteScope(BaseTest):
             "code": authorization_code,
             "redirect_uri": "http://example.org",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))

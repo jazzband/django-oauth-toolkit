@@ -16,6 +16,8 @@ from . import presets
 Application = get_application_model()
 UserModel = get_user_model()
 
+CLEARTEXT_SECRET = "1234567890abcdefghijklmnopqrstuvwxyz"
+
 
 class OAuthSettingsWrapper:
     """
@@ -101,12 +103,14 @@ def application():
         client_type=Application.CLIENT_CONFIDENTIAL,
         authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
         algorithm=Application.RS256_ALGORITHM,
+        client_secret=CLEARTEXT_SECRET,
     )
 
 
 @pytest.fixture
 def hybrid_application(application):
     application.authorization_grant_type = application.GRANT_OPENID_HYBRID
+    application.client_secret = CLEARTEXT_SECRET
     application.save()
     return application
 
@@ -141,7 +145,7 @@ def oidc_tokens(oauth2_settings, application, test_user, client):
             "code": code,
             "redirect_uri": "http://example.org",
             "client_id": application.client_id,
-            "client_secret": application.client_secret,
+            "client_secret": CLEARTEXT_SECRET,
             "scope": "openid",
         },
     )

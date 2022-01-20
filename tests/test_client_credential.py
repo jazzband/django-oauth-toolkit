@@ -1,6 +1,5 @@
 import json
 from unittest.mock import patch
-from urllib.parse import quote_plus
 
 import pytest
 from django.contrib.auth import get_user_model
@@ -24,7 +23,7 @@ Application = get_application_model()
 AccessToken = get_access_token_model()
 UserModel = get_user_model()
 
-CLIENT_SECRET = "abcdefghijklmnopqrstuvwxyz1234567890"
+CLEARTEXT_SECRET = "abcdefghijklmnopqrstuvwxyz1234567890"
 
 
 # mocking a protected resource view
@@ -46,7 +45,7 @@ class BaseTest(TestCase):
             user=self.dev_user,
             client_type=Application.CLIENT_PUBLIC,
             authorization_grant_type=Application.GRANT_CLIENT_CREDENTIALS,
-            client_secret=CLIENT_SECRET,
+            client_secret=CLEARTEXT_SECRET,
         )
 
     def tearDown(self):
@@ -58,44 +57,14 @@ class BaseTest(TestCase):
 class TestClientCredential(BaseTest):
     def test_client_credential_access_allowed(self):
         """
-        Request an access token using Client Credential Flow
+        Request an access token using Client Credential Flow with hashed secrets
         """
-        token_request_data = {
-            "grant_type": "client_credentials",
-        }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
-
-        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
-        self.assertEqual(response.status_code, 200)
-
-        content = json.loads(response.content.decode("utf-8"))
-        access_token = content["access_token"]
-
-        # use token to access the resource
-        auth_headers = {
-            "HTTP_AUTHORIZATION": "Bearer " + access_token,
-        }
-        request = self.factory.get("/fake-resource", **auth_headers)
-        request.user = self.test_user
-
-        view = ResourceView.as_view()
-        response = view(request)
-        self.assertEqual(response, "This is a protected resource")
-
-    @pytest.mark.oauth2_settings(presets.CLIENT_SECRET_HASHER)
-    def test_client_credential_with_hashed_client_secret(self):
-        """
-        Verify client_secret is hashed before writing to the db,
-        and comparison on request uses same hashing algo.
-        """
-        self.assertNotEqual(self.application.client_secret, CLIENT_SECRET)
-        self.assertIn("$", self.application.client_secret)
-        self.assertIn(presets.CLIENT_SECRET_HASHER["CLIENT_SECRET_HASHER"], self.application.client_secret)
+        self.assertNotEqual(self.application.client_secret, CLEARTEXT_SECRET)
 
         token_request_data = {
             "grant_type": "client_credentials",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, CLIENT_SECRET)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
@@ -109,7 +78,7 @@ class TestClientCredential(BaseTest):
         token_request_data = {
             "grant_type": "client_credentials",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
@@ -119,7 +88,7 @@ class TestClientCredential(BaseTest):
 
     def test_client_credential_user_is_none_on_access_token(self):
         token_request_data = {"grant_type": "client_credentials"}
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
@@ -148,7 +117,7 @@ class TestExtendedRequest(BaseTest):
         token_request_data = {
             "grant_type": "client_credentials",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
 
@@ -200,12 +169,11 @@ class TestClientResourcePasswordBased(BaseTest):
             user=self.dev_user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_PASSWORD,
+            client_secret=CLEARTEXT_SECRET,
         )
 
         token_request_data = {"grant_type": "password", "username": "test_user", "password": "123456"}
-        auth_headers = get_basic_auth_header(
-            quote_plus(self.application.client_id), quote_plus(self.application.client_secret)
-        )
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)

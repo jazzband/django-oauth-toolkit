@@ -34,6 +34,7 @@ UserModel = get_user_model()
 
 URI_OOB = "urn:ietf:wg:oauth:2.0:oob"
 URI_OOB_AUTO = "urn:ietf:wg:oauth:2.0:oob:auto"
+CLEARTEXT_SECRET = "1234567890abcdefghijklmnopqrstuvwxyz"
 
 
 # mocking a protected resource view
@@ -60,6 +61,7 @@ class BaseTest(TestCase):
             user=self.dev_user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+            client_secret=CLEARTEXT_SECRET,
         )
 
     def tearDown(self):
@@ -677,7 +679,7 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
             "code": authorization_code,
             "redirect_uri": "http://example.org",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
@@ -699,7 +701,7 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
             "code": authorization_code,
             "redirect_uri": "http://example.org",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
@@ -744,7 +746,7 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
             "code": authorization_code,
             "redirect_uri": "http://example.org",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
@@ -795,7 +797,7 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
             "code": authorization_code,
             "redirect_uri": "http://example.org",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
@@ -827,7 +829,7 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
             "code": authorization_code,
             "redirect_uri": "http://example.org",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
@@ -855,7 +857,7 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
             "code": authorization_code,
             "redirect_uri": "http://example.org",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
@@ -881,7 +883,7 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
             "code": authorization_code,
             "redirect_uri": "http://example.org",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
@@ -911,7 +913,7 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
             "code": authorization_code,
             "redirect_uri": "http://example.org",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
@@ -948,7 +950,7 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
             "code": authorization_code,
             "redirect_uri": "http://example.org",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
@@ -977,7 +979,7 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
             "code": "BLAH",
             "redirect_uri": "http://example.org",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 400)
@@ -989,7 +991,7 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
         self.client.login(username="test_user", password="123456")
 
         token_request_data = {"grant_type": "UNKNOWN", "code": "BLAH", "redirect_uri": "http://example.org"}
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 400)
@@ -1014,7 +1016,7 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
             "code": "BLAH",
             "redirect_uri": "http://example.org",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 400)
@@ -1049,7 +1051,7 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
             "redirect_uri": "http://example.org",
         }
 
-        user_pass = "{0}:{1}".format(self.application.client_id, self.application.client_secret)
+        user_pass = "{0}:{1}".format(self.application.client_id, CLEARTEXT_SECRET)
         auth_string = base64.b64encode(user_pass.encode("utf-8"))
         auth_headers = {
             "HTTP_AUTHORIZATION": "Wrong " + auth_string.decode("utf-8"),
@@ -1070,7 +1072,7 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
             "code": authorization_code,
             "redirect_uri": "http://example.org",
             "client_id": self.application.client_id,
-            "client_secret": self.application.client_secret,
+            "client_secret": CLEARTEXT_SECRET,
         }
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data)
@@ -1445,7 +1447,7 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
             "code": authorization_code,
             "redirect_uri": "http://example.org?foo=bar",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
@@ -1480,7 +1482,7 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
             "code": authorization_code,
             "redirect_uri": "http://example.org?foo=baraa",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 400)
@@ -1520,7 +1522,7 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
             "code": authorization_code,
             "redirect_uri": "http://example.com?bar=baz&foo=bar",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
@@ -1565,7 +1567,7 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
             "code": authorization_code,
             "redirect_uri": URI_OOB,
             "client_id": self.application.client_id,
-            "client_secret": self.application.client_secret,
+            "client_secret": CLEARTEXT_SECRET,
         }
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data)
@@ -1605,7 +1607,7 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
             "code": authorization_code,
             "redirect_uri": URI_OOB_AUTO,
             "client_id": self.application.client_id,
-            "client_secret": self.application.client_secret,
+            "client_secret": CLEARTEXT_SECRET,
         }
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data)
@@ -1681,7 +1683,7 @@ class TestOIDCAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
             "code": authorization_code,
             "redirect_uri": "http://example.com?bar=baz&foo=bar",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
@@ -1715,7 +1717,7 @@ class TestOIDCAuthorizationCodeHSAlgorithm(BaseAuthorizationCodeTokenView):
             "code": authorization_code,
             "redirect_uri": "http://example.org",
             "client_id": self.application.client_id,
-            "client_secret": self.application.client_secret,
+            "client_secret": CLEARTEXT_SECRET,
             "scope": "openid",
         }
 
@@ -1761,7 +1763,7 @@ class TestAuthorizationCodeProtectedResource(BaseTest):
             "code": authorization_code,
             "redirect_uri": "http://example.org",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
@@ -1819,7 +1821,7 @@ class TestOIDCAuthorizationCodeProtectedResource(BaseTest):
             "code": authorization_code,
             "redirect_uri": "http://example.org",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))

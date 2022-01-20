@@ -44,6 +44,3 @@ INTROSPECTION_SETTINGS = {
     "READ_SCOPE": "read",
     "WRITE_SCOPE": "write",
 }
-
-# default django auth hasher as of version 3.2
-CLIENT_SECRET_HASHER = {"CLIENT_SECRET_HASHER": "pbkdf2_sha256"}

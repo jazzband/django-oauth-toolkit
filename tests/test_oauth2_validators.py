@@ -15,6 +15,7 @@ from oauth2_provider.oauth2_backends import get_oauthlib_core
 from oauth2_provider.oauth2_validators import OAuth2Validator
 
 from . import presets
+from .utils import get_basic_auth_header
 
 
 try:
@@ -27,6 +28,8 @@ UserModel = get_user_model()
 Application = get_application_model()
 AccessToken = get_access_token_model()
 RefreshToken = get_refresh_token_model()
+
+CLEARTEXT_SECRET = "1234567890abcdefghijklmnopqrstuvwxyz"
 
 
 @contextlib.contextmanager
@@ -51,7 +54,7 @@ class TestOAuth2Validator(TransactionTestCase):
         self.validator = OAuth2Validator()
         self.application = Application.objects.create(
             client_id="client_id",
-            client_secret="client_secret",
+            client_secret=CLEARTEXT_SECRET,
             user=self.user,
             client_type=Application.CLIENT_PUBLIC,
             authorization_grant_type=Application.GRANT_PASSWORD,
@@ -69,7 +72,7 @@ class TestOAuth2Validator(TransactionTestCase):
         self.request.client_secret = "wrong_client_secret"
         self.assertFalse(self.validator._authenticate_request_body(self.request))
 
-        self.request.client_secret = "client_secret"
+        self.request.client_secret = CLEARTEXT_SECRET
         self.assertTrue(self.validator._authenticate_request_body(self.request))
 
     def test_extract_basic_auth(self):
@@ -86,26 +89,22 @@ class TestOAuth2Validator(TransactionTestCase):
 
     def test_authenticate_basic_auth(self):
         self.request.encoding = "utf-8"
-        # client_id:client_secret
-        self.request.headers = {"HTTP_AUTHORIZATION": "Basic Y2xpZW50X2lkOmNsaWVudF9zZWNyZXQ=\n"}
+        self.request.headers = get_basic_auth_header("client_id", CLEARTEXT_SECRET)
         self.assertTrue(self.validator._authenticate_basic_auth(self.request))
 
     def test_authenticate_basic_auth_default_encoding(self):
         self.request.encoding = None
-        # client_id:client_secret
-        self.request.headers = {"HTTP_AUTHORIZATION": "Basic Y2xpZW50X2lkOmNsaWVudF9zZWNyZXQ=\n"}
+        self.request.headers = get_basic_auth_header("client_id", CLEARTEXT_SECRET)
         self.assertTrue(self.validator._authenticate_basic_auth(self.request))
 
     def test_authenticate_basic_auth_wrong_client_id(self):
         self.request.encoding = "utf-8"
-        # wrong_id:client_secret
-        self.request.headers = {"HTTP_AUTHORIZATION": "Basic d3JvbmdfaWQ6Y2xpZW50X3NlY3JldA==\n"}
+        self.request.headers = get_basic_auth_header("wrong_id", CLEARTEXT_SECRET)
         self.assertFalse(self.validator._authenticate_basic_auth(self.request))
 
     def test_authenticate_basic_auth_wrong_client_secret(self):
         self.request.encoding = "utf-8"
-        # client_id:wrong_secret
-        self.request.headers = {"HTTP_AUTHORIZATION": "Basic Y2xpZW50X2lkOndyb25nX3NlY3JldA==\n"}
+        self.request.headers = get_basic_auth_header("client_id", "wrong_secret")
         self.assertFalse(self.validator._authenticate_basic_auth(self.request))
 
     def test_authenticate_basic_auth_not_b64_auth_string(self):
@@ -116,7 +115,6 @@ class TestOAuth2Validator(TransactionTestCase):
 
     def test_authenticate_basic_auth_invalid_b64_string(self):
         self.request.encoding = "utf-8"
-        # client_id:wrong_secret
         self.request.headers = {"HTTP_AUTHORIZATION": "Basic ZHVtbXk=:ZHVtbXk=\n"}
         self.assertFalse(self.validator._authenticate_basic_auth(self.request))
 
@@ -140,7 +138,7 @@ class TestOAuth2Validator(TransactionTestCase):
         self.assertTrue(self.validator.client_authentication_required(self.request))
         self.request.headers = {}
         self.request.client_id = "client_id"
-        self.request.client_secret = "client_secret"
+        self.request.client_secret = CLEARTEXT_SECRET
         self.assertTrue(self.validator.client_authentication_required(self.request))
         self.request.client_secret = ""
         self.assertFalse(self.validator.client_authentication_required(self.request))
@@ -327,7 +325,7 @@ class TestOAuth2ValidatorProvidesErrorData(TransactionTestCase):
         self.validator = OAuth2Validator()
         self.application = Application.objects.create(
             client_id="client_id",
-            client_secret="client_secret",
+            client_secret=CLEARTEXT_SECRET,
             user=self.user,
             client_type=Application.CLIENT_PUBLIC,
             authorization_grant_type=Application.GRANT_PASSWORD,

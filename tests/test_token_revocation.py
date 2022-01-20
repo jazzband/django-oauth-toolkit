@@ -13,6 +13,8 @@ AccessToken = get_access_token_model()
 RefreshToken = get_refresh_token_model()
 UserModel = get_user_model()
 
+CLEARTEXT_SECRET = "1234567890abcdefghijklmnopqrstuvwxyz"
+
 
 class BaseTest(TestCase):
     def setUp(self):
@@ -26,6 +28,7 @@ class BaseTest(TestCase):
             user=self.dev_user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+            client_secret=CLEARTEXT_SECRET,
         )
 
     def tearDown(self):
@@ -46,7 +49,7 @@ class TestRevocationView(BaseTest):
 
         data = {
             "client_id": self.application.client_id,
-            "client_secret": self.application.client_secret,
+            "client_secret": CLEARTEXT_SECRET,
             "token": tok.token,
         }
         url = reverse("oauth2_provider:revoke-token")
@@ -93,7 +96,7 @@ class TestRevocationView(BaseTest):
 
         data = {
             "client_id": self.application.client_id,
-            "client_secret": self.application.client_secret,
+            "client_secret": CLEARTEXT_SECRET,
             "token": tok.token,
             "token_type_hint": "access_token",
         }
@@ -115,7 +118,7 @@ class TestRevocationView(BaseTest):
 
         data = {
             "client_id": self.application.client_id,
-            "client_secret": self.application.client_secret,
+            "client_secret": CLEARTEXT_SECRET,
             "token": tok.token,
             "token_type_hint": "bad_hint",
         }
@@ -139,7 +142,7 @@ class TestRevocationView(BaseTest):
 
         data = {
             "client_id": self.application.client_id,
-            "client_secret": self.application.client_secret,
+            "client_secret": CLEARTEXT_SECRET,
             "token": rtok.token,
         }
 
@@ -164,7 +167,7 @@ class TestRevocationView(BaseTest):
         for token in (tok.token, rtok.token):
             data = {
                 "client_id": self.application.client_id,
-                "client_secret": self.application.client_secret,
+                "client_secret": CLEARTEXT_SECRET,
                 "token": token,
             }
 
@@ -194,7 +197,7 @@ class TestRevocationView(BaseTest):
 
         data = {
             "client_id": self.application.client_id,
-            "client_secret": self.application.client_secret,
+            "client_secret": CLEARTEXT_SECRET,
             "token": tok.token,
             "token_type_hint": "refresh_token",
         }
