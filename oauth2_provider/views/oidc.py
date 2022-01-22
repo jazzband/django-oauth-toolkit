@@ -48,9 +48,7 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
 
         validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
         validator = validator_class()
-        oidc_claims = validator.get_discovery_claims(request)
-        if "sub" not in oidc_claims:
-            oidc_claims.append("sub")
+        oidc_claims = list(set(validator.get_discovery_claims(request)))
 
         data = {
             "issuer": issuer_url,
