@@ -183,7 +183,7 @@ class AbstractApplication(models.Model):
         By default, returns `ALLOWED_REDIRECT_URI_SCHEMES`.
         """
         # Manually tack urn on to allowed schemes so oob URIs continue to work
-        return oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES + ['urn']
+        return oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES + ["urn"]
 
     def allows_grant_type(self, *grant_types):
         return self.authorization_grant_type in grant_types
