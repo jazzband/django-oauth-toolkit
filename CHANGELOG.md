@@ -14,16 +14,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
   -->
 
-## [Unreleased]
+## [1.7.0] 2022-01-23
 
 ### Added
-* #651 Batch expired token deletions in `cleartokens` management command
-* Added pt-BR translations.
-* #1070 Add a Celery task for clearing expired tokens, e.g. to be scheduled as a [periodic task](https://docs.celeryproject.org/en/stable/userguide/periodic-tasks.html)
-* #1069 OIDC: Re-introduce [additional claims](https://django-oauth-toolkit.readthedocs.io/en/latest/oidc.html#adding-claims-to-the-id-token) beyond `sub` to the id_token.
+* #969 Add batching of expired token deletions in `cleartokens` management command and `models.clear_expired()`
+  to improve performance for removal of large numers of expired tokens. Configure with
+  [`CLEAR_EXPIRED_TOKENS_BATCH_SIZE`](https://django-oauth-toolkit.readthedocs.io/en/latest/settings.html#clear-expired-tokens-batch-size) and
+  [`CLEAR_EXPIRED_TOKENS_BATCH_INTERVAL`](https://django-oauth-toolkit.readthedocs.io/en/latest/settings.html#clear-expired-tokens-batch-interval).
+* #1070 Add a Celery task for clearing expired tokens, e.g. to be scheduled as a [periodic task](https://docs.celeryproject.org/en/stable/userguide/periodic-tasks.html).
+* #1062 Add Brazilian Portuguese (pt-BR) translations.
+* #1069 OIDC: Add an alternate form of
+  [get_additional_claims()](https://django-oauth-toolkit.readthedocs.io/en/latest/oidc.html#adding-claims-to-the-id-token)
+  which makes the list of additional `claims_supported` available at the OIDC auto-discovery endpoint (`.well-known/openid-configuration`).
 
 ### Fixed
-* #1012 Return status for introspecting a nonexistent token from 401 to the correct value of 200 per [RFC 7662](https://datatracker.ietf.org/doc/html/rfc7662#section-2.2).
+* #1012 Return 200 status code with `{"active": false}` when introspecting a nonexistent token
+  per [RFC 7662](https://datatracker.ietf.org/doc/html/rfc7662#section-2.2). It had been incorrectly returning 401.
 
 ## [1.6.3] 2022-01-11
 
