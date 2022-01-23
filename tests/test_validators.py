@@ -22,6 +22,17 @@ class TestValidators(TestCase):
             # Check ValidationError not thrown
             validator(uri)
 
+    def test_validate_oob_uris(self):
+        # oob is allowed regardless of scheme for backwards compatibility
+        validator = RedirectURIValidator(allowed_schemes=["https"])
+        good_uris = [
+            "urn:ietf:wg:oauth:2.0:oob",
+            "urn:ietf:wg:oauth:2.0:oob:auto",
+        ]
+        for uri in good_uris:
+            # Check ValidationError not thrown
+            validator(uri)
+
     def test_validate_custom_uri_scheme(self):
         validator = RedirectURIValidator(allowed_schemes=["my-scheme", "https", "git+ssh"])
         good_uris = [

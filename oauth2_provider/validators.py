@@ -24,6 +24,11 @@ class RedirectURIValidator(URIValidator):
         self.allow_fragments = allow_fragments
 
     def __call__(self, value):
+        # Accept oob values without doing further checks since they don't conform
+        # to URI standards.
+        if value in ["urn:ietf:wg:oauth:2.0:oob", "urn:ietf:wg:oauth:2.0:oob:auto"]:
+            return
+
         super().__call__(value)
         value = force_str(value)
         scheme, netloc, path, query, fragment = urlsplit(value)
