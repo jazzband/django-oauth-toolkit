@@ -1,6 +1,7 @@
 from io import StringIO
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import check_password
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import TestCase
@@ -83,7 +84,7 @@ class CreateApplicationTest(TestCase):
         )
         app = Application.objects.get()
 
-        self.assertEqual(app.client_secret, "SECRET")
+        self.assertTrue(check_password("SECRET", app.client_secret))
 
     def test_application_created_with_client_id(self):
         call_command(

@@ -6,6 +6,7 @@ from urllib.parse import parse_qsl, urlparse
 
 from django.apps import apps
 from django.conf import settings
+from django.contrib.auth.hashers import identify_hasher, make_password
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models, transaction
 from django.urls import reverse
@@ -22,6 +23,20 @@ from .validators import RedirectURIValidator, WildcardSet
 
 
 logger = logging.getLogger(__name__)
+
+
+class ClientSecretField(models.CharField):
+    def pre_save(self, model_instance, add):
+        secret = getattr(model_instance, self.attname)
+        try:
+            hasher = identify_hasher(secret)
+            logger.debug(f"{model_instance}: {self.attname} is already hashed with {hasher}.")
+        except ValueError:
+            logger.debug(f"{model_instance}: {self.attname} is not hashed; hashing it now.")
+            hashed_secret = make_password(secret)
+            setattr(model_instance, self.attname, hashed_secret)
+            return hashed_secret
+        return super().pre_save(model_instance, add)
 
 
 class AbstractApplication(models.Model):
@@ -90,8 +105,12 @@ class AbstractApplication(models.Model):
     )
     client_type = models.CharField(max_length=32, choices=CLIENT_TYPES)
     authorization_grant_type = models.CharField(max_length=32, choices=GRANT_TYPES)
-    client_secret = models.CharField(
-        max_length=255, blank=True, default=generate_client_secret, db_index=True
+    client_secret = ClientSecretField(
+        max_length=255,
+        blank=True,
+        default=generate_client_secret,
+        db_index=True,
+        help_text=_("Hashed on Save. Copy it now if this is a new secret."),
     )
     name = models.CharField(max_length=255, blank=True)
     skip_authorization = models.BooleanField(default=False)

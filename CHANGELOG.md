@@ -14,6 +14,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
   -->
 
+## [unreleased]
+
+## [2.0.0] unreleased
+
+### Changed
+* #1093 (**Breaking**) Changed to implement [hashed](https://docs.djangoproject.com/en/stable/topics/auth/passwords/)
+  client_secret values. This is a **breaking change** that will migrate all your existing
+  cleartext `application.client_secret` values to be hashed with Django's default password hashing algorithm
+  and can not be reversed. When adding or modifying an Application in the Admin console, you must copy the
+  auto-generated or manually-entered `client_secret` before hitting Save.
+
+
 ## [1.7.0] 2022-01-23
 
 ### Added

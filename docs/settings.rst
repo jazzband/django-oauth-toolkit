@@ -97,19 +97,19 @@ of those three can be a callable) must be passed here directly and classes
 must be instantiated (callables should accept request as their only argument).
 
 GRANT_MODEL
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~
 The import string of the class (model) representing your grants. Overwrite
 this value if you wrote your own implementation (subclass of
 ``oauth2_provider.models.Grant``).
 
 APPLICATION_ADMIN_CLASS
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 The import string of the class (model) representing your application admin class.
 Overwrite this value if you wrote your own implementation (subclass of
 ``oauth2_provider.admin.ApplicationAdmin``).
 
 ACCESS_TOKEN_ADMIN_CLASS
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~
 The import string of the class (model) representing your access token admin class.
 Overwrite this value if you wrote your own implementation (subclass of
 ``oauth2_provider.admin.AccessTokenAdmin``).
@@ -121,7 +121,7 @@ Overwrite this value if you wrote your own implementation (subclass of
 ``oauth2_provider.admin.GrantAdmin``).
 
 REFRESH_TOKEN_ADMIN_CLASS
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
 The import string of the class (model) representing your refresh token admin class.
 Overwrite this value if you wrote your own implementation (subclass of
 ``oauth2_provider.admin.RefreshTokenAdmin``).
@@ -154,7 +154,7 @@ If you don't change the validator code and don't run cleartokens all refresh
 tokens will last until revoked or the end of time. You should change this.
 
 REFRESH_TOKEN_GRACE_PERIOD_SECONDS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The number of seconds between when a refresh token is first used when it is
 expired. The most common case of this for this is native mobile applications
 that run into issues of network connectivity during the refresh cycle and are
@@ -178,7 +178,7 @@ See also: validator's rotate_refresh_token method can be overridden to make this
 when close to expiration, theoretically).
 
 REFRESH_TOKEN_GENERATOR
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 See `ACCESS_TOKEN_GENERATOR`. This is the same but for refresh tokens.
 Defaults to access token generator if not provided.
 
@@ -265,7 +265,7 @@ Default: ``""``
 The RSA private key used to sign OIDC ID tokens. If not set, OIDC is disabled.
 
 OIDC_RSA_PRIVATE_KEYS_INACTIVE
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Default: ``[]``
 
 An array of *inactive* RSA private keys. These keys are not used to sign tokens,
@@ -276,7 +276,7 @@ This is useful for providing a smooth transition during key rotation.
 should be retained in this inactive list.
 
 OIDC_JWKS_MAX_AGE_SECONDS
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
 Default: ``3600``
 
 The max-age value for the Cache-Control header on jwks_uri.
@@ -354,9 +354,9 @@ load when clearing large batches of expired tokens.
 
 
 Settings imported from Django project
---------------------------
+-------------------------------------
 
 USE_TZ
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~
 
 Used to determine whether or not to make token expire dates timezone aware.

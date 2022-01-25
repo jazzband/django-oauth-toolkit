@@ -14,6 +14,8 @@ from .utils import get_basic_auth_header
 Application = get_application_model()
 UserModel = get_user_model()
 
+CLEARTEXT_SECRET = "1234567890abcdefghijklmnopqrstuvwxyz"
+
 
 # mocking a protected resource view
 class ResourceView(ProtectedResourceView):
@@ -33,6 +35,7 @@ class BaseTest(TestCase):
             user=self.dev_user,
             client_type=Application.CLIENT_PUBLIC,
             authorization_grant_type=Application.GRANT_PASSWORD,
+            client_secret=CLEARTEXT_SECRET,
         )
 
     def tearDown(self):
@@ -51,7 +54,7 @@ class TestPasswordTokenView(BaseTest):
             "username": "test_user",
             "password": "123456",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
@@ -70,7 +73,7 @@ class TestPasswordTokenView(BaseTest):
             "username": "test_user",
             "password": "NOT_MY_PASS",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 400)
@@ -83,7 +86,7 @@ class TestPasswordProtectedResource(BaseTest):
             "username": "test_user",
             "password": "123456",
         }
-        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         content = json.loads(response.content.decode("utf-8"))
