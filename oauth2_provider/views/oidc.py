@@ -18,7 +18,8 @@ Application = get_application_model()
 
 class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
     """
-    View used to show oidc provider configuration information
+    View used to show oidc provider configuration information per
+    `OpenID Provider Metadata <https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata>`_
     """
 
     def get(self, request, *args, **kwargs):
@@ -49,6 +50,9 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
         validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
         validator = validator_class()
         oidc_claims = list(set(validator.get_discovery_claims(request)))
+        scopes_class = oauth2_settings.SCOPES_BACKEND_CLASS
+        scopes = scopes_class()
+        scopes_supported = [scope for scope in scopes.get_available_scopes()]
 
         data = {
             "issuer": issuer_url,
@@ -56,6 +60,7 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
             "token_endpoint": token_endpoint,
             "userinfo_endpoint": userinfo_endpoint,
             "jwks_uri": jwks_uri,
+            "scopes_supported": scopes_supported,
             "response_types_supported": oauth2_settings.OIDC_RESPONSE_TYPES_SUPPORTED,
             "subject_types_supported": oauth2_settings.OIDC_SUBJECT_TYPES_SUPPORTED,
             "id_token_signing_alg_values_supported": signing_algorithms,

@@ -17,6 +17,7 @@ class TestConnectDiscoveryInfoView(TestCase):
             "token_endpoint": "http://localhost/o/token/",
             "userinfo_endpoint": "http://localhost/o/userinfo/",
             "jwks_uri": "http://localhost/o/.well-known/jwks.json",
+            "scopes_supported": ["read", "write", "openid"],
             "response_types_supported": [
                 "code",
                 "token",
@@ -44,6 +45,7 @@ class TestConnectDiscoveryInfoView(TestCase):
             "token_endpoint": "http://testserver/o/token/",
             "userinfo_endpoint": "http://testserver/o/userinfo/",
             "jwks_uri": "http://testserver/o/.well-known/jwks.json",
+            "scopes_supported": ["read", "write", "openid"],
             "response_types_supported": [
                 "code",
                 "token",
