@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.0] unreleased
 
 ### Added
-* #1106 Add "scopes_supported" to the [ConnectDiscoveryInfoView](https://django-oauth-toolkit.readthedocs.io/en/latest/oidc.html#connectdiscoveryinfoview).
+* #1106 OIDC: Add "scopes_supported" to the [ConnectDiscoveryInfoView](https://django-oauth-toolkit.readthedocs.io/en/latest/oidc.html#connectdiscoveryinfoview).
   This completes the view to provide all the REQUIRED and RECOMMENDED [OpenID Provider Metadata](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata).
 
 ### Changed
@@ -28,7 +28,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   cleartext `application.client_secret` values to be hashed with Django's default password hashing algorithm
   and can not be reversed. When adding or modifying an Application in the Admin console, you must copy the
   auto-generated or manually-entered `client_secret` before hitting Save.
+* #1108 OIDC: (**Breaking**) Add default configurable OIDC standard scopes that determine which claims are returned.
+  If you've [customized OIDC responses](https://django-oauth-toolkit.readthedocs.io/en/latest/oidc.html#customizing-the-oidc-responses)
+  and want to retain the pre-2.x behavior, set `oidc_claim_scope = None` in your subclass of `OAuth2Validator`.
+* #1108 OIDC: Make the `access_token` available to `get_oidc_claims` when called from `get_userinfo_claims`.
 
+### Fixed
+* #1108 OIDC: Fix `validate_bearer_token()` to properly set `request.scopes` to the list of granted scopes.
 
 ## [1.7.0] 2022-01-23
 
