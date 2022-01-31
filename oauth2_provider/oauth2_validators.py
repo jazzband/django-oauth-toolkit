@@ -87,7 +87,7 @@ class OAuth2Validator(RequestValidator):
         "locale": "profile",
         "updated_at": "profile",
         "email": "email",
-        "email_versified": "email",
+        "email_verified": "email",
         "address": "address",
         "phone_number": "phone",
         "phone_number_verified": "phone",
