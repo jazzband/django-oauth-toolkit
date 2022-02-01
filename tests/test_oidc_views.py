@@ -160,6 +160,8 @@ def claim_user_email(request):
 @pytest.mark.django_db
 def test_userinfo_endpoint_custom_claims_callable(oidc_tokens, client, oauth2_settings):
     class CustomValidator(OAuth2Validator):
+        oidc_claim_scope = None
+
         def get_additional_claims(self):
             return {
                 "username": claim_user_email,
@@ -184,8 +186,37 @@ def test_userinfo_endpoint_custom_claims_callable(oidc_tokens, client, oauth2_se
 
 
 @pytest.mark.django_db
+def test_userinfo_endpoint_custom_claims_email_scope_callable(
+    oidc_email_scope_tokens, client, oauth2_settings
+):
+    class CustomValidator(OAuth2Validator):
+        def get_additional_claims(self):
+            return {
+                "username": claim_user_email,
+                "email": claim_user_email,
+            }
+
+    oidc_email_scope_tokens.oauth2_settings.OAUTH2_VALIDATOR_CLASS = CustomValidator
+    auth_header = "Bearer %s" % oidc_email_scope_tokens.access_token
+    rsp = client.get(
+        reverse("oauth2_provider:user-info"),
+        HTTP_AUTHORIZATION=auth_header,
+    )
+    data = rsp.json()
+    assert "sub" in data
+    assert data["sub"] == str(oidc_email_scope_tokens.user.pk)
+
+    assert "username" not in data
+
+    assert "email" in data
+    assert data["email"] == EXAMPLE_EMAIL
+
+
+@pytest.mark.django_db
 def test_userinfo_endpoint_custom_claims_plain(oidc_tokens, client, oauth2_settings):
     class CustomValidator(OAuth2Validator):
+        oidc_claim_scope = None
+
         def get_additional_claims(self, request):
             return {
                 "username": EXAMPLE_EMAIL,
@@ -204,6 +235,31 @@ def test_userinfo_endpoint_custom_claims_plain(oidc_tokens, client, oauth2_setti
 
     assert "username" in data
     assert data["username"] == EXAMPLE_EMAIL
+
+    assert "email" in data
+    assert data["email"] == EXAMPLE_EMAIL
+
+
+@pytest.mark.django_db
+def test_userinfo_endpoint_custom_claims_email_scopeplain(oidc_email_scope_tokens, client, oauth2_settings):
+    class CustomValidator(OAuth2Validator):
+        def get_additional_claims(self, request):
+            return {
+                "username": EXAMPLE_EMAIL,
+                "email": EXAMPLE_EMAIL,
+            }
+
+    oidc_email_scope_tokens.oauth2_settings.OAUTH2_VALIDATOR_CLASS = CustomValidator
+    auth_header = "Bearer %s" % oidc_email_scope_tokens.access_token
+    rsp = client.get(
+        reverse("oauth2_provider:user-info"),
+        HTTP_AUTHORIZATION=auth_header,
+    )
+    data = rsp.json()
+    assert "sub" in data
+    assert data["sub"] == str(oidc_email_scope_tokens.user.pk)
+
+    assert "username" not in data
 
     assert "email" in data
     assert data["email"] == EXAMPLE_EMAIL

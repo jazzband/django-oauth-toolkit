@@ -65,6 +65,34 @@ UserModel = get_user_model()
 
 
 class OAuth2Validator(RequestValidator):
+    # Return the given claim only if the given scope is present.
+    # Extended as needed for non-standard OIDC claims/scopes.
+    # Override by setting to None to ignore scopes.
+    # see https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims
+    # For example, for the "nickname" claim, you need the "profile" scope.
+    oidc_claim_scope = {
+        "sub": "openid",
+        "name": "profile",
+        "family_name": "profile",
+        "given_name": "profile",
+        "middle_name": "profile",
+        "nickname": "profile",
+        "preferred_username": "profile",
+        "profile": "profile",
+        "picture": "profile",
+        "website": "profile",
+        "gender": "profile",
+        "birthdate": "profile",
+        "zoneinfo": "profile",
+        "locale": "profile",
+        "updated_at": "profile",
+        "email": "email",
+        "email_verified": "email",
+        "address": "address",
+        "phone_number": "phone",
+        "phone_number_verified": "phone",
+    }
+
     def _extract_basic_auth(self, request):
         """
         Return authentication string if request contains basic auth credentials,
@@ -397,7 +425,7 @@ class OAuth2Validator(RequestValidator):
         if access_token and access_token.is_valid(scopes):
             request.client = access_token.application
             request.user = access_token.user
-            request.scopes = scopes
+            request.scopes = list(access_token.scopes)
 
             # this is needed by django rest framework
             request.access_token = access_token
@@ -759,8 +787,11 @@ class OAuth2Validator(RequestValidator):
         data = self.get_claim_dict(request)
         claims = {}
 
+        # TODO if request.claims then return only the claims requested, but limited by granted scopes.
+
         for k, v in data.items():
-            claims[k] = v(request) if callable(v) else v
+            if not self.oidc_claim_scope or self.oidc_claim_scope.get(k) in request.scopes:
+                claims[k] = v(request) if callable(v) else v
         return claims
 
     def get_id_token_dictionary(self, token, token_handler, request):
@@ -911,7 +942,7 @@ class OAuth2Validator(RequestValidator):
         current user's claims.
 
         """
-        return self.get_oidc_claims(None, None, request)
+        return self.get_oidc_claims(request.access_token, None, request)
 
     def get_additional_claims(self, request):
         return {}
