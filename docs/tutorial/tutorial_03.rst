@@ -78,3 +78,29 @@ Now supposing your access token value is `123456` you can try to access your aut
 ::
 
     curl -H "Authorization: Bearer 123456" -X GET http://localhost:8000/secret
+
+Working with Rest_framework generic class based views
+-----------------------------------------------------
+
+If you have completed the `Django REST framework tutorial
+<https://www.django-rest-framework.org/tutorial/3-class-based-views/#using-generic-class-based-views>`_,
+you will be familiar with the 'Snippet' example, in particular the SnippetList and SnippetDetail classes.
+
+It would be really nice to reuse those views, but also support token handling. Instead of reworking
+those classes to be ProtectedResourceView based, the solution is much simpler than that.
+
+Assuming you have already modified the settings as was already shown.
+
+The key is setting a class variable to override the default *permissions_classes* with something that will use our :term:`Access Token` properly.
+
+.. code-block:: python
+
+    from django.contrib.auth.decorators import login_required
+
+    class SnippetList(generics.ListCreateAPIView):
+        ...
+        permission_classes = [TokenHasReadWriteScope]
+
+    class SnippetDetail(generics.ListCreateAPIView):
+        ...
+        permission_classes = [TokenHasReadWriteScope]
