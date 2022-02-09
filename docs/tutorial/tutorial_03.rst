@@ -86,16 +86,15 @@ If you have completed the `Django REST framework tutorial
 <https://www.django-rest-framework.org/tutorial/3-class-based-views/#using-generic-class-based-views>`_,
 you will be familiar with the 'Snippet' example, in particular the SnippetList and SnippetDetail classes.
 
-It would be really nice to reuse those views, but also support token handling. Instead of reworking
+It would be nice to reuse those views **and** support token handling. Instead of reworking
 those classes to be ProtectedResourceView based, the solution is much simpler than that.
 
-Assuming you have already modified the settings as was already shown.
-
-The key is setting a class variable to override the default *permissions_classes* with something that will use our :term:`Access Token` properly.
+Assume you have already modified the settings as was already shown.
+The key is setting a class attribute to override the default *permissions_classes* with something that will use our :term:`Access Token` properly.
 
 .. code-block:: python
 
-    from django.contrib.auth.decorators import login_required
+    from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope
 
     class SnippetList(generics.ListCreateAPIView):
         ...
