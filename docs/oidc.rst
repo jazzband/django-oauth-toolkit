@@ -102,7 +102,7 @@ so there is no need to add a setting for the public key.
 
 
 Rotating the RSA private key
-~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Extra keys can be published in the jwks_uri with the ``OIDC_RSA_PRIVATE_KEYS_INACTIVE``
 setting. For example:::
 
@@ -143,7 +143,7 @@ scopes in your ``settings.py``::
         # ... any other settings you want
     }
 
-.. info::
+.. note::
     If you want to enable ``RS256`` at a later date, you can do so - just add
     the private key as described above.
 
@@ -250,54 +250,88 @@ our custom validator. It takes one of two forms:
 The first form gets passed a request object, and should return a dictionary
 mapping a claim name to claim data::
     class CustomOAuth2Validator(OAuth2Validator):
-        def get_additional_claims(self, request):
-            claims = {}
-            claims["email"] = request.user.get_user_email()
-            claims["username"] = request.user.get_full_name()
+	# Set `oidc_claim_scope = None` to ignore scopes that limit which claims to return,
+	# otherwise the OIDC standard scopes are used.
 
-            return claims
+        def get_additional_claims(self, request):
+	    return {
+		"given_name": request.user.first_name,
+		"family_name": request.user.last_name,
+		"name": ' '.join([request.user.first_name, request.user.last_name]),
+		"preferred_username": request.user.username,
+		"email": request.user.email,
+	    }
+
 
 The second form gets no request object, and should return a dictionary
 mapping a claim name to a callable, accepting a request and producing
 the claim data::
     class CustomOAuth2Validator(OAuth2Validator):
-        def get_additional_claims(self):
-            def get_user_email(request):
-                return request.user.get_user_email()
+	# Extend the standard scopes to add a new "permissions" scope
+	# which returns a "permissions" claim:
+	oidc_claim_scope = OAuth2Validator.oidc_claim_scope
+	oidc_claim_scope.update({"permissions": "permissions"})
 
-            claims = {}
-            claims["email"] = get_user_email
-            claims["username"] = lambda r: r.user.get_full_name()
+	def get_additional_claims(self):
+	    return {
+		"given_name": lambda request: request.user.first_name,
+		"family_name": lambda request: request.user.last_name,
+		"name": lambda request: ' '.join([request.user.first_name, request.user.last_name]),
+		"preferred_username": lambda request: request.user.username,
+		"email": lambda request: request.user.email,
+		"permissions": lambda request: list(request.user.get_group_permissions()),
+	    }
 
-            return claims
 
 Standard claim ``sub`` is included by default, to remove it override ``get_claim_dict``.
 
-In some cases, it might be desirable to not list all claims in discovery info. To customize
-which claims are advertised, you can override the ``get_discovery_claims`` method to return
-a list of claim names to advertise. If your ``get_additional_claims`` uses the first form
-and you still want to advertise claims, you can also override ``get_discovery_claims``.
+Supported claims discovery
+--------------------------
 
-In order to help lcients discover claims early, they can be advertised in the discovery
+In order to help clients discover claims early, they can be advertised in the discovery
 info, under the ``claims_supported`` key. In order for the discovery info view to automatically
 add all claims your validator returns, you need to use the second form (producing callables),
 because the discovery info views are requested with an unauthenticated request, so directly
 producing claim data would fail. If you use the first form, producing claim data directly,
 your claims will not be added to discovery info.
 
+In some cases, it might be desirable to not list all claims in discovery info. To customize
+which claims are advertised, you can override the ``get_discovery_claims`` method to return
+a list of claim names to advertise. If your ``get_additional_claims`` uses the first form
+and you still want to advertise claims, you can also override ``get_discovery_claims``.
+
+Using OIDC scopes to determine which claims are returned
+--------------------------------------------------------
+
+The ``oidc_claim_scope`` OAuth2Validator class attribute implements OIDC's
+`5.4 Requesting Claims using Scope Values`_ feature.
+For example, a ``given_name`` claim is only returned if the ``profile`` scope was granted.
+
+To change the list of claims and which scopes result in their being returned,
+override ``oidc_claim_scope`` with a dict keyed by claim with a value of scope.
+The following example adds instructions to return the ``foo`` claim when the ``bar`` scope is granted::
+    class CustomOAuth2Validator(OAuth2Validator):
+        oidc_claim_scope = OAuth2Validator.oidc_claim_scope
+        oidc_claim_scope.update({"foo": "bar"})
+
+Set ``oidc_claim_scope = None`` to return all claims irrespective of the granted scopes.
+
+You have to make sure you've added addtional claims via ``get_additional_claims``
+and defined the ``OAUTH2_PROVIDER["SCOPES"]`` in your settings in order for this functionality to work.
+
 .. note::
     This ``request`` object is not a ``django.http.Request`` object, but an
     ``oauthlib.common.Request`` object. This has a number of attributes that
     you can use to decide what claims to put in to the ID token:
 
-    * ``request.scopes`` - a list of the scopes requested by the client when
-      making an authorization request.
-    * ``request.claims`` - a dictionary of the requested claims, using the
-      `OIDC claims requesting system`_. These must be requested by the client
-      when making an authorization request.
-    * ``request.user`` - the django user object.
+    * ``request.scopes`` - the list of granted scopes.
+    * ``request.claims`` - the requested claims per OIDC's `5.5 Requesting Claims using the "claims" Request Parameter`_.
+      These must be requested by the client when making an authorization request.
+    * ``request.user`` - the `Django User`_ object.
 
-.. _OIDC claims requesting system: https://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
+.. _5.4 Requesting Claims using Scope Values: https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims
+.. _5.5 Requesting Claims using the "claims" Request Parameter: https://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
+.. _Django User: https://docs.djangoproject.com/en/stable/ref/contrib/auth/#user-model
 
 What claims you decide to put in to the token is up to you to determine based
 upon what the scopes and / or claims means to your provider.
@@ -307,11 +341,11 @@ Adding information to the ``UserInfo`` service
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The ``UserInfo`` service is supplied as part of the OIDC service, and is used
-to retrieve more information about the user than was supplied in the ID token
-when the user logged in to the OIDC client application. It is optional to use
-the service. The service is accessed by making a request to the
+to retrieve information about the user given their Access Token.
+It is optional to use the service. The service is accessed by making a request to the
 ``UserInfo`` endpoint, eg ``/o/userinfo/`` and supplying the access token
-retrieved at login as a ``Bearer`` token.
+retrieved at login as a ``Bearer`` token or as a form-encoded ``access_token`` body parameter
+for a POST request.
 
 Again, to modify the content delivered, we need to add a function to our
 custom validator. The default implementation adds the claims from the ID
