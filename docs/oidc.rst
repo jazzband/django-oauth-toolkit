@@ -80,7 +80,7 @@ Now we need to add this key to our settings and allow the ``openid`` scope to
 be used. Assuming we have set an environment variable called
 ``OIDC_RSA_PRIVATE_KEY``, we can make changes to our ``settings.py``::
 
-    import os.environ
+    import os
 
     OAUTH2_PROVIDER = {
         "OIDC_ENABLED": True,
