@@ -97,7 +97,7 @@ DEFAULTS = {
     "RESOURCE_SERVER_INTROSPECTION_CREDENTIALS": None,
     "RESOURCE_SERVER_TOKEN_CACHING_SECONDS": 36000,
     # Whether or not PKCE is required
-    "PKCE_REQUIRED": False,
+    "PKCE_REQUIRED": True,
     # Whether to re-create OAuthlibCore on every request.
     # Should only be required in testing.
     "ALWAYS_RELOAD_OAUTHLIB_CORE": False,

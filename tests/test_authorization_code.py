@@ -48,6 +48,7 @@ class BaseTest(TestCase):
         self.dev_user = UserModel.objects.create_user("dev_user", "dev@example.com", "123456")
 
         self.oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES = ["http", "custom-scheme"]
+        self.oauth2_settings.PKCE_REQUIRED = False
 
         self.application = Application.objects.create(
             name="Test Application",
@@ -73,6 +74,7 @@ class TestRegressionIssue315(BaseTest):
     """
 
     def test_request_is_not_overwritten(self):
+        self.oauth2_settings.PKCE_REQUIRED = False
         self.client.login(username="test_user", password="123456")
         response = self.client.get(
             reverse("oauth2_provider:authorize"),
@@ -94,6 +96,7 @@ class TestAuthorizationCodeView(BaseTest):
         """
         If application.skip_authorization = True, should skip the authorization page.
         """
+        self.oauth2_settings.PKCE_REQUIRED = False
         self.client.login(username="test_user", password="123456")
         self.application.skip_authorization = True
         self.application.save()
@@ -132,6 +135,7 @@ class TestAuthorizationCodeView(BaseTest):
         """
         Test response for a valid client_id with response_type: code
         """
+        self.oauth2_settings.PKCE_REQUIRED = False
         self.client.login(username="test_user", password="123456")
 
         query_data = {
@@ -644,7 +648,6 @@ class BaseAuthorizationCodeTokenView(BaseTest):
         """
         Helper method to retrieve a valid authorization code using pkce
         """
-        self.oauth2_settings.PKCE_REQUIRED = True
         authcode_data = {
             "client_id": self.application.client_id,
             "state": "random_state_string",
@@ -1115,7 +1118,6 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
         self.application.client_type = Application.CLIENT_PUBLIC
         self.application.save()
         code_verifier, code_challenge = self.generate_pkce_codes("S256")
-        self.oauth2_settings.PKCE_REQUIRED = True
 
         query_data = {
             "client_id": self.application.client_id,
@@ -1143,7 +1145,6 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
         self.application.client_type = Application.CLIENT_PUBLIC
         self.application.save()
         code_verifier, code_challenge = self.generate_pkce_codes("plain")
-        self.oauth2_settings.PKCE_REQUIRED = True
 
         query_data = {
             "client_id": self.application.client_id,
@@ -1171,7 +1172,6 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
         self.application.save()
         code_verifier, code_challenge = self.generate_pkce_codes("S256")
         authorization_code = self.get_pkce_auth(code_challenge, "S256")
-        self.oauth2_settings.PKCE_REQUIRED = True
 
         token_request_data = {
             "grant_type": "authorization_code",
@@ -1200,7 +1200,6 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
         self.application.save()
         code_verifier, code_challenge = self.generate_pkce_codes("plain")
         authorization_code = self.get_pkce_auth(code_challenge, "plain")
-        self.oauth2_settings.PKCE_REQUIRED = True
 
         token_request_data = {
             "grant_type": "authorization_code",
@@ -1228,7 +1227,6 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
         self.application.client_type = Application.CLIENT_PUBLIC
         self.application.save()
         code_verifier, code_challenge = self.generate_pkce_codes("invalid")
-        self.oauth2_settings.PKCE_REQUIRED = True
 
         query_data = {
             "client_id": self.application.client_id,
@@ -1250,13 +1248,13 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
         Request an access token using client_type: public
         and PKCE enabled but with the code_challenge missing
         """
+        self.oauth2_settings.PKCE_REQUIRED = True
         self.client.login(username="test_user", password="123456")
 
         self.application.client_type = Application.CLIENT_PUBLIC
         self.application.skip_authorization = True
         self.application.save()
         code_verifier, code_challenge = self.generate_pkce_codes("S256")
-        self.oauth2_settings.PKCE_REQUIRED = True
 
         query_data = {
             "client_id": self.application.client_id,
@@ -1282,7 +1280,6 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
         self.application.client_type = Application.CLIENT_PUBLIC
         self.application.save()
         code_verifier, code_challenge = self.generate_pkce_codes("S256")
-        self.oauth2_settings.PKCE_REQUIRED = True
 
         query_data = {
             "client_id": self.application.client_id,
@@ -1308,7 +1305,6 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
         self.application.save()
         code_verifier, code_challenge = self.generate_pkce_codes("S256")
         authorization_code = self.get_pkce_auth(code_challenge, "S256")
-        self.oauth2_settings.PKCE_REQUIRED = True
 
         token_request_data = {
             "grant_type": "authorization_code",
@@ -1332,7 +1328,6 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
         self.application.save()
         code_verifier, code_challenge = self.generate_pkce_codes("plain")
         authorization_code = self.get_pkce_auth(code_challenge, "plain")
-        self.oauth2_settings.PKCE_REQUIRED = True
 
         token_request_data = {
             "grant_type": "authorization_code",
@@ -1356,7 +1351,6 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
         self.application.save()
         code_verifier, code_challenge = self.generate_pkce_codes("S256")
         authorization_code = self.get_pkce_auth(code_challenge, "S256")
-        self.oauth2_settings.PKCE_REQUIRED = True
 
         token_request_data = {
             "grant_type": "authorization_code",
@@ -1379,7 +1373,6 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
         self.application.save()
         code_verifier, code_challenge = self.generate_pkce_codes("plain")
         authorization_code = self.get_pkce_auth(code_challenge, "plain")
-        self.oauth2_settings.PKCE_REQUIRED = True
 
         token_request_data = {
             "grant_type": "authorization_code",
