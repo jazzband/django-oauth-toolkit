@@ -41,6 +41,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   by [RFC 8252](https://datatracker.ietf.org/doc/html/rfc8252) "OAuth 2.0 for Native Apps" BCP. Google has
   [deprecated use of oob](https://developers.googleblog.com/2022/02/making-oauth-flows-safer.html?m=1#disallowed-oob) with
   a final end date of 2022-10-03. If you still rely on oob support in django-oauth-toolkit, do not upgrade to this release.
+* #1126 Reverts #1070 which incorrectly added Celery auto-discovery tasks.py (as described in #1123) and because it conflicts
+  with Huey's auto-discovery which also uses tasks.py as described in #1114. If you are using Celery or Huey, you'll need
+  to separately implement these tasks.
 
 ## [1.7.0] 2022-01-23
 
