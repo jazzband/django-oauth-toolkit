@@ -21,8 +21,3 @@ To prevent the CPU and RAM high peaks during deletion process use ``CLEAR_EXPIRE
 
 Note: Refresh tokens need to expire before AccessTokens can be removed from the
 database. Using ``cleartokens`` without ``REFRESH_TOKEN_EXPIRE_SECONDS`` has limited effect.
-
-The ``cleartokens`` action can also be scheduled as a `Celery periodic task`_
-by using the ``clear_tokens`` task (automatically registered when using Celery).
-
-.. _Celery periodic task: https://docs.celeryproject.org/en/stable/userguide/periodic-tasks.html
