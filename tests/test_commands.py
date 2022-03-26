@@ -11,6 +11,7 @@ from oauth2_provider.models import get_application_model
 
 from . import presets
 
+
 Application = get_application_model()
 
 
