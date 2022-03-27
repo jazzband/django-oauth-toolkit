@@ -1,7 +1,8 @@
 Management commands
 ===================
 
-Django OAuth Toolkit exposes some useful management commands that can be run via shell or by other means (eg: cron)
+Django OAuth Toolkit exposes some useful management commands that can be run via shell or by other means such as cron
+or :doc:`Celery <tutorial/tutorial_05>`.
 
 .. _cleartokens:
 .. _createapplication:
