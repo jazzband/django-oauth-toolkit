@@ -38,24 +38,28 @@ This command is used like this:
     python3 manage.py createapplication [arguments] <client_type> <authorization_grant_type>
 
 
-This command provides the following arguments:
+usage: manage.py createapplication [-h] [--client-id CLIENT_ID] [--user USER] [--redirect-uris REDIRECT_URIS]
+                                   [--client-secret CLIENT_SECRET] [--name NAME] [--skip-authorization] [--version] [-v {0,1,2,3}]
+                                   [--settings SETTINGS] [--pythonpath PYTHONPATH] [--traceback] [--no-color] [--force-color]
+                                   [--skip-checks]
+                                   client_type authorization_grant_type
 
-+----------------------------+------+-------------------------------------------------------------------------------------------------+
-|          Argument          | type |                                           Description                                           |
-+============================+======+=================================================================================================+
-| `--client_id`              | str  | The ID of the new application                                                                   |
-+----------------------------+------+-------------------------------------------------------------------------------------------------+
-| `--user`                   | int  | The ID of the user that the application belongs to                                              |
-+----------------------------+------+-------------------------------------------------------------------------------------------------+
-| `--redirect-uris`          | str  | The redirect URIs. This must be a space-separated string (e.g., `"https://uri1/ https://uri2"`) |
-+----------------------------+------+-------------------------------------------------------------------------------------------------+
-| `--name`                   | str  | The name of this application                                                                    |
-+----------------------------+------+-------------------------------------------------------------------------------------------------+
-| `--skip-authorization`     | flag | If set, completely bypass the authorization form, even on the first use of the application      |
-+----------------------------+------+-------------------------------------------------------------------------------------------------+
-| `--algorithm`              | str  | The OIDC token signing algorithm for this application (e.g., `RS256` or `HS256`)                |
-+----------------------------+------+-------------------------------------------------------------------------------------------------+
-| `client_type`              | str  | The client type, can be `confidential` or `public`                                              |
-+----------------------------+------+-------------------------------------------------------------------------------------------------+
-| `authorization_grant_type` | str  | The type of authorization grant to be used                                                      |
-+----------------------------+------+-------------------------------------------------------------------------------------------------+
+Shortcut to create a new application in a programmatic way
+
+positional arguments:
+  client_type           The client type, can be confidential or public
+  authorization_grant_type
+                        The type of authorization grant to be used
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --client-id CLIENT_ID
+                        The ID of the new application
+  --user USER           The user the application belongs to
+  --redirect-uris REDIRECT_URIS
+                        The redirect URIs, this must be a space separated string e.g 'URI1 URI2'
+  --client-secret CLIENT_SECRET
+                        The secret for this application
+  --name NAME           The name this application
+  --skip-authorization  The ID of the new application
+  ...
