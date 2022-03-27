@@ -34,7 +34,7 @@ The ``createapplication`` management command provides a shortcut to create a new
 This command is used like this:
 
 .. code-block:: sh
-    
+
     python3 manage.py createapplication [arguments] <client_type> <authorization_grant_type>
 
 
