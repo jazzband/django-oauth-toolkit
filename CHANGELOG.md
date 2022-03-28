@@ -32,9 +32,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   If you've [customized OIDC responses](https://django-oauth-toolkit.readthedocs.io/en/latest/oidc.html#customizing-the-oidc-responses)
   and want to retain the pre-2.x behavior, set `oidc_claim_scope = None` in your subclass of `OAuth2Validator`.
 * #1108 OIDC: Make the `access_token` available to `get_oidc_claims` when called from `get_userinfo_claims`.
+* #1132: Added `--algorithm` argument to `createapplication` management command
 
 ### Fixed
 * #1108 OIDC: Fix `validate_bearer_token()` to properly set `request.scopes` to the list of granted scopes.
+* #1132: Fixed help text for `--skip-authorization` argument of the `createapplication` management command
 
 ### Removed
 * #1124 (**Breaking**, **Security**) Removes support for insecure `urn:ietf:wg:oauth:2.0:oob` and `urn:ietf:wg:oauth:2.0:oob:auto` which are replaced

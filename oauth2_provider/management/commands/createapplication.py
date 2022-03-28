@@ -49,7 +49,12 @@ class Command(BaseCommand):
         parser.add_argument(
             "--skip-authorization",
             action="store_true",
-            help="The ID of the new application",
+            help="If set, completely bypass the authorization form, even on the first use of the application",
+        )
+        parser.add_argument(
+            "--algorithm",
+            type=str,
+            help="The OIDC token signing algorithm for this application (e.g., 'RS256' or 'HS256')",
         )
 
     def handle(self, *args, **options):
