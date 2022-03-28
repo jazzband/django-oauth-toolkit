@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 * #1106 OIDC: Add "scopes_supported" to the [ConnectDiscoveryInfoView](https://django-oauth-toolkit.readthedocs.io/en/latest/oidc.html#connectdiscoveryinfoview).
   This completes the view to provide all the REQUIRED and RECOMMENDED [OpenID Provider Metadata](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata).
+* #1128 Documentation: [Tutorial](https://django-oauth-toolkit.readthedocs.io/en/latest/tutorial/tutorial_05.html)
+  on using Celery to automate clearing expired tokens.
 
 ### Changed
 * #1093 (**Breaking**) Changed to implement [hashed](https://docs.djangoproject.com/en/stable/topics/auth/passwords/)
