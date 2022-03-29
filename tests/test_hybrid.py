@@ -52,7 +52,7 @@ class BaseTest(TestCase):
         self.factory = RequestFactory()
         self.hy_test_user = UserModel.objects.create_user("hy_test_user", "test_hy@example.com", "123456")
         self.hy_dev_user = UserModel.objects.create_user("hy_dev_user", "dev_hy@example.com", "123456")
-
+        self.oauth2_settings.PKCE_REQUIRED = False
         self.oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES = ["http", "custom-scheme"]
 
         self.application = Application(

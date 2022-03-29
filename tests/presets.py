@@ -19,6 +19,7 @@ OIDC_SETTINGS_RW = {
         "openid": "OpenID connect",
     },
     "DEFAULT_SCOPES": ["read", "write"],
+    "PKCE_REQUIRED": False,
 }
 OIDC_SETTINGS_RO = deepcopy(OIDC_SETTINGS_RW)
 OIDC_SETTINGS_RO["DEFAULT_SCOPES"] = ["read"]

@@ -83,6 +83,7 @@ class TestScopesSave(BaseTest):
         """
         Test scopes are properly saved in grant
         """
+        self.oauth2_settings.PKCE_REQUIRED = False
         self.client.login(username="test_user", password="123456")
 
         # retrieve a valid authorization code
@@ -105,6 +106,7 @@ class TestScopesSave(BaseTest):
         """
         Test scopes are properly saved in access token
         """
+        self.oauth2_settings.PKCE_REQUIRED = False
         self.client.login(username="test_user", password="123456")
 
         # retrieve a valid authorization code
@@ -141,6 +143,7 @@ class TestScopesProtection(BaseTest):
         """
         Test access to a scope protected resource with correct scopes provided
         """
+        self.oauth2_settings.PKCE_REQUIRED = False
         self.client.login(username="test_user", password="123456")
 
         # retrieve a valid authorization code
@@ -183,6 +186,7 @@ class TestScopesProtection(BaseTest):
         """
         Test access to a scope protected resource with wrong scopes provided
         """
+        self.oauth2_settings.PKCE_REQUIRED = False
         self.client.login(username="test_user", password="123456")
 
         # retrieve a valid authorization code
@@ -225,6 +229,7 @@ class TestScopesProtection(BaseTest):
         """
         Test access to a multi-scope protected resource with wrong scopes provided
         """
+        self.oauth2_settings.PKCE_REQUIRED = False
         self.client.login(username="test_user", password="123456")
 
         # retrieve a valid authorization code
@@ -267,6 +272,7 @@ class TestScopesProtection(BaseTest):
         """
         Test access to a multi-scope protected resource with correct scopes provided
         """
+        self.oauth2_settings.PKCE_REQUIRED = False
         self.client.login(username="test_user", password="123456")
 
         # retrieve a valid authorization code
@@ -308,6 +314,7 @@ class TestScopesProtection(BaseTest):
 
 class TestReadWriteScope(BaseTest):
     def get_access_token(self, scopes):
+        self.oauth2_settings.PKCE_REQUIRED = False
         self.client.login(username="test_user", password="123456")
 
         # retrieve a valid authorization code

@@ -253,9 +253,21 @@ will be used.
 
 PKCE_REQUIRED
 ~~~~~~~~~~~~~
-Default: ``False``
+Default: ``True``
 
-Whether or not PKCE is required. Can be either a bool or a callable that takes a client id and returns a bool.
+Can be either a bool or a callable that takes a client id and returns a bool.
+
+Whether or not `Proof Key for Code Exchange <https://oauth.net/2/pkce/>`_ is required.
+
+According to `OAuth 2.0 Security Best Current Practice <https://oauth.net/2/oauth-best-practice/>`_ related to the
+`Authorization Code Grant <https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-2.1.>`_
+
+- Public clients MUST use PKCE `RFC7636 <https://datatracker.ietf.org/doc/html/rfc7636>`_
+- For confidential clients, the use of PKCE `RFC7636 <https://datatracker.ietf.org/doc/html/rfc7636>`_ is RECOMMENDED.
+
+
+
+
 
 
 OIDC_RSA_PRIVATE_KEY
