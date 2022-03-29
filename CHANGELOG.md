@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 * #1129 (**Breaking**) Changed default value of PKCE_REQUIRED to True. This is a **breaking change**. Clients without
   PKCE enabled will fail to authenticate. This breaks with [section 5 of RFC7636](https://datatracker.ietf.org/doc/html/rfc7636)
-  in favor of the [OAuth2 Security Best Practices for Authorization Code Grants](`Authorization Code Grant <https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-2.1.>`_ )
+  in favor of the [OAuth2 Security Best Practices for Authorization Code Grants](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-2.1).
   If you want to retain the pre-2.x behavior, set `PKCE_REQUIRED = False ` in your settings.py
 
 * #1093 (**Breaking**) Changed to implement [hashed](https://docs.djangoproject.com/en/stable/topics/auth/passwords/)
