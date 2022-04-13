@@ -181,6 +181,8 @@ class JSONOAuthLibCore(OAuthLibCore):
         """
         try:
             body = json.loads(request.body.decode('utf-8')).items()
+        except AttributeError:
+            body = ""
         except ValueError:
             body = ""
 
