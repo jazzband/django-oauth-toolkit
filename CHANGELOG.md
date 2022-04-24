@@ -16,7 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [2.0.0] unreleased
+## [2.0.0] 2022-04-24
+
+This is a major release with **BREAKING** changes. Please make sure to review these changes before upgrading:
 
 ### Added
 * #1106 OIDC: Add "scopes_supported" to the [ConnectDiscoveryInfoView](https://django-oauth-toolkit.readthedocs.io/en/latest/oidc.html#connectdiscoveryinfoview).
@@ -28,8 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #1129 (**Breaking**) Changed default value of PKCE_REQUIRED to True. This is a **breaking change**. Clients without
   PKCE enabled will fail to authenticate. This breaks with [section 5 of RFC7636](https://datatracker.ietf.org/doc/html/rfc7636)
   in favor of the [OAuth2 Security Best Practices for Authorization Code Grants](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-2.1).
-  If you want to retain the pre-2.x behavior, set `PKCE_REQUIRED = False ` in your settings.py
-
+  If you want to retain the pre-2.x behavior, set `PKCE_REQUIRED = False` in your settings.py
 * #1093 (**Breaking**) Changed to implement [hashed](https://docs.djangoproject.com/en/stable/topics/auth/passwords/)
   client_secret values. This is a **breaking change** that will migrate all your existing
   cleartext `application.client_secret` values to be hashed with Django's default password hashing algorithm
@@ -43,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 * #1108 OIDC: Fix `validate_bearer_token()` to properly set `request.scopes` to the list of granted scopes.
-* #1132: Fixed help text for `--skip-authorization` argument of the `createapplication` management command
+* #1132: Fixed help text for `--skip-authorization` argument of the `createapplication` management command.
 
 ### Removed
 * #1124 (**Breaking**, **Security**) Removes support for insecure `urn:ietf:wg:oauth:2.0:oob` and `urn:ietf:wg:oauth:2.0:oob:auto` which are replaced
