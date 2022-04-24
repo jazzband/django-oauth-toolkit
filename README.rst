@@ -118,7 +118,7 @@ info and the open
 especially those labeled
 `help-wanted <https://github.com/jazzband/django-oauth-toolkit/labels/help-wanted>`__.
 
-Submit PRs and perform Reviews
+Submit PRs and Perform Reviews
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 PR submissions and reviews are always appreciated! Since we require an
@@ -130,7 +130,7 @@ Please don’t merge PRs
 
 Please be aware that we don’t want *every* Jazzband member to merge PRs
 but just a handful of project team members so that we can maintain a
-modicum of control over what goes into a release. Only `project
+modicum of control over what goes into a release of this security oriented code base. Only `project
 leads <https://jazzband.co/projects/django-oauth-toolkit>`__ are able to
 publish releases to Pypi and it becomes difficult when creating a new
 release for the leads to deal with “unexpected” merged PRs.
