@@ -83,9 +83,9 @@ We'll add ours now in ``tutorial/tasks.py``:
 
     @shared_task
     def clear_tokens():
-	from oauth2_provider.models import clear_expired
+        from oauth2_provider.models import clear_expired
 
-	clear_expired()
+        clear_expired()
 
 Finally, update ``tutorial/__init__.py`` to make sure Celery gets loaded when the app starts up:
 

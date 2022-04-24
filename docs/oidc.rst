@@ -249,38 +249,39 @@ our custom validator. It takes one of two forms:
 
 The first form gets passed a request object, and should return a dictionary
 mapping a claim name to claim data::
+
     class CustomOAuth2Validator(OAuth2Validator):
-	# Set `oidc_claim_scope = None` to ignore scopes that limit which claims to return,
-	# otherwise the OIDC standard scopes are used.
+        # Set `oidc_claim_scope = None` to ignore scopes that limit which claims to return,
+        # otherwise the OIDC standard scopes are used.
 
         def get_additional_claims(self, request):
-	    return {
-		"given_name": request.user.first_name,
-		"family_name": request.user.last_name,
-		"name": ' '.join([request.user.first_name, request.user.last_name]),
-		"preferred_username": request.user.username,
-		"email": request.user.email,
-	    }
+            return {
+                "given_name": request.user.first_name,
+                "family_name": request.user.last_name,
+                "name": ' '.join([request.user.first_name, request.user.last_name]),
+                "preferred_username": request.user.username,
+                "email": request.user.email,
+            }
 
 
 The second form gets no request object, and should return a dictionary
 mapping a claim name to a callable, accepting a request and producing
 the claim data::
     class CustomOAuth2Validator(OAuth2Validator):
-	# Extend the standard scopes to add a new "permissions" scope
-	# which returns a "permissions" claim:
-	oidc_claim_scope = OAuth2Validator.oidc_claim_scope
-	oidc_claim_scope.update({"permissions": "permissions"})
+        # Extend the standard scopes to add a new "permissions" scope
+        # which returns a "permissions" claim:
+        oidc_claim_scope = OAuth2Validator.oidc_claim_scope
+        oidc_claim_scope.update({"permissions": "permissions"})
 
-	def get_additional_claims(self):
-	    return {
-		"given_name": lambda request: request.user.first_name,
-		"family_name": lambda request: request.user.last_name,
-		"name": lambda request: ' '.join([request.user.first_name, request.user.last_name]),
-		"preferred_username": lambda request: request.user.username,
-		"email": lambda request: request.user.email,
-		"permissions": lambda request: list(request.user.get_group_permissions()),
-	    }
+        def get_additional_claims(self):
+            return {
+                "given_name": lambda request: request.user.first_name,
+                "family_name": lambda request: request.user.last_name,
+                "name": lambda request: ' '.join([request.user.first_name, request.user.last_name]),
+                "preferred_username": lambda request: request.user.username,
+                "email": lambda request: request.user.email,
+                "permissions": lambda request: list(request.user.get_group_permissions()),
+            }
 
 
 Standard claim ``sub`` is included by default, to remove it override ``get_claim_dict``.
