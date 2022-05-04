@@ -76,11 +76,7 @@ def _get_cors_allow_origin_header(request):
     """
     origin = request.META.get("HTTP_ORIGIN")
     if origin:
-        try:
-            app = Application.objects.filter(redirect_uris__contains=origin)[0]
-        except IndexError:
-            # No application for this origin found
-            pass
-        else:
+        app = Application.objects.filter(redirect_uris__contains=origin).first()
+        if app is not None:
             return app.get_cors_header(origin)
-    raise Application.NoSuitableOriginFoundError
+    raise AbstractApplication.NoSuitableOriginFoundError()
