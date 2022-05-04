@@ -6,7 +6,7 @@ This tutorial is based on the Django REST Framework example and shows you how to
 
 **NOTE**
 
-The following code has been tested with django 1.7.7 and Django REST Framework 3.1.1
+The following code has been tested with Django 2.0.3 and Django REST Framework 3.7.7
 
 Step 1: Minimal setup
 ---------------------
@@ -35,7 +35,7 @@ To do so add the following lines at the end of your `settings.py` module:
 
     REST_FRAMEWORK = {
         'DEFAULT_AUTHENTICATION_CLASSES': (
-            'oauth2_provider.ext.rest_framework.OAuth2Authentication',
+            'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
         )
     }
 
@@ -48,54 +48,52 @@ Here's our project's root `urls.py` module:
 
 .. code-block:: python
 
-    from django.conf.urls import url, patterns, include
+    from django.urls import path, include
     from django.contrib.auth.models import User, Group
     from django.contrib import admin
     admin.autodiscover()
 
-    from rest_framework import permissions, routers, serializers, viewsets
+    from rest_framework import generics, permissions, serializers
 
-    from oauth2_provider.ext.rest_framework import TokenHasReadWriteScope, TokenHasScope
-
+    from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope, TokenHasScope
 
     # first we define the serializers
     class UserSerializer(serializers.ModelSerializer):
         class Meta:
             model = User
-
+            fields = ('username', 'email', "first_name", "last_name")
 
     class GroupSerializer(serializers.ModelSerializer):
         class Meta:
             model = Group
+            fields = ("name", )
 
-
-    # ViewSets define the view behavior.
-    class UserViewSet(viewsets.ModelViewSet):
+    # Create the API views
+    class UserList(generics.ListCreateAPIView):
         permission_classes = [permissions.IsAuthenticated, TokenHasReadWriteScope]
         queryset = User.objects.all()
         serializer_class = UserSerializer
 
+    class UserDetails(generics.RetrieveAPIView):
+        permission_classes = [permissions.IsAuthenticated, TokenHasReadWriteScope]
+        queryset = User.objects.all()
+        serializer_class = UserSerializer
 
-    class GroupViewSet(viewsets.ModelViewSet):
+    class GroupList(generics.ListAPIView):
         permission_classes = [permissions.IsAuthenticated, TokenHasScope]
         required_scopes = ['groups']
         queryset = Group.objects.all()
         serializer_class = GroupSerializer
 
-
-    # Routers provide an easy way of automatically determining the URL conf
-    router = routers.DefaultRouter()
-    router.register(r'users', UserViewSet)
-    router.register(r'groups', GroupViewSet)
-
-
-    # Wire up our API using automatic URL routing.
-    # Additionally, we include login URLs for the browseable API.
-    urlpatterns = patterns('',
-        url(r'^', include(router.urls)),
-        url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
-        url(r'^admin/', include(admin.site.urls)),
-    )
+    # Setup the URLs and include login URLs for the browsable API.
+    urlpatterns = [
+        path('admin/', admin.site.urls),
+        path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+        path('users/', UserList.as_view()),
+        path('users/<pk>/', UserDetails.as_view()),
+        path('groups/', GroupList.as_view()),
+        # ...
+    ]
 
 Also add the following to your `settings.py` module:
 
@@ -190,6 +188,26 @@ Grab your access_token and start using your new OAuth2 API:
 
     # Insert a new user
     curl -H "Authorization: Bearer <your_access_token>" -X POST -d"username=foo&password=bar" http://localhost:8000/users/
+
+Some time has passed and your access token is about to expire, you can get renew the access token issued using the `refresh token`:
+
+::
+
+    curl -X POST -d "grant_type=refresh_token&refresh_token=<your_refresh_token>&client_id=<your_client_id>&client_secret=<your_client_secret>" http://localhost:8000/o/token/
+
+Your response should be similar to your first access_token request, containing a new access_token and refresh_token:
+
+.. code-block:: javascript
+
+    {
+        "access_token": "<your_new_access_token>",
+        "token_type": "Bearer",
+        "expires_in": 36000,
+        "refresh_token": "<your_new_refresh_token>",
+        "scope": "read write groups"
+    }
+
+
 
 Step 5: Testing Restricted Access
 ---------------------------------

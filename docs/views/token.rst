@@ -8,7 +8,7 @@ Every view provides access only to the tokens that have been granted to the user
 Granted Token views are listed at the url `authorized_tokens/`.
 
 
-For each granted token there is a delete view that allows you to delete such token. You can override default templates `authorized-tokens.html` for the list view and `authorized-token-delete.html` for the delete view; they are located inside `templates/oauth2_provider` folder. 
+For each granted token there is a delete view that allows you to delete such token. You can override default templates `authorized-tokens.html` for the list view and `authorized-token-delete.html` for the delete view; they are located inside `templates/oauth2_provider` folder.
 
 
 .. automodule:: oauth2_provider.views.token

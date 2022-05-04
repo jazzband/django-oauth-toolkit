@@ -1,7 +1,8 @@
 """
 Custom Sphinx documentation module to link to parts of the OAuth2 RFC.
 """
-from docutils import nodes, utils
+from docutils import nodes
+
 
 base_url = "http://tools.ietf.org/html/rfc6749"
 
@@ -33,5 +34,4 @@ def setup(app):
 
     :param app: Sphinx application context.
     """
-    app.add_role('rfc', rfclink)
-    return
+    app.add_role("rfc", rfclink)

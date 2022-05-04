@@ -31,18 +31,21 @@ Include the Django OAuth Toolkit urls in your `urls.py`, choosing the urlspace y
 
 .. code-block:: python
 
-    urlpatterns = patterns(
-        '',
-        url(r'^admin/', include(admin.site.urls)),
-        url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+    from django.urls import path, include
+
+    urlpatterns = [
+        path("admin", admin.site.urls),
+        path("o/", include('oauth2_provider.urls', namespace='oauth2_provider')),
         # ...
-    )
+    ]
 
 Include the CORS middleware in your `settings.py`:
 
+CorsMiddleware should be placed as high as possible, especially before any middleware that can generate responses such as Django's CommonMiddleware or Whitenoise's WhiteNoiseMiddleware. If it is not before, it will not be able to add the CORS headers to these responses.
+
 .. code-block:: python
 
-    MIDDLEWARE_CLASSES = (
+    MIDDLEWARE = (
         # ...
         'oauth2_provider.middleware.CorsMiddleware',
         # ...
@@ -59,7 +62,7 @@ for details on using login templates.
 
     <input type="hidden" name="next" value="{{ next }}" />
 
-As a final step, execute migrate command, start the internal server, and login with your credentials.
+As a final step, execute the migrate command, start the internal server, and login with your credentials.
 
 Create an OAuth2 Client Application
 -----------------------------------
@@ -69,12 +72,13 @@ the API, subject to approval by its users.
 
 Let's register your application.
 
-Point your browser to http://localhost:8000/o/applications/ and add an Application instance.
-`Client id` and `Client Secret` are automatically generated, you have to provide the rest of the informations:
+You need to be logged in before registration. So, go to http://localhost:8000/admin and log in. After that
+point your browser to http://localhost:8000/o/applications/ and add an Application instance.
+`Client id` and `Client Secret` are automatically generated; you have to provide the rest of the informations:
 
  * `User`: the owner of the Application (e.g. a developer, or the currently logged in user.)
 
- * `Redirect uris`: Applications must register at least one redirection endpoint prior to utilizing the
+ * `Redirect uris`: Applications must register at least one redirection endpoint before using the
    authorization endpoint. The :term:`Authorization Server` will deliver the access token to the client only if the client
    specifies one of the verified redirection uris. For this tutorial, paste verbatim the value
    `http://django-oauth-toolkit.herokuapp.com/consumer/exchange/`
@@ -109,9 +113,9 @@ Authorize the Application
 +++++++++++++++++++++++++
 When a user clicks the link, she is redirected to your (possibly local) :term:`Authorization Server`.
 If you're not logged in, you will be prompted for username and password. This is because the authorization
-page is login protected by django-oauth-toolkit. Login, then you should see the (not so cute) form users can use to give
+page is login protected by django-oauth-toolkit. Login, then you should see the (not so cute) form a user can use to give
 her authorization to the client application. Flag the *Allow* checkbox and click *Authorize*, you will be redirected
-again on to the consumer service.
+again to the consumer service.
 
 __ loginTemplate_
 
@@ -120,7 +124,7 @@ you probably need to `setup your login template correctly`__.
 
 Exchange the token
 ++++++++++++++++++
-At this point your autorization server redirected the user to a special page on the consumer passing in an
+At this point your authorization server redirected the user to a special page on the consumer passing in an
 :term:`Authorization Code`, a special token the consumer will use to obtain the final access token.
 This operation is usually done automatically by the client application during the request/response cycle, but we cannot
 make a POST request from Heroku to your localhost, so we proceed manually with this step. Fill the form with the
@@ -132,9 +136,9 @@ Refresh the token
 +++++++++++++++++
 The page showing the access token retrieved from the :term:`Authorization Server` also let you make a POST request to
 the server itself to swap the refresh token for another, brand new access token.
-Just fill in the missing form fields and click the Refresh button: if everything goes smooth you will see the access and
+Just fill in the missing form fields and click the Refresh button: if everything goes smoothly you will see the access and
 refresh token change their values, otherwise you will likely see an error message.
-When finished playing with your authorization server, take note of both the access and refresh tokens, we will use them
+When you have finished playing with your authorization server, take note of both the access and refresh tokens, we will use them
 for the next part of the tutorial.
 
 So let's make an API and protect it with your OAuth2 tokens in the :doc:`part 2 of the tutorial <tutorial_02>`.

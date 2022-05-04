@@ -1,6 +1,7 @@
 Advanced topics
 +++++++++++++++
 
+.. _extend_app_model:
 
 Extending the Application model
 ===============================
@@ -27,7 +28,7 @@ logo, acceptance of some user agreement and so on.
 Django OAuth Toolkit lets you extend the AbstractApplication model in a fashion like Django's
 custom user models.
 
-If you need, let's say, application logo and user agreement acceptance field, you can to this in
+If you need, let's say, application logo and user agreement acceptance field, you can do this in
 your Django app (provided that your app is in the list of the INSTALLED_APPS in your settings
 module)::
 
@@ -43,21 +44,47 @@ Write something like this in your settings module::
 
     OAUTH2_PROVIDER_APPLICATION_MODEL='your_app_name.MyApplication'
 
+Be aware that, when you intend to swap the application model, you should create and run the
+migration defining the swapped application model prior to setting OAUTH2_PROVIDER_APPLICATION_MODEL.
+You'll run into models.E022 in Core system checks if you don't get the order right.
+
+You can force your migration providing the custom model to run in the right order by
+adding::
+
+    run_before = [
+        ('oauth2_provider', '0001_initial'),
+    ]
+
+to the migration class.
+
 That's all, now Django OAuth Toolkit will use your model wherever an Application instance is needed.
 
     **Notice:** `OAUTH2_PROVIDER_APPLICATION_MODEL` is the only setting variable that is not namespaced, this
     is because of the way Django currently implements swappable models.
-    See issue #90 (https://github.com/evonove/django-oauth-toolkit/issues/90) for details
+    See issue #90 (https://github.com/jazzband/django-oauth-toolkit/issues/90) for details
 
+Multiple Grants
+~~~~~~~~~~~~~~~
+
+The default application model supports a single OAuth grant (e.g. authorization code, client credentials). If you need
+applications to support multiple grants, override the `allows_grant_type` method. For example, if you want applications
+to support the authorization code *and* client credentials grants, you might do the following::
+
+    from oauth2_provider.models import AbstractApplication
+
+    class MyApplication(AbstractApplication):
+        def allows_grant_type(self, *grant_types):
+            # Assume, for this example, that self.authorization_grant_type is set to self.GRANT_AUTHORIZATION_CODE
+            return bool( set([self.authorization_grant_type, self.GRANT_CLIENT_CREDENTIALS]) & grant_types )
 
 .. _skip-auth-form:
 
 Skip authorization form
 =======================
 
-Depending on the OAuth2 flow in use and the access token policy, users might be prompted  for the
-same authorization multiple times: sometimes this is acceptable or even desiderable but other it isn't.
-To control DOT behaviour you can use `approval_prompt` parameter when hitting the authorization endpoint.
+Depending on the OAuth2 flow in use and the access token policy, users might be prompted for the
+same authorization multiple times: sometimes this is acceptable or even desirable but other times it isn't.
+To control DOT behaviour you can use the `approval_prompt` parameter when hitting the authorization endpoint.
 Possible values are:
 
 * `force` - users are always prompted for authorization.

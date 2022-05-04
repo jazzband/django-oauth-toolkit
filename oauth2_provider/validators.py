@@ -1,65 +1,46 @@
-from __future__ import unicode_literals
-
 import re
+from urllib.parse import urlsplit
 
 from django.core.exceptions import ValidationError
-from django.utils.translation import ugettext_lazy as _
-from django.utils.encoding import force_text
-from django.utils.six.moves.urllib.parse import urlsplit, urlunsplit
-from django.core.validators import RegexValidator
-
-from .settings import oauth2_settings
+from django.core.validators import URLValidator
+from django.utils.encoding import force_str
 
 
-class URIValidator(RegexValidator):
-    regex = re.compile(
-        r'^(?:[a-z][a-z0-9\.\-\+]*)://'  # scheme...
-        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
-        r'(?!-)[A-Z\d-]{1,63}(?<!-)|'  # also cover non-dotted domain
-        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|'  # ...or ipv4
-        r'\[?[A-F0-9]*:[A-F0-9:]+\]?)'  # ...or ipv6
-        r'(?::\d+)?'  # optional port
-        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
-    message = _('Enter a valid URL.')
+class URIValidator(URLValidator):
+    scheme_re = r"^(?:[a-z][a-z0-9\.\-\+]*)://"
 
-    def __call__(self, value):
-        try:
-            super(URIValidator, self).__call__(value)
-        except ValidationError as e:
-            # Trivial case failed. Try for possible IDN domain
-            if value:
-                value = force_text(value)
-                scheme, netloc, path, query, fragment = urlsplit(value)
-                try:
-                    netloc = netloc.encode('idna').decode('ascii')  # IDN -> ACE
-                except UnicodeError:  # invalid domain part
-                    raise e
-                url = urlunsplit((scheme, netloc, path, query, fragment))
-                super(URIValidator, self).__call__(url)
-            else:
-                raise
-        else:
-            url = value
+    dotless_domain_re = r"(?!-)[A-Z\d-]{1,63}(?<!-)"
+    host_re = "|".join(
+        (r"(?:" + URLValidator.host_re, URLValidator.ipv4_re, URLValidator.ipv6_re, dotless_domain_re + ")")
+    )
+    port_re = r"(?::\d{2,5})?"
+    path_re = r"(?:[/?#][^\s]*)?"
+    regex = re.compile(scheme_re + host_re + port_re + path_re, re.IGNORECASE)
 
 
 class RedirectURIValidator(URIValidator):
-    def __init__(self, allowed_schemes):
-        self.allowed_schemes = allowed_schemes
+    def __init__(self, allowed_schemes, allow_fragments=False):
+        super().__init__(schemes=allowed_schemes)
+        self.allow_fragments = allow_fragments
 
     def __call__(self, value):
-        super(RedirectURIValidator, self).__call__(value)
-        value = force_text(value)
-        if len(value.split('#')) > 1:
-            raise ValidationError('Redirect URIs must not contain fragments')
+        super().__call__(value)
+        value = force_str(value)
         scheme, netloc, path, query, fragment = urlsplit(value)
-        if scheme.lower() not in self.allowed_schemes:
-            raise ValidationError('Redirect URI scheme is not allowed.')
+        if fragment and not self.allow_fragments:
+            raise ValidationError("Redirect URIs must not contain fragments")
 
 
-def validate_uris(value):
+##
+# WildcardSet is a special set that contains everything.
+# This is required in order to move validation of the scheme from
+# URLValidator (the base class of URIValidator), to OAuth2Application.clean().
+
+
+class WildcardSet(set):
     """
-    This validator ensures that `value` contains valid blank-separated URIs"
+    A set that always returns True on `in`.
     """
-    v = RedirectURIValidator(oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES)
-    for uri in value.split():
-        v(uri)
+
+    def __contains__(self, item):
+        return True

@@ -15,21 +15,21 @@ which takes care of token verification. In your settings.py:
 
 .. code-block:: python
 
-    AUTHENTICATION_BACKENDS = (
+    AUTHENTICATION_BACKENDS = [
         'oauth2_provider.backends.OAuth2Backend',
         # Uncomment following if you want to access the admin
-        #'django.contrib.auth.backends.ModelBackend'
+        #'django.contrib.auth.backends.ModelBackend',
         '...',
-    )
+    ]
 
-    MIDDLEWARE_CLASSES = (
+    MIDDLEWARE = [
         '...',
         # If you use SessionAuthenticationMiddleware, be sure it appears before OAuth2TokenMiddleware.
         # SessionAuthenticationMiddleware is NOT required for using django-oauth-toolkit.
         'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
         'oauth2_provider.middleware.OAuth2TokenMiddleware',
         '...',
-    )
+    ]
 
 You will likely use the `django.contrib.auth.backends.ModelBackend` along with the OAuth2 backend
 (or you might not be able to log in into the admin), only pay attention to the order in which
@@ -65,11 +65,10 @@ To check everything works properly, mount the view above to some url:
 
 .. code-block:: python
 
-    urlpatterns = patterns(
-        '',
-        url(r'^secret$', 'my.views.secret_page', name='secret'),
+    urlpatterns = [
+        path('secret', 'my.views.secret_page', name='secret'),
         '...',
-    )
+    ]
 
 You should have an :term:`Application` registered at this point, if you don't, follow the steps in
 the previous tutorials to create one. Obtain an :term:`Access Token`, either following the OAuth2
@@ -79,3 +78,35 @@ Now supposing your access token value is `123456` you can try to access your aut
 ::
 
     curl -H "Authorization: Bearer 123456" -X GET http://localhost:8000/secret
+
+Working with Rest_framework generic class based views
+-----------------------------------------------------
+
+If you have completed the `Django REST framework tutorial
+<https://www.django-rest-framework.org/tutorial/3-class-based-views/#using-generic-class-based-views>`_,
+you will be familiar with the 'Snippet' example, in particular the SnippetList and SnippetDetail classes.
+
+It would be nice to reuse those views **and** support token handling. Instead of reworking
+those classes to be ProtectedResourceView based, the solution is much simpler than that.
+
+Assume you have already modified the settings as was already shown.
+The key is setting a class attribute to override the default *permissions_classes* with something that will use our :term:`Access Token` properly.
+
+.. code-block:: python
+
+    from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope
+
+    class SnippetList(generics.ListCreateAPIView):
+        ...
+        permission_classes = [TokenHasReadWriteScope]
+
+    class SnippetDetail(generics.ListCreateAPIView):
+        ...
+        permission_classes = [TokenHasReadWriteScope]
+
+Note that this example overrides the Django default permission class setting. There are several other
+ways this can be solved. Overriding the class function *get_permission_classes* is another way
+to solve the problem.
+
+A detailed dive into the `Dango REST framework permissions is here. <https://www.django-rest-framework.org/api-guide/permissions/>`_
+

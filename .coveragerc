@@ -1,3 +1,0 @@
-[run]
-source = oauth2_provider
-omit = */migrations/*
