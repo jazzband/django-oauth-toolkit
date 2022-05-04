@@ -250,9 +250,6 @@ class ApplicationManager(models.Manager):
     def get_by_natural_key(self, client_id):
         return self.get(client_id=client_id)
 
-    class NoSuitableOriginFoundError(Exception):
-        pass
-
 
 class Application(AbstractApplication):
     objects = ApplicationManager()
