@@ -2,7 +2,7 @@ from django import http
 from django.contrib.auth import authenticate
 from django.utils.cache import patch_vary_headers
 
-from .models import Application
+from .models import AbstractApplication, Application
 
 
 class OAuth2TokenMiddleware:
@@ -45,18 +45,21 @@ HEADERS = ("x-requested-with", "content-type", "accept", "origin", "authorizatio
 METHODS = ("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
 
 
-class CorsMiddleware(object):
-    def process_request(self, request):
+class CorsMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
         """If this is a preflight-request, we must always return 200"""
         if request.method == "OPTIONS" and "HTTP_ACCESS_CONTROL_REQUEST_METHOD" in request.META:
-            return http.HttpResponse()
-        return None
+            response = http.HttpResponse()
+        else:
+            response = self.get_response(request)
 
-    def process_response(self, request, response):
         """Add cors-headers to request if they can be derived correctly"""
         try:
             cors_allow_origin = _get_cors_allow_origin_header(request)
-        except Application.NoSuitableOriginFoundError:
+        except AbstractApplication.NoSuitableOriginFoundError:
             pass
         else:
             response["Access-Control-Allow-Origin"] = cors_allow_origin

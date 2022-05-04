@@ -193,6 +193,16 @@ class AbstractApplication(models.Model):
             ):
                 raise ValidationError(_("You cannot use HS256 with public grants or clients"))
 
+    def get_absolute_url(self):
+        return reverse("oauth2_provider:detail", args=[str(self.id)])
+
+    def get_allowed_schemes(self):
+        """
+        Returns the list of redirect schemes allowed by the Application.
+        By default, returns `ALLOWED_REDIRECT_URI_SCHEMES`.
+        """
+        return oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES
+
     def get_cors_header(self, origin):
         """Return a proper cors-header for this origin, in the context of this
         application.
@@ -210,16 +220,6 @@ class AbstractApplication(models.Model):
             ):
                 return origin
         raise Application.NoSuitableOriginFoundError
-
-    def get_absolute_url(self):
-        return reverse("oauth2_provider:detail", args=[str(self.id)])
-
-    def get_allowed_schemes(self):
-        """
-        Returns the list of redirect schemes allowed by the Application.
-        By default, returns `ALLOWED_REDIRECT_URI_SCHEMES`.
-        """
-        return oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES
 
     def allows_grant_type(self, *grant_types):
         return self.authorization_grant_type in grant_types
@@ -241,6 +241,9 @@ class AbstractApplication(models.Model):
         elif self.algorithm == AbstractApplication.HS256_ALGORITHM:
             return jwk.JWK(kty="oct", k=base64url_encode(self.client_secret))
         raise ImproperlyConfigured("This application does not support signed tokens")
+
+    class NoSuitableOriginFoundError(Exception):
+        pass
 
 
 class ApplicationManager(models.Manager):

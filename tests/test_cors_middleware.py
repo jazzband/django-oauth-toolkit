@@ -1,11 +1,8 @@
 from datetime import timedelta
 
-from django.conf.urls import patterns, url
 from django.contrib.auth import get_user_model
-from django.http import HttpResponse
 from django.test import Client, TestCase, override_settings
 from django.utils import timezone
-from django.views.generic import View
 
 from oauth2_provider.models import AccessToken, get_application_model
 
@@ -14,19 +11,7 @@ Application = get_application_model()
 UserModel = get_user_model()
 
 
-class MockView(View):
-    def post(self, request):
-        return HttpResponse()
-
-
-urlpatterns = patterns(
-    "",
-    url(r"^cors-test/$", MockView.as_view()),
-)
-
-
 @override_settings(
-    ROOT_URLCONF="oauth2_provider.tests.test_cors_middleware",
     AUTHENTICATION_BACKENDS=("oauth2_provider.backends.OAuth2Backend",),
     MIDDLEWARE_CLASSES=(
         "oauth2_provider.middleware.OAuth2TokenMiddleware",
