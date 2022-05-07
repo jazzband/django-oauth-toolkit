@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Added
+* #1150 Automatic CORS Headers based on Application redirect_url.
+
+
 ## [2.0.0] 2022-04-24
 
 This is a major release with **BREAKING** changes. Please make sure to review these changes before upgrading:
