@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 * #1150 Automatic CORS Headers based on Application redirect_url.
 
+### Changed
+* #1152 `createapplication` management command enhanced to display an auto-generated secret before it gets hashed.
+
 
 ## [2.0.0] 2022-04-24
 
