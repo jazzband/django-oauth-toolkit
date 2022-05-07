@@ -27,7 +27,7 @@ class CreateApplicationTest(TestCase):
             stdout=output,
         )
         self.assertEqual(Application.objects.count(), 1)
-        self.assertIn("New application created successfully", output.getvalue())
+        self.assertIn("created successfully", output.getvalue())
 
     def test_missing_required_args(self):
         self.assertEqual(Application.objects.count(), 0)
