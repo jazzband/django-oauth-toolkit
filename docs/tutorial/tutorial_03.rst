@@ -108,5 +108,5 @@ Note that this example overrides the Django default permission class setting. Th
 ways this can be solved. Overriding the class function *get_permission_classes* is another way
 to solve the problem.
 
-A detailed dive into the `Dango REST framework permissions is here. <https://www.django-rest-framework.org/api-guide/permissions/>`_
+A detailed dive into the `Django REST framework permissions is here. <https://www.django-rest-framework.org/api-guide/permissions/>`_
 
