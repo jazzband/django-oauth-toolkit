@@ -359,6 +359,15 @@ token, so you will probably want to re-use that::
             claims["color_scheme"] = get_color_scheme(request.user)
             return claims
 
+Customizing the login flow
+==========================
+
+Clients can request that the user logs in each time a request to the
+``/authorize`` endpoint is made during the OIDC Authorization Code Flow by
+adding the ``prompt=login`` query parameter and value. Only ``login`` is
+currently supported. See
+OIDC's `3.1.2.1 Authentication Request <https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest>`_
+for details.
 
 OIDC Views
 ==========
