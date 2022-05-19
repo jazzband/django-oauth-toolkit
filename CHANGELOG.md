@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 * #1152 `createapplication` management command enhanced to display an auto-generated secret before it gets hashed.
+* #1163 Adds French translations.
 
 ## [2.0.0] 2022-04-24
 
