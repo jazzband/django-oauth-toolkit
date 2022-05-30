@@ -68,12 +68,12 @@ msgstr "Encriptadas al guardar. Copiar ahora si este es un nuevo secreto."
 #: oauth2_provider/models.py:175
 #, python-brace-format
 msgid "Unauthorized redirect scheme: {scheme}"
-msgstr "Esquema de redirección no autorizado"
+msgstr "Esquema de redirección no autorizado: {scheme}"
 
 #: oauth2_provider/models.py:179
 #, python-brace-format
 msgid "redirect_uris cannot be empty with grant_type {grant_type}"
-msgstr "redirected_uris no pueden estar vacías para el tipo de autorización {grant_type}"
+msgstr "redirect_uris no pueden estar vacías para el tipo de autorización {grant_type}"
 
 #: oauth2_provider/models.py:185
 msgid "You must set OIDC_RSA_PRIVATE_KEY to use RSA algorithm"
