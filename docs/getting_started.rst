@@ -344,7 +344,7 @@ The Client Credential grant is suitable for machine-to-machine authentication. Y
 
 Point your browser to http://127.0.0.1:8000/o/applications/register/ lets create an application.
 
-Fill the form as show in the screenshot below, and before saving take note of ``Client id`` and ``Client secret`` we will use it in a minute.
+Fill the form as show in the screenshot below, and before saving, carefully take note of ``Client id`` and ``Client secret``. Since version 2 the ``Client secret`` will be encrypted. We will use it in a minute.
 
 .. image:: _images/application-register-client-credential.png
    :alt: Client credential application registration
