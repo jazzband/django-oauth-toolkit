@@ -5,6 +5,7 @@ import json
 from urllib.parse import parse_qs, urlparse
 
 import pytest
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
@@ -611,6 +612,40 @@ class TestOIDCAuthorizationCodeView(BaseTest):
         self.assertIn("http://example.org?", response["Location"])
         self.assertIn("state=random_state_string", response["Location"])
         self.assertIn("code=", response["Location"])
+
+    def test_prompt_login(self):
+        """
+        Test response for redirect when supplied with prompt: login
+        """
+        self.oauth2_settings.PKCE_REQUIRED = False
+        self.client.login(username="test_user", password="123456")
+
+        query_data = {
+            "client_id": self.application.client_id,
+            "response_type": "code",
+            "state": "random_state_string",
+            "scope": "read write",
+            "redirect_uri": "http://example.org",
+            "prompt": "login",
+        }
+
+        response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
+
+        self.assertEqual(response.status_code, 302)
+
+        scheme, netloc, path, params, query, fragment = urlparse(response["Location"])
+
+        self.assertEqual(path, settings.LOGIN_URL)
+
+        parsed_query = parse_qs(query)
+        next = parsed_query["next"][0]
+
+        self.assertIn("redirect_uri=http%3A%2F%2Fexample.org", next)
+        self.assertIn("state=random_state_string", next)
+        self.assertIn("scope=read+write", next)
+        self.assertIn(f"client_id={self.application.client_id}", next)
+
+        self.assertNotIn("prompt=login", next)
 
 
 class BaseAuthorizationCodeTokenView(BaseTest):

@@ -256,13 +256,31 @@ Export ``Client id`` and ``Client secret`` values as environment variable:
     export ID=vW1RcAl7Mb0d5gyHNQIAcH110lWoOW2BmWJIero8
     export SECRET=DZFpuNjRdt5xUEzxXovAp40bU3lQvoMvF3awEStn61RXWE0Ses4RgzHWKJKTvUCHfRkhcBi3ebsEfSjfEO96vo2Sh6pZlxJ6f7KcUbhvqMMPoVxRwv4vfdWEoWMGPeIO
 
+Now let's generate an authentication code grant with PKCE (Proof Key for Code Exchange), useful to prevent authorization code injection. To do so, you must first generate a ``code_verifier`` random string between 43 and 128 characters, which is then encoded to produce a ``code_challenge``::
+
+.. sourcecode:: python
+
+    import random
+    import string
+    import base64
+    import hashlib
+
+    code_verifier = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(random.randint(43, 128)))
+    code_verifier = base64.urlsafe_b64encode(code_verifier)
+
+    code_challenge = hashlib.sha256(code_verifier.encode('utf-8')).digest()
+    code_challenge = base64.urlsafe_b64encode(code_challenge).decode('utf-8').replace('=', '')
+
+Take note of ``code_challenge`` since we will include it in the code flow URL. It should look something like ``XRi41b-5yHtTojvCpXFpsLUnmGFz6xR15c3vpPANAvM``.
+
 To start the Authorization code flow go to this `URL`_ which is the same as shown below::
 
-    http://127.0.0.1:8000/o/authorize/?response_type=code&client_id=vW1RcAl7Mb0d5gyHNQIAcH110lWoOW2BmWJIero8&redirect_uri=http://127.0.0.1:8000/noexist/callback
+    http://127.0.0.1:8000/o/authorize/?response_type=code&code_challenge=XRi41b-5yHtTojvCpXFpsLUnmGFz6xR15c3vpPANAvM&client_id=vW1RcAl7Mb0d5gyHNQIAcH110lWoOW2BmWJIero8&redirect_uri=http://127.0.0.1:8000/noexist/callback
 
 Note the parameters we pass:
 
 * **response_type**: ``code``
+* **code_challenge**: ``XRi41b-5yHtTojvCpXFpsLUnmGFz6xR15c3vpPANAvM``
 * **client_id**: ``vW1RcAl7Mb0d5gyHNQIAcH110lWoOW2BmWJIero8``
 * **redirect_uri**: ``http://127.0.0.1:8000/noexist/callback``
 
