@@ -17,7 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [unreleased]
 
 ### Added
-* Add spanish (es) translations.
+* Support `prompt=login` for the OIDC Authorization Code Flow end user [Authentication Request](https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest).
+* #1163 Adds French translations.
+* #1166 Add spanish (es) translations.
 
 ### Changed
 * #1152 `createapplication` management command enhanced to display an auto-generated secret before it gets hashed.
