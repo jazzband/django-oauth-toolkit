@@ -256,7 +256,7 @@ Export ``Client id`` and ``Client secret`` values as environment variable:
     export ID=vW1RcAl7Mb0d5gyHNQIAcH110lWoOW2BmWJIero8
     export SECRET=DZFpuNjRdt5xUEzxXovAp40bU3lQvoMvF3awEStn61RXWE0Ses4RgzHWKJKTvUCHfRkhcBi3ebsEfSjfEO96vo2Sh6pZlxJ6f7KcUbhvqMMPoVxRwv4vfdWEoWMGPeIO
 
-Now let's generate an authentication code grant with PKCE (Proof Key for Code Exchange), useful to prevent authorization code injection. To do so, you must first generate a ``code_verifier`` random string between 43 and 128 characters, which is then encoded to produce a ``code_challenge``::
+Now let's generate an authentication code grant with PKCE (Proof Key for Code Exchange), useful to prevent authorization code injection. To do so, you must first generate a ``code_verifier`` random string between 43 and 128 characters, which is then encoded to produce a ``code_challenge``:
 
 .. sourcecode:: python
 
