@@ -77,7 +77,7 @@ Django OAuth Toolkit provides decorators to help you in protecting your function
             permission_classes,
         )
 
-        
+
         @api_view(["GET"])
         @authentication_classes([OAuth2Authentication])
         @permission_classes([TokenHasScope])
