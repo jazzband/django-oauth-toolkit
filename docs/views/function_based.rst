@@ -65,12 +65,19 @@ Django OAuth Toolkit provides decorators to help you in protecting your function
             pass
 
 
-.. function:: required_scopes(required_scopes)(required_scopes(required_scopes))
+.. function:: required_scopes(required_scopes)
 
     Decorator to protect DRF function-based views for use with the TokenHasScope permission class::
 
+        from oauth2_provider.contrib.rest_framework import OAuth2Authentication, TokenHasScope
         from oauth2_provider.contrib.rest_framework.decorators import required_scopes
+        from rest_framework.decorators import (
+            api_view,
+            authentication_classes,
+            permission_classes,
+        )
 
+        
         @api_view(["GET"])
         @authentication_classes([OAuth2Authentication])
         @permission_classes([TokenHasScope])
