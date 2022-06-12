@@ -23,7 +23,7 @@ For example:
         permission_classes = [TokenHasScope]
         required_scopes = ['music']
 
-The `required_scopes` attribute is mandatory.
+The `required_scopes` attribute is mandatory. There is a decorator for this at `oauth2_provider.contrib.rest_framework.decorators.required_scopes`.
 
 
 TokenHasReadWriteScope

@@ -63,3 +63,17 @@ Django OAuth Toolkit provides decorators to help you in protecting your function
             # If this is a POST, you have to provide 'exotic_scope write' scopes to get here...
             # ...
             pass
+
+
+.. function:: required_scopes(required_scopes)(required_scopes(required_scopes))
+
+    Decorator to protect DRF function-based views for use with the TokenHasScope permission class::
+
+        from oauth2_provider.contrib.rest_framework.decorators import required_scopes
+
+        @api_view(["GET"])
+        @authentication_classes([OAuth2Authentication])
+        @permission_classes([TokenHasScope])
+        @required_scopes(["read"])
+        def my_view(request):
+            pass
