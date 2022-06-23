@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### WARNING
 
-Issues caused by **Release 2 breaking changes** continue to be logged. Please **make sure to carefully read these release notes** before
+Issues caused by **Release 2.0.0 breaking changes** continue to be logged. Please **make sure to carefully read these release notes** before
 performing a MAJOR upgrade to 2.x.
 
 These issues both result in `{"error": "invalid_client"}`:
