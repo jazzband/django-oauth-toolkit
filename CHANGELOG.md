@@ -16,13 +16,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [2.1.0] 2022-06-19
+
+### WARNING
+
+Issues caused by **Release 2.0.0 breaking changes** continue to be logged. Please **make sure to carefully read these release notes** before
+performing a MAJOR upgrade to 2.x.
+
+These issues both result in `{"error": "invalid_client"}`:
+
+1. The application client secret is now hashed upon save. You must copy it before it is saved. Using the hashed value will fail.
+
+2. `PKCE_REQUIRED` is now `True` by default. You should use PKCE with your client or set `PKCE_REQUIRED=False` if you are unable to fix the client.
+
 ### Added
-* Support `prompt=login` for the OIDC Authorization Code Flow end user [Authentication Request](https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest).
-* #1163 Adds French translations.
-* #1166 Add spanish (es) translations.
+* #1164 Support `prompt=login` for the OIDC Authorization Code Flow end user [Authentication Request](https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest).
+* #1163 Add French (fr) translations.
+* #1166 Add Spanish (es) translations.
 
 ### Changed
 * #1152 `createapplication` management command enhanced to display an auto-generated secret before it gets hashed.
+* #1172, #1159, #1158 documentation improvements.
+
+### Fixed
+* #1147 Fixed 2.0.0 implementation of [hashed](https://docs.djangoproject.com/en/stable/topics/auth/passwords/) client secret to work with swapped models.
 
 ## [2.0.0] 2022-04-24
 
