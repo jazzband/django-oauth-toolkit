@@ -167,7 +167,7 @@ When you begin your PR, you'll be asked to provide the following:
      JazzBand security team `<security@jazzband.co>`. Do not file an issue on the tracker
      or submit a PR until directed to do so.)
 
-* Make sure your name is in `AUTHORS`. We want to give credit to all contrbutors!
+* Make sure your name is in `AUTHORS`. We want to give credit to all contributors!
 
 If your PR is not yet ready to be merged mark it as a Work-in-Progress
 By prepending `WIP:` to the PR title so that it doesn't get inadvertently approved and merged.

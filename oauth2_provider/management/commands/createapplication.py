@@ -65,7 +65,7 @@ class Command(BaseCommand):
         application_fields = [field.name for field in Application._meta.fields]
         application_data = {}
         for key, value in options.items():
-            # Data in options must be cleaned because there are unneded key-value like
+            # Data in options must be cleaned because there are unneeded key-value like
             # verbosity and others. Also do not pass any None to the Application
             # instance so default values will be generated for those fields
             if key in application_fields and value:
