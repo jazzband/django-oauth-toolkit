@@ -132,8 +132,8 @@ class AbstractApplication(models.Model):
         """
         if self.redirect_uris:
             uris = self.redirect_uris.split()
-            if len(uris) == 1:
-                return self.redirect_uris.split().pop(0)
+            if uris:
+                return uris[0]
             raise errors.MissingRedirectURIError()
 
         assert False, (
