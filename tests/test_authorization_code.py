@@ -1145,7 +1145,7 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
     def test_public_pkce_S256_authorize_get(self):
         """
         Request an access token using client_type: public
-        and PKCE enabled. Tests if the authorize get is successfull
+        and PKCE enabled. Tests if the authorize get is successful
         for the S256 algorithm and form data are properly passed.
         """
         self.client.login(username="test_user", password="123456")
@@ -1172,7 +1172,7 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
     def test_public_pkce_plain_authorize_get(self):
         """
         Request an access token using client_type: public
-        and PKCE enabled. Tests if the authorize get is successfull
+        and PKCE enabled. Tests if the authorize get is successful
         for the plain algorithm and form data are properly passed.
         """
         self.client.login(username="test_user", password="123456")

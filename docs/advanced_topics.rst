@@ -97,5 +97,5 @@ Skip authorization completely for trusted applications
 
 You might want to completely bypass the authorization form, for instance if your application is an
 in-house product or if you already trust the application owner by other means. To this end, you have to
-set ``skip_authorization = True`` on the ``Application`` model, either programmaticaly or within the
+set ``skip_authorization = True`` on the ``Application`` model, either programmatically or within the
 Django admin. Users will *not* be prompted for authorization, even on the first use of the application.

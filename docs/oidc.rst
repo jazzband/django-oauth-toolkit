@@ -317,7 +317,7 @@ The following example adds instructions to return the ``foo`` claim when the ``b
 
 Set ``oidc_claim_scope = None`` to return all claims irrespective of the granted scopes.
 
-You have to make sure you've added addtional claims via ``get_additional_claims``
+You have to make sure you've added additional claims via ``get_additional_claims``
 and defined the ``OAUTH2_PROVIDER["SCOPES"]`` in your settings in order for this functionality to work.
 
 .. note::

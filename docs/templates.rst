@@ -168,7 +168,7 @@ This template gets passed the following template context variables:
 
 .. caution::
     In the default implementation this template in extended by `application_registration_form.html`_.
-    Be sure to provide the same blocks if you are only overiding this template.
+    Be sure to provide the same blocks if you are only overriding this template.
 
 application_registration_form.html
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
