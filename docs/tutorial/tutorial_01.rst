@@ -59,6 +59,14 @@ Allow CORS requests from all domains (just for the scope of this tutorial):
 
     CORS_ORIGIN_ALLOW_ALL = True
 
+Disable PKCE requirement for compatibility with the `consumer service <http://django-oauth-toolkit.herokuapp.com/consumer/>`_ deployed on Heroku.
+
+.. code-block:: python
+
+    OAUTH2_PROVIDER = {
+        'PKCE_REQUIRED': False,  # pre-2.x behaviour
+    }
+
 .. _loginTemplate:
 
 Include the required hidden input in your login template, `registration/login.html`.
