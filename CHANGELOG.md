@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   -->
 
 ## [unreleased]
+* Add 'code_verifier' parameter to token requests in documentation
 
 ## [2.1.0] 2022-06-19
 
