@@ -45,6 +45,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='accesstoken',
             name='id_token',
+            field=models.IntegerField(),
+        ),
+        migrations.AlterField(
+            model_name='accesstoken',
+            name='id_token',
             field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='access_token', to=oauth2_settings.ID_TOKEN_MODEL),
         ),
         migrations.AddField(
