@@ -268,7 +268,7 @@ Now let's generate an authentication code grant with PKCE (Proof Key for Code Ex
     code_verifier = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(random.randint(43, 128)))
     code_verifier = base64.urlsafe_b64encode(code_verifier.encode('utf-8'))
 
-    code_challenge = hashlib.sha256(code_verifier.encode('utf-8')).digest()
+    code_challenge = hashlib.sha256(code_verifier).digest()
     code_challenge = base64.urlsafe_b64encode(code_challenge).decode('utf-8').replace('=', '')
 
 Take note of ``code_challenge`` since we will include it in the code flow URL. It should look something like ``XRi41b-5yHtTojvCpXFpsLUnmGFz6xR15c3vpPANAvM``.
