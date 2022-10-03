@@ -275,12 +275,13 @@ Take note of ``code_challenge`` since we will include it in the code flow URL. I
 
 To start the Authorization code flow go to this `URL`_ which is the same as shown below::
 
-    http://127.0.0.1:8000/o/authorize/?response_type=code&code_challenge=XRi41b-5yHtTojvCpXFpsLUnmGFz6xR15c3vpPANAvM&client_id=vW1RcAl7Mb0d5gyHNQIAcH110lWoOW2BmWJIero8&redirect_uri=http://127.0.0.1:8000/noexist/callback
+    http://127.0.0.1:8000/o/authorize/?response_type=code&code_challenge=XRi41b-5yHtTojvCpXFpsLUnmGFz6xR15c3vpPANAvM&code_challenge_method=S256&client_id=vW1RcAl7Mb0d5gyHNQIAcH110lWoOW2BmWJIero8&redirect_uri=http://127.0.0.1:8000/noexist/callback
 
 Note the parameters we pass:
 
 * **response_type**: ``code``
 * **code_challenge**: ``XRi41b-5yHtTojvCpXFpsLUnmGFz6xR15c3vpPANAvM``
+* **code_challenge_method**: ``S256``
 * **client_id**: ``vW1RcAl7Mb0d5gyHNQIAcH110lWoOW2BmWJIero8``
 * **redirect_uri**: ``http://127.0.0.1:8000/noexist/callback``
 
@@ -305,7 +306,7 @@ Export it as an environment variable:
 
 Now that you have the user authorization is time to get an access token::
 
-    curl -X POST -H "Cache-Control: no-cache" -H "Content-Type: application/x-www-form-urlencoded" "http://127.0.0.1:8000/o/token/" -d "client_id=${ID}" -d "client_secret=${SECRET}" -d "code=${CODE}" -d "code_verifier=${CODE_CHALLENGE}" -d "redirect_uri=http://127.0.0.1:8000/noexist/callback" -d "grant_type=authorization_code"
+    curl -X POST -H "Cache-Control: no-cache" -H "Content-Type: application/x-www-form-urlencoded" "http://127.0.0.1:8000/o/token/" -d "client_id=${ID}" -d "client_secret=${SECRET}" -d "code=${CODE}" -d "code_verifier=${CODE_VERIFIER}" -d "redirect_uri=http://127.0.0.1:8000/noexist/callback" -d "grant_type=authorization_code"
 
 To be more easy to visualize::
 
@@ -316,7 +317,7 @@ To be more easy to visualize::
         -d "client_id=${ID}" \
         -d "client_secret=${SECRET}" \
         -d "code=${CODE}" \
-        -d "code_verifier=${CODE_CHALLENGE}" \
+        -d "code_verifier=${CODE_VERIFIER}" \
         -d "redirect_uri=http://127.0.0.1:8000/noexist/callback" \
         -d "grant_type=authorization_code"
 
