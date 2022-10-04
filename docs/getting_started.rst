@@ -275,12 +275,13 @@ Take note of ``code_challenge`` since we will include it in the code flow URL. I
 
 To start the Authorization code flow go to this `URL`_ which is the same as shown below::
 
-    http://127.0.0.1:8000/o/authorize/?response_type=code&code_challenge=XRi41b-5yHtTojvCpXFpsLUnmGFz6xR15c3vpPANAvM&client_id=vW1RcAl7Mb0d5gyHNQIAcH110lWoOW2BmWJIero8&redirect_uri=http://127.0.0.1:8000/noexist/callback
+    http://127.0.0.1:8000/o/authorize/?response_type=code&code_challenge=XRi41b-5yHtTojvCpXFpsLUnmGFz6xR15c3vpPANAvM&code_challenge_method=S256&client_id=vW1RcAl7Mb0d5gyHNQIAcH110lWoOW2BmWJIero8&redirect_uri=http://127.0.0.1:8000/noexist/callback
 
 Note the parameters we pass:
 
 * **response_type**: ``code``
 * **code_challenge**: ``XRi41b-5yHtTojvCpXFpsLUnmGFz6xR15c3vpPANAvM``
+* **code_challenge_method**: ``S256``
 * **client_id**: ``vW1RcAl7Mb0d5gyHNQIAcH110lWoOW2BmWJIero8``
 * **redirect_uri**: ``http://127.0.0.1:8000/noexist/callback``
 
