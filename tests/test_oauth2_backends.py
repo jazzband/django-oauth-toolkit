@@ -1,10 +1,13 @@
+import base64
 import json
 
 import pytest
+from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
+from django.utils.timezone import now, timedelta
 
 from oauth2_provider.backends import get_oauthlib_core
-from oauth2_provider.models import redirect_to_uri_allowed
+from oauth2_provider.models import get_access_token_model, get_application_model, redirect_to_uri_allowed
 from oauth2_provider.oauth2_backends import JSONOAuthLibCore, OAuthLibCore
 
 
@@ -48,6 +51,96 @@ class TestOAuthLibCoreBackend(TestCase):
         self.assertNotIn("grant_type=password", body)
         self.assertNotIn("username=john", body)
         self.assertNotIn("password=123456", body)
+
+
+UserModel = get_user_model()
+ApplicationModel = get_application_model()
+AccessTokenModel = get_access_token_model()
+
+
+@pytest.mark.usefixtures("oauth2_settings")
+class TestOAuthLibCoreBackendErrorHandling(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.oauthlib_core = OAuthLibCore()
+        self.user = UserModel.objects.create_user("john", "test@example.com", "123456")
+        self.app = ApplicationModel.objects.create(
+            name="app",
+            client_id="app_id",
+            client_secret="app_secret",
+            client_type=ApplicationModel.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=ApplicationModel.GRANT_PASSWORD,
+            user=self.user,
+        )
+
+    def tearDown(self):
+        self.user.delete()
+        self.app.delete()
+
+    def test_create_token_response_valid(self):
+        payload = (
+            "grant_type=password&username=john&password=123456&client_id=app_id&client_secret=app_secret"
+        )
+        request = self.factory.post(
+            "/o/token/",
+            payload,
+            content_type="application/x-www-form-urlencoded",
+            HTTP_AUTHORIZATION="Basic %s" % base64.b64encode(b"john:123456").decode(),
+        )
+
+        uri, headers, body, status = self.oauthlib_core.create_token_response(request)
+        self.assertEqual(status, 200)
+
+    def test_create_token_response_query_params(self):
+        payload = (
+            "grant_type=password&username=john&password=123456&client_id=app_id&client_secret=app_secret"
+        )
+        request = self.factory.post(
+            "/o/token/?test=foo",
+            payload,
+            content_type="application/x-www-form-urlencoded",
+            HTTP_AUTHORIZATION="Basic %s" % base64.b64encode(b"john:123456").decode(),
+        )
+        uri, headers, body, status = self.oauthlib_core.create_token_response(request)
+
+        self.assertEqual(status, 400)
+        self.assertDictEqual(
+            json.loads(body),
+            {"error": "invalid_request", "error_description": "URL query parameters are not allowed"},
+        )
+
+    def test_create_revocation_response_valid(self):
+        AccessTokenModel.objects.create(
+            user=self.user, token="tokstr", application=self.app, expires=now() + timedelta(days=365)
+        )
+        payload = "client_id=app_id&client_secret=app_secret&token=tokstr"
+        request = self.factory.post(
+            "/o/revoke_token/",
+            payload,
+            content_type="application/x-www-form-urlencoded",
+            HTTP_AUTHORIZATION="Basic %s" % base64.b64encode(b"john:123456").decode(),
+        )
+        uri, headers, body, status = self.oauthlib_core.create_revocation_response(request)
+        self.assertEqual(status, 200)
+
+    def test_create_revocation_response_query_params(self):
+        token = AccessTokenModel.objects.create(
+            user=self.user, token="tokstr", application=self.app, expires=now() + timedelta(days=365)
+        )
+        payload = "client_id=app_id&client_secret=app_secret&token=tokstr"
+        request = self.factory.post(
+            "/o/revoke_token/?test=foo",
+            payload,
+            content_type="application/x-www-form-urlencoded",
+            HTTP_AUTHORIZATION="Basic %s" % base64.b64encode(b"john:123456").decode(),
+        )
+        uri, headers, body, status = self.oauthlib_core.create_revocation_response(request)
+        self.assertEqual(status, 400)
+        self.assertDictEqual(
+            json.loads(body),
+            {"error": "invalid_request", "error_description": "URL query parameters are not allowed"},
+        )
+        token.delete()
 
 
 class TestCustomOAuthLibCoreBackend(TestCase):

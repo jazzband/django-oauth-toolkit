@@ -152,12 +152,14 @@ class OAuthLibCore:
         uri, http_method, body, headers = self._extract_params(request)
         extra_credentials = self._get_extra_credentials(request)
 
-        headers, body, status = self.server.create_token_response(
-            uri, http_method, body, headers, extra_credentials
-        )
-        uri = headers.get("Location", None)
-
-        return uri, headers, body, status
+        try:
+            headers, body, status = self.server.create_token_response(
+                uri, http_method, body, headers, extra_credentials
+            )
+            uri = headers.get("Location", None)
+            return uri, headers, body, status
+        except OAuth2Error as exc:
+            return None, exc.headers, exc.json, exc.status_code
 
     def create_revocation_response(self, request):
         """
