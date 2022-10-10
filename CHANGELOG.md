@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Changed
+* #1211 documentation improvements.
+
 ### Added
 * Add 'code_challenge_method' parameter to authorization call in documentation
 
