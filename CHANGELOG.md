@@ -16,20 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-### Added
-* Add 'code_challenge_method' parameter to authorization call in documentation
-
-### Added
-* Add 'code_verifier' parameter to token requests in documentation
-
-### Changed
-* Support Django 4.1.
-
-### Fixed
-* Remove upper version bound on Django, to allow upgrading to Django 4.1.1 bugfix release.
-* Handle oauthlib errors on create token requests
-
-## [2.1.0] 2022-06-19
+## [2.2.0] 2022-10-18
 
 ### WARNING
 
@@ -41,6 +28,20 @@ These issues both result in `{"error": "invalid_client"}`:
 1. The application client secret is now hashed upon save. You must copy it before it is saved. Using the hashed value will fail.
 
 2. `PKCE_REQUIRED` is now `True` by default. You should use PKCE with your client or set `PKCE_REQUIRED=False` if you are unable to fix the client.
+
+
+### Added
+* #1208 Add 'code_challenge_method' parameter to authorization call in documentation
+* #1182 Add 'code_verifier' parameter to token requests in documentation
+
+### Changed
+* #1203 Support Django 4.1.
+
+### Fixed
+* #1203 Remove upper version bound on Django, to allow upgrading to Django 4.1.1 bugfix release.
+* #1210 Handle oauthlib errors on create token requests
+
+## [2.1.0] 2022-06-19
 
 ### Added
 * #1164 Support `prompt=login` for the OIDC Authorization Code Flow end user [Authentication Request](https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest).
