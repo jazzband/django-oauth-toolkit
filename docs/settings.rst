@@ -76,7 +76,7 @@ Default: ``60``
 
 The number of seconds an authorization code remains valid. Requesting an access
 token after this duration will fail. :rfc:`4.1.2` recommends expire after a short lifetime,
-being 10 minutes (600 seconds) the maximum acceptable.
+with 10 minutes (600 seconds) being the maximum acceptable.
 
 CLIENT_ID_GENERATOR_CLASS
 ~~~~~~~~~~~~~~~~~~~~~~~~~
