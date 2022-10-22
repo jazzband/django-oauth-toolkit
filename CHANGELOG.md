@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Changed
+* #1211 documentation improve on 'AUTHORIZATION_CODE_EXPIRE_SECONDS'.
+
 ## [2.2.0] 2022-10-18
 
 ### WARNING
@@ -28,7 +31,6 @@ These issues both result in `{"error": "invalid_client"}`:
 1. The application client secret is now hashed upon save. You must copy it before it is saved. Using the hashed value will fail.
 
 2. `PKCE_REQUIRED` is now `True` by default. You should use PKCE with your client or set `PKCE_REQUIRED=False` if you are unable to fix the client.
-
 
 ### Added
 * #1208 Add 'code_challenge_method' parameter to authorization call in documentation
