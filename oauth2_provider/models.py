@@ -93,7 +93,7 @@ class AbstractApplication(models.Model):
     )
 
     id = models.BigAutoField(primary_key=True)
-    client_id = models.CharField(max_length=100, unique=True, default=generate_client_id, db_index=True)
+    client_id = models.CharField(max_length=100, default=generate_client_id)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name="%(app_label)s_%(class)s",
@@ -116,7 +116,6 @@ class AbstractApplication(models.Model):
         max_length=255,
         blank=True,
         default=generate_client_secret,
-        db_index=True,
         help_text=_("Hashed on Save. Copy it now if this is a new secret."),
     )
     name = models.CharField(max_length=255, blank=True)
@@ -128,6 +127,12 @@ class AbstractApplication(models.Model):
 
     class Meta:
         abstract = True
+        indexes = [
+            models.Index(fields=["client_secret"], name="oauth2_app_client_secret_key"),
+        ]
+        constraints = [
+            models.UniqueConstraint(fields=["client_id"], name="oauth2_app_client_id_key"),
+        ]
 
     def __str__(self):
         return self.name or self.client_id
@@ -281,7 +286,7 @@ class AbstractGrant(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="%(app_label)s_%(class)s"
     )
-    code = models.CharField(max_length=255, unique=True)  # code comes from oauthlib
+    code = models.CharField(max_length=255)  # code comes from oauthlib
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE)
     expires = models.DateTimeField()
     redirect_uri = models.TextField()
@@ -315,6 +320,9 @@ class AbstractGrant(models.Model):
 
     class Meta:
         abstract = True
+        constraints = [
+            models.UniqueConstraint(fields=["code"], name="%(app_label)s_%(class)s_code_key"),
+        ]
 
 
 class Grant(AbstractGrant):
@@ -355,7 +363,6 @@ class AbstractAccessToken(models.Model):
     )
     token = models.CharField(
         max_length=255,
-        unique=True,
     )
     id_token = models.OneToOneField(
         oauth2_settings.ID_TOKEN_MODEL,
@@ -428,6 +435,9 @@ class AbstractAccessToken(models.Model):
 
     class Meta:
         abstract = True
+        constraints = [
+            models.UniqueConstraint(fields=["token"], name="%(app_label)s_%(class)s_token_key"),
+        ]
 
 
 class AccessToken(AbstractAccessToken):
