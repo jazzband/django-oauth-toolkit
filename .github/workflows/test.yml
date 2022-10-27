@@ -14,7 +14,7 @@ jobs:
         exclude:
           # https://docs.djangoproject.com/en/dev/faq/install/#what-python-version-can-i-use-with-django
 
-          # Python > 3.9 is not supported by Django 2.2
+          # Python 3.10+ is not supported by Django 2.2
           - python-version: '3.10'
             django-version: '2.2'
           
