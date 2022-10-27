@@ -10,6 +10,12 @@ jobs:
       max-parallel: 5
       matrix:
         python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
+        django-version: ['3.2', '4.0', '4.1', 'main']
+        exclude:
+          - python-version: '3.7'
+            django-version: '4.0'
+          - python-version: '3.7'
+            django-version: '4.1'
 
     steps:
     - uses: actions/checkout@v2
@@ -42,6 +48,8 @@ jobs:
     - name: Tox tests
       run: |
         tox -v
+      env:
+        DJANGO: ${{ matrix.django-version }}
 
     - name: Upload coverage
       uses: codecov/codecov-action@v1
