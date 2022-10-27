@@ -11,12 +11,21 @@ jobs:
       max-parallel: 5
       matrix:
         python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
-        django-version: ['3.2', '4.0', '4.1', 'main']
+        django-version: ['2.2', '3.2', '4.0', '4.1', 'main']
         exclude:
+          # https://docs.djangoproject.com/en/dev/faq/install/#what-python-version-can-i-use-with-django
+
+          # Python > 3.9 is not supported by Django 2.2
+          - python-version: '3.10'
+            django-version: '2.2'
+          
+          # Python 3.7 is not supported by Django 4.0+
           - python-version: '3.7'
             django-version: '4.0'
           - python-version: '3.7'
             django-version: '4.1'
+          - python-version: '3.7'
+            django-version: 'main'
 
     steps:
     - uses: actions/checkout@v2
