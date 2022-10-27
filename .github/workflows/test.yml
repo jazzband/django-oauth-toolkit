@@ -4,6 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build:
+    name: build (Python ${{ matrix.python-version }}, Django ${{ matrix.django-version }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
