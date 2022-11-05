@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/psf/black
-    rev: 22.6.0
+    rev: 22.10.0
     hooks:
       - id: black
         exclude: ^(oauth2_provider/migrations/|tests/migrations/)
@@ -21,11 +21,11 @@ repos:
       - id: isort
         exclude: ^(oauth2_provider/migrations/|tests/migrations/)
   - repo: https://github.com/PyCQA/flake8
-    rev: 4.0.1
+    rev: 5.0.4
     hooks:
       - id: flake8
         exclude: ^(oauth2_provider/migrations/|tests/migrations/)
   - repo: https://github.com/sphinx-contrib/sphinx-lint
-    rev: v0.6.1
+    rev: v0.6.6
     hooks:
       - id: sphinx-lint
