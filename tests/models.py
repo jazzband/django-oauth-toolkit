@@ -32,6 +32,13 @@ class SampleAccessToken(AbstractAccessToken):
         null=True,
         related_name="s_refreshed_access_token",
     )
+    id_token = models.OneToOneField(
+        oauth2_settings.ID_TOKEN_MODEL,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name="s_access_token",
+    )
 
 
 class SampleRefreshToken(AbstractRefreshToken):

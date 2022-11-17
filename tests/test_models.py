@@ -464,6 +464,45 @@ def test_id_token_methods(oidc_tokens, rf):
 
 @pytest.mark.django_db
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_clear_expired_id_tokens(oauth2_settings, oidc_tokens, rf):
+    id_token = IDToken.objects.get()
+    access_token = id_token.access_token
+
+    # All tokens still valid
+    clear_expired()
+
+    assert IDToken.objects.filter(jti=id_token.jti).exists()
+
+    earlier = timezone.now() - timedelta(minutes=1)
+    id_token.expires = earlier
+    id_token.save()
+
+    # ID token should be preserved until the access token is deleted
+    clear_expired()
+
+    assert IDToken.objects.filter(jti=id_token.jti).exists()
+
+    access_token.expires = earlier
+    access_token.save()
+
+    # ID and access tokens are expired but refresh token is still valid
+    clear_expired()
+
+    assert IDToken.objects.filter(jti=id_token.jti).exists()
+
+    # Mark refresh token as expired
+    delta = timedelta(seconds=oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS + 60)
+    access_token.expires = timezone.now() - delta
+    access_token.save()
+
+    # With the refresh token expired, the ID token should be deleted
+    clear_expired()
+
+    assert not IDToken.objects.filter(jti=id_token.jti).exists()
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 def test_application_key(oauth2_settings, application):
     # RS256 key
     key = application.jwk_key

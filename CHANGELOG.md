@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 * #1211 documentation improve on 'AUTHORIZATION_CODE_EXPIRE_SECONDS'.
 * #1218 Confim support for Python 3.11.
+* #1222 Remove expired ID tokens alongside access tokens in `cleartokens` management command
 
 ## [2.2.0] 2022-10-18
 
