@@ -22,6 +22,8 @@ problem since refresh tokens are long lived.
 To prevent the CPU and RAM high peaks during deletion process use ``CLEAR_EXPIRED_TOKENS_BATCH_SIZE`` and
 ``CLEAR_EXPIRED_TOKENS_BATCH_INTERVAL`` settings to adjust the process speed.
 
+The ``cleartokens`` management command will also delete expired access and ID tokens alongside expired refresh tokens.
+
 Note: Refresh tokens need to expire before AccessTokens can be removed from the
 database. Using ``cleartokens`` without ``REFRESH_TOKEN_EXPIRE_SECONDS`` has limited effect.
 
