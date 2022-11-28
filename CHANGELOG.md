@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Added
+* Add Japanese(日本語) Language Support
+
 ### Changed
 * #1211 documentation improve on 'AUTHORIZATION_CODE_EXPIRE_SECONDS'.
 * #1218 Confim support for Python 3.11.
