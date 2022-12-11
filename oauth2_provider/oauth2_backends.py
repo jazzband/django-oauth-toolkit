@@ -75,6 +75,8 @@ class OAuthLibCore:
             del headers["wsgi.errors"]
         if "HTTP_AUTHORIZATION" in headers:
             headers["Authorization"] = headers["HTTP_AUTHORIZATION"]
+        if "HTTP_ORIGIN" in headers:
+            headers["Origin"] = headers["HTTP_ORIGIN"]
         if request.is_secure():
             headers["X_DJANGO_OAUTH_TOOLKIT_SECURE"] = "1"
         elif "X_DJANGO_OAUTH_TOOLKIT_SECURE" in headers:
