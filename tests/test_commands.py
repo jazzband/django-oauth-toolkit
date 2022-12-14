@@ -24,7 +24,7 @@ class CreateApplicationTest(TestCase):
             "confidential",
             "authorization-code",
             "--redirect-uris=http://example.com http://example2.com",
-            stdout=output,
+            stderr=output,
         )
         self.assertEqual(Application.objects.count(), 1)
         self.assertIn("created successfully", output.getvalue())
@@ -137,7 +137,7 @@ class CreateApplicationTest(TestCase):
             "authorization-code",
             "--redirect-uris=http://example.com http://example2.com",
             "--user=783",
-            stdout=output,
+            stderr=output,
         )
 
         self.assertIn("user", output.getvalue())
