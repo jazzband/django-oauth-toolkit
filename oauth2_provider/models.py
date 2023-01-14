@@ -103,6 +103,10 @@ class AbstractApplication(models.Model):
         blank=True,
         help_text=_("Allowed URIs list, space separated"),
     )
+    post_logout_redirect_uris = models.TextField(
+        blank=True,
+        help_text=_("Allowed Post Logout URIs list, space separated"),
+    )
     client_type = models.CharField(max_length=32, choices=CLIENT_TYPES)
     authorization_grant_type = models.CharField(max_length=32, choices=GRANT_TYPES)
     client_secret = ClientSecretField(
@@ -149,6 +153,14 @@ class AbstractApplication(models.Model):
         :param uri: Url to check
         """
         return redirect_to_uri_allowed(uri, self.redirect_uris.split())
+
+    def post_logout_redirect_uri_allowed(self, uri):
+        """
+        Checks if given URI is one of the items in :attr:`post_logout_redirect_uris` string
+
+        :param uri: URI to check
+        """
+        return redirect_to_uri_allowed(uri, self.post_logout_redirect_uris.split())
 
     def clean(self):
         from django.core.exceptions import ValidationError

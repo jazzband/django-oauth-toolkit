@@ -313,6 +313,21 @@ this you must also provide the service at that endpoint.
 If unset, the default location is used, eg if ``django-oauth-toolkit`` is
 mounted at ``/o/``, it will be ``<server-address>/o/userinfo/``.
 
+OIDC_RP_INITIATED_LOGOUT_ENABLED
+~~~~~~~~~~~~~~~~~~~~~~~~
+Default: ``False``
+
+When is set to `False` (default) the `OpenID Connect RP-Initiated Logout <https://openid.net/specs/openid-connect-rpinitiated-1_0.html>`_
+endpoint is not enabled. OpenID Connect RP-Initiated Logout enables an :term:`Client` (Relying Party)
+to request that a :term:`Resource Owner` (End User) is logged out at the :term:`Authorization Server` (OpenID Provider).
+
+OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Default: ``True``
+
+Whether to always prompt the :term:`Resource Owner` (End User) to confirm a logout requested by a
+:term:`Client` (Relying Party). If it is disabled the :term:`Resource Owner` (End User) will only be prompted if required by the standard.
+
 OIDC_ISS_ENDPOINT
 ~~~~~~~~~~~~~~~~~
 Default: ``""``

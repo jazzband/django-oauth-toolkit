@@ -100,11 +100,34 @@ def application():
     return Application.objects.create(
         name="Test Application",
         redirect_uris="http://example.org",
+        post_logout_redirect_uris="http://example.org",
         client_type=Application.CLIENT_CONFIDENTIAL,
         authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
         algorithm=Application.RS256_ALGORITHM,
         client_secret=CLEARTEXT_SECRET,
     )
+
+
+@pytest.fixture
+def other_application():
+    return Application.objects.create(
+        name="Other Application",
+        redirect_uris="http://other.org",
+        post_logout_redirect_uris="http://other.org",
+        client_type=Application.CLIENT_CONFIDENTIAL,
+        authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+        algorithm=Application.RS256_ALGORITHM,
+        client_secret=CLEARTEXT_SECRET,
+    )
+
+
+@pytest.fixture
+def loggend_in_client(test_user):
+    from django.test.client import Client
+
+    client = Client()
+    client.force_login(test_user)
+    return client
 
 
 @pytest.fixture
@@ -118,6 +141,17 @@ def hybrid_application(application):
 @pytest.fixture
 def test_user():
     return UserModel.objects.create_user("test_user", "test@example.com", "123456")
+
+
+@pytest.fixture
+def other_user():
+    return UserModel.objects.create_user("other_user", "other@example.com", "123456")
+
+
+@pytest.fixture
+def rp_settings(oauth2_settings):
+    oauth2_settings.update(presets.OIDC_SETTINGS_RP_LOGOUT)
+    return oauth2_settings
 
 
 @pytest.fixture

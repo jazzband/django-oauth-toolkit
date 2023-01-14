@@ -1,13 +1,25 @@
 import json
 from urllib.parse import urlparse
 
+from django.contrib.auth import logout
 from django.http import HttpResponse, JsonResponse
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import View
+from django.views.generic import FormView, View
 from jwcrypto import jwk
+from oauthlib.common import add_params_to_uri
 
+from ..exceptions import (
+    ClientIdMissmatch,
+    InvalidIDTokenError,
+    InvalidOIDCClientError,
+    LogoutDenied,
+    MismatchingOIDCRedirectURIError,
+    OIDCError,
+)
+from ..forms import ConfirmLogoutForm
+from ..http import OAuth2ResponseRedirect
 from ..models import get_application_model
 from ..settings import oauth2_settings
 from .mixins import OAuthLibMixin, OIDCOnlyMixin
@@ -33,6 +45,10 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
                 reverse("oauth2_provider:user-info")
             )
             jwks_uri = request.build_absolute_uri(reverse("oauth2_provider:jwks-info"))
+            if oauth2_settings.OIDC_RP_INITIATED_LOGOUT_ENABLED:
+                end_session_endpoint = request.build_absolute_uri(
+                    reverse("oauth2_provider:rp-initiated-logout")
+                )
         else:
             parsed_url = urlparse(oauth2_settings.OIDC_ISS_ENDPOINT)
             host = parsed_url.scheme + "://" + parsed_url.netloc
@@ -42,6 +58,8 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
                 host, reverse("oauth2_provider:user-info")
             )
             jwks_uri = "{}{}".format(host, reverse("oauth2_provider:jwks-info"))
+            if oauth2_settings.OIDC_RP_INITIATED_LOGOUT_ENABLED:
+                end_session_endpoint = "{}{}".format(host, reverse("oauth2_provider:rp-initiated-logout"))
 
         signing_algorithms = [Application.HS256_ALGORITHM]
         if oauth2_settings.OIDC_RSA_PRIVATE_KEY:
@@ -69,6 +87,8 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
             ),
             "claims_supported": oidc_claims,
         }
+        if oauth2_settings.OIDC_RP_INITIATED_LOGOUT_ENABLED:
+            data["end_session_endpoint"] = end_session_endpoint
         response = JsonResponse(data)
         response["Access-Control-Allow-Origin"] = "*"
         return response
@@ -120,3 +140,160 @@ class UserInfoView(OIDCOnlyMixin, OAuthLibMixin, View):
         for k, v in headers.items():
             response[k] = v
         return response
+
+
+def validate_logout_request(user, id_token_hint, client_id, post_logout_redirect_uri):
+    """
+    Validate an OIDC RP-Initiated Logout Request.
+    `(prompt_logout, (post_logout_redirect_uri, application))` is returned.
+
+    `prompt_logout` indicates whether the logout has to be confirmed by the user. This happens if the
+    specifications force a confirmation, or it is enabled by `OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT`.
+    `post_logout_redirect_uri` is the validated URI where the User should be redirected to after the
+    logout. Can be None. None will redirect to "/" of this app. If it is set `application` will also
+    be set to the Application that is requesting the logout.
+
+    The `id_token_hint` will be validated if given. If both `client_id` and `id_token_hint` are given they
+    will be validated against each other.
+    """
+    validator = oauth2_settings.OAUTH2_VALIDATOR_CLASS()
+
+    id_token = None
+    must_prompt_logout = True
+    if id_token_hint:
+        # Note: The standard states that expired tokens should still be accepted.
+        # This implementation only accepts tokens that are still valid.
+        id_token = validator._load_id_token(id_token_hint)
+
+        if not id_token:
+            raise InvalidIDTokenError()
+
+        if id_token.user == user:
+            # A logout without user interaction (i.e. no prompt) is only allowed
+            # if an ID Token is provided that matches the current user.
+            must_prompt_logout = False
+
+        # If both id_token_hint and client_id are given it must be verified that they match.
+        if client_id:
+            if id_token.application.client_id != client_id:
+                raise ClientIdMissmatch()
+
+    # The standard states that a prompt should always be shown.
+    # This behaviour can be configured with OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT.
+    prompt_logout = must_prompt_logout or oauth2_settings.OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT
+
+    application = None
+    # Determine the application that is requesting the logout.
+    if client_id:
+        application = get_application_model().objects.get(client_id=client_id)
+    elif id_token:
+        application = id_token.application
+
+    # Validate `post_logout_redirect_uri`
+    if post_logout_redirect_uri:
+        if not application:
+            raise InvalidOIDCClientError()
+        scheme = urlparse(post_logout_redirect_uri)[0]
+        if not scheme:
+            raise MismatchingOIDCRedirectURIError("A Scheme is required for the redirect URI.")
+        if scheme == "http" and application.client_type != "confidential":
+            raise MismatchingOIDCRedirectURIError("http is only allowed with confidential clients.")
+        if scheme not in application.get_allowed_schemes():
+            raise MismatchingOIDCRedirectURIError(f'Redirect to scheme "{scheme}" is not permitted.')
+        if not application.post_logout_redirect_uri_allowed(post_logout_redirect_uri):
+            raise MismatchingOIDCRedirectURIError("This client does not have this redirect uri registered.")
+
+    return prompt_logout, (post_logout_redirect_uri, application)
+
+
+class RPInitiatedLogoutView(OIDCOnlyMixin, FormView):
+    template_name = "oauth2_provider/logout_confirm.html"
+    form_class = ConfirmLogoutForm
+
+    def get_initial(self):
+        return {
+            "id_token_hint": self.oidc_data.get("id_token_hint", None),
+            "logout_hint": self.oidc_data.get("logout_hint", None),
+            "client_id": self.oidc_data.get("client_id", None),
+            "post_logout_redirect_uri": self.oidc_data.get("post_logout_redirect_uri", None),
+            "state": self.oidc_data.get("state", None),
+            "ui_locales": self.oidc_data.get("ui_locales", None),
+        }
+
+    def dispatch(self, request, *args, **kwargs):
+        self.oidc_data = {}
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        id_token_hint = request.GET.get("id_token_hint")
+        client_id = request.GET.get("client_id")
+        post_logout_redirect_uri = request.GET.get("post_logout_redirect_uri")
+        state = request.GET.get("state")
+
+        try:
+            prompt, (redirect_uri, application) = validate_logout_request(
+                user=request.user,
+                id_token_hint=id_token_hint,
+                client_id=client_id,
+                post_logout_redirect_uri=post_logout_redirect_uri,
+            )
+        except OIDCError as error:
+            return self.error_response(error)
+
+        if not prompt:
+            return self.do_logout(application, redirect_uri, state)
+
+        self.oidc_data = {
+            "id_token_hint": id_token_hint,
+            "client_id": client_id,
+            "post_logout_redirect_uri": post_logout_redirect_uri,
+            "state": state,
+        }
+        form = self.get_form(self.get_form_class())
+        kwargs["form"] = form
+        if application:
+            kwargs["application"] = application
+
+        return self.render_to_response(self.get_context_data(**kwargs))
+
+    def form_valid(self, form):
+        id_token_hint = form.cleaned_data.get("id_token_hint")
+        client_id = form.cleaned_data.get("client_id")
+        post_logout_redirect_uri = form.cleaned_data.get("post_logout_redirect_uri")
+        state = form.cleaned_data.get("state")
+
+        try:
+            prompt, (redirect_uri, application) = validate_logout_request(
+                user=self.request.user,
+                id_token_hint=id_token_hint,
+                client_id=client_id,
+                post_logout_redirect_uri=post_logout_redirect_uri,
+            )
+
+            if not prompt or form.cleaned_data.get("allow"):
+                return self.do_logout(application, redirect_uri, state)
+            else:
+                raise LogoutDenied()
+
+        except OIDCError as error:
+            return self.error_response(error)
+
+    def do_logout(self, application=None, post_logout_redirect_uri=None, state=None):
+        logout(self.request)
+        if post_logout_redirect_uri:
+            if state:
+                return OAuth2ResponseRedirect(
+                    add_params_to_uri(post_logout_redirect_uri, [("state", state)]),
+                    application.get_allowed_schemes(),
+                )
+            else:
+                return OAuth2ResponseRedirect(post_logout_redirect_uri, application.get_allowed_schemes())
+        else:
+            return OAuth2ResponseRedirect(
+                self.request.build_absolute_uri("/"),
+                oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES,
+            )
+
+    def error_response(self, error):
+        error_response = {"error": error}
+        return self.render_to_response(error_response, status=error.status_code)

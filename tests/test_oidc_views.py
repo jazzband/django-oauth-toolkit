@@ -1,8 +1,15 @@
 import pytest
+from django.contrib.auth import get_user
 from django.test import TestCase
 from django.urls import reverse
 
+from oauth2_provider.exceptions import (
+    ClientIdMissmatch,
+    InvalidOIDCClientError,
+    MismatchingOIDCRedirectURIError,
+)
 from oauth2_provider.oauth2_validators import OAuth2Validator
+from oauth2_provider.views.oidc import validate_logout_request
 
 from . import presets
 
@@ -36,6 +43,37 @@ class TestConnectDiscoveryInfoView(TestCase):
         self.assertEqual(response.status_code, 200)
         assert response.json() == expected_response
 
+    def expect_json_response_with_rp(self, base):
+        expected_response = {
+            "issuer": f"{base}",
+            "authorization_endpoint": f"{base}/authorize/",
+            "token_endpoint": f"{base}/token/",
+            "userinfo_endpoint": f"{base}/userinfo/",
+            "jwks_uri": f"{base}/.well-known/jwks.json",
+            "scopes_supported": ["read", "write", "openid"],
+            "response_types_supported": [
+                "code",
+                "token",
+                "id_token",
+                "id_token token",
+                "code token",
+                "code id_token",
+                "code id_token token",
+            ],
+            "subject_types_supported": ["public"],
+            "id_token_signing_alg_values_supported": ["RS256", "HS256"],
+            "token_endpoint_auth_methods_supported": ["client_secret_post", "client_secret_basic"],
+            "claims_supported": ["sub"],
+            "end_session_endpoint": f"{base}/rp-initiated-logout/",
+        }
+        response = self.client.get(reverse("oauth2_provider:oidc-connect-discovery-info"))
+        self.assertEqual(response.status_code, 200)
+        assert response.json() == expected_response
+
+    def test_get_connect_discovery_info_with_rp_logout(self):
+        self.oauth2_settings.OIDC_RP_INITIATED_LOGOUT_ENABLED = True
+        self.expect_json_response_with_rp(self.oauth2_settings.OIDC_ISS_ENDPOINT)
+
     def test_get_connect_discovery_info_without_issuer_url(self):
         self.oauth2_settings.OIDC_ISS_ENDPOINT = None
         self.oauth2_settings.OIDC_USERINFO_ENDPOINT = None
@@ -63,6 +101,12 @@ class TestConnectDiscoveryInfoView(TestCase):
         response = self.client.get(reverse("oauth2_provider:oidc-connect-discovery-info"))
         self.assertEqual(response.status_code, 200)
         assert response.json() == expected_response
+
+    def test_get_connect_discovery_info_without_issuer_url_with_rp_logout(self):
+        self.oauth2_settings.OIDC_RP_INITIATED_LOGOUT_ENABLED = True
+        self.oauth2_settings.OIDC_ISS_ENDPOINT = None
+        self.oauth2_settings.OIDC_USERINFO_ENDPOINT = None
+        self.expect_json_response_with_rp("http://testserver/o")
 
     def test_get_connect_discovery_info_without_rsa_key(self):
         self.oauth2_settings.OIDC_RSA_PRIVATE_KEY = None
@@ -122,6 +166,168 @@ class TestJwksInfoView(TestCase):
         response = self.client.get(reverse("oauth2_provider:jwks-info"))
         self.assertEqual(response.status_code, 200)
         assert response.json() == expected_response
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("ALWAYS_PROMPT", [True, False])
+def test_validate_logout_request(oidc_tokens, other_application, other_user, rp_settings, ALWAYS_PROMPT):
+    rp_settings.OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT = ALWAYS_PROMPT
+    oidc_tokens = oidc_tokens
+    application = oidc_tokens.application
+    client_id = application.client_id
+    id_token = oidc_tokens.id_token
+    assert validate_logout_request(
+        user=oidc_tokens.user, id_token_hint=None, client_id=None, post_logout_redirect_uri=None
+    ) == (True, (None, None))
+    assert validate_logout_request(
+        user=oidc_tokens.user, id_token_hint=None, client_id=client_id, post_logout_redirect_uri=None
+    ) == (True, (None, application))
+    assert validate_logout_request(
+        user=oidc_tokens.user,
+        id_token_hint=None,
+        client_id=client_id,
+        post_logout_redirect_uri="http://example.org",
+    ) == (True, ("http://example.org", application))
+    assert validate_logout_request(
+        user=oidc_tokens.user,
+        id_token_hint=id_token,
+        client_id=None,
+        post_logout_redirect_uri="http://example.org",
+    ) == (ALWAYS_PROMPT, ("http://example.org", application))
+    assert validate_logout_request(
+        user=other_user,
+        id_token_hint=id_token,
+        client_id=None,
+        post_logout_redirect_uri="http://example.org",
+    ) == (True, ("http://example.org", application))
+    assert validate_logout_request(
+        user=oidc_tokens.user,
+        id_token_hint=id_token,
+        client_id=client_id,
+        post_logout_redirect_uri="http://example.org",
+    ) == (ALWAYS_PROMPT, ("http://example.org", application))
+    with pytest.raises(ClientIdMissmatch):
+        validate_logout_request(
+            user=oidc_tokens.user,
+            id_token_hint=id_token,
+            client_id=other_application.client_id,
+            post_logout_redirect_uri="http://other.org",
+        )
+    with pytest.raises(InvalidOIDCClientError):
+        validate_logout_request(
+            user=oidc_tokens.user,
+            id_token_hint=None,
+            client_id=None,
+            post_logout_redirect_uri="http://example.org",
+        )
+    with pytest.raises(MismatchingOIDCRedirectURIError):
+        validate_logout_request(
+            user=oidc_tokens.user,
+            id_token_hint=None,
+            client_id=client_id,
+            post_logout_redirect_uri="example.org",
+        )
+    with pytest.raises(MismatchingOIDCRedirectURIError):
+        validate_logout_request(
+            user=oidc_tokens.user,
+            id_token_hint=None,
+            client_id=client_id,
+            post_logout_redirect_uri="imap://example.org",
+        )
+    with pytest.raises(MismatchingOIDCRedirectURIError):
+        validate_logout_request(
+            user=oidc_tokens.user,
+            id_token_hint=None,
+            client_id=client_id,
+            post_logout_redirect_uri="http://other.org",
+        )
+
+
+def is_logged_in(client):
+    return get_user(client).is_authenticated
+
+
+@pytest.mark.django_db
+def test_rp_initiated_logout_get(loggend_in_client, rp_settings):
+    rsp = loggend_in_client.get(reverse("oauth2_provider:rp-initiated-logout"), data={})
+    assert rsp.status_code == 200
+    assert is_logged_in(loggend_in_client)
+
+
+@pytest.mark.django_db
+def test_rp_initiated_logout_get_id_token(loggend_in_client, oidc_tokens, rp_settings):
+    rsp = loggend_in_client.get(
+        reverse("oauth2_provider:rp-initiated-logout"), data={"id_token_hint": oidc_tokens.id_token}
+    )
+    assert rsp.status_code == 302
+    assert rsp.headers["Location"] == "http://testserver/"
+    assert not is_logged_in(loggend_in_client)
+
+
+@pytest.mark.django_db
+def test_rp_initiated_logout_get_id_token_redirect(loggend_in_client, oidc_tokens, rp_settings):
+    rsp = loggend_in_client.get(
+        reverse("oauth2_provider:rp-initiated-logout"),
+        data={"id_token_hint": oidc_tokens.id_token, "post_logout_redirect_uri": "http://example.org"},
+    )
+    assert rsp.status_code == 302
+    assert rsp.headers["Location"] == "http://example.org"
+    assert not is_logged_in(loggend_in_client)
+
+
+@pytest.mark.django_db
+def test_rp_initiated_logout_get_id_token_redirect_with_state(loggend_in_client, oidc_tokens, rp_settings):
+    rsp = loggend_in_client.get(
+        reverse("oauth2_provider:rp-initiated-logout"),
+        data={
+            "id_token_hint": oidc_tokens.id_token,
+            "post_logout_redirect_uri": "http://example.org",
+            "state": "987654321",
+        },
+    )
+    assert rsp.status_code == 302
+    assert rsp.headers["Location"] == "http://example.org?state=987654321"
+    assert not is_logged_in(loggend_in_client)
+
+
+@pytest.mark.django_db
+def test_rp_initiated_logout_get_id_token_missmatch_client_id(
+    loggend_in_client, oidc_tokens, other_application, rp_settings
+):
+    rsp = loggend_in_client.get(
+        reverse("oauth2_provider:rp-initiated-logout"),
+        data={"id_token_hint": oidc_tokens.id_token, "client_id": other_application.client_id},
+    )
+    assert rsp.status_code == 400
+    assert is_logged_in(loggend_in_client)
+
+
+@pytest.mark.django_db
+def test_rp_initiated_logout_get_id_token_client_id(loggend_in_client, oidc_tokens, rp_settings):
+    rsp = loggend_in_client.get(
+        reverse("oauth2_provider:rp-initiated-logout"), data={"client_id": oidc_tokens.application.client_id}
+    )
+    assert rsp.status_code == 200
+    assert is_logged_in(loggend_in_client)
+
+
+@pytest.mark.django_db
+def test_rp_initiated_logout_post(loggend_in_client, oidc_tokens, rp_settings):
+    form_data = {
+        "client_id": oidc_tokens.application.client_id,
+    }
+    rsp = loggend_in_client.post(reverse("oauth2_provider:rp-initiated-logout"), form_data)
+    assert rsp.status_code == 400
+    assert is_logged_in(loggend_in_client)
+
+
+@pytest.mark.django_db
+def test_rp_initiated_logout_post_allowed(loggend_in_client, oidc_tokens, rp_settings):
+    form_data = {"client_id": oidc_tokens.application.client_id, "allow": True}
+    rsp = loggend_in_client.post(reverse("oauth2_provider:rp-initiated-logout"), form_data)
+    assert rsp.status_code == 302
+    assert rsp.headers["Location"] == "http://testserver/"
+    assert not is_logged_in(loggend_in_client)
 
 
 @pytest.mark.django_db
