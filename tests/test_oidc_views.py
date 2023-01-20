@@ -260,7 +260,7 @@ def test_rp_initiated_logout_get_id_token(loggend_in_client, oidc_tokens, rp_set
         reverse("oauth2_provider:rp-initiated-logout"), data={"id_token_hint": oidc_tokens.id_token}
     )
     assert rsp.status_code == 302
-    assert rsp.headers["Location"] == "http://testserver/"
+    assert rsp["Location"] == "http://testserver/"
     assert not is_logged_in(loggend_in_client)
 
 
@@ -271,7 +271,7 @@ def test_rp_initiated_logout_get_id_token_redirect(loggend_in_client, oidc_token
         data={"id_token_hint": oidc_tokens.id_token, "post_logout_redirect_uri": "http://example.org"},
     )
     assert rsp.status_code == 302
-    assert rsp.headers["Location"] == "http://example.org"
+    assert rsp["Location"] == "http://example.org"
     assert not is_logged_in(loggend_in_client)
 
 
@@ -286,7 +286,7 @@ def test_rp_initiated_logout_get_id_token_redirect_with_state(loggend_in_client,
         },
     )
     assert rsp.status_code == 302
-    assert rsp.headers["Location"] == "http://example.org?state=987654321"
+    assert rsp["Location"] == "http://example.org?state=987654321"
     assert not is_logged_in(loggend_in_client)
 
 
@@ -326,7 +326,7 @@ def test_rp_initiated_logout_post_allowed(loggend_in_client, oidc_tokens, rp_set
     form_data = {"client_id": oidc_tokens.application.client_id, "allow": True}
     rsp = loggend_in_client.post(reverse("oauth2_provider:rp-initiated-logout"), form_data)
     assert rsp.status_code == 302
-    assert rsp.headers["Location"] == "http://testserver/"
+    assert rsp["Location"] == "http://testserver/"
     assert not is_logged_in(loggend_in_client)
 
 
