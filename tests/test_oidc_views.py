@@ -9,6 +9,7 @@ from oauth2_provider.exceptions import (
     MismatchingOIDCRedirectURIError,
 )
 from oauth2_provider.oauth2_validators import OAuth2Validator
+from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views.oidc import validate_logout_request
 
 from . import presets
@@ -262,6 +263,17 @@ def test_rp_initiated_logout_get_id_token(loggend_in_client, oidc_tokens, rp_set
     assert rsp.status_code == 302
     assert rsp["Location"] == "http://testserver/"
     assert not is_logged_in(loggend_in_client)
+
+
+@pytest.mark.django_db
+def test_rp_initiated_logout_get_revoked_id_token(loggend_in_client, oidc_tokens, rp_settings):
+    validator = oauth2_settings.OAUTH2_VALIDATOR_CLASS()
+    validator._load_id_token(oidc_tokens.id_token).revoke()
+    rsp = loggend_in_client.get(
+        reverse("oauth2_provider:rp-initiated-logout"), data={"id_token_hint": oidc_tokens.id_token}
+    )
+    assert rsp.status_code == 400
+    assert is_logged_in(loggend_in_client)
 
 
 @pytest.mark.django_db
