@@ -109,12 +109,12 @@ def application():
 
 
 @pytest.fixture
-def other_application():
+def public_application():
     return Application.objects.create(
         name="Other Application",
         redirect_uris="http://other.org",
         post_logout_redirect_uris="http://other.org",
-        client_type=Application.CLIENT_CONFIDENTIAL,
+        client_type=Application.CLIENT_PUBLIC,
         authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
         algorithm=Application.RS256_ALGORITHM,
         client_secret=CLEARTEXT_SECRET,
@@ -219,4 +219,17 @@ def oidc_email_scope_tokens(oauth2_settings, application, test_user, client):
         presets.OIDC_SETTINGS_EMAIL_SCOPE,
         "openid email",
         "http://example.org",
+    )
+
+
+@pytest.fixture
+def oidc_non_confidential_tokens(oauth2_settings, public_application, test_user, client):
+    return generate_access_token(
+        oauth2_settings,
+        public_application,
+        test_user,
+        client,
+        presets.OIDC_SETTINGS_EMAIL_SCOPE,
+        "openid",
+        "http://other.org",
     )

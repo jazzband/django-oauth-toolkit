@@ -171,7 +171,7 @@ class TestJwksInfoView(TestCase):
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("ALWAYS_PROMPT", [True, False])
-def test_validate_logout_request(oidc_tokens, other_application, other_user, rp_settings, ALWAYS_PROMPT):
+def test_validate_logout_request(oidc_tokens, public_application, other_user, rp_settings, ALWAYS_PROMPT):
     rp_settings.OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT = ALWAYS_PROMPT
     oidc_tokens = oidc_tokens
     application = oidc_tokens.application
@@ -211,7 +211,7 @@ def test_validate_logout_request(oidc_tokens, other_application, other_user, rp_
         validate_logout_request(
             user=oidc_tokens.user,
             id_token_hint=id_token,
-            client_id=other_application.client_id,
+            client_id=public_application.client_id,
             post_logout_redirect_uri="http://other.org",
         )
     with pytest.raises(InvalidOIDCClientError):
@@ -304,11 +304,27 @@ def test_rp_initiated_logout_get_id_token_redirect_with_state(loggend_in_client,
 
 @pytest.mark.django_db
 def test_rp_initiated_logout_get_id_token_missmatch_client_id(
-    loggend_in_client, oidc_tokens, other_application, rp_settings
+    loggend_in_client, oidc_tokens, public_application, rp_settings
 ):
     rsp = loggend_in_client.get(
         reverse("oauth2_provider:rp-initiated-logout"),
-        data={"id_token_hint": oidc_tokens.id_token, "client_id": other_application.client_id},
+        data={"id_token_hint": oidc_tokens.id_token, "client_id": public_application.client_id},
+    )
+    assert rsp.status_code == 400
+    assert is_logged_in(loggend_in_client)
+
+
+@pytest.mark.django_db
+def test_rp_initiated_logout_public_client_redirect_client_id(
+    loggend_in_client, oidc_non_confidential_tokens, public_application, rp_settings
+):
+    rsp = loggend_in_client.get(
+        reverse("oauth2_provider:rp-initiated-logout"),
+        data={
+            "id_token_hint": oidc_non_confidential_tokens.id_token,
+            "client_id": public_application.client_id,
+            "post_logout_redirect_uri": "http://other.org",
+        },
     )
     assert rsp.status_code == 400
     assert is_logged_in(loggend_in_client)
