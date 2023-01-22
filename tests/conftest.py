@@ -154,17 +154,19 @@ def rp_settings(oauth2_settings):
     return oauth2_settings
 
 
-@pytest.fixture
-def oidc_tokens(oauth2_settings, application, test_user, client):
-    oauth2_settings.update(presets.OIDC_SETTINGS_RW)
+def generate_access_token(oauth2_settings, application, test_user, client, settings, scope, redirect_uri):
+    """
+    A helper function that generates an access_token and ID Token for a given Application and User.
+    """
+    oauth2_settings.update(settings)
     client.force_login(test_user)
     auth_rsp = client.post(
         reverse("oauth2_provider:authorize"),
         data={
             "client_id": application.client_id,
             "state": "random_state_string",
-            "scope": "openid",
-            "redirect_uri": "http://example.org",
+            "scope": scope,
+            "redirect_uri": redirect_uri,
             "response_type": "code",
             "allow": True,
         },
@@ -177,10 +179,10 @@ def oidc_tokens(oauth2_settings, application, test_user, client):
         data={
             "grant_type": "authorization_code",
             "code": code,
-            "redirect_uri": "http://example.org",
+            "redirect_uri": redirect_uri,
             "client_id": application.client_id,
             "client_secret": CLEARTEXT_SECRET,
-            "scope": "openid",
+            "scope": scope,
         },
     )
     assert token_rsp.status_code == 200
@@ -191,44 +193,30 @@ def oidc_tokens(oauth2_settings, application, test_user, client):
         access_token=token_data["access_token"],
         id_token=token_data["id_token"],
         oauth2_settings=oauth2_settings,
+    )
+
+
+@pytest.fixture
+def oidc_tokens(oauth2_settings, application, test_user, client):
+    return generate_access_token(
+        oauth2_settings,
+        application,
+        test_user,
+        client,
+        presets.OIDC_SETTINGS_RW,
+        "openid",
+        "http://example.org",
     )
 
 
 @pytest.fixture
 def oidc_email_scope_tokens(oauth2_settings, application, test_user, client):
-    oauth2_settings.update(presets.OIDC_SETTINGS_EMAIL_SCOPE)
-    client.force_login(test_user)
-    auth_rsp = client.post(
-        reverse("oauth2_provider:authorize"),
-        data={
-            "client_id": application.client_id,
-            "state": "random_state_string",
-            "scope": "openid email",
-            "redirect_uri": "http://example.org",
-            "response_type": "code",
-            "allow": True,
-        },
-    )
-    assert auth_rsp.status_code == 302
-    code = parse_qs(urlparse(auth_rsp["Location"]).query)["code"]
-    client.logout()
-    token_rsp = client.post(
-        reverse("oauth2_provider:token"),
-        data={
-            "grant_type": "authorization_code",
-            "code": code,
-            "redirect_uri": "http://example.org",
-            "client_id": application.client_id,
-            "client_secret": CLEARTEXT_SECRET,
-            "scope": "openid email",
-        },
-    )
-    assert token_rsp.status_code == 200
-    token_data = token_rsp.json()
-    return SimpleNamespace(
-        user=test_user,
-        application=application,
-        access_token=token_data["access_token"],
-        id_token=token_data["id_token"],
-        oauth2_settings=oauth2_settings,
+    return generate_access_token(
+        oauth2_settings,
+        application,
+        test_user,
+        client,
+        presets.OIDC_SETTINGS_EMAIL_SCOPE,
+        "openid email",
+        "http://example.org",
     )
