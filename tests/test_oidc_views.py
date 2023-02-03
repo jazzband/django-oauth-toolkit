@@ -3,11 +3,7 @@ from django.contrib.auth import get_user
 from django.test import TestCase
 from django.urls import reverse
 
-from oauth2_provider.exceptions import (
-    ClientIdMissmatch,
-    InvalidOIDCClientError,
-    MismatchingOIDCRedirectURIError,
-)
+from oauth2_provider.exceptions import ClientIdMissmatch, InvalidOIDCClientError, InvalidOIDCRedirectURIError
 from oauth2_provider.oauth2_validators import OAuth2Validator
 from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views.oidc import validate_logout_request
@@ -221,21 +217,21 @@ def test_validate_logout_request(oidc_tokens, public_application, other_user, rp
             client_id=None,
             post_logout_redirect_uri="http://example.org",
         )
-    with pytest.raises(MismatchingOIDCRedirectURIError):
+    with pytest.raises(InvalidOIDCRedirectURIError):
         validate_logout_request(
             user=oidc_tokens.user,
             id_token_hint=None,
             client_id=client_id,
             post_logout_redirect_uri="example.org",
         )
-    with pytest.raises(MismatchingOIDCRedirectURIError):
+    with pytest.raises(InvalidOIDCRedirectURIError):
         validate_logout_request(
             user=oidc_tokens.user,
             id_token_hint=None,
             client_id=client_id,
             post_logout_redirect_uri="imap://example.org",
         )
-    with pytest.raises(MismatchingOIDCRedirectURIError):
+    with pytest.raises(InvalidOIDCRedirectURIError):
         validate_logout_request(
             user=oidc_tokens.user,
             id_token_hint=None,

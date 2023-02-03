@@ -14,8 +14,8 @@ from ..exceptions import (
     ClientIdMissmatch,
     InvalidIDTokenError,
     InvalidOIDCClientError,
+    InvalidOIDCRedirectURIError,
     LogoutDenied,
-    MismatchingOIDCRedirectURIError,
     OIDCError,
 )
 from ..forms import ConfirmLogoutForm
@@ -195,13 +195,13 @@ def validate_logout_request(user, id_token_hint, client_id, post_logout_redirect
             raise InvalidOIDCClientError()
         scheme = urlparse(post_logout_redirect_uri)[0]
         if not scheme:
-            raise MismatchingOIDCRedirectURIError("A Scheme is required for the redirect URI.")
+            raise InvalidOIDCRedirectURIError("A Scheme is required for the redirect URI.")
         if scheme == "http" and application.client_type != "confidential":
-            raise MismatchingOIDCRedirectURIError("http is only allowed with confidential clients.")
+            raise InvalidOIDCRedirectURIError("http is only allowed with confidential clients.")
         if scheme not in application.get_allowed_schemes():
-            raise MismatchingOIDCRedirectURIError(f'Redirect to scheme "{scheme}" is not permitted.')
+            raise InvalidOIDCRedirectURIError(f'Redirect to scheme "{scheme}" is not permitted.')
         if not application.post_logout_redirect_uri_allowed(post_logout_redirect_uri):
-            raise MismatchingOIDCRedirectURIError("This client does not have this redirect uri registered.")
+            raise InvalidOIDCRedirectURIError("This client does not have this redirect uri registered.")
 
     return prompt_logout, (post_logout_redirect_uri, application)
 

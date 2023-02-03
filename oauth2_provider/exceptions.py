@@ -19,8 +19,11 @@ class FatalClientError(OAuthToolkitError):
     pass
 
 
-# TODO: Cleanup
 class OIDCError(Exception):
+    """
+    General class to derive from for all OIDC related errors.
+    """
+
     status_code = 400
     error = None
 
@@ -34,30 +37,29 @@ class OIDCError(Exception):
 
 class InvalidRequestFatalError(OIDCError):
     """
-    For fatal errors, the request is missing a required parameter, includes
-    an invalid parameter value, includes a parameter more than once, or is
-    otherwise malformed.
+    For fatal errors. These are requests with invalid parameter values, missing parameters or otherwise
+    incorrect requests.
     """
 
     error = "invalid_request"
 
 
 class ClientIdMissmatch(InvalidRequestFatalError):
-    description = "Missmatch between Client ID of the ID Token and provided the Client ID."
+    description = "Mismatch between the Client ID of the ID Token and the Client ID that was provided."
 
 
 class InvalidOIDCClientError(InvalidRequestFatalError):
-    description = "The Client is unknown or no client was included."
+    description = "The client is unknown or no client has been included."
 
 
-class MismatchingOIDCRedirectURIError(InvalidRequestFatalError):
-    description = "Mismatching post logout redirect URI."
+class InvalidOIDCRedirectURIError(InvalidRequestFatalError):
+    description = "Invalid post logout redirect URI."
 
 
 class InvalidIDTokenError(InvalidRequestFatalError):
-    description = "The ID Token is expired, revoked, malformed, or invalid for other reasons."
+    description = "The ID Token is expired, revoked, malformed, or otherwise invalid."
 
 
 class LogoutDenied(OIDCError):
     error = "logout_denied"
-    description = "Logout was denied by the user."
+    description = "Logout has been refused by the user."
