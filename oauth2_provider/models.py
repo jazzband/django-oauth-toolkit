@@ -749,7 +749,6 @@ def redirect_to_uri_allowed(uri, allowed_uris):
             and parsed_allowed_uri.netloc == parsed_uri.netloc
             and parsed_allowed_uri.path == parsed_uri.path
         ):
-
             aqs_set = set(parse_qsl(parsed_allowed_uri.query))
             if aqs_set.issubset(uqs_set):
                 return True

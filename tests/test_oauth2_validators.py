@@ -160,7 +160,6 @@ class TestOAuth2Validator(TransactionTestCase):
             self.validator.save_bearer_token(token, mock.MagicMock())
 
     def test_save_bearer_token__with_existing_tokens__does_not_create_new_tokens(self):
-
         rotate_token_function = mock.MagicMock()
         rotate_token_function.return_value = False
         self.validator.rotate_refresh_token = rotate_token_function
@@ -190,7 +189,6 @@ class TestOAuth2Validator(TransactionTestCase):
         self.assertEqual(1, AccessToken.objects.count())
 
     def test_save_bearer_token__checks_to_rotate_tokens(self):
-
         rotate_token_function = mock.MagicMock()
         rotate_token_function.return_value = False
         self.validator.rotate_refresh_token = rotate_token_function
