@@ -22,7 +22,7 @@ from ..forms import ConfirmLogoutForm
 from ..http import OAuth2ResponseRedirect
 from ..models import get_application_model
 from ..settings import oauth2_settings
-from .mixins import OAuthLibMixin, OIDCOnlyMixin
+from .mixins import OAuthLibMixin, OIDCLogoutOnlyMixin, OIDCOnlyMixin
 
 
 Application = get_application_model()
@@ -206,7 +206,7 @@ def validate_logout_request(user, id_token_hint, client_id, post_logout_redirect
     return prompt_logout, (post_logout_redirect_uri, application)
 
 
-class RPInitiatedLogoutView(OIDCOnlyMixin, FormView):
+class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
     template_name = "oauth2_provider/logout_confirm.html"
     form_class = ConfirmLogoutForm
 
