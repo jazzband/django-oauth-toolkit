@@ -572,7 +572,6 @@ class OAuth2Validator(RequestValidator):
                 and isinstance(refresh_token_instance, RefreshToken)
                 and refresh_token_instance.access_token
             ):
-
                 access_token = AccessToken.objects.select_for_update().get(
                     pk=refresh_token_instance.access_token.pk
                 )
