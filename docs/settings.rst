@@ -177,7 +177,7 @@ this value if you wrote your own implementation (subclass of
 ROTATE_REFRESH_TOKEN
 ~~~~~~~~~~~~~~~~~~~~
 When is set to `True` (default) a new refresh token is issued to the client when the client refreshes an access token.
-Known bugs: `False` currently has a side effect of immediately revoking both access and refresh token on refreshing.
+If `False`, it will reuse the same refresh token and only update the access token with a new token value.
 See also: validator's rotate_refresh_token method can be overridden to make this variable
 (could be usable with expiring refresh tokens, in particular, so that they are rotated
 when close to expiration, theoretically).
