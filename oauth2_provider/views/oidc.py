@@ -86,7 +86,6 @@ class JwksInfoView(OIDCOnlyMixin, View):
                 oauth2_settings.OIDC_RSA_PRIVATE_KEY,
                 *oauth2_settings.OIDC_RSA_PRIVATE_KEYS_INACTIVE,
             ]:
-
                 key = jwk.JWK.from_pem(pem.encode("utf8"))
                 data = {"alg": "RS256", "use": "sig", "kid": key.thumbprint()}
                 data.update(json.loads(key.export_public()))
