@@ -64,3 +64,11 @@ jobs:
       uses: codecov/codecov-action@v1
       with:
         name: Python ${{ matrix.python-version }}
+
+  success:
+    needs: build
+    runs-on: ubuntu-latest
+    name: Test successful
+    steps:
+      - name: Success
+        run: echo Test successful
