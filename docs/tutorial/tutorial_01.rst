@@ -138,9 +138,8 @@ again to the consumer service.
 
 Possible errors:
 
-* loginTemplate: If you are not redirected to the correct page after logging in successfully,
-you probably need to `setup your login template correctly`__.
-* invalid client: client id and client secret needs to be correct. Secret cannot be copied from Django admin after creation.
+* loginTemplate: If you are not redirected to the correct page after logging in successfully, you probably need to `setup your login template correctly`__.
+* invalid client: client id and client secret needs to be correct. Secret cannot be copied from Django admin after creation. 
   (but you can reset it by pasting the same random string into Django admin and into Postman, to avoid recreating the app)
 * invalid callback url: Add the postman link into your app in Django admin.
 * invalid_request: Use "Authorization Code (With PCKE)" from postman or disable PKCE in Django
