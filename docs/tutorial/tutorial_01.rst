@@ -107,7 +107,7 @@ Test Your Authorization Server
 Your authorization server is ready and can begin issuing access tokens. To test the process you need an OAuth2
 consumer; if you are familiar enough with OAuth2, you can use curl, requests, or anything that speaks http.
 
-For this tutorial, we suggest using Postman, where we will be following `this guide https://columbia-it-django-jsonapi-training.readthedocs.io/en/latest/using_oauth2/#get-an-oauth-20-token`.
+For this tutorial, we suggest using Postman.
 
 Set the fields as follows for this tutorial:
 
