@@ -107,9 +107,9 @@ Test Your Authorization Server
 Your authorization server is ready and can begin issuing access tokens. To test the process you need an OAuth2
 consumer; if you are familiar enough with OAuth2, you can use curl, requests, or anything that speaks http.
 
-For this tutorial, we suggest using Postman.
+For this tutorial, we suggest using [Postman](https://www.postman.com/downloads/) :
 
-Set the fields as follows for this tutorial:
+Open up the Authorization tab under a request and, for this tutorial, set the fields as follows:
 
 * Grant type: `Authorization code (With PKCE)`
 * Callback URL: `https://www.getpostman.com/oauth2/callback` <- need to be in your added application
