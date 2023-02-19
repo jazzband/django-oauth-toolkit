@@ -29,7 +29,7 @@ CLIENT_URI = "https://example.org"
 
 @pytest.mark.usefixtures("oauth2_settings")
 @pytest.mark.oauth2_settings(presets.DEFAULT_SCOPES_RW)
-class CorsTest(TestCase):
+class TestCors(TestCase):
     """
     Test that CORS headers can be managed by OAuthLib.
     The objective is: http request 'Origin' header should be passed to OAuthLib
@@ -74,8 +74,7 @@ class CorsTest(TestCase):
         }
 
         auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
-        auth_headers["origin"] = CLIENT_URI
-
+        auth_headers["HTTP_ORIGIN"] = CLIENT_URI
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Access-Control-Allow-Origin"], CLIENT_URI)
