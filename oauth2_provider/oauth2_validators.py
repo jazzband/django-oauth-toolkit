@@ -193,7 +193,8 @@ class OAuth2Validator(RequestValidator):
         assert hasattr(request, "client"), '"request" instance has no "client" attribute'
 
         try:
-            request.client = request.client or Application.objects.get(client_id=client_id)
+            if not isinstance(request.client, Application):
+                request.client = Application.objects.get(client_id=client_id)
             # Check that the application can be used (defaults to always True)
             if not request.client.is_usable(request):
                 log.debug("Failed body authentication: Application %r is disabled" % (client_id))
