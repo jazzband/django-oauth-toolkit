@@ -45,7 +45,7 @@ this value if you wrote your own implementation (subclass of
 ACCESS_TOKEN_GENERATOR
 ~~~~~~~~~~~~~~~~~~~~~~
 Import path of a callable used to generate access tokens.
-oauthlib.oauth2.tokens.random_token_generator is (normally) used if not provided.
+oauthlib.oauth2.rfc6749.tokens.random_token_generator is (normally) used if not provided.
 
 ALLOWED_REDIRECT_URI_SCHEMES
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
