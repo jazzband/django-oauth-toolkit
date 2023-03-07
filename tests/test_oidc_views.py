@@ -1,12 +1,14 @@
 import pytest
 from django.contrib.auth import get_user
-from django.test import TestCase
+from django.contrib.auth.models import AnonymousUser
+from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
 from oauth2_provider.exceptions import ClientIdMissmatch, InvalidOIDCClientError, InvalidOIDCRedirectURIError
+from oauth2_provider.models import get_id_token_model
 from oauth2_provider.oauth2_validators import OAuth2Validator
 from oauth2_provider.settings import oauth2_settings
-from oauth2_provider.views.oidc import validate_logout_request
+from oauth2_provider.views.oidc import _load_id_token, validate_logout_request
 
 from . import presets
 
@@ -165,6 +167,22 @@ class TestJwksInfoView(TestCase):
         assert response.json() == expected_response
 
 
+def mock_request():
+    """
+    Dummy request with an AnonymousUser attached.
+    """
+    return mock_request_for(AnonymousUser())
+
+
+def mock_request_for(user):
+    """
+    Dummy request with the `user` attached.
+    """
+    request = RequestFactory().get("")
+    request.user = user
+    return request
+
+
 @pytest.mark.django_db
 @pytest.mark.parametrize("ALWAYS_PROMPT", [True, False])
 def test_validate_logout_request(oidc_tokens, public_application, other_user, rp_settings, ALWAYS_PROMPT):
@@ -174,66 +192,72 @@ def test_validate_logout_request(oidc_tokens, public_application, other_user, rp
     client_id = application.client_id
     id_token = oidc_tokens.id_token
     assert validate_logout_request(
-        user=oidc_tokens.user, id_token_hint=None, client_id=None, post_logout_redirect_uri=None
+        request=mock_request_for(oidc_tokens.user),
+        id_token_hint=None,
+        client_id=None,
+        post_logout_redirect_uri=None,
     ) == (True, (None, None))
     assert validate_logout_request(
-        user=oidc_tokens.user, id_token_hint=None, client_id=client_id, post_logout_redirect_uri=None
+        request=mock_request_for(oidc_tokens.user),
+        id_token_hint=None,
+        client_id=client_id,
+        post_logout_redirect_uri=None,
     ) == (True, (None, application))
     assert validate_logout_request(
-        user=oidc_tokens.user,
+        request=mock_request_for(oidc_tokens.user),
         id_token_hint=None,
         client_id=client_id,
         post_logout_redirect_uri="http://example.org",
     ) == (True, ("http://example.org", application))
     assert validate_logout_request(
-        user=oidc_tokens.user,
+        request=mock_request_for(oidc_tokens.user),
         id_token_hint=id_token,
         client_id=None,
         post_logout_redirect_uri="http://example.org",
     ) == (ALWAYS_PROMPT, ("http://example.org", application))
     assert validate_logout_request(
-        user=other_user,
+        request=mock_request_for(other_user),
         id_token_hint=id_token,
         client_id=None,
         post_logout_redirect_uri="http://example.org",
     ) == (True, ("http://example.org", application))
     assert validate_logout_request(
-        user=oidc_tokens.user,
+        request=mock_request_for(oidc_tokens.user),
         id_token_hint=id_token,
         client_id=client_id,
         post_logout_redirect_uri="http://example.org",
     ) == (ALWAYS_PROMPT, ("http://example.org", application))
     with pytest.raises(ClientIdMissmatch):
         validate_logout_request(
-            user=oidc_tokens.user,
+            request=mock_request_for(oidc_tokens.user),
             id_token_hint=id_token,
             client_id=public_application.client_id,
             post_logout_redirect_uri="http://other.org",
         )
     with pytest.raises(InvalidOIDCClientError):
         validate_logout_request(
-            user=oidc_tokens.user,
+            request=mock_request_for(oidc_tokens.user),
             id_token_hint=None,
             client_id=None,
             post_logout_redirect_uri="http://example.org",
         )
     with pytest.raises(InvalidOIDCRedirectURIError):
         validate_logout_request(
-            user=oidc_tokens.user,
+            request=mock_request_for(oidc_tokens.user),
             id_token_hint=None,
             client_id=client_id,
             post_logout_redirect_uri="example.org",
         )
     with pytest.raises(InvalidOIDCRedirectURIError):
         validate_logout_request(
-            user=oidc_tokens.user,
+            request=mock_request_for(oidc_tokens.user),
             id_token_hint=None,
             client_id=client_id,
             post_logout_redirect_uri="imap://example.org",
         )
     with pytest.raises(InvalidOIDCRedirectURIError):
         validate_logout_request(
-            user=oidc_tokens.user,
+            request=mock_request_for(oidc_tokens.user),
             id_token_hint=None,
             client_id=client_id,
             post_logout_redirect_uri="http://other.org",
@@ -352,6 +376,60 @@ def test_rp_initiated_logout_post_allowed(loggend_in_client, oidc_tokens, rp_set
     assert rsp.status_code == 302
     assert rsp["Location"] == "http://testserver/"
     assert not is_logged_in(loggend_in_client)
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_LOGOUT)
+def test_rp_initiated_logout_expired_tokens_accept(loggend_in_client, application, expired_id_token):
+    # Accepting expired (but otherwise valid and signed by us) tokens is enabled. Logout should go through.
+    rsp = loggend_in_client.get(
+        reverse("oauth2_provider:rp-initiated-logout"),
+        data={
+            "id_token_hint": expired_id_token,
+            "client_id": application.client_id,
+        },
+    )
+    assert rsp.status_code == 302
+    assert not is_logged_in(loggend_in_client)
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_LOGOUT_DENY_EXPIRED)
+def test_rp_initiated_logout_expired_tokens_deny(loggend_in_client, application, expired_id_token):
+    # Expired tokens should not be accepted by default.
+    rsp = loggend_in_client.get(
+        reverse("oauth2_provider:rp-initiated-logout"),
+        data={
+            "id_token_hint": expired_id_token,
+            "client_id": application.client_id,
+        },
+    )
+    assert rsp.status_code == 400
+    assert is_logged_in(loggend_in_client)
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_LOGOUT)
+def test_load_id_token_accept_expired(expired_id_token):
+    assert isinstance(_load_id_token(mock_request(), expired_id_token), get_id_token_model())
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_LOGOUT)
+def test_load_id_token_wrong_aud(id_token_wrong_aud):
+    assert _load_id_token(mock_request(), id_token_wrong_aud) is None
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_LOGOUT)
+def test_load_id_token_wrong_iss(id_token_wrong_iss):
+    assert _load_id_token(mock_request(), id_token_wrong_iss) is None
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_LOGOUT_DENY_EXPIRED)
+def test_load_id_token_deny_expired(expired_id_token):
+    assert _load_id_token(mock_request(), expired_id_token) is None
 
 
 @pytest.mark.django_db

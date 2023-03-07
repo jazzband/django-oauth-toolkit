@@ -328,6 +328,12 @@ Default: ``True``
 Whether to always prompt the :term:`Resource Owner` (End User) to confirm a logout requested by a
 :term:`Client` (Relying Party). If it is disabled the :term:`Resource Owner` (End User) will only be prompted if required by the standard.
 
+OIDC_RP_INITIATED_LOGOUT_ACCEPT_EXPIRED_TOKENS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Default: ``True``
+
+Whether expired ID tokens are accepted for RP-Initiated Logout. The Tokens must still be signed by the OP and otherwise valid.
+
 OIDC_ISS_ENDPOINT
 ~~~~~~~~~~~~~~~~~
 Default: ``""``

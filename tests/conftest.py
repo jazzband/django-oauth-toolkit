@@ -1,3 +1,5 @@
+import uuid
+from datetime import timedelta
 from types import SimpleNamespace
 from urllib.parse import parse_qs, urlparse
 
@@ -5,9 +7,10 @@ import pytest
 from django.conf import settings as test_settings
 from django.contrib.auth import get_user_model
 from django.urls import reverse
-from jwcrypto import jwk
+from django.utils import dateformat, timezone
+from jwcrypto import jwk, jwt
 
-from oauth2_provider.models import get_application_model
+from oauth2_provider.models import get_application_model, get_id_token_model
 from oauth2_provider.settings import oauth2_settings as _oauth2_settings
 
 from . import presets
@@ -194,6 +197,52 @@ def generate_access_token(oauth2_settings, application, test_user, client, setti
         id_token=token_data["id_token"],
         oauth2_settings=oauth2_settings,
     )
+
+
+@pytest.fixture
+def expired_id_token(oauth2_settings, oidc_key, test_user, application):
+    payload = generate_id_token_payload(oauth2_settings, application, oidc_key)
+    return generate_id_token(test_user, payload, oidc_key, application)
+
+
+@pytest.fixture
+def id_token_wrong_aud(oauth2_settings, oidc_key, test_user, application):
+    payload = generate_id_token_payload(oauth2_settings, application, oidc_key)
+    payload[1]["aud"] = ""
+    return generate_id_token(test_user, payload, oidc_key, application)
+
+
+@pytest.fixture
+def id_token_wrong_iss(oauth2_settings, oidc_key, test_user, application):
+    payload = generate_id_token_payload(oauth2_settings, application, oidc_key)
+    payload[1]["iss"] = ""
+    return generate_id_token(test_user, payload, oidc_key, application)
+
+
+def generate_id_token_payload(oauth2_settings, application, oidc_key):
+    # Default leeway of JWT in jwcrypto is 60 seconds. This means that tokens that expired up to 60 seconds
+    # ago are still accepted.
+    expiration_time = timezone.now() - timedelta(seconds=61)
+    # Calculate values for the IDToken
+    exp = int(dateformat.format(expiration_time, "U"))
+    jti = str(uuid.uuid4())
+    aud = application.client_id
+    iss = oauth2_settings.OIDC_ISS_ENDPOINT
+    # Construct and sign the IDToken
+    header = {"typ": "JWT", "alg": "RS256", "kid": oidc_key.thumbprint()}
+    id_token = {"exp": exp, "jti": jti, "aud": aud, "iss": iss}
+    return header, id_token, jti, expiration_time
+
+
+def generate_id_token(user, payload, oidc_key, application):
+    header, id_token, jti, expiration_time = payload
+    jwt_token = jwt.JWT(header=header, claims=id_token)
+    jwt_token.make_signed_token(oidc_key)
+    # Save the IDToken in the DB. Required for later lookups from e.g. RP-Initiated Logout.
+    IDToken = get_id_token_model()
+    IDToken.objects.create(user=user, scope="", expires=expiration_time, jti=jti, application=application)
+    # Return the token as a string.
+    return jwt_token.token.serialize(compact=True)
 
 
 @pytest.fixture

@@ -7,7 +7,9 @@ from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import FormView, View
-from jwcrypto import jwk
+from jwcrypto import jwk, jwt
+from jwcrypto.common import JWException
+from jwcrypto.jwt import JWTExpired
 from oauthlib.common import add_params_to_uri
 
 from ..exceptions import (
@@ -20,7 +22,7 @@ from ..exceptions import (
 )
 from ..forms import ConfirmLogoutForm
 from ..http import OAuth2ResponseRedirect
-from ..models import get_application_model
+from ..models import get_application_model, get_id_token_model
 from ..settings import oauth2_settings
 from .mixins import OAuthLibMixin, OIDCLogoutOnlyMixin, OIDCOnlyMixin
 
@@ -142,7 +144,50 @@ class UserInfoView(OIDCOnlyMixin, OAuthLibMixin, View):
         return response
 
 
-def validate_logout_request(user, id_token_hint, client_id, post_logout_redirect_uri):
+def _load_id_token(request, token):
+    """
+    Loads an IDToken given its string representation for use with RP-Initiated Logout.
+    This method differs from `oauth2_validators._load_id_token` in two ways.
+    This method validates the `iss` claim and might accept expired but otherwise valid tokens
+    depending on the configuration.
+    """
+    IDToken = get_id_token_model()
+    validator = oauth2_settings.OAUTH2_VALIDATOR_CLASS()
+
+    key = validator._get_key_for_token(token)
+    if not key:
+        return None
+
+    try:
+        if oauth2_settings.OIDC_RP_INITIATED_LOGOUT_ACCEPT_EXPIRED_TOKENS:
+            # Only check the following while loading the JWT
+            # - claims are dict
+            # - the Claims defined in RFC7519 if present have the correct type (string, integer, etc.)
+            # The claim contents are not validated. `exp` and `nbf` in particular are not validated.
+            check_claims = {}
+        else:
+            # Also validate the `exp` (expiration time) and `nbf` (not before) claims.
+            check_claims = None
+        jwt_token = jwt.JWT(key=key, jwt=token, check_claims=check_claims)
+        claims = json.loads(jwt_token.claims)
+
+        # Verification of `iss` claim is mandated by OIDC RP-Initiated Logout specs.
+        if claims["iss"] != validator.get_oidc_issuer_endpoint(request):
+            # IDToken was not issued by this OP.
+            return None
+
+        # Assumption: the `sub` claim and `user` property of the corresponding IDToken Object point to the
+        # same user.
+        # To verify that the IDToken was intended for the user it is therefore sufficient to check the `user`
+        # attribute on the IDToken Object later on.
+
+        return IDToken.objects.get(jti=claims["jti"])
+
+    except (JWException, JWTExpired, IDToken.DoesNotExist):
+        return None
+
+
+def validate_logout_request(request, id_token_hint, client_id, post_logout_redirect_uri):
     """
     Validate an OIDC RP-Initiated Logout Request.
     `(prompt_logout, (post_logout_redirect_uri, application))` is returned.
@@ -156,19 +201,18 @@ def validate_logout_request(user, id_token_hint, client_id, post_logout_redirect
     The `id_token_hint` will be validated if given. If both `client_id` and `id_token_hint` are given they
     will be validated against each other.
     """
-    validator = oauth2_settings.OAUTH2_VALIDATOR_CLASS()
 
     id_token = None
     must_prompt_logout = True
     if id_token_hint:
         # Note: The standard states that expired tokens should still be accepted.
         # This implementation only accepts tokens that are still valid.
-        id_token = validator._load_id_token(id_token_hint)
+        id_token = _load_id_token(request, id_token_hint)
 
         if not id_token:
             raise InvalidIDTokenError()
 
-        if id_token.user == user:
+        if id_token.user == request.user:
             # A logout without user interaction (i.e. no prompt) is only allowed
             # if an ID Token is provided that matches the current user.
             must_prompt_logout = False
@@ -232,7 +276,7 @@ class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
 
         try:
             prompt, (redirect_uri, application) = validate_logout_request(
-                user=request.user,
+                request=request,
                 id_token_hint=id_token_hint,
                 client_id=client_id,
                 post_logout_redirect_uri=post_logout_redirect_uri,
@@ -264,7 +308,7 @@ class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
 
         try:
             prompt, (redirect_uri, application) = validate_logout_request(
-                user=self.request.user,
+                request=self.request,
                 id_token_hint=id_token_hint,
                 client_id=client_id,
                 post_logout_redirect_uri=post_logout_redirect_uri,
