@@ -8,7 +8,7 @@ from oauth2_provider.exceptions import ClientIdMissmatch, InvalidOIDCClientError
 from oauth2_provider.models import get_id_token_model
 from oauth2_provider.oauth2_validators import OAuth2Validator
 from oauth2_provider.settings import oauth2_settings
-from oauth2_provider.views.oidc import _load_id_token, validate_logout_request
+from oauth2_provider.views.oidc import _load_id_token, _validate_claims, validate_logout_request
 
 from . import presets
 
@@ -411,25 +411,41 @@ def test_rp_initiated_logout_expired_tokens_deny(loggend_in_client, application,
 @pytest.mark.django_db
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_LOGOUT)
 def test_load_id_token_accept_expired(expired_id_token):
-    assert isinstance(_load_id_token(mock_request(), expired_id_token), get_id_token_model())
+    id_token, _ = _load_id_token(expired_id_token)
+    assert isinstance(id_token, get_id_token_model())
 
 
 @pytest.mark.django_db
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_LOGOUT)
 def test_load_id_token_wrong_aud(id_token_wrong_aud):
-    assert _load_id_token(mock_request(), id_token_wrong_aud) is None
-
-
-@pytest.mark.django_db
-@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_LOGOUT)
-def test_load_id_token_wrong_iss(id_token_wrong_iss):
-    assert _load_id_token(mock_request(), id_token_wrong_iss) is None
+    id_token, claims = _load_id_token(id_token_wrong_aud)
+    assert id_token is None
+    assert claims is None
 
 
 @pytest.mark.django_db
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_LOGOUT_DENY_EXPIRED)
 def test_load_id_token_deny_expired(expired_id_token):
-    assert _load_id_token(mock_request(), expired_id_token) is None
+    id_token, claims = _load_id_token(expired_id_token)
+    assert id_token is None
+    assert claims is None
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_LOGOUT)
+def test_validate_claims_wrong_iss(id_token_wrong_iss):
+    id_token, claims = _load_id_token(id_token_wrong_iss)
+    assert id_token is not None
+    assert claims is not None
+    assert not _validate_claims(mock_request(), claims)
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_LOGOUT)
+def test_validate_claims(oidc_tokens):
+    id_token, claims = _load_id_token(oidc_tokens.id_token)
+    assert claims is not None
+    assert _validate_claims(mock_request_for(oidc_tokens.user), claims)
 
 
 @pytest.mark.django_db

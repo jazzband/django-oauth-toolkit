@@ -144,19 +144,18 @@ class UserInfoView(OIDCOnlyMixin, OAuthLibMixin, View):
         return response
 
 
-def _load_id_token(request, token):
+def _load_id_token(token):
     """
     Loads an IDToken given its string representation for use with RP-Initiated Logout.
-    This method differs from `oauth2_validators._load_id_token` in two ways.
-    This method validates the `iss` claim and might accept expired but otherwise valid tokens
-    depending on the configuration.
+    A tuple (IDToken, claims) is returned. Depending on the configuration expired tokens may be loaded.
+    If loading failed (None, None) is returned.
     """
     IDToken = get_id_token_model()
     validator = oauth2_settings.OAUTH2_VALIDATOR_CLASS()
 
     key = validator._get_key_for_token(token)
     if not key:
-        return None
+        return None, None
 
     try:
         if oauth2_settings.OIDC_RP_INITIATED_LOGOUT_ACCEPT_EXPIRED_TOKENS:
@@ -171,20 +170,29 @@ def _load_id_token(request, token):
         jwt_token = jwt.JWT(key=key, jwt=token, check_claims=check_claims)
         claims = json.loads(jwt_token.claims)
 
-        # Verification of `iss` claim is mandated by OIDC RP-Initiated Logout specs.
-        if claims["iss"] != validator.get_oidc_issuer_endpoint(request):
-            # IDToken was not issued by this OP.
-            return None
-
         # Assumption: the `sub` claim and `user` property of the corresponding IDToken Object point to the
         # same user.
         # To verify that the IDToken was intended for the user it is therefore sufficient to check the `user`
         # attribute on the IDToken Object later on.
 
-        return IDToken.objects.get(jti=claims["jti"])
+        return IDToken.objects.get(jti=claims["jti"]), claims
 
     except (JWException, JWTExpired, IDToken.DoesNotExist):
-        return None
+        return None, None
+
+
+def _validate_claims(request, claims):
+    """
+    Validates the claims of an IDToken for use with OIDC RP-Initiated Logout.
+    """
+    validator = oauth2_settings.OAUTH2_VALIDATOR_CLASS()
+
+    # Verification of `iss` claim is mandated by OIDC RP-Initiated Logout specs.
+    if "iss" not in claims or claims["iss"] != validator.get_oidc_issuer_endpoint(request):
+        # IDToken was not issued by this OP, or it can not be verified.
+        return False
+
+    return True
 
 
 def validate_logout_request(request, id_token_hint, client_id, post_logout_redirect_uri):
@@ -205,11 +213,10 @@ def validate_logout_request(request, id_token_hint, client_id, post_logout_redir
     id_token = None
     must_prompt_logout = True
     if id_token_hint:
-        # Note: The standard states that expired tokens should still be accepted.
-        # This implementation only accepts tokens that are still valid.
-        id_token = _load_id_token(request, id_token_hint)
+        # Only basic validation has been done on the IDToken at this point.
+        id_token, claims = _load_id_token(id_token_hint)
 
-        if not id_token:
+        if not id_token or not _validate_claims(request, claims):
             raise InvalidIDTokenError()
 
         if id_token.user == request.user:
