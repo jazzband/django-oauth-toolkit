@@ -3,9 +3,10 @@ from django.contrib.auth import get_user
 from django.contrib.auth.models import AnonymousUser
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from oauth2_provider.exceptions import ClientIdMissmatch, InvalidOIDCClientError, InvalidOIDCRedirectURIError
-from oauth2_provider.models import get_id_token_model
+from oauth2_provider.models import get_access_token_model, get_id_token_model, get_refresh_token_model
 from oauth2_provider.oauth2_validators import OAuth2Validator
 from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views.oidc import _load_id_token, _validate_claims, validate_logout_request
@@ -472,6 +473,58 @@ def test_userinfo_endpoint_bad_token(oidc_tokens, client):
         HTTP_AUTHORIZATION="Bearer not-a-real-token",
     )
     assert rsp.status_code == 401
+
+
+@pytest.mark.django_db
+def test_token_deletion_on_logout(oidc_tokens, loggend_in_client, rp_settings):
+    AccessToken = get_access_token_model()
+    IDToken = get_id_token_model()
+    RefreshToken = get_refresh_token_model()
+    assert AccessToken.objects.count() == 1
+    assert IDToken.objects.count() == 1
+    assert RefreshToken.objects.count() == 1
+    rsp = loggend_in_client.get(
+        reverse("oauth2_provider:rp-initiated-logout"),
+        data={
+            "id_token_hint": oidc_tokens.id_token,
+            "client_id": oidc_tokens.application.client_id,
+        },
+    )
+    assert rsp.status_code == 302
+    assert not is_logged_in(loggend_in_client)
+    # Check that all tokens have either been deleted or expired.
+    assert all([token.is_expired() for token in AccessToken.objects.all()])
+    assert all([token.is_expired() for token in IDToken.objects.all()])
+    assert all([token.revoked <= timezone.now() for token in RefreshToken.objects.all()])
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_LOGOUT_KEEP_TOKENS)
+def test_token_deletion_on_logout_disabled(oidc_tokens, loggend_in_client, rp_settings):
+    rp_settings.OIDC_RP_INITIATED_LOGOUT_DELETE_TOKENS = False
+
+    AccessToken = get_access_token_model()
+    IDToken = get_id_token_model()
+    RefreshToken = get_refresh_token_model()
+    assert AccessToken.objects.count() == 1
+    assert IDToken.objects.count() == 1
+    assert RefreshToken.objects.count() == 1
+    rsp = loggend_in_client.get(
+        reverse("oauth2_provider:rp-initiated-logout"),
+        data={
+            "id_token_hint": oidc_tokens.id_token,
+            "client_id": oidc_tokens.application.client_id,
+        },
+    )
+    assert rsp.status_code == 302
+    assert not is_logged_in(loggend_in_client)
+    # Check that the tokens have not been expired or deleted.
+    assert AccessToken.objects.count() == 1
+    assert not any([token.is_expired() for token in AccessToken.objects.all()])
+    assert IDToken.objects.count() == 1
+    assert not any([token.is_expired() for token in IDToken.objects.all()])
+    assert RefreshToken.objects.count() == 1
+    assert not any([token.revoked is not None for token in RefreshToken.objects.all()])
 
 
 EXAMPLE_EMAIL = "example.email@example.com"

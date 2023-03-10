@@ -22,7 +22,12 @@ from ..exceptions import (
 )
 from ..forms import ConfirmLogoutForm
 from ..http import OAuth2ResponseRedirect
-from ..models import get_application_model, get_id_token_model
+from ..models import (
+    get_access_token_model,
+    get_application_model,
+    get_id_token_model,
+    get_refresh_token_model,
+)
 from ..settings import oauth2_settings
 from .mixins import OAuthLibMixin, OIDCLogoutOnlyMixin, OIDCOnlyMixin
 
@@ -260,6 +265,10 @@ def validate_logout_request(request, id_token_hint, client_id, post_logout_redir
 class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
     template_name = "oauth2_provider/logout_confirm.html"
     form_class = ConfirmLogoutForm
+    token_types_to_delete = [
+        Application.CLIENT_PUBLIC,
+        Application.CLIENT_CONFIDENTIAL,
+    ]
 
     def get_initial(self):
         return {
@@ -330,7 +339,29 @@ class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
             return self.error_response(error)
 
     def do_logout(self, application=None, post_logout_redirect_uri=None, state=None):
+        # Delete Access Tokens
+        if oauth2_settings.OIDC_RP_INITIATED_LOGOUT_DELETE_TOKENS:
+            AccessToken = get_access_token_model()
+            RefreshToken = get_refresh_token_model()
+            access_tokens_to_delete = AccessToken.objects.filter(
+                user=self.request.user, application__client_type__in=self.token_types_to_delete
+            )
+            # This queryset has to be evaluated eagerly. The queryset would be empty with lazy evaluation
+            # because `access_tokens_to_delete` represents an empty queryset once `refresh_tokens_to_delete`
+            # is evaluated as all AccessTokens have been deleted.
+            refresh_tokens_to_delete = list(
+                RefreshToken.objects.filter(access_token__in=access_tokens_to_delete)
+            )
+            for token in access_tokens_to_delete:
+                # Delete the token and its corresponding refresh and IDTokens.
+                if token.id_token:
+                    token.id_token.revoke()
+                token.revoke()
+            for refresh_token in refresh_tokens_to_delete:
+                refresh_token.revoke()
+        # Logout in Django
         logout(self.request)
+        # Redirect
         if post_logout_redirect_uri:
             if state:
                 return OAuth2ResponseRedirect(

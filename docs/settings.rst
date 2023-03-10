@@ -334,6 +334,14 @@ Default: ``True``
 
 Whether expired ID tokens are accepted for RP-Initiated Logout. The Tokens must still be signed by the OP and otherwise valid.
 
+OIDC_RP_INITIATED_LOGOUT_DELETE_TOKENS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Default: ``True``
+
+Whether to delete the access, refresh and ID tokens of the user that is being logged out.
+The types of applications for which tokens are deleted can be customized with `RPInitiatedLogoutView.token_types_to_delete`.
+The default is to delete the tokens of all applications if this flag is enabled.
+
 OIDC_ISS_ENDPOINT
 ~~~~~~~~~~~~~~~~~
 Default: ``""``
