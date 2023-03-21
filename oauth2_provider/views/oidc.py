@@ -265,9 +265,18 @@ def validate_logout_request(request, id_token_hint, client_id, post_logout_redir
 class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
     template_name = "oauth2_provider/logout_confirm.html"
     form_class = ConfirmLogoutForm
-    token_types_to_delete = [
+    # Only delete tokens for Application whose client type and authorization
+    # grant type are in the respective lists.
+    token_deletion_client_types = [
         Application.CLIENT_PUBLIC,
         Application.CLIENT_CONFIDENTIAL,
+    ]
+    token_deletion_grant_types = [
+        Application.GRANT_AUTHORIZATION_CODE,
+        Application.GRANT_IMPLICIT,
+        Application.GRANT_PASSWORD,
+        Application.GRANT_CLIENT_CREDENTIALS,
+        Application.GRANT_OPENID_HYBRID,
     ]
 
     def get_initial(self):
@@ -344,7 +353,9 @@ class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
             AccessToken = get_access_token_model()
             RefreshToken = get_refresh_token_model()
             access_tokens_to_delete = AccessToken.objects.filter(
-                user=self.request.user, application__client_type__in=self.token_types_to_delete
+                user=self.request.user,
+                application__client_type__in=self.token_deletion_client_types,
+                application__authorization_grant_type__in=self.token_deletion_grant_types,
             )
             # This queryset has to be evaluated eagerly. The queryset would be empty with lazy evaluation
             # because `access_tokens_to_delete` represents an empty queryset once `refresh_tokens_to_delete`
