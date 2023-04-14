@@ -1,5 +1,6 @@
 import django
 
+
 ADMINS = ()
 
 MANAGERS = ADMINS
