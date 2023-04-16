@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import FormView, View
-from jwcrypto import jwk, jwt
+from jwcrypto import jwt
 from jwcrypto.common import JWException
 from jwcrypto.jws import InvalidJWSObject
 from jwcrypto.jwt import JWTExpired
@@ -30,6 +30,7 @@ from ..models import (
     get_refresh_token_model,
 )
 from ..settings import oauth2_settings
+from ..utils import jwk_from_pem
 from .mixins import OAuthLibMixin, OIDCLogoutOnlyMixin, OIDCOnlyMixin
 
 
@@ -114,7 +115,7 @@ class JwksInfoView(OIDCOnlyMixin, View):
                 oauth2_settings.OIDC_RSA_PRIVATE_KEY,
                 *oauth2_settings.OIDC_RSA_PRIVATE_KEYS_INACTIVE,
             ]:
-                key = jwk.JWK.from_pem(pem.encode("utf8"))
+                key = jwk_from_pem(pem)
                 data = {"alg": "RS256", "use": "sig", "kid": key.thumbprint()}
                 data.update(json.loads(key.export_public()))
                 keys.append(data)
