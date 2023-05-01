@@ -51,3 +51,6 @@ _build
 
 /venv/
 /coverage.xml
+
+db.sqlite3
+venv/
