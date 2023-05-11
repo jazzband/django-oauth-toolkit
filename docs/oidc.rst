@@ -160,7 +160,7 @@ This feature has to be enabled separately as it is an extension to the core stan
        # OIDC has to be enabled to use RP-Initiated Logout
        "OIDC_ENABLED": True,
        # Enable and configure RP-Initiated Logout
-       "OIDC_RP_INITIATED_LOGOUT": True,
+       "OIDC_RP_INITIATED_LOGOUT_ENABLED": True,
        "OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT": True,
        # ... any other settings you want
    }

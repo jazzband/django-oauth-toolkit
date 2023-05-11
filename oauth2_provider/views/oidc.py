@@ -9,6 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import FormView, View
 from jwcrypto import jwk, jwt
 from jwcrypto.common import JWException
+from jwcrypto.jws import InvalidJWSObject
 from jwcrypto.jwt import JWTExpired
 from oauthlib.common import add_params_to_uri
 
@@ -158,7 +159,13 @@ def _load_id_token(token):
     IDToken = get_id_token_model()
     validator = oauth2_settings.OAUTH2_VALIDATOR_CLASS()
 
-    key = validator._get_key_for_token(token)
+    try:
+        key = validator._get_key_for_token(token)
+    except InvalidJWSObject:
+        # Failed to deserialize the key.
+        return None, None
+
+    # Could not identify key from the ID Token.
     if not key:
         return None, None
 

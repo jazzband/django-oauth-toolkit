@@ -265,6 +265,10 @@ def test_validate_logout_request(oidc_tokens, public_application, other_user, rp
         )
 
 
+def test__load_id_token():
+    assert _load_id_token("Not a Valid ID Token.") == (None, None)
+
+
 def is_logged_in(client):
     return get_user(client).is_authenticated
 
