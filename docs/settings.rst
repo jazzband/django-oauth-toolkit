@@ -328,6 +328,12 @@ Default: ``True``
 Whether to always prompt the :term:`Resource Owner` (End User) to confirm a logout requested by a
 :term:`Client` (Relying Party). If it is disabled the :term:`Resource Owner` (End User) will only be prompted if required by the standard.
 
+OIDC_RP_INITIATED_LOGOUT_STRICT_REDIRECT_URIS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Default: ``False``
+
+Enable to only allow the `http` scheme in post logout redirect URIs when a :term:`Client` is `confidential`.
+
 OIDC_RP_INITIATED_LOGOUT_ACCEPT_EXPIRED_TOKENS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Default: ``True``

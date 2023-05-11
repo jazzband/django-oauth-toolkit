@@ -259,7 +259,9 @@ def validate_logout_request(request, id_token_hint, client_id, post_logout_redir
         scheme = urlparse(post_logout_redirect_uri)[0]
         if not scheme:
             raise InvalidOIDCRedirectURIError("A Scheme is required for the redirect URI.")
-        if scheme == "http" and application.client_type != "confidential":
+        if oauth2_settings.OIDC_RP_INITIATED_LOGOUT_STRICT_REDIRECT_URIS and (
+            scheme == "http" and application.client_type != "confidential"
+        ):
             raise InvalidOIDCRedirectURIError("http is only allowed with confidential clients.")
         if scheme not in application.get_allowed_schemes():
             raise InvalidOIDCRedirectURIError(f'Redirect to scheme "{scheme}" is not permitted.')
