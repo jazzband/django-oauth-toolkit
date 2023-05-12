@@ -88,6 +88,11 @@ DEFAULTS = {
         "client_secret_post",
         "client_secret_basic",
     ],
+    "OIDC_RP_INITIATED_LOGOUT_ENABLED": False,
+    "OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT": True,
+    "OIDC_RP_INITIATED_LOGOUT_STRICT_REDIRECT_URIS": False,
+    "OIDC_RP_INITIATED_LOGOUT_ACCEPT_EXPIRED_TOKENS": True,
+    "OIDC_RP_INITIATED_LOGOUT_DELETE_TOKENS": True,
     # Special settings that will be evaluated at runtime
     "_SCOPES": [],
     "_DEFAULT_SCOPES": [],

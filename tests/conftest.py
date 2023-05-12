@@ -1,3 +1,5 @@
+import uuid
+from datetime import timedelta
 from types import SimpleNamespace
 from urllib.parse import parse_qs, urlparse
 
@@ -5,9 +7,10 @@ import pytest
 from django.conf import settings as test_settings
 from django.contrib.auth import get_user_model
 from django.urls import reverse
-from jwcrypto import jwk
+from django.utils import dateformat, timezone
+from jwcrypto import jwk, jwt
 
-from oauth2_provider.models import get_application_model
+from oauth2_provider.models import get_application_model, get_id_token_model
 from oauth2_provider.settings import oauth2_settings as _oauth2_settings
 
 from . import presets
@@ -100,11 +103,34 @@ def application():
     return Application.objects.create(
         name="Test Application",
         redirect_uris="http://example.org",
+        post_logout_redirect_uris="http://example.org",
         client_type=Application.CLIENT_CONFIDENTIAL,
         authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
         algorithm=Application.RS256_ALGORITHM,
         client_secret=CLEARTEXT_SECRET,
     )
+
+
+@pytest.fixture
+def public_application():
+    return Application.objects.create(
+        name="Other Application",
+        redirect_uris="http://other.org",
+        post_logout_redirect_uris="http://other.org",
+        client_type=Application.CLIENT_PUBLIC,
+        authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+        algorithm=Application.RS256_ALGORITHM,
+        client_secret=CLEARTEXT_SECRET,
+    )
+
+
+@pytest.fixture
+def loggend_in_client(test_user):
+    from django.test.client import Client
+
+    client = Client()
+    client.force_login(test_user)
+    return client
 
 
 @pytest.fixture
@@ -121,16 +147,29 @@ def test_user():
 
 
 @pytest.fixture
-def oidc_tokens(oauth2_settings, application, test_user, client):
-    oauth2_settings.update(presets.OIDC_SETTINGS_RW)
+def other_user():
+    return UserModel.objects.create_user("other_user", "other@example.com", "123456")
+
+
+@pytest.fixture
+def rp_settings(oauth2_settings):
+    oauth2_settings.update(presets.OIDC_SETTINGS_RP_LOGOUT)
+    return oauth2_settings
+
+
+def generate_access_token(oauth2_settings, application, test_user, client, settings, scope, redirect_uri):
+    """
+    A helper function that generates an access_token and ID Token for a given Application and User.
+    """
+    oauth2_settings.update(settings)
     client.force_login(test_user)
     auth_rsp = client.post(
         reverse("oauth2_provider:authorize"),
         data={
             "client_id": application.client_id,
             "state": "random_state_string",
-            "scope": "openid",
-            "redirect_uri": "http://example.org",
+            "scope": scope,
+            "redirect_uri": redirect_uri,
             "response_type": "code",
             "allow": True,
         },
@@ -143,10 +182,10 @@ def oidc_tokens(oauth2_settings, application, test_user, client):
         data={
             "grant_type": "authorization_code",
             "code": code,
-            "redirect_uri": "http://example.org",
+            "redirect_uri": redirect_uri,
             "client_id": application.client_id,
             "client_secret": CLEARTEXT_SECRET,
-            "scope": "openid",
+            "scope": scope,
         },
     )
     assert token_rsp.status_code == 200
@@ -161,40 +200,85 @@ def oidc_tokens(oauth2_settings, application, test_user, client):
 
 
 @pytest.fixture
+def expired_id_token(oauth2_settings, oidc_key, test_user, application):
+    payload = generate_id_token_payload(oauth2_settings, application, oidc_key)
+    return generate_id_token(test_user, payload, oidc_key, application)
+
+
+@pytest.fixture
+def id_token_wrong_aud(oauth2_settings, oidc_key, test_user, application):
+    payload = generate_id_token_payload(oauth2_settings, application, oidc_key)
+    payload[1]["aud"] = ""
+    return generate_id_token(test_user, payload, oidc_key, application)
+
+
+@pytest.fixture
+def id_token_wrong_iss(oauth2_settings, oidc_key, test_user, application):
+    payload = generate_id_token_payload(oauth2_settings, application, oidc_key)
+    payload[1]["iss"] = ""
+    return generate_id_token(test_user, payload, oidc_key, application)
+
+
+def generate_id_token_payload(oauth2_settings, application, oidc_key):
+    # Default leeway of JWT in jwcrypto is 60 seconds. This means that tokens that expired up to 60 seconds
+    # ago are still accepted.
+    expiration_time = timezone.now() - timedelta(seconds=61)
+    # Calculate values for the IDToken
+    exp = int(dateformat.format(expiration_time, "U"))
+    jti = str(uuid.uuid4())
+    aud = application.client_id
+    iss = oauth2_settings.OIDC_ISS_ENDPOINT
+    # Construct and sign the IDToken
+    header = {"typ": "JWT", "alg": "RS256", "kid": oidc_key.thumbprint()}
+    id_token = {"exp": exp, "jti": jti, "aud": aud, "iss": iss}
+    return header, id_token, jti, expiration_time
+
+
+def generate_id_token(user, payload, oidc_key, application):
+    header, id_token, jti, expiration_time = payload
+    jwt_token = jwt.JWT(header=header, claims=id_token)
+    jwt_token.make_signed_token(oidc_key)
+    # Save the IDToken in the DB. Required for later lookups from e.g. RP-Initiated Logout.
+    IDToken = get_id_token_model()
+    IDToken.objects.create(user=user, scope="", expires=expiration_time, jti=jti, application=application)
+    # Return the token as a string.
+    return jwt_token.token.serialize(compact=True)
+
+
+@pytest.fixture
+def oidc_tokens(oauth2_settings, application, test_user, client):
+    return generate_access_token(
+        oauth2_settings,
+        application,
+        test_user,
+        client,
+        presets.OIDC_SETTINGS_RW,
+        "openid",
+        "http://example.org",
+    )
+
+
+@pytest.fixture
 def oidc_email_scope_tokens(oauth2_settings, application, test_user, client):
-    oauth2_settings.update(presets.OIDC_SETTINGS_EMAIL_SCOPE)
-    client.force_login(test_user)
-    auth_rsp = client.post(
-        reverse("oauth2_provider:authorize"),
-        data={
-            "client_id": application.client_id,
-            "state": "random_state_string",
-            "scope": "openid email",
-            "redirect_uri": "http://example.org",
-            "response_type": "code",
-            "allow": True,
-        },
+    return generate_access_token(
+        oauth2_settings,
+        application,
+        test_user,
+        client,
+        presets.OIDC_SETTINGS_EMAIL_SCOPE,
+        "openid email",
+        "http://example.org",
     )
-    assert auth_rsp.status_code == 302
-    code = parse_qs(urlparse(auth_rsp["Location"]).query)["code"]
-    client.logout()
-    token_rsp = client.post(
-        reverse("oauth2_provider:token"),
-        data={
-            "grant_type": "authorization_code",
-            "code": code,
-            "redirect_uri": "http://example.org",
-            "client_id": application.client_id,
-            "client_secret": CLEARTEXT_SECRET,
-            "scope": "openid email",
-        },
-    )
-    assert token_rsp.status_code == 200
-    token_data = token_rsp.json()
-    return SimpleNamespace(
-        user=test_user,
-        application=application,
-        access_token=token_data["access_token"],
-        id_token=token_data["id_token"],
-        oauth2_settings=oauth2_settings,
+
+
+@pytest.fixture
+def oidc_non_confidential_tokens(oauth2_settings, public_application, test_user, client):
+    return generate_access_token(
+        oauth2_settings,
+        public_application,
+        test_user,
+        client,
+        presets.OIDC_SETTINGS_EMAIL_SCOPE,
+        "openid",
+        "http://other.org",
     )

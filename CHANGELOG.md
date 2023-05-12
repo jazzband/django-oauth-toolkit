@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 * Add Japanese(日本語) Language Support
+* [OIDC RP-Initiated Logout](https://openid.net/specs/openid-connect-rpinitiated-1_0.html)
 
 ### Changed
 * #1211 documentation improve on 'AUTHORIZATION_CODE_EXPIRE_SECONDS'.

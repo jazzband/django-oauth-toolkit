@@ -23,6 +23,8 @@ We support:
 * OpenID Connect Implicit Flow
 * OpenID Connect Hybrid Flow
 
+Furthermore ``django-oauth-toolkit`` also supports `OpenID Connect RP-Initiated Logout <https://openid.net/specs/openid-connect-rpinitiated-1_0.html>`_.
+
 
 Configuration
 =============
@@ -146,6 +148,23 @@ scopes in your ``settings.py``::
 .. note::
     If you want to enable ``RS256`` at a later date, you can do so - just add
     the private key as described above.
+
+
+RP-Initiated Logout
+~~~~~~~~~~~~~~~~~~~
+This feature has to be enabled separately as it is an extension to the core standard.
+
+.. code-block:: python
+
+   OAUTH2_PROVIDER = {
+       # OIDC has to be enabled to use RP-Initiated Logout
+       "OIDC_ENABLED": True,
+       # Enable and configure RP-Initiated Logout
+       "OIDC_RP_INITIATED_LOGOUT_ENABLED": True,
+       "OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT": True,
+       # ... any other settings you want
+   }
+
 
 Setting up OIDC enabled clients
 ===============================
@@ -403,3 +422,10 @@ UserInfoView
 
 Available at ``/o/userinfo/``, this view provides extra user details. You can
 customize the details included in the response as described above.
+
+
+RPInitiatedLogoutView
+~~~~~~~~~~~~~~~~~~~~~
+
+Available at ``/o/rp-initiated-logout/``, this view allows a :term:`Client` (Relying Party) to request that a :term:`Resource Owner`
+is logged out at the :term:`Authorization Server` (OpenID Provider).

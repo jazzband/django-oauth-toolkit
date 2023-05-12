@@ -11,6 +11,7 @@ from oauth2_provider.oauth2_backends import OAuthLibCore
 from oauth2_provider.oauth2_validators import OAuth2Validator
 from oauth2_provider.views.mixins import (
     OAuthLibMixin,
+    OIDCLogoutOnlyMixin,
     OIDCOnlyMixin,
     ProtectedResourceMixin,
     ScopedResourceMixin,
@@ -145,9 +146,26 @@ def oidc_only_view():
     return TView.as_view()
 
 
+@pytest.fixture
+def oidc_logout_only_view():
+    class TView(OIDCLogoutOnlyMixin, View):
+        def get(self, *args, **kwargs):
+            return HttpResponse("OK")
+
+    return TView.as_view()
+
+
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 def test_oidc_only_mixin_oidc_enabled(oauth2_settings, rf, oidc_only_view):
     assert oauth2_settings.OIDC_ENABLED
+    rsp = oidc_only_view(rf.get("/"))
+    assert rsp.status_code == 200
+    assert rsp.content.decode("utf-8") == "OK"
+
+
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_LOGOUT)
+def test_oidc_logout_only_mixin_oidc_enabled(oauth2_settings, rf, oidc_only_view):
+    assert oauth2_settings.OIDC_RP_INITIATED_LOGOUT_ENABLED
     rsp = oidc_only_view(rf.get("/"))
     assert rsp.status_code == 200
     assert rsp.content.decode("utf-8") == "OK"
@@ -161,6 +179,14 @@ def test_oidc_only_mixin_oidc_disabled_debug(oauth2_settings, rf, settings, oidc
     assert "OIDC views are not enabled" in str(exc.value)
 
 
+def test_oidc_logout_only_mixin_oidc_disabled_debug(oauth2_settings, rf, settings, oidc_logout_only_view):
+    assert oauth2_settings.OIDC_RP_INITIATED_LOGOUT_ENABLED is False
+    settings.DEBUG = True
+    with pytest.raises(ImproperlyConfigured) as exc:
+        oidc_logout_only_view(rf.get("/"))
+        assert str(exc.value) == OIDCLogoutOnlyMixin.debug_error_message
+
+
 def test_oidc_only_mixin_oidc_disabled_no_debug(oauth2_settings, rf, settings, oidc_only_view, caplog):
     assert oauth2_settings.OIDC_ENABLED is False
     settings.DEBUG = False
@@ -169,3 +195,15 @@ def test_oidc_only_mixin_oidc_disabled_no_debug(oauth2_settings, rf, settings, o
     assert rsp.status_code == 404
     assert len(caplog.records) == 1
     assert "OIDC views are not enabled" in caplog.records[0].message
+
+
+def test_oidc_logout_only_mixin_oidc_disabled_no_debug(
+    oauth2_settings, rf, settings, oidc_logout_only_view, caplog
+):
+    assert oauth2_settings.OIDC_RP_INITIATED_LOGOUT_ENABLED is False
+    settings.DEBUG = False
+    with caplog.at_level(logging.WARNING, logger="oauth2_provider"):
+        rsp = oidc_logout_only_view(rf.get("/"))
+        assert rsp.status_code == 404
+        assert len(caplog.records) == 1
+        assert caplog.records[0].message == OIDCLogoutOnlyMixin.debug_error_message

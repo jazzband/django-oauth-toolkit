@@ -326,3 +326,27 @@ class OIDCOnlyMixin:
             log.warning(self.debug_error_message)
             return HttpResponseNotFound()
         return super().dispatch(*args, **kwargs)
+
+
+class OIDCLogoutOnlyMixin(OIDCOnlyMixin):
+    """
+    Mixin for views that should only be accessible when OIDC and OIDC RP-Initiated Logout are enabled.
+
+    If either is not enabled:
+
+    * if DEBUG is True, raises an ImproperlyConfigured exception explaining why
+    * otherwise, returns a 404 response, logging the same warning
+    """
+
+    debug_error_message = (
+        "The django-oauth-toolkit OIDC RP-Initiated Logout view is not enabled unless you "
+        "have configured OIDC_RP_INITIATED_LOGOUT_ENABLED in the settings"
+    )
+
+    def dispatch(self, *args, **kwargs):
+        if not oauth2_settings.OIDC_RP_INITIATED_LOGOUT_ENABLED:
+            if settings.DEBUG:
+                raise ImproperlyConfigured(self.debug_error_message)
+            log.warning(self.debug_error_message)
+            return HttpResponseNotFound()
+        return super().dispatch(*args, **kwargs)

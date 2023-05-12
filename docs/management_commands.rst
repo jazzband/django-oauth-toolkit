@@ -38,6 +38,7 @@ The ``createapplication`` management command provides a shortcut to create a new
 
     usage: manage.py createapplication [-h] [--client-id CLIENT_ID] [--user USER]
                                        [--redirect-uris REDIRECT_URIS]
+                                       [--post-logout-redirect-uris POST_LOGOUT_REDIRECT_URIS]
                                        [--client-secret CLIENT_SECRET]
                                        [--name NAME] [--skip-authorization]
                                        [--algorithm ALGORITHM] [--version]
@@ -64,6 +65,9 @@ The ``createapplication`` management command provides a shortcut to create a new
       --redirect-uris REDIRECT_URIS
                             The redirect URIs, this must be a space separated
                             string e.g 'URI1 URI2'
+      --post-logout-redirect-uris POST_LOGOUT_REDIRECT_URIS
+                            The post logout redirect URIs, this must be a space
+                            separated string e.g 'URI1 URI2'
       --client-secret CLIENT_SECRET
                             The secret for this application
       --name NAME           The name this application

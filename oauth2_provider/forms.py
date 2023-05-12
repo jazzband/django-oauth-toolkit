@@ -12,3 +12,17 @@ class AllowForm(forms.Form):
     code_challenge = forms.CharField(required=False, widget=forms.HiddenInput())
     code_challenge_method = forms.CharField(required=False, widget=forms.HiddenInput())
     claims = forms.CharField(required=False, widget=forms.HiddenInput())
+
+
+class ConfirmLogoutForm(forms.Form):
+    allow = forms.BooleanField(required=False)
+    id_token_hint = forms.CharField(required=False, widget=forms.HiddenInput())
+    logout_hint = forms.CharField(required=False, widget=forms.HiddenInput())
+    client_id = forms.CharField(required=False, widget=forms.HiddenInput())
+    post_logout_redirect_uri = forms.CharField(required=False, widget=forms.HiddenInput())
+    state = forms.CharField(required=False, widget=forms.HiddenInput())
+    ui_locales = forms.CharField(required=False, widget=forms.HiddenInput())
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request", None)
+        super(ConfirmLogoutForm, self).__init__(*args, **kwargs)
