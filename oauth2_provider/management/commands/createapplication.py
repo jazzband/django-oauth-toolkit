@@ -38,6 +38,12 @@ class Command(BaseCommand):
             help="The redirect URIs, this must be a space separated string e.g 'URI1 URI2'",
         )
         parser.add_argument(
+            "--post-logout-redirect-uris",
+            type=str,
+            help="The post logout redirect URIs, this must be a space separated string e.g 'URI1 URI2'",
+            default="",
+        )
+        parser.add_argument(
             "--client-secret",
             type=str,
             help="The secret for this application",

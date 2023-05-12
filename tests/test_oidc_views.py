@@ -351,6 +351,23 @@ def test_rp_initiated_logout_public_client_redirect_client_id(
             "post_logout_redirect_uri": "http://other.org",
         },
     )
+    assert rsp.status_code == 302
+    assert not is_logged_in(loggend_in_client)
+
+
+@pytest.mark.django_db
+def test_rp_initiated_logout_public_client_strict_redirect_client_id(
+    loggend_in_client, oidc_non_confidential_tokens, public_application, oauth2_settings
+):
+    oauth2_settings.update(presets.OIDC_SETTINGS_RP_LOGOUT_STRICT_REDIRECT_URI)
+    rsp = loggend_in_client.get(
+        reverse("oauth2_provider:rp-initiated-logout"),
+        data={
+            "id_token_hint": oidc_non_confidential_tokens.id_token,
+            "client_id": public_application.client_id,
+            "post_logout_redirect_uri": "http://other.org",
+        },
+    )
     assert rsp.status_code == 400
     assert is_logged_in(loggend_in_client)
 
