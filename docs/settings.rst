@@ -332,7 +332,7 @@ OIDC_RP_INITIATED_LOGOUT_STRICT_REDIRECT_URIS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Default: ``False``
 
-Enable to only allow the `http` scheme in post logout redirect URIs when a :term:`Client` is `confidential`.
+Enable this setting to require `https` in post logout redirect URIs. `http` is only allowed when a :term:`Client` is `confidential`.
 
 OIDC_RP_INITIATED_LOGOUT_ACCEPT_EXPIRED_TOKENS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
