@@ -537,12 +537,12 @@ def test_token_deletion_on_logout_expired_session(oidc_tokens, client, rp_settin
     assert rsp.status_code == 200
     assert not is_logged_in(client)
     # Check that all tokens are active.
-    assert AccessToken.objects.count() == 1
-    assert not any([token.is_expired() for token in AccessToken.objects.all()])
-    assert IDToken.objects.count() == 1
-    assert not any([token.is_expired() for token in IDToken.objects.all()])
-    assert RefreshToken.objects.count() == 1
-    assert not any([token.revoked is not None for token in RefreshToken.objects.all()])
+    access_token = AccessToken.objects.get()
+    assert not access_token.is_expired()
+    id_token = IDToken.objects.get()
+    assert not id_token.is_expired()
+    refresh_token = RefreshToken.objects.get()
+    assert refresh_token.revoked is None
 
     rsp = client.post(
         reverse("oauth2_provider:rp-initiated-logout"),
