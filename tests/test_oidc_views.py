@@ -1,10 +1,10 @@
-from pytest_django.asserts import assertRedirects
 import pytest
 from django.contrib.auth import get_user
 from django.contrib.auth.models import AnonymousUser
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 from django.utils import timezone
+from pytest_django.asserts import assertRedirects
 
 from oauth2_provider.exceptions import ClientIdMissmatch, InvalidOIDCClientError, InvalidOIDCRedirectURIError
 from oauth2_provider.models import get_access_token_model, get_id_token_model, get_refresh_token_model
