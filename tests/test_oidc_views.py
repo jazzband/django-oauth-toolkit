@@ -555,9 +555,9 @@ def test_token_deletion_on_logout_expired_session(oidc_tokens, client, rp_settin
     assert rsp.status_code == 302
     assert not is_logged_in(client)
     # Check that all tokens have either been deleted or expired.
-    assert all([token.is_expired() for token in AccessToken.objects.all()])
-    assert all([token.is_expired() for token in IDToken.objects.all()])
-    assert all([token.revoked <= timezone.now() for token in RefreshToken.objects.all()])
+    assert all(token.is_expired() for token in AccessToken.objects.all())
+    assert all(token.is_expired() for token in IDToken.objects.all())
+    assert all(token.revoked <= timezone.now() for token in RefreshToken.objects.all())
 
 
 @pytest.mark.django_db
