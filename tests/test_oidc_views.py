@@ -197,37 +197,37 @@ def test_validate_logout_request(oidc_tokens, public_application, other_user, rp
         id_token_hint=None,
         client_id=None,
         post_logout_redirect_uri=None,
-    ) == (True, (None, None))
+    ) == (True, (None, None), None)
     assert validate_logout_request(
         request=mock_request_for(oidc_tokens.user),
         id_token_hint=None,
         client_id=client_id,
         post_logout_redirect_uri=None,
-    ) == (True, (None, application))
+    ) == (True, (None, application), None)
     assert validate_logout_request(
         request=mock_request_for(oidc_tokens.user),
         id_token_hint=None,
         client_id=client_id,
         post_logout_redirect_uri="http://example.org",
-    ) == (True, ("http://example.org", application))
+    ) == (True, ("http://example.org", application), None)
     assert validate_logout_request(
         request=mock_request_for(oidc_tokens.user),
         id_token_hint=id_token,
         client_id=None,
         post_logout_redirect_uri="http://example.org",
-    ) == (ALWAYS_PROMPT, ("http://example.org", application))
+    ) == (ALWAYS_PROMPT, ("http://example.org", application), oidc_tokens.user)
     assert validate_logout_request(
         request=mock_request_for(other_user),
         id_token_hint=id_token,
         client_id=None,
         post_logout_redirect_uri="http://example.org",
-    ) == (True, ("http://example.org", application))
+    ) == (True, ("http://example.org", application), oidc_tokens.user)
     assert validate_logout_request(
         request=mock_request_for(oidc_tokens.user),
         id_token_hint=id_token,
         client_id=client_id,
         post_logout_redirect_uri="http://example.org",
-    ) == (ALWAYS_PROMPT, ("http://example.org", application))
+    ) == (ALWAYS_PROMPT, ("http://example.org", application), oidc_tokens.user)
     with pytest.raises(ClientIdMissmatch):
         validate_logout_request(
             request=mock_request_for(oidc_tokens.user),
@@ -513,6 +513,47 @@ def test_token_deletion_on_logout(oidc_tokens, loggend_in_client, rp_settings):
     )
     assert rsp.status_code == 302
     assert not is_logged_in(loggend_in_client)
+    # Check that all tokens have either been deleted or expired.
+    assert all([token.is_expired() for token in AccessToken.objects.all()])
+    assert all([token.is_expired() for token in IDToken.objects.all()])
+    assert all([token.revoked <= timezone.now() for token in RefreshToken.objects.all()])
+
+
+@pytest.mark.django_db
+def test_token_deletion_on_logout_expired_session(oidc_tokens, client, rp_settings):
+    AccessToken = get_access_token_model()
+    IDToken = get_id_token_model()
+    RefreshToken = get_refresh_token_model()
+    assert AccessToken.objects.count() == 1
+    assert IDToken.objects.count() == 1
+    assert RefreshToken.objects.count() == 1
+    rsp = client.get(
+        reverse("oauth2_provider:rp-initiated-logout"),
+        data={
+            "id_token_hint": oidc_tokens.id_token,
+            "client_id": oidc_tokens.application.client_id,
+        },
+    )
+    assert rsp.status_code == 200
+    assert not is_logged_in(client)
+    # Check that all tokens have either been deleted or expired.
+    assert AccessToken.objects.count() == 1
+    assert not any([token.is_expired() for token in AccessToken.objects.all()])
+    assert IDToken.objects.count() == 1
+    assert not any([token.is_expired() for token in IDToken.objects.all()])
+    assert RefreshToken.objects.count() == 1
+    assert not any([token.revoked is not None for token in RefreshToken.objects.all()])
+
+    rsp = client.post(
+        reverse("oauth2_provider:rp-initiated-logout"),
+        data={
+            "id_token_hint": oidc_tokens.id_token,
+            "client_id": oidc_tokens.application.client_id,
+            "allow": True,
+        },
+    )
+    assert rsp.status_code == 302
+    assert not is_logged_in(client)
     # Check that all tokens have either been deleted or expired.
     assert all([token.is_expired() for token in AccessToken.objects.all()])
     assert all([token.is_expired() for token in IDToken.objects.all()])
