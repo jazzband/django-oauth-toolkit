@@ -536,7 +536,7 @@ def test_token_deletion_on_logout_expired_session(oidc_tokens, client, rp_settin
     )
     assert rsp.status_code == 200
     assert not is_logged_in(client)
-    # Check that all tokens have either been deleted or expired.
+    # Check that all tokens are active.
     assert AccessToken.objects.count() == 1
     assert not any([token.is_expired() for token in AccessToken.objects.all()])
     assert IDToken.objects.count() == 1
