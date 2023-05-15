@@ -125,7 +125,7 @@ def public_application():
 
 
 @pytest.fixture
-def loggend_in_client(test_user):
+def logged_in_client(test_user):
     from django.test.client import Client
 
     client = Client()

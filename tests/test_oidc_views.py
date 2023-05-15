@@ -275,47 +275,47 @@ def is_logged_in(client):
 
 
 @pytest.mark.django_db
-def test_rp_initiated_logout_get(loggend_in_client, rp_settings):
-    rsp = loggend_in_client.get(reverse("oauth2_provider:rp-initiated-logout"), data={})
+def test_rp_initiated_logout_get(logged_in_client, rp_settings):
+    rsp = logged_in_client.get(reverse("oauth2_provider:rp-initiated-logout"), data={})
     assert rsp.status_code == 200
-    assert is_logged_in(loggend_in_client)
+    assert is_logged_in(logged_in_client)
 
 
 @pytest.mark.django_db
-def test_rp_initiated_logout_get_id_token(loggend_in_client, oidc_tokens, rp_settings):
-    rsp = loggend_in_client.get(
+def test_rp_initiated_logout_get_id_token(logged_in_client, oidc_tokens, rp_settings):
+    rsp = logged_in_client.get(
         reverse("oauth2_provider:rp-initiated-logout"), data={"id_token_hint": oidc_tokens.id_token}
     )
     assert rsp.status_code == 302
     assert rsp["Location"] == "http://testserver/"
-    assert not is_logged_in(loggend_in_client)
+    assert not is_logged_in(logged_in_client)
 
 
 @pytest.mark.django_db
-def test_rp_initiated_logout_get_revoked_id_token(loggend_in_client, oidc_tokens, rp_settings):
+def test_rp_initiated_logout_get_revoked_id_token(logged_in_client, oidc_tokens, rp_settings):
     validator = oauth2_settings.OAUTH2_VALIDATOR_CLASS()
     validator._load_id_token(oidc_tokens.id_token).revoke()
-    rsp = loggend_in_client.get(
+    rsp = logged_in_client.get(
         reverse("oauth2_provider:rp-initiated-logout"), data={"id_token_hint": oidc_tokens.id_token}
     )
     assert rsp.status_code == 400
-    assert is_logged_in(loggend_in_client)
+    assert is_logged_in(logged_in_client)
 
 
 @pytest.mark.django_db
-def test_rp_initiated_logout_get_id_token_redirect(loggend_in_client, oidc_tokens, rp_settings):
-    rsp = loggend_in_client.get(
+def test_rp_initiated_logout_get_id_token_redirect(logged_in_client, oidc_tokens, rp_settings):
+    rsp = logged_in_client.get(
         reverse("oauth2_provider:rp-initiated-logout"),
         data={"id_token_hint": oidc_tokens.id_token, "post_logout_redirect_uri": "http://example.org"},
     )
     assert rsp.status_code == 302
     assert rsp["Location"] == "http://example.org"
-    assert not is_logged_in(loggend_in_client)
+    assert not is_logged_in(logged_in_client)
 
 
 @pytest.mark.django_db
-def test_rp_initiated_logout_get_id_token_redirect_with_state(loggend_in_client, oidc_tokens, rp_settings):
-    rsp = loggend_in_client.get(
+def test_rp_initiated_logout_get_id_token_redirect_with_state(logged_in_client, oidc_tokens, rp_settings):
+    rsp = logged_in_client.get(
         reverse("oauth2_provider:rp-initiated-logout"),
         data={
             "id_token_hint": oidc_tokens.id_token,
@@ -325,26 +325,26 @@ def test_rp_initiated_logout_get_id_token_redirect_with_state(loggend_in_client,
     )
     assert rsp.status_code == 302
     assert rsp["Location"] == "http://example.org?state=987654321"
-    assert not is_logged_in(loggend_in_client)
+    assert not is_logged_in(logged_in_client)
 
 
 @pytest.mark.django_db
 def test_rp_initiated_logout_get_id_token_missmatch_client_id(
-    loggend_in_client, oidc_tokens, public_application, rp_settings
+    logged_in_client, oidc_tokens, public_application, rp_settings
 ):
-    rsp = loggend_in_client.get(
+    rsp = logged_in_client.get(
         reverse("oauth2_provider:rp-initiated-logout"),
         data={"id_token_hint": oidc_tokens.id_token, "client_id": public_application.client_id},
     )
     assert rsp.status_code == 400
-    assert is_logged_in(loggend_in_client)
+    assert is_logged_in(logged_in_client)
 
 
 @pytest.mark.django_db
 def test_rp_initiated_logout_public_client_redirect_client_id(
-    loggend_in_client, oidc_non_confidential_tokens, public_application, rp_settings
+    logged_in_client, oidc_non_confidential_tokens, public_application, rp_settings
 ):
-    rsp = loggend_in_client.get(
+    rsp = logged_in_client.get(
         reverse("oauth2_provider:rp-initiated-logout"),
         data={
             "id_token_hint": oidc_non_confidential_tokens.id_token,
@@ -353,15 +353,15 @@ def test_rp_initiated_logout_public_client_redirect_client_id(
         },
     )
     assert rsp.status_code == 302
-    assert not is_logged_in(loggend_in_client)
+    assert not is_logged_in(logged_in_client)
 
 
 @pytest.mark.django_db
 def test_rp_initiated_logout_public_client_strict_redirect_client_id(
-    loggend_in_client, oidc_non_confidential_tokens, public_application, oauth2_settings
+    logged_in_client, oidc_non_confidential_tokens, public_application, oauth2_settings
 ):
     oauth2_settings.update(presets.OIDC_SETTINGS_RP_LOGOUT_STRICT_REDIRECT_URI)
-    rsp = loggend_in_client.get(
+    rsp = logged_in_client.get(
         reverse("oauth2_provider:rp-initiated-logout"),
         data={
             "id_token_hint": oidc_non_confidential_tokens.id_token,
@@ -370,42 +370,42 @@ def test_rp_initiated_logout_public_client_strict_redirect_client_id(
         },
     )
     assert rsp.status_code == 400
-    assert is_logged_in(loggend_in_client)
+    assert is_logged_in(logged_in_client)
 
 
 @pytest.mark.django_db
-def test_rp_initiated_logout_get_id_token_client_id(loggend_in_client, oidc_tokens, rp_settings):
-    rsp = loggend_in_client.get(
+def test_rp_initiated_logout_get_id_token_client_id(logged_in_client, oidc_tokens, rp_settings):
+    rsp = logged_in_client.get(
         reverse("oauth2_provider:rp-initiated-logout"), data={"client_id": oidc_tokens.application.client_id}
     )
     assert rsp.status_code == 200
-    assert is_logged_in(loggend_in_client)
+    assert is_logged_in(logged_in_client)
 
 
 @pytest.mark.django_db
-def test_rp_initiated_logout_post(loggend_in_client, oidc_tokens, rp_settings):
+def test_rp_initiated_logout_post(logged_in_client, oidc_tokens, rp_settings):
     form_data = {
         "client_id": oidc_tokens.application.client_id,
     }
-    rsp = loggend_in_client.post(reverse("oauth2_provider:rp-initiated-logout"), form_data)
+    rsp = logged_in_client.post(reverse("oauth2_provider:rp-initiated-logout"), form_data)
     assert rsp.status_code == 400
-    assert is_logged_in(loggend_in_client)
+    assert is_logged_in(logged_in_client)
 
 
 @pytest.mark.django_db
-def test_rp_initiated_logout_post_allowed(loggend_in_client, oidc_tokens, rp_settings):
+def test_rp_initiated_logout_post_allowed(logged_in_client, oidc_tokens, rp_settings):
     form_data = {"client_id": oidc_tokens.application.client_id, "allow": True}
-    rsp = loggend_in_client.post(reverse("oauth2_provider:rp-initiated-logout"), form_data)
+    rsp = logged_in_client.post(reverse("oauth2_provider:rp-initiated-logout"), form_data)
     assert rsp.status_code == 302
     assert rsp["Location"] == "http://testserver/"
-    assert not is_logged_in(loggend_in_client)
+    assert not is_logged_in(logged_in_client)
 
 
 @pytest.mark.django_db
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_LOGOUT)
-def test_rp_initiated_logout_expired_tokens_accept(loggend_in_client, application, expired_id_token):
+def test_rp_initiated_logout_expired_tokens_accept(logged_in_client, application, expired_id_token):
     # Accepting expired (but otherwise valid and signed by us) tokens is enabled. Logout should go through.
-    rsp = loggend_in_client.get(
+    rsp = logged_in_client.get(
         reverse("oauth2_provider:rp-initiated-logout"),
         data={
             "id_token_hint": expired_id_token,
@@ -413,14 +413,14 @@ def test_rp_initiated_logout_expired_tokens_accept(loggend_in_client, applicatio
         },
     )
     assert rsp.status_code == 302
-    assert not is_logged_in(loggend_in_client)
+    assert not is_logged_in(logged_in_client)
 
 
 @pytest.mark.django_db
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_LOGOUT_DENY_EXPIRED)
-def test_rp_initiated_logout_expired_tokens_deny(loggend_in_client, application, expired_id_token):
+def test_rp_initiated_logout_expired_tokens_deny(logged_in_client, application, expired_id_token):
     # Expired tokens should not be accepted by default.
-    rsp = loggend_in_client.get(
+    rsp = logged_in_client.get(
         reverse("oauth2_provider:rp-initiated-logout"),
         data={
             "id_token_hint": expired_id_token,
@@ -428,7 +428,7 @@ def test_rp_initiated_logout_expired_tokens_deny(loggend_in_client, application,
         },
     )
     assert rsp.status_code == 400
-    assert is_logged_in(loggend_in_client)
+    assert is_logged_in(logged_in_client)
 
 
 @pytest.mark.django_db
@@ -498,14 +498,14 @@ def test_userinfo_endpoint_bad_token(oidc_tokens, client):
 
 
 @pytest.mark.django_db
-def test_token_deletion_on_logout(oidc_tokens, loggend_in_client, rp_settings):
+def test_token_deletion_on_logout(oidc_tokens, logged_in_client, rp_settings):
     AccessToken = get_access_token_model()
     IDToken = get_id_token_model()
     RefreshToken = get_refresh_token_model()
     assert AccessToken.objects.count() == 1
     assert IDToken.objects.count() == 1
     assert RefreshToken.objects.count() == 1
-    rsp = loggend_in_client.get(
+    rsp = logged_in_client.get(
         reverse("oauth2_provider:rp-initiated-logout"),
         data={
             "id_token_hint": oidc_tokens.id_token,
@@ -513,7 +513,7 @@ def test_token_deletion_on_logout(oidc_tokens, loggend_in_client, rp_settings):
         },
     )
     assert rsp.status_code == 302
-    assert not is_logged_in(loggend_in_client)
+    assert not is_logged_in(logged_in_client)
     # Check that all tokens have either been deleted or expired.
     assert all([token.is_expired() for token in AccessToken.objects.all()])
     assert all([token.is_expired() for token in IDToken.objects.all()])
@@ -563,7 +563,7 @@ def test_token_deletion_on_logout_expired_session(oidc_tokens, client, rp_settin
 
 @pytest.mark.django_db
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_LOGOUT_KEEP_TOKENS)
-def test_token_deletion_on_logout_disabled(oidc_tokens, loggend_in_client, rp_settings):
+def test_token_deletion_on_logout_disabled(oidc_tokens, logged_in_client, rp_settings):
     rp_settings.OIDC_RP_INITIATED_LOGOUT_DELETE_TOKENS = False
 
     AccessToken = get_access_token_model()
@@ -572,7 +572,7 @@ def test_token_deletion_on_logout_disabled(oidc_tokens, loggend_in_client, rp_se
     assert AccessToken.objects.count() == 1
     assert IDToken.objects.count() == 1
     assert RefreshToken.objects.count() == 1
-    rsp = loggend_in_client.get(
+    rsp = logged_in_client.get(
         reverse("oauth2_provider:rp-initiated-logout"),
         data={
             "id_token_hint": oidc_tokens.id_token,
@@ -580,7 +580,7 @@ def test_token_deletion_on_logout_disabled(oidc_tokens, loggend_in_client, rp_se
         },
     )
     assert rsp.status_code == 302
-    assert not is_logged_in(loggend_in_client)
+    assert not is_logged_in(logged_in_client)
     # Check that the tokens have not been expired or deleted.
     assert AccessToken.objects.count() == 1
     assert not any([token.is_expired() for token in AccessToken.objects.all()])
