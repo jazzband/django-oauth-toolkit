@@ -1,3 +1,4 @@
+from pytest_django.asserts import assertRedirects
 import pytest
 from django.contrib.auth import get_user
 from django.contrib.auth.models import AnonymousUser
@@ -552,7 +553,7 @@ def test_token_deletion_on_logout_expired_session(oidc_tokens, client, rp_settin
             "allow": True,
         },
     )
-    assert rsp.status_code == 302
+    assertRedirects(rsp, "http://testserver/", fetch_redirect_response=False)
     assert not is_logged_in(client)
     # Check that all tokens have either been deleted or expired.
     assert all(token.is_expired() for token in AccessToken.objects.all())
