@@ -14,20 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
   -->
 
-## [unreleased]
-
-### Added
-* Add Japanese(日本語) Language Support
-* [OIDC RP-Initiated Logout](https://openid.net/specs/openid-connect-rpinitiated-1_0.html)
-
-### Changed
-* #1211 documentation improve on 'AUTHORIZATION_CODE_EXPIRE_SECONDS'.
-* #1218 Confim support for Python 3.11.
-* #1222 Remove expired ID tokens alongside access tokens in `cleartokens` management command
-* #1270 Fix RP-initiated Logout with no available Django session
-* #1092 Allow Authorization Code flow without a client_secret per [RFC 6749 2.3.1](https://www.rfc-editor.org/rfc/rfc6749.html#section-2.3.1)
-
-## [2.2.0] 2022-10-18
+## [2.3.0] 2023-05-31
 
 ### WARNING
 
@@ -39,6 +26,17 @@ These issues both result in `{"error": "invalid_client"}`:
 1. The application client secret is now hashed upon save. You must copy it before it is saved. Using the hashed value will fail.
 
 2. `PKCE_REQUIRED` is now `True` by default. You should use PKCE with your client or set `PKCE_REQUIRED=False` if you are unable to fix the client.
+
+### Added
+* Add Japanese(日本語) Language Support
+* #1244 implement [OIDC RP-Initiated Logout](https://openid.net/specs/openid-connect-rpinitiated-1_0.html)
+* #1092 Allow Authorization Code flow without a client_secret per [RFC 6749 2.3.1](https://www.rfc-editor.org/rfc/rfc6749.html#section-2.3.1)
+
+### Changed
+* #1222 Remove expired ID tokens alongside access tokens in `cleartokens` management command
+* #1267, #1253, #1251, #1250, #1224, #1212, #1211 Various documentation improvements
+
+## [2.2.0] 2022-10-18
 
 ### Added
 * #1208 Add 'code_challenge_method' parameter to authorization call in documentation
