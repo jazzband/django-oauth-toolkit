@@ -30,6 +30,7 @@ AccessToken = get_access_token_model()
 RefreshToken = get_refresh_token_model()
 
 CLEARTEXT_SECRET = "1234567890abcdefghijklmnopqrstuvwxyz"
+CLEARTEXT_BLANK_SECRET = ""
 
 
 @contextlib.contextmanager
@@ -61,11 +62,25 @@ class TestOAuth2Validator(TransactionTestCase):
         )
         self.request.client = self.application
 
+        self.blank_secret_request = mock.MagicMock(wraps=Request)
+        self.blank_secret_request.user = self.user
+        self.blank_secret_request.grant_type = "not client"
+        self.blank_secret_application = Application.objects.create(
+            client_id="blank_secret_client_id",
+            client_secret=CLEARTEXT_BLANK_SECRET,
+            user=self.user,
+            client_type=Application.CLIENT_PUBLIC,
+            authorization_grant_type=Application.GRANT_PASSWORD,
+        )
+        self.blank_secret_request.client = self.blank_secret_application
+
     def tearDown(self):
         self.application.delete()
 
     def test_authenticate_request_body(self):
         self.request.client_id = "client_id"
+        self.assertFalse(self.validator._authenticate_request_body(self.request))
+
         self.request.client_secret = ""
         self.assertFalse(self.validator._authenticate_request_body(self.request))
 
@@ -74,6 +89,15 @@ class TestOAuth2Validator(TransactionTestCase):
 
         self.request.client_secret = CLEARTEXT_SECRET
         self.assertTrue(self.validator._authenticate_request_body(self.request))
+
+        self.blank_secret_request.client_id = "blank_secret_client_id"
+        self.assertTrue(self.validator._authenticate_request_body(self.blank_secret_request))
+
+        self.blank_secret_request.client_secret = CLEARTEXT_BLANK_SECRET
+        self.assertTrue(self.validator._authenticate_request_body(self.blank_secret_request))
+
+        self.blank_secret_request.client_secret = "wrong_client_secret"
+        self.assertFalse(self.validator._authenticate_request_body(self.blank_secret_request))
 
     def test_extract_basic_auth(self):
         self.request.headers = {"HTTP_AUTHORIZATION": "Basic 123456"}
