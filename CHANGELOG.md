@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #1218 Confim support for Python 3.11.
 * #1222 Remove expired ID tokens alongside access tokens in `cleartokens` management command
 * #1270 Fix RP-initiated Logout with no available Django session
+* #1092 Allow Authorization Code flow without a client_secret per [RFC 6749 2.3.1](https://www.rfc-editor.org/rfc/rfc6749.html#section-2.3.1)
 
 ## [2.2.0] 2022-10-18
 
