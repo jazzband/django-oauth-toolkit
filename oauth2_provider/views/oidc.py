@@ -2,6 +2,7 @@ import json
 from urllib.parse import urlparse
 
 from django.contrib.auth import logout
+from django.contrib.auth.models import AnonymousUser
 from django.http import HttpResponse, JsonResponse
 from django.urls import reverse
 from django.utils.decorators import method_decorator
@@ -20,6 +21,7 @@ from ..exceptions import (
     InvalidOIDCRedirectURIError,
     LogoutDenied,
     OIDCError,
+    EmptyIDTokenError,
 )
 from ..forms import ConfirmLogoutForm
 from ..http import OAuth2ResponseRedirect
@@ -244,6 +246,11 @@ def validate_logout_request(request, id_token_hint, client_id, post_logout_redir
         if client_id:
             if id_token.application.client_id != client_id:
                 raise ClientIdMissmatch()
+    else:
+        # Returns a 400 error 
+        # when no id_token_hint is provided and it is impossible to confirm who the request came from
+        if isinstance(request.user,AnonymousUser):
+            raise EmptyIDTokenError()
 
     # The standard states that a prompt should always be shown.
     # This behaviour can be configured with OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT.

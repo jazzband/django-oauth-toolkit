@@ -60,6 +60,10 @@ class InvalidIDTokenError(InvalidRequestFatalError):
     description = "The ID Token is expired, revoked, malformed, or otherwise invalid."
 
 
+class EmptyIDTokenError(InvalidRequestFatalError):
+    description = "The current request is from an anonymous user and the ID Token is empty."
+
+
 class LogoutDenied(OIDCError):
     error = "logout_denied"
     description = "Logout has been refused by the user."
