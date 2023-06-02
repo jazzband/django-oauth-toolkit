@@ -6,7 +6,12 @@ from django.urls import reverse
 from django.utils import timezone
 from pytest_django.asserts import assertRedirects
 
-from oauth2_provider.exceptions import ClientIdMissmatch, InvalidOIDCClientError, InvalidOIDCRedirectURIError
+from oauth2_provider.exceptions import (
+    ClientIdMissmatch,
+    EmptyIDTokenError,
+    InvalidOIDCClientError,
+    InvalidOIDCRedirectURIError,
+)
 from oauth2_provider.models import get_access_token_model, get_id_token_model, get_refresh_token_model
 from oauth2_provider.oauth2_validators import OAuth2Validator
 from oauth2_provider.settings import oauth2_settings
@@ -263,6 +268,13 @@ def test_validate_logout_request(oidc_tokens, public_application, other_user, rp
             id_token_hint=None,
             client_id=client_id,
             post_logout_redirect_uri="http://other.org",
+        )
+    with pytest.raises(EmptyIDTokenError):
+        validate_logout_request(
+            request=mock_request(),
+            id_token_hint=None,
+            client_id=None,
+            post_logout_redirect_uri=None,
         )
 
 
