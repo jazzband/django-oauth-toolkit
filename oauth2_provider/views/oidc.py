@@ -16,12 +16,12 @@ from oauthlib.common import add_params_to_uri
 
 from ..exceptions import (
     ClientIdMissmatch,
+    EmptyIDTokenError,
     InvalidIDTokenError,
     InvalidOIDCClientError,
     InvalidOIDCRedirectURIError,
     LogoutDenied,
     OIDCError,
-    EmptyIDTokenError,
 )
 from ..forms import ConfirmLogoutForm
 from ..http import OAuth2ResponseRedirect
@@ -247,9 +247,9 @@ def validate_logout_request(request, id_token_hint, client_id, post_logout_redir
             if id_token.application.client_id != client_id:
                 raise ClientIdMissmatch()
     else:
-        # Returns a 400 error 
+        # Returns a 400 error
         # when no id_token_hint is provided and it is impossible to confirm who the request came from
-        if isinstance(request.user,AnonymousUser):
+        if isinstance(request.user, AnonymousUser):
             raise EmptyIDTokenError()
 
     # The standard states that a prompt should always be shown.
