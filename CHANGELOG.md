@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
   -->
 
+## [unreleased]
+
+### Added
+* #1273 Add caching of loading of OIDC private key.
+
 ## [2.3.0] 2023-05-31
 
 ### WARNING
