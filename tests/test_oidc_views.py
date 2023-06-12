@@ -374,7 +374,7 @@ def test_rp_initiated_logout_public_client_strict_redirect_client_id(
 
 
 @pytest.mark.django_db
-def test_rp_initiated_logout_get_id_token_client_id(logged_in_client, oidc_tokens, rp_settings):
+def test_rp_initiated_logout_get_client_id(logged_in_client, oidc_tokens, rp_settings):
     rsp = logged_in_client.get(
         reverse("oauth2_provider:rp-initiated-logout"), data={"client_id": oidc_tokens.application.client_id}
     )
