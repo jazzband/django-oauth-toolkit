@@ -212,12 +212,11 @@ def _validate_claims(request, claims):
 def validate_logout_request(request, id_token_hint, client_id, post_logout_redirect_uri):
     """
     Validate an OIDC RP-Initiated Logout Request.
-    `(prompt_logout, (post_logout_redirect_uri, application), token_user)` is returned.
+    `(prompt_logout, application, token_user)` is returned.
 
     `prompt_logout` indicates whether the logout has to be confirmed by the user. This happens if the
     specifications force a confirmation, or it is enabled by `OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT`.
-    `post_logout_redirect_uri` is the validated URI where the User should be redirected to after the
-    logout. Can be None. None will redirect to "/" of this app. If it is set `application` will also
+    If it is set `application` will also
     be set to the Application that is requesting the logout. `token_user` is the id_token user, which will
     used to revoke the tokens if found.
 
@@ -274,7 +273,7 @@ def validate_logout_request(request, id_token_hint, client_id, post_logout_redir
         if not application.post_logout_redirect_uri_allowed(post_logout_redirect_uri):
             raise InvalidOIDCRedirectURIError("This client does not have this redirect uri registered.")
 
-    return prompt_logout, (post_logout_redirect_uri, application), token_user
+    return prompt_logout, application, token_user
 
 
 class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
@@ -315,7 +314,7 @@ class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
         state = request.GET.get("state")
 
         try:
-            prompt, (redirect_uri, application), token_user = validate_logout_request(
+            prompt, application, token_user = validate_logout_request(
                 request=request,
                 id_token_hint=id_token_hint,
                 client_id=client_id,
@@ -325,7 +324,7 @@ class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
             return self.error_response(error)
 
         if not prompt:
-            return self.do_logout(application, redirect_uri, state, token_user)
+            return self.do_logout(application, post_logout_redirect_uri, state, token_user)
 
         self.oidc_data = {
             "id_token_hint": id_token_hint,
@@ -347,7 +346,7 @@ class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
         state = form.cleaned_data.get("state")
 
         try:
-            prompt, (redirect_uri, application), token_user = validate_logout_request(
+            prompt, application, token_user = validate_logout_request(
                 request=self.request,
                 id_token_hint=id_token_hint,
                 client_id=client_id,
@@ -355,7 +354,7 @@ class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
             )
 
             if not prompt or form.cleaned_data.get("allow"):
-                return self.do_logout(application, redirect_uri, state, token_user)
+                return self.do_logout(application, post_logout_redirect_uri, state, token_user)
             else:
                 raise LogoutDenied()
 

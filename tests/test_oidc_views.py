@@ -198,37 +198,37 @@ def test_validate_logout_request(oidc_tokens, public_application, other_user, rp
         id_token_hint=None,
         client_id=None,
         post_logout_redirect_uri=None,
-    ) == (True, (None, None), None)
+    ) == (True, None, None)
     assert validate_logout_request(
         request=mock_request_for(oidc_tokens.user),
         id_token_hint=None,
         client_id=client_id,
         post_logout_redirect_uri=None,
-    ) == (True, (None, application), None)
+    ) == (True, application, None)
     assert validate_logout_request(
         request=mock_request_for(oidc_tokens.user),
         id_token_hint=None,
         client_id=client_id,
         post_logout_redirect_uri="http://example.org",
-    ) == (True, ("http://example.org", application), None)
+    ) == (True, application, None)
     assert validate_logout_request(
         request=mock_request_for(oidc_tokens.user),
         id_token_hint=id_token,
         client_id=None,
         post_logout_redirect_uri="http://example.org",
-    ) == (ALWAYS_PROMPT, ("http://example.org", application), oidc_tokens.user)
+    ) == (ALWAYS_PROMPT, application, oidc_tokens.user)
     assert validate_logout_request(
         request=mock_request_for(other_user),
         id_token_hint=id_token,
         client_id=None,
         post_logout_redirect_uri="http://example.org",
-    ) == (True, ("http://example.org", application), oidc_tokens.user)
+    ) == (True, application, oidc_tokens.user)
     assert validate_logout_request(
         request=mock_request_for(oidc_tokens.user),
         id_token_hint=id_token,
         client_id=client_id,
         post_logout_redirect_uri="http://example.org",
-    ) == (ALWAYS_PROMPT, ("http://example.org", application), oidc_tokens.user)
+    ) == (ALWAYS_PROMPT, application, oidc_tokens.user)
     with pytest.raises(ClientIdMissmatch):
         validate_logout_request(
             request=mock_request_for(oidc_tokens.user),
