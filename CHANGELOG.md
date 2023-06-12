@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 * #1273 Add caching of loading of OIDC private key.
 
+- ### Fixed
+* #1284 Allow to logout whith no id_token_hint even if the browser session already expired
+
 ## [2.3.0] 2023-05-31
 
 ### WARNING
