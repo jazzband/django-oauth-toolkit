@@ -46,6 +46,7 @@ class TestApplicationRegistrationView(BaseTest):
             "client_secret": "client_secret",
             "client_type": Application.CLIENT_CONFIDENTIAL,
             "redirect_uris": "http://example.com",
+            "post_logout_redirect_uris": "http://other_example.com",
             "authorization_grant_type": Application.GRANT_AUTHORIZATION_CODE,
             "algorithm": "",
         }
@@ -55,6 +56,14 @@ class TestApplicationRegistrationView(BaseTest):
 
         app = get_application_model().objects.get(name="Foo app")
         self.assertEqual(app.user.username, "foo_user")
+        app = Application.objects.get()
+        self.assertEquals(app.name, form_data["name"])
+        self.assertEquals(app.client_id, form_data["client_id"])
+        self.assertEquals(app.redirect_uris, form_data["redirect_uris"])
+        self.assertEquals(app.post_logout_redirect_uris, form_data["post_logout_redirect_uris"])
+        self.assertEquals(app.client_type, form_data["client_type"])
+        self.assertEquals(app.authorization_grant_type, form_data["authorization_grant_type"])
+        self.assertEquals(app.algorithm, form_data["algorithm"])
 
 
 class TestApplicationViews(BaseTest):
@@ -62,6 +71,7 @@ class TestApplicationViews(BaseTest):
         app = Application.objects.create(
             name=name,
             redirect_uris="http://example.com",
+            post_logout_redirect_uris="http://other_example.com",
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
             user=user,
@@ -93,9 +103,37 @@ class TestApplicationViews(BaseTest):
 
         response = self.client.get(reverse("oauth2_provider:detail", args=(self.app_foo_1.pk,)))
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.app_foo_1.name)
+        self.assertContains(response, self.app_foo_1.redirect_uris)
+        self.assertContains(response, self.app_foo_1.post_logout_redirect_uris)
+        self.assertContains(response, self.app_foo_1.client_type)
+        self.assertContains(response, self.app_foo_1.authorization_grant_type)
 
     def test_application_detail_not_owner(self):
         self.client.login(username="foo_user", password="123456")
 
         response = self.client.get(reverse("oauth2_provider:detail", args=(self.app_bar_1.pk,)))
         self.assertEqual(response.status_code, 404)
+
+    def test_application_udpate(self):
+        self.client.login(username="foo_user", password="123456")
+
+        form_data = {
+            "client_id": "new_client_id",
+            "redirect_uris": "http://new_example.com",
+            "post_logout_redirect_uris": "http://new_other_example.com",
+            "client_type": Application.CLIENT_PUBLIC,
+            "authorization_grant_type": Application.GRANT_OPENID_HYBRID,
+        }
+        response = self.client.post(
+            reverse("oauth2_provider:update", args=(self.app_foo_1.pk,)),
+            data=form_data,
+        )
+        self.assertRedirects(response, reverse("oauth2_provider:detail", args=(self.app_foo_1.pk,)))
+
+        self.app_foo_1.refresh_from_db()
+        self.assertEquals(self.app_foo_1.client_id, form_data["client_id"])
+        self.assertEquals(self.app_foo_1.redirect_uris, form_data["redirect_uris"])
+        self.assertEquals(self.app_foo_1.post_logout_redirect_uris, form_data["post_logout_redirect_uris"])
+        self.assertEquals(self.app_foo_1.client_type, form_data["client_type"])
+        self.assertEquals(self.app_foo_1.authorization_grant_type, form_data["authorization_grant_type"])
