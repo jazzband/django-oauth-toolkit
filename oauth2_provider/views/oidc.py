@@ -2,6 +2,7 @@ import json
 from urllib.parse import urlparse
 
 from django.contrib.auth import logout
+from django.contrib.auth.models import AnonymousUser
 from django.http import HttpResponse, JsonResponse
 from django.urls import reverse
 from django.utils.decorators import method_decorator
@@ -362,12 +363,13 @@ class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
             return self.error_response(error)
 
     def do_logout(self, application=None, post_logout_redirect_uri=None, state=None, token_user=None):
-        # Delete Access Tokens
-        if oauth2_settings.OIDC_RP_INITIATED_LOGOUT_DELETE_TOKENS:
+        user = token_user or self.request.user
+        # Delete Access Tokens if a user was found
+        if oauth2_settings.OIDC_RP_INITIATED_LOGOUT_DELETE_TOKENS and not isinstance(user, AnonymousUser):
             AccessToken = get_access_token_model()
             RefreshToken = get_refresh_token_model()
             access_tokens_to_delete = AccessToken.objects.filter(
-                user=token_user or self.request.user,
+                user=user,
                 application__client_type__in=self.token_deletion_client_types,
                 application__authorization_grant_type__in=self.token_deletion_grant_types,
             )

@@ -402,6 +402,15 @@ def test_rp_initiated_logout_post_allowed(logged_in_client, oidc_tokens, rp_sett
 
 
 @pytest.mark.django_db
+def test_rp_initiated_logout_post_no_session(client, oidc_tokens, rp_settings):
+    form_data = {"client_id": oidc_tokens.application.client_id, "allow": True}
+    rsp = client.post(reverse("oauth2_provider:rp-initiated-logout"), form_data)
+    assert rsp.status_code == 302
+    assert rsp["Location"] == "http://testserver/"
+    assert not is_logged_in(client)
+
+
+@pytest.mark.django_db
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_LOGOUT)
 def test_rp_initiated_logout_expired_tokens_accept(logged_in_client, application, expired_id_token):
     # Accepting expired (but otherwise valid and signed by us) tokens is enabled. Logout should go through.
