@@ -212,21 +212,16 @@ def _validate_claims(request, claims):
 def validate_logout_request(request, id_token_hint, client_id, post_logout_redirect_uri):
     """
     Validate an OIDC RP-Initiated Logout Request.
-    `(prompt_logout, application, token_user)` is returned.
+    `(application, token_user)` is returned.
 
-    `prompt_logout` indicates whether the logout has to be confirmed by the user. This happens if the
-    specifications force a confirmation, or it is enabled by `OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT`.
-    If it is set `application` will also
-    be set to the Application that is requesting the logout. `token_user` is the id_token user, which will
-    used to revoke the tokens if found.
+    If it is set, `application` is the Application that is requesting the logout.
+    `token_user` is the id_token user, which will used to revoke the tokens if found.
 
     The `id_token_hint` will be validated if given. If both `client_id` and `id_token_hint` are given they
     will be validated against each other.
     """
 
     id_token = None
-    must_prompt_logout = True
-    token_user = None
     if id_token_hint:
         # Only basic validation has been done on the IDToken at this point.
         id_token, claims = _load_id_token(id_token_hint)
@@ -234,21 +229,10 @@ def validate_logout_request(request, id_token_hint, client_id, post_logout_redir
         if not id_token or not _validate_claims(request, claims):
             raise InvalidIDTokenError()
 
-        token_user = id_token.user
-
-        if id_token.user == request.user:
-            # A logout without user interaction (i.e. no prompt) is only allowed
-            # if an ID Token is provided that matches the current user.
-            must_prompt_logout = False
-
         # If both id_token_hint and client_id are given it must be verified that they match.
         if client_id:
             if id_token.application.client_id != client_id:
                 raise ClientIdMissmatch()
-
-    # The standard states that a prompt should always be shown.
-    # This behaviour can be configured with OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT.
-    prompt_logout = must_prompt_logout or oauth2_settings.OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT
 
     application = None
     # Determine the application that is requesting the logout.
@@ -273,7 +257,7 @@ def validate_logout_request(request, id_token_hint, client_id, post_logout_redir
         if not application.post_logout_redirect_uri_allowed(post_logout_redirect_uri):
             raise InvalidOIDCRedirectURIError("This client does not have this redirect uri registered.")
 
-    return prompt_logout, application, token_user
+    return application, id_token.user if id_token else None
 
 
 class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
@@ -314,7 +298,7 @@ class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
         state = request.GET.get("state")
 
         try:
-            prompt, application, token_user = validate_logout_request(
+            application, token_user = validate_logout_request(
                 request=request,
                 id_token_hint=id_token_hint,
                 client_id=client_id,
@@ -323,7 +307,7 @@ class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
         except OIDCError as error:
             return self.error_response(error)
 
-        if not prompt:
+        if not self.must_prompt(token_user):
             return self.do_logout(application, post_logout_redirect_uri, state, token_user)
 
         self.oidc_data = {
@@ -346,20 +330,33 @@ class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
         state = form.cleaned_data.get("state")
 
         try:
-            prompt, application, token_user = validate_logout_request(
+            application, token_user = validate_logout_request(
                 request=self.request,
                 id_token_hint=id_token_hint,
                 client_id=client_id,
                 post_logout_redirect_uri=post_logout_redirect_uri,
             )
 
-            if not prompt or form.cleaned_data.get("allow"):
+            if not self.must_prompt(token_user) or form.cleaned_data.get("allow"):
                 return self.do_logout(application, post_logout_redirect_uri, state, token_user)
             else:
                 raise LogoutDenied()
 
         except OIDCError as error:
             return self.error_response(error)
+
+    def must_prompt(self, token_user):
+        """Indicate whether the logout has to be confirmed by the user. This happens if the
+        specifications force a confirmation, or it is enabled by `OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT`.
+
+        A logout without user interaction (i.e. no prompt) is only allowed
+        if an ID Token is provided that matches the current user.
+        """
+        return (
+            oauth2_settings.OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT
+            or token_user is None
+            or token_user != self.request.user
+        )
 
     def do_logout(self, application=None, post_logout_redirect_uri=None, state=None, token_user=None):
         user = token_user or self.request.user

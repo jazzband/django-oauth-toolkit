@@ -10,7 +10,12 @@ from oauth2_provider.exceptions import ClientIdMissmatch, InvalidOIDCClientError
 from oauth2_provider.models import get_access_token_model, get_id_token_model, get_refresh_token_model
 from oauth2_provider.oauth2_validators import OAuth2Validator
 from oauth2_provider.settings import oauth2_settings
-from oauth2_provider.views.oidc import _load_id_token, _validate_claims, validate_logout_request
+from oauth2_provider.views.oidc import (
+    RPInitiatedLogoutView,
+    _load_id_token,
+    _validate_claims,
+    validate_logout_request,
+)
 
 from . import presets
 
@@ -186,9 +191,7 @@ def mock_request_for(user):
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("ALWAYS_PROMPT", [True, False])
-def test_validate_logout_request(oidc_tokens, public_application, other_user, rp_settings, ALWAYS_PROMPT):
-    rp_settings.OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT = ALWAYS_PROMPT
+def test_validate_logout_request(oidc_tokens, public_application):
     oidc_tokens = oidc_tokens
     application = oidc_tokens.application
     client_id = application.client_id
@@ -198,37 +201,31 @@ def test_validate_logout_request(oidc_tokens, public_application, other_user, rp
         id_token_hint=None,
         client_id=None,
         post_logout_redirect_uri=None,
-    ) == (True, None, None)
+    ) == (None, None)
     assert validate_logout_request(
         request=mock_request_for(oidc_tokens.user),
         id_token_hint=None,
         client_id=client_id,
         post_logout_redirect_uri=None,
-    ) == (True, application, None)
+    ) == (application, None)
     assert validate_logout_request(
         request=mock_request_for(oidc_tokens.user),
         id_token_hint=None,
         client_id=client_id,
         post_logout_redirect_uri="http://example.org",
-    ) == (True, application, None)
+    ) == (application, None)
     assert validate_logout_request(
         request=mock_request_for(oidc_tokens.user),
         id_token_hint=id_token,
         client_id=None,
         post_logout_redirect_uri="http://example.org",
-    ) == (ALWAYS_PROMPT, application, oidc_tokens.user)
-    assert validate_logout_request(
-        request=mock_request_for(other_user),
-        id_token_hint=id_token,
-        client_id=None,
-        post_logout_redirect_uri="http://example.org",
-    ) == (True, application, oidc_tokens.user)
+    ) == (application, oidc_tokens.user)
     assert validate_logout_request(
         request=mock_request_for(oidc_tokens.user),
         id_token_hint=id_token,
         client_id=client_id,
         post_logout_redirect_uri="http://example.org",
-    ) == (ALWAYS_PROMPT, application, oidc_tokens.user)
+    ) == (application, oidc_tokens.user)
     with pytest.raises(ClientIdMissmatch):
         validate_logout_request(
             request=mock_request_for(oidc_tokens.user),
@@ -264,6 +261,19 @@ def test_validate_logout_request(oidc_tokens, public_application, other_user, rp
             client_id=client_id,
             post_logout_redirect_uri="http://other.org",
         )
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("ALWAYS_PROMPT", [True, False])
+def test_must_prompt(oidc_tokens, other_user, rp_settings, ALWAYS_PROMPT):
+    rp_settings.OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT = ALWAYS_PROMPT
+    oidc_tokens = oidc_tokens
+    assert RPInitiatedLogoutView(request=mock_request_for(oidc_tokens.user)).must_prompt(None) is True
+    assert (
+        RPInitiatedLogoutView(request=mock_request_for(oidc_tokens.user)).must_prompt(oidc_tokens.user)
+        == ALWAYS_PROMPT
+    )
+    assert RPInitiatedLogoutView(request=mock_request_for(other_user)).must_prompt(oidc_tokens.user) is True
 
 
 def test__load_id_token():
