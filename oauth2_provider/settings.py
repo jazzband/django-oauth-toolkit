@@ -108,6 +108,8 @@ DEFAULTS = {
     "ALWAYS_RELOAD_OAUTHLIB_CORE": False,
     "CLEAR_EXPIRED_TOKENS_BATCH_SIZE": 10000,
     "CLEAR_EXPIRED_TOKENS_BATCH_INTERVAL": 0,
+    # Whether or not to enable management views
+    "MANAGEMENT_VIEWS_ENABLED": True,
 }
 
 # List of settings that cannot be empty

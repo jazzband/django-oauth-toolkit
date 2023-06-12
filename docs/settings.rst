@@ -271,8 +271,11 @@ According to `OAuth 2.0 Security Best Current Practice <https://oauth.net/2/oaut
 - For confidential clients, the use of PKCE `RFC7636 <https://datatracker.ietf.org/doc/html/rfc7636>`_ is RECOMMENDED.
 
 
+MANAGEMENT_VIEWS_ENABLED
+~~~~~~~~~~~~~~~~~~~~~~~~
+Default: ``True``
 
-
+Whether or not the applications management views are enabled.
 
 
 OIDC_RSA_PRIVATE_KEY

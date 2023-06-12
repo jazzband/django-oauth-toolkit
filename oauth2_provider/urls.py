@@ -1,6 +1,7 @@
 from django.urls import re_path
 
 from . import views
+from .settings import oauth2_settings
 
 
 app_name = "oauth2_provider"
@@ -30,6 +31,7 @@ management_urlpatterns = [
     ),
 ]
 
+
 oidc_urlpatterns = [
     re_path(
         r"^\.well-known/openid-configuration/$",
@@ -42,4 +44,7 @@ oidc_urlpatterns = [
 ]
 
 
-urlpatterns = base_urlpatterns + management_urlpatterns + oidc_urlpatterns
+urlpatterns = base_urlpatterns
+if oauth2_settings.MANAGEMENT_VIEWS_ENABLED:
+    urlpatterns += management_urlpatterns
+urlpatterns += oidc_urlpatterns

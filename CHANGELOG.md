@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 * #1273 Add caching of loading of OIDC private key.
+* #1286 Add setting to disable management views
 
 ## [2.3.0] 2023-05-31
 

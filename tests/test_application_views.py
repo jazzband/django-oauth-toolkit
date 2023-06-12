@@ -1,6 +1,7 @@
 import pytest
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.test.utils import override_settings
 from django.urls import reverse
 
 from oauth2_provider.models import get_application_model
@@ -99,3 +100,24 @@ class TestApplicationViews(BaseTest):
 
         response = self.client.get(reverse("oauth2_provider:detail", args=(self.app_bar_1.pk,)))
         self.assertEqual(response.status_code, 404)
+
+    @override_settings(OAUTH2_PROVIDER={"MANAGEMENT_VIEWS_ENABLED": False})
+    def test_setting(self):
+        self.client.login(username="foo_user", password="123456")
+
+        urls = [
+            "/o/applications/",
+            "/o/applications/register/",
+            "/o/applications/1/",
+            "/o/applications/1/delete/",
+            "/o/applications/1/update/",
+            "/o/applications/1/authorized_tokens/",
+        ]
+
+        for url in urls:
+            print(url)
+            response = self.client.get(url)
+            print(response.status_code)
+            if response.status_code == 302:
+                print(response.url)
+            self.assertEqual(response.status_code, 404)
