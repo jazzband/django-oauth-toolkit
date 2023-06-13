@@ -165,6 +165,7 @@ This template gets passed the following template context variables:
     - ``client_type``
     - ``authorization_grant_type``
     - ``redirect_uris``
+    - ``post_logout_redirect_uris``
 
 .. caution::
     In the default implementation this template in extended by `application_registration_form.html`_.
@@ -184,6 +185,7 @@ This template gets passed the following template context variable:
     - ``client_type``
     - ``authorization_grant_type``
     - ``redirect_uris``
+    - ``post_logout_redirect_uris``
 
 .. note::
     In the default implementation this template extends `application_form.html`_.
