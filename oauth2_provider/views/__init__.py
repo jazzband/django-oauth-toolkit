@@ -1,5 +1,5 @@
 # flake8: noqa
-from .base import AuthorizationView, TokenView, RevokeTokenView  # isort:skip
+from .base import AuthorizationView, AuthorizationJSONView, TokenView, RevokeTokenView  # isort:skip
 from .application import (
     ApplicationDelete,
     ApplicationDetail,
