@@ -4,6 +4,11 @@ from urllib.parse import parse_qsl, urlencode, urlparse
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import redirect_to_login
+from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import Model
+
+# JB
+from django.forms import model_to_dict
 from django.http import HttpResponse
 from django.shortcuts import resolve_url
 from django.utils import timezone
@@ -11,11 +16,6 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import FormView, View
-
-# JB
-from django.forms import model_to_dict
-from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models import Model
 
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
@@ -69,6 +69,7 @@ class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
 
 
 RFC3339 = "%Y-%m-%dT%H:%M:%SZ"
+
 
 class AuthorizationMixin:
     def get_context(self, request, *args, **kwargs):
@@ -145,23 +146,23 @@ class AuthorizationMixin:
             return self.error_response(error, application)
         return kwargs
 
+
 class AuthorizationJSONView(BaseAuthorizationView, AuthorizationMixin):
     def get(self, request, *args, **kwargs):
         context = self.get_context(request, *args, **kwargs)
-        return HttpResponse(
-            content=json.dumps(context, cls=self.ExtendedEncoder),
-            status=200)
+        return HttpResponse(content=json.dumps(context, cls=self.ExtendedEncoder), status=200)
 
     def post(self, request, *args, **kwargs):
         # handle JSON post, sanitization etc.
         pass
-    
+
     class ExtendedEncoder(DjangoJSONEncoder):
         def default(self, o):
             if isinstance(o, Model):
                 return model_to_dict(o)
             else:
                 return super().default(o)
+
 
 class AuthorizationView(BaseAuthorizationView, FormView, AuthorizationMixin):
     """
