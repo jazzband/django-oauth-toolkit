@@ -32,10 +32,21 @@ class OAuth2TokenMiddleware:
                 user = authenticate(request=request)
                 if user:
                     request.user = request._cached_user = user
+        response = self.get_response(request)
+        patch_vary_headers(response, ("Authorization",))
+        return response
 
+
+class OAuth2ExtraTokenMiddleware:
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if "HTTP_AUTHORIZATION" in request.META:
             tokenstring = request.META["HTTP_AUTHORIZATION"].split()[1]
             token = AccessToken.objects.get(token=tokenstring)
             request.access_token = token
+            request.access_token = token
         response = self.get_response(request)
-        patch_vary_headers(response, ("Authorization",))
         return response
