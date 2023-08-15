@@ -39,7 +39,6 @@ class OAuth2TokenMiddleware:
 
 
 class OAuth2ExtraTokenMiddleware:
-
     def __init__(self, get_response):
         self.get_response = get_response
 
