@@ -153,8 +153,36 @@ class AuthorizationJSONView(BaseAuthorizationView, AuthorizationMixin):
             status=200)
 
     def post(self, request, *args, **kwargs):
-        # handle JSON post, sanitization etc.
-        pass
+        body = request.POST
+        client_id = body["client_id"]
+        application = get_application_model().objects.get(client_id=client_id)
+        credentials = {
+            "client_id": body.get("client_id"),
+            "redirect_uri": body.get("redirect_uri"),
+            "response_type": body.get("response_type", None),
+            "state": body.get("state", None),
+        }
+        if body.get("code_challenge", False):
+            credentials["code_challenge"] = body.get("code_challenge")
+        if body.get("code_challenge_method", False):
+            credentials["code_challenge_method"] = body.get("code_challenge_method")
+        if body.get("nonce", False):
+            credentials["nonce"] = body.get("nonce")
+        if body.get("claims", False):
+            credentials["claims"] = body.get("claims")
+
+        scopes = body.get("scope")
+        allow = body.get("allow")
+        try:
+            uri, headers, body, status = self.create_authorization_response(
+                request=self.request, scopes=scopes, credentials=credentials, allow=allow
+            )
+        except OAuthToolkitError as error:
+            return self.error_response(error, application)
+
+        self.success_url = uri
+        log.debug("Success url for the request: {0}".format(self.success_url))
+        return self.redirect(self.success_url, application)
     
     class ExtendedEncoder(DjangoJSONEncoder):
         def default(self, o):
