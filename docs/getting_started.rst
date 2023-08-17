@@ -244,7 +244,7 @@ Start the development server::
 
 Point your browser to http://127.0.0.1:8000/o/applications/register/ lets create an application.
 
-Fill the form as show in the screenshot bellow and before save take note of ``Client id`` and ``Client secret`` we will use it in a minute.
+Fill the form as show in the screenshot below and before save take note of ``Client id`` and ``Client secret`` we will use it in a minute.
 
 .. image:: _images/application-register-auth-code.png
    :alt: Authorization code application registration
