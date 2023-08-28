@@ -187,7 +187,7 @@ class TestOAuth2ExtraTokenMiddleware(BaseTest):
         m = OAuth2ExtraTokenMiddleware(self.dummy_get_response)
         request = self.factory.get("/a-resource")
         m(request)
-        self.assertFalse(hasattr(request, "user"))
+        self.assertFalse(hasattr(request, "access_token"))
         auth_headers = {
             "HTTP_AUTHORIZATION": "Beerer " + "badstring",  # a Beer token for you!
         }
