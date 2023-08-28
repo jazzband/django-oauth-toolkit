@@ -10,7 +10,7 @@ from django.test.utils import modify_settings, override_settings
 from django.utils.timezone import now, timedelta
 
 from oauth2_provider.backends import OAuth2Backend
-from oauth2_provider.middleware import OAuth2TokenMiddleware, OAuth2ExtraTokenMiddleware
+from oauth2_provider.middleware import OAuth2ExtraTokenMiddleware, OAuth2TokenMiddleware
 from oauth2_provider.models import get_access_token_model, get_application_model
 
 
@@ -162,6 +162,7 @@ class TestOAuth2Middleware(BaseTest):
         response = m(request)
         self.assertIn("Vary", response)
         self.assertIn("Authorization", response["Vary"])
+
 
 @override_settings(
     AUTHENTICATION_BACKENDS=(

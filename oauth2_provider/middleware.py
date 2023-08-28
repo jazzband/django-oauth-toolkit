@@ -1,4 +1,5 @@
 import logging
+
 from django.contrib.auth import authenticate
 from django.utils.cache import patch_vary_headers
 
@@ -6,6 +7,7 @@ from oauth2_provider.models import AccessToken
 
 
 log = logging.getLogger(__name__)
+
 
 class OAuth2TokenMiddleware:
     """
