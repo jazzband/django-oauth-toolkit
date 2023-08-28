@@ -193,7 +193,7 @@ class TestOAuth2ExtraTokenMiddleware(BaseTest):
         }
         request = self.factory.get("/a-resource", **auth_headers)
         m(request)
-        self.assertFalse(hasattr(request, "user"))
+        self.assertFalse(hasattr(request, "access_token"))
 
     def test_middleware_success(self):
         m = OAuth2ExtraTokenMiddleware(self.dummy_get_response)
