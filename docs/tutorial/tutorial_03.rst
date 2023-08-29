@@ -47,6 +47,8 @@ will not try to get user from the session.
 If you use AuthenticationMiddleware, be sure it appears before OAuth2TokenMiddleware.
 However AuthenticationMiddleware is NOT required for using django-oauth-toolkit.
 
+Note, `OAuth2TokenMiddleware` adds the user to the request object. There is also an optional `OAuth2ExtraTokenMiddleware` that adds the `Token` to the request. This makes it convenient to access the `Application` object within your views. To use it just add `oauth2_provider.middleware.OAuth2ExtraTokenMiddleware` to the `MIDDLEWARE` setting.
+
 Protect your view
 -----------------
 The authentication backend will run smoothly with, for example, `login_required` decorators, so
