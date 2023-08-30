@@ -195,6 +195,15 @@ class TestOAuth2ExtraTokenMiddleware(BaseTest):
         m(request)
         self.assertFalse(hasattr(request, "access_token"))
 
+    def test_middleware_token_does_not_exist(self):
+        m = OAuth2ExtraTokenMiddleware(self.dummy_get_response)
+        auth_headers = {
+            "HTTP_AUTHORIZATION": "Bearer " + "badtokstr",
+        }
+        request = self.factory.get("/a-resource", **auth_headers)
+        m(request)
+        self.assertFalse(hasattr(request, "access_token"))
+
     def test_middleware_success(self):
         m = OAuth2ExtraTokenMiddleware(self.dummy_get_response)
         auth_headers = {
