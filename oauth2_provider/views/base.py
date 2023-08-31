@@ -4,11 +4,6 @@ from urllib.parse import parse_qsl, urlencode, urlparse
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import redirect_to_login
-from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models import Model
-
-# JB
-from django.forms import model_to_dict
 from django.http import HttpResponse
 from django.shortcuts import resolve_url
 from django.utils import timezone
