@@ -10,7 +10,7 @@ from django.test.utils import modify_settings, override_settings
 from django.utils.timezone import now, timedelta
 
 from oauth2_provider.backends import OAuth2Backend
-from oauth2_provider.middleware import OAuth2TokenMiddleware
+from oauth2_provider.middleware import OAuth2ExtraTokenMiddleware, OAuth2TokenMiddleware
 from oauth2_provider.models import get_access_token_model, get_application_model
 
 
@@ -162,3 +162,62 @@ class TestOAuth2Middleware(BaseTest):
         response = m(request)
         self.assertIn("Vary", response)
         self.assertIn("Authorization", response["Vary"])
+
+
+@override_settings(
+    AUTHENTICATION_BACKENDS=(
+        "oauth2_provider.backends.OAuth2Backend",
+        "django.contrib.auth.backends.ModelBackend",
+    ),
+)
+@modify_settings(
+    MIDDLEWARE={
+        "append": "oauth2_provider.middleware.OAuth2TokenMiddleware",
+    }
+)
+class TestOAuth2ExtraTokenMiddleware(BaseTest):
+    def setUp(self):
+        super().setUp()
+        self.anon_user = AnonymousUser()
+
+    def dummy_get_response(self, request):
+        return HttpResponse()
+
+    def test_middleware_wrong_headers(self):
+        m = OAuth2ExtraTokenMiddleware(self.dummy_get_response)
+        request = self.factory.get("/a-resource")
+        m(request)
+        self.assertFalse(hasattr(request, "access_token"))
+        auth_headers = {
+            "HTTP_AUTHORIZATION": "Beerer " + "badstring",  # a Beer token for you!
+        }
+        request = self.factory.get("/a-resource", **auth_headers)
+        m(request)
+        self.assertFalse(hasattr(request, "access_token"))
+
+    def test_middleware_token_does_not_exist(self):
+        m = OAuth2ExtraTokenMiddleware(self.dummy_get_response)
+        auth_headers = {
+            "HTTP_AUTHORIZATION": "Bearer " + "badtokstr",
+        }
+        request = self.factory.get("/a-resource", **auth_headers)
+        m(request)
+        self.assertFalse(hasattr(request, "access_token"))
+
+    def test_middleware_success(self):
+        m = OAuth2ExtraTokenMiddleware(self.dummy_get_response)
+        auth_headers = {
+            "HTTP_AUTHORIZATION": "Bearer " + "tokstr",
+        }
+        request = self.factory.get("/a-resource", **auth_headers)
+        m(request)
+        self.assertEqual(request.access_token, self.token)
+
+    def test_middleware_response(self):
+        m = OAuth2ExtraTokenMiddleware(self.dummy_get_response)
+        auth_headers = {
+            "HTTP_AUTHORIZATION": "Bearer " + "tokstr",
+        }
+        request = self.factory.get("/a-resource", **auth_headers)
+        response = m(request)
+        self.assertIsInstance(response, HttpResponse)
