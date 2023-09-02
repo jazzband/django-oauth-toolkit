@@ -217,9 +217,12 @@ class AuthorizationView(BaseAuthorizationView, FormView, AuthorizationMixin):
 
     def get(self, request, *args, **kwargs):
         context = self.get_context(request, *args, **kwargs)
-        form = self.get_form(self.get_form_class())
-        context["form"] = form
-        return self.render_to_response(self.get_context_data(**context))
+        if isinstance(context, dict):
+            form = self.get_form(self.get_form_class())
+            context["form"] = form
+            return self.render_to_response(self.get_context_data(**context))
+        else:
+            return context
 
     def handle_prompt_login(self):
         path = self.request.build_absolute_uri()
