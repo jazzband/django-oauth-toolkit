@@ -12,12 +12,13 @@ from urllib.parse import unquote_plus
 import requests
 from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
-from django.contrib.auth.hashers import check_password
+from django.contrib.auth.hashers import check_password, identify_hasher
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.db.models import Q
 from django.http import HttpRequest
 from django.utils import dateformat, timezone
+from django.utils.crypto import constant_time_compare
 from django.utils.timezone import make_aware
 from django.utils.translation import gettext_lazy as _
 from jwcrypto import jws, jwt
@@ -112,6 +113,18 @@ class OAuth2Validator(RequestValidator):
 
         return auth_string
 
+    def _check_secret(self, provided_secret, stored_secret):
+        """
+        Checks whether the provided client secret is valid.
+
+        Supports both hashed and unhashed secrets.
+        """
+        try:
+            identify_hasher(stored_secret)
+            return check_password(provided_secret, stored_secret)
+        except ValueError:  # Raised if the stored_secret is not hashed.
+            return constant_time_compare(provided_secret, stored_secret)
+
     def _authenticate_basic_auth(self, request):
         """
         Authenticates with HTTP Basic Auth.
@@ -152,7 +165,7 @@ class OAuth2Validator(RequestValidator):
         elif request.client.client_id != client_id:
             log.debug("Failed basic auth: wrong client id %s" % client_id)
             return False
-        elif not check_password(client_secret, request.client.client_secret):
+        elif not self._check_secret(client_secret, request.client.client_secret):
             log.debug("Failed basic auth: wrong client secret %s" % client_secret)
             return False
         else:
