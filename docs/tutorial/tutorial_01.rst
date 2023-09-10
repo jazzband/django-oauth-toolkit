@@ -99,6 +99,11 @@ point your browser to http://localhost:8000/o/applications/ and add an Applicati
  * `Name`: this is the name of the client application on the server, and will be displayed on the authorization request
    page, where users can allow/deny access to their data.
 
+ * `Hash client secret`: checking this hashes the client secret on save so it cannot be retrieved later. This should be
+   unchecked if you plan to use OIDC with ``HS256`` and want to check the tokens' signatures using JWT. Otherwise,
+   Django OAuth Toolkit cannot use `Client Secret` to sign the tokens (as it cannot be retrieved later) and the hashed
+   value will be used when signing. This may lead to incompatibilities with some OIDC Relying Party libraries.
+
 Take note of the `Client id` and the `Client Secret` then logout (this is needed only for testing the authorization
 process we'll explain shortly)
 
