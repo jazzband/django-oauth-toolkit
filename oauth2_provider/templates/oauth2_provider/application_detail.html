@@ -17,6 +17,11 @@
             </li>
 
             <li>
+                <p><b>{% trans "Hash client secret" %}</b></p>
+                <p>{{ application.hash_client_secret|yesno:_("yes,no") }}</p>
+            </li>
+
+            <li>
                 <p><b>{% trans "Client type" %}</b></p>
                 <p>{{ application.client_type }}</p>
             </li>
