@@ -357,6 +357,7 @@ class AbstractAccessToken(models.Model):
     token = models.CharField(
         max_length=255,
         unique=True,
+        db_index=True,
     )
     id_token = models.OneToOneField(
         oauth2_settings.ID_TOKEN_MODEL,
