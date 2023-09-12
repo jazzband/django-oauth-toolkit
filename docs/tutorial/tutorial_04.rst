@@ -9,7 +9,7 @@ Revoking a Token
 ----------------
 Be sure that you've granted a valid token. If you've hooked in `oauth-toolkit` into your `urls.py` as specified in :doc:`part 1 <tutorial_01>`, you'll have a URL at `/o/revoke_token`. By submitting the appropriate request to that URL, you can revoke a user's :term:`Access Token`.
 
-`Oauthlib <https://github.com/idan/oauthlib>`_ is compliant with https://tools.ietf.org/html/rfc7009, so as specified, the revocation request requires:
+`Oauthlib <https://github.com/idan/oauthlib>`_ is compliant with https://rfc-editor.org/rfc/rfc7009.html, so as specified, the revocation request requires:
 
 - token:  REQUIRED, this is the :term:`Access Token` you want to revoke
 - token_type_hint: OPTIONAL, designating either 'access_token' or 'refresh_token'.

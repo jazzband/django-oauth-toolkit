@@ -9,7 +9,7 @@ Welcome to Django OAuth Toolkit Documentation
 Django OAuth Toolkit can help you by providing, out of the box, all the endpoints, data, and logic needed to add OAuth2
 capabilities to your Django projects. Django OAuth Toolkit makes extensive use of the excellent
 `OAuthLib <https://github.com/idan/oauthlib>`_, so that everything is
-`rfc-compliant <http://tools.ietf.org/html/rfc6749>`_.
+`rfc-compliant <https://rfc-editor.org/rfc/rfc6749.html>`_.
 
 See our :doc:`Changelog <changelog>` for information on updates.
 
