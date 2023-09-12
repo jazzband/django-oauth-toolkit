@@ -1,7 +1,7 @@
 Separate Resource Server
 ========================
 Django OAuth Toolkit allows to separate the :term:`Authorization Server` and the :term:`Resource Server`.
-Based on the `RFC 7662 <https://tools.ietf.org/html/rfc7662>`_ Django OAuth Toolkit provides
+Based on the `RFC 7662 <https://rfc-editor.org/rfc/rfc7662.html>`_ Django OAuth Toolkit provides
 a rfc-compliant introspection endpoint.
 As well the Django OAuth Toolkit allows to verify access tokens by the use of an introspection endpoint.
 

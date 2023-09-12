@@ -311,7 +311,7 @@ class TestOAuth2ValidatorProvidesErrorData(TransactionTestCase):
     """These test cases check that the recommended error codes are returned
     when token authentication fails.
 
-    RFC-6750: https://tools.ietf.org/html/rfc6750
+    RFC-6750: https://rfc-editor.org/rfc/rfc6750.html
 
     > If the protected resource request does not include authentication
     > credentials or does not contain an access token that enables access
@@ -331,7 +331,7 @@ class TestOAuth2ValidatorProvidesErrorData(TransactionTestCase):
     > attribute to provide the client with the reason why the access
     > request was declined.
 
-    See https://tools.ietf.org/html/rfc6750#section-3.1 for the allowed error
+    See https://rfc-editor.org/rfc/rfc6750.html#section-3.1 for the allowed error
     codes.
     """
 

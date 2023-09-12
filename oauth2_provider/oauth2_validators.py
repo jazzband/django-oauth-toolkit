@@ -536,7 +536,7 @@ class OAuth2Validator(RequestValidator):
         Save access and refresh token, If refresh token is issued, remove or
         reuse old refresh token as in rfc:`6`
 
-        @see: https://tools.ietf.org/html/draft-ietf-oauth-v2-31#page-43
+        @see: https://rfc-editor.org/rfc/rfc6749.html#section-6
         """
 
         if "scope" not in token:

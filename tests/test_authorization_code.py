@@ -483,7 +483,7 @@ class TestAuthorizationCodeView(BaseTest):
         """
         Tests that a redirection uri with query string is allowed
         and query string is retained on redirection.
-        See http://tools.ietf.org/html/rfc6749#section-3.1.2
+        See https://rfc-editor.org/rfc/rfc6749.html#section-3.1.2
         """
         self.client.login(username="test_user", password="123456")
 

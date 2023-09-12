@@ -416,7 +416,7 @@ Next step is :doc:`first tutorial <tutorial/tutorial_01>`.
 .. _Whitson Gordon: https://en.wikipedia.org/wiki/OAuth#cite_note-1
 .. _User: https://docs.djangoproject.com/en/3.0/ref/contrib/auth/#django.contrib.auth.models.User
 .. _Django documentation: https://docs.djangoproject.com/en/3.0/topics/auth/customizing/#using-a-custom-user-model-when-starting-a-project
-.. _RFC6749: https://tools.ietf.org/html/rfc6749#section-1.3
+.. _RFC6749: https://rfc-editor.org/rfc/rfc6749.html#section-1.3
 .. _Grant Types: https://oauth.net/2/grant-types/
 .. _URL: http://127.0.0.1:8000/o/authorize/?response_type=code&client_id=vW1RcAl7Mb0d5gyHNQIAcH110lWoOW2BmWJIero8&redirect_uri=http://127.0.0.1:8000/noexist/callback
 
