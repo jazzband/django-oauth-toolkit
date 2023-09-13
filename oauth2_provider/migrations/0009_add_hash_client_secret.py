@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('oauth2_provider', '0007_application_post_logout_redirect_uris'),
+        ('oauth2_provider', '0008_alter_accesstoken_token'),
     ]
 
     operations = [
