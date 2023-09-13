@@ -187,7 +187,7 @@ Grab your access_token and start using your new OAuth2 API:
     curl -H "Authorization: Bearer <your_access_token>" http://localhost:8000/groups/
 
     # Insert a new user
-    curl -H "Authorization: Bearer <your_access_token>" -X POST -d"username=foo&password=bar" http://localhost:8000/users/
+    curl -H "Authorization: Bearer <your_access_token>" -X POST -d"username=foo&password=bar&scope=write" http://localhost:8000/users/
 
 Some time has passed and your access token is about to expire, you can get renew the access token issued using the `refresh token`:
 
