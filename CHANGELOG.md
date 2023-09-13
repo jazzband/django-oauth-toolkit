@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #1185 Add middleware for adding access token to request
 * #1273 Add caching of loading of OIDC private key.
 * #1285 Add post_logout_redirect_uris field in application views.
+* #1311 Add option to disable client_secret hashing to allow verifying JWTs' signatures.
 
 - ### Fixed
 * #1284 Allow to logout whith no id_token_hint even if the browser session already expired

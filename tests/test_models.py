@@ -2,6 +2,7 @@ from datetime import timedelta
 
 import pytest
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import check_password
 from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.test import TestCase
 from django.test.utils import override_settings
@@ -18,6 +19,8 @@ from oauth2_provider.models import (
 
 from . import presets
 
+
+CLEARTEXT_SECRET = "1234567890abcdefghijklmnopqrstuvwxyz"
 
 Application = get_application_model()
 Grant = get_grant_model()
@@ -53,6 +56,33 @@ class TestModels(BaseTestModels):
         self.assertTrue(access_token.allow_scopes(["write", "read", "read"]))
         self.assertTrue(access_token.allow_scopes([]))
         self.assertFalse(access_token.allow_scopes(["write", "destroy"]))
+
+    def test_hashed_secret(self):
+        app = Application.objects.create(
+            name="test_app",
+            redirect_uris="http://localhost http://example.com http://example.org",
+            user=self.user,
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+            client_secret=CLEARTEXT_SECRET,
+            hash_client_secret=True,
+        )
+
+        self.assertNotEqual(app.client_secret, CLEARTEXT_SECRET)
+        self.assertTrue(check_password(CLEARTEXT_SECRET, app.client_secret))
+
+    def test_unhashed_secret(self):
+        app = Application.objects.create(
+            name="test_app",
+            redirect_uris="http://localhost http://example.com http://example.org",
+            user=self.user,
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+            client_secret=CLEARTEXT_SECRET,
+            hash_client_secret=False,
+        )
+
+        self.assertEqual(app.client_secret, CLEARTEXT_SECRET)
 
     def test_grant_authorization_code_redirect_uris(self):
         app = Application(

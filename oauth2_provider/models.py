@@ -29,6 +29,10 @@ logger = logging.getLogger(__name__)
 class ClientSecretField(models.CharField):
     def pre_save(self, model_instance, add):
         secret = getattr(model_instance, self.attname)
+        should_be_hashed = getattr(model_instance, "hash_client_secret", True)
+        if not should_be_hashed:
+            return super().pre_save(model_instance, add)
+
         try:
             hasher = identify_hasher(secret)
             logger.debug(f"{model_instance}: {self.attname} is already hashed with {hasher}.")
@@ -120,6 +124,7 @@ class AbstractApplication(models.Model):
         db_index=True,
         help_text=_("Hashed on Save. Copy it now if this is a new secret."),
     )
+    hash_client_secret = models.BooleanField(default=True)
     name = models.CharField(max_length=255, blank=True)
     skip_authorization = models.BooleanField(default=False)
 

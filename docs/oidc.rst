@@ -133,6 +133,9 @@ If you would prefer to use just ``HS256`` keys, you don't need to create any
 additional keys, ``django-oauth-toolkit`` will just use the application's
 ``client_secret`` to sign the JWT token.
 
+To be able to verify the JWT's signature using the ``client_secret``, you
+must set the application's ``hash_client_secret`` to ``False``.
+
 In this case, you just need to enable OIDC and add ``openid`` to your list of
 scopes in your ``settings.py``::
 

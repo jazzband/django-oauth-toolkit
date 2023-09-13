@@ -49,6 +49,13 @@ class Command(BaseCommand):
             help="The secret for this application",
         )
         parser.add_argument(
+            "--no-hash-client-secret",
+            dest="hash_client_secret",
+            action="store_false",
+            help="Don't hash the client secret",
+        )
+        parser.set_defaults(hash_client_secret=True)
+        parser.add_argument(
             "--name",
             type=str,
             help="The name this application",
@@ -74,7 +81,7 @@ class Command(BaseCommand):
             # Data in options must be cleaned because there are unneeded key-value like
             # verbosity and others. Also do not pass any None to the Application
             # instance so default values will be generated for those fields
-            if key in application_fields and value:
+            if key in application_fields and (isinstance(value, bool) or value):
                 if key == "user":
                     application_data.update({"user_id": value})
                 else:
