@@ -209,57 +209,6 @@ def _validate_claims(request, claims):
     return True
 
 
-def validate_logout_request(request, id_token_hint, client_id, post_logout_redirect_uri):
-    """
-    Validate an OIDC RP-Initiated Logout Request.
-    `(application, token_user)` is returned.
-
-    If it is set, `application` is the Application that is requesting the logout.
-    `token_user` is the id_token user, which will used to revoke the tokens if found.
-
-    The `id_token_hint` will be validated if given. If both `client_id` and `id_token_hint` are given they
-    will be validated against each other.
-    """
-
-    id_token = None
-    if id_token_hint:
-        # Only basic validation has been done on the IDToken at this point.
-        id_token, claims = _load_id_token(id_token_hint)
-
-        if not id_token or not _validate_claims(request, claims):
-            raise InvalidIDTokenError()
-
-        # If both id_token_hint and client_id are given it must be verified that they match.
-        if client_id:
-            if id_token.application.client_id != client_id:
-                raise ClientIdMissmatch()
-
-    application = None
-    # Determine the application that is requesting the logout.
-    if client_id:
-        application = get_application_model().objects.get(client_id=client_id)
-    elif id_token:
-        application = id_token.application
-
-    # Validate `post_logout_redirect_uri`
-    if post_logout_redirect_uri:
-        if not application:
-            raise InvalidOIDCClientError()
-        scheme = urlparse(post_logout_redirect_uri)[0]
-        if not scheme:
-            raise InvalidOIDCRedirectURIError("A Scheme is required for the redirect URI.")
-        if oauth2_settings.OIDC_RP_INITIATED_LOGOUT_STRICT_REDIRECT_URIS and (
-            scheme == "http" and application.client_type != "confidential"
-        ):
-            raise InvalidOIDCRedirectURIError("http is only allowed with confidential clients.")
-        if scheme not in application.get_allowed_schemes():
-            raise InvalidOIDCRedirectURIError(f'Redirect to scheme "{scheme}" is not permitted.')
-        if not application.post_logout_redirect_uri_allowed(post_logout_redirect_uri):
-            raise InvalidOIDCRedirectURIError("This client does not have this redirect uri registered.")
-
-    return application, id_token.user if id_token else None
-
-
 class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
     template_name = "oauth2_provider/logout_confirm.html"
     form_class = ConfirmLogoutForm
@@ -298,8 +247,7 @@ class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
         state = request.GET.get("state")
 
         try:
-            application, token_user = validate_logout_request(
-                request=request,
+            application, token_user = self.validate_logout_request(
                 id_token_hint=id_token_hint,
                 client_id=client_id,
                 post_logout_redirect_uri=post_logout_redirect_uri,
@@ -330,8 +278,7 @@ class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
         state = form.cleaned_data.get("state")
 
         try:
-            application, token_user = validate_logout_request(
-                request=self.request,
+            application, token_user = self.validate_logout_request(
                 id_token_hint=id_token_hint,
                 client_id=client_id,
                 post_logout_redirect_uri=post_logout_redirect_uri,
@@ -344,6 +291,56 @@ class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
 
         except OIDCError as error:
             return self.error_response(error)
+
+    def validate_logout_request(self, id_token_hint, client_id, post_logout_redirect_uri):
+        """
+        Validate an OIDC RP-Initiated Logout Request.
+        `(application, token_user)` is returned.
+
+        If it is set, `application` is the Application that is requesting the logout.
+        `token_user` is the id_token user, which will used to revoke the tokens if found.
+
+        The `id_token_hint` will be validated if given. If both `client_id` and `id_token_hint` are given they
+        will be validated against each other.
+        """
+
+        id_token = None
+        if id_token_hint:
+            # Only basic validation has been done on the IDToken at this point.
+            id_token, claims = _load_id_token(id_token_hint)
+
+            if not id_token or not _validate_claims(self.request, claims):
+                raise InvalidIDTokenError()
+
+            # If both id_token_hint and client_id are given it must be verified that they match.
+            if client_id:
+                if id_token.application.client_id != client_id:
+                    raise ClientIdMissmatch()
+
+        application = None
+        # Determine the application that is requesting the logout.
+        if client_id:
+            application = get_application_model().objects.get(client_id=client_id)
+        elif id_token:
+            application = id_token.application
+
+        # Validate `post_logout_redirect_uri`
+        if post_logout_redirect_uri:
+            if not application:
+                raise InvalidOIDCClientError()
+            scheme = urlparse(post_logout_redirect_uri)[0]
+            if not scheme:
+                raise InvalidOIDCRedirectURIError("A Scheme is required for the redirect URI.")
+            if oauth2_settings.OIDC_RP_INITIATED_LOGOUT_STRICT_REDIRECT_URIS and (
+                scheme == "http" and application.client_type != "confidential"
+            ):
+                raise InvalidOIDCRedirectURIError("http is only allowed with confidential clients.")
+            if scheme not in application.get_allowed_schemes():
+                raise InvalidOIDCRedirectURIError(f'Redirect to scheme "{scheme}" is not permitted.')
+            if not application.post_logout_redirect_uri_allowed(post_logout_redirect_uri):
+                raise InvalidOIDCRedirectURIError("This client does not have this redirect uri registered.")
+
+        return application, id_token.user if id_token else None
 
     def must_prompt(self, token_user):
         """Indicate whether the logout has to be confirmed by the user. This happens if the
