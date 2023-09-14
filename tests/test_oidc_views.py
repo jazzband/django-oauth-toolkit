@@ -14,6 +14,7 @@ from oauth2_provider.views.oidc import (
     RPInitiatedLogoutView,
     _load_id_token,
     _validate_claims,
+    validate_logout_request,
 )
 
 from . import presets
@@ -187,6 +188,89 @@ def mock_request_for(user):
     request = RequestFactory().get("")
     request.user = user
     return request
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("ALWAYS_PROMPT", [True, False])
+def test_deprecated_validate_logout_request(
+    oidc_tokens, public_application, other_user, rp_settings, ALWAYS_PROMPT
+):
+    rp_settings.OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT = ALWAYS_PROMPT
+    oidc_tokens = oidc_tokens
+    application = oidc_tokens.application
+    client_id = application.client_id
+    id_token = oidc_tokens.id_token
+    assert validate_logout_request(
+        request=mock_request_for(oidc_tokens.user),
+        id_token_hint=None,
+        client_id=None,
+        post_logout_redirect_uri=None,
+    ) == (True, (None, None), None)
+    assert validate_logout_request(
+        request=mock_request_for(oidc_tokens.user),
+        id_token_hint=None,
+        client_id=client_id,
+        post_logout_redirect_uri=None,
+    ) == (True, (None, application), None)
+    assert validate_logout_request(
+        request=mock_request_for(oidc_tokens.user),
+        id_token_hint=None,
+        client_id=client_id,
+        post_logout_redirect_uri="http://example.org",
+    ) == (True, ("http://example.org", application), None)
+    assert validate_logout_request(
+        request=mock_request_for(oidc_tokens.user),
+        id_token_hint=id_token,
+        client_id=None,
+        post_logout_redirect_uri="http://example.org",
+    ) == (ALWAYS_PROMPT, ("http://example.org", application), oidc_tokens.user)
+    assert validate_logout_request(
+        request=mock_request_for(other_user),
+        id_token_hint=id_token,
+        client_id=None,
+        post_logout_redirect_uri="http://example.org",
+    ) == (True, ("http://example.org", application), oidc_tokens.user)
+    assert validate_logout_request(
+        request=mock_request_for(oidc_tokens.user),
+        id_token_hint=id_token,
+        client_id=client_id,
+        post_logout_redirect_uri="http://example.org",
+    ) == (ALWAYS_PROMPT, ("http://example.org", application), oidc_tokens.user)
+    with pytest.raises(ClientIdMissmatch):
+        validate_logout_request(
+            request=mock_request_for(oidc_tokens.user),
+            id_token_hint=id_token,
+            client_id=public_application.client_id,
+            post_logout_redirect_uri="http://other.org",
+        )
+    with pytest.raises(InvalidOIDCClientError):
+        validate_logout_request(
+            request=mock_request_for(oidc_tokens.user),
+            id_token_hint=None,
+            client_id=None,
+            post_logout_redirect_uri="http://example.org",
+        )
+    with pytest.raises(InvalidOIDCRedirectURIError):
+        validate_logout_request(
+            request=mock_request_for(oidc_tokens.user),
+            id_token_hint=None,
+            client_id=client_id,
+            post_logout_redirect_uri="example.org",
+        )
+    with pytest.raises(InvalidOIDCRedirectURIError):
+        validate_logout_request(
+            request=mock_request_for(oidc_tokens.user),
+            id_token_hint=None,
+            client_id=client_id,
+            post_logout_redirect_uri="imap://example.org",
+        )
+    with pytest.raises(InvalidOIDCRedirectURIError):
+        validate_logout_request(
+            request=mock_request_for(oidc_tokens.user),
+            id_token_hint=None,
+            client_id=client_id,
+            post_logout_redirect_uri="http://other.org",
+        )
 
 
 @pytest.mark.django_db
