@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### WARNING
+* If you are going to revert migration 0006 make note that previously hashed client_secret cannot be reverted
+
 ### Added
 * #1185 Add middleware for adding access token to request
 * #1273 Add caching of loading of OIDC private key.
@@ -24,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - ### Fixed
 * #1284 Allow to logout whith no id_token_hint even if the browser session already expired
+* #1296 Added reverse function in migration 0006_alter_application_client_secret
 
 ## [2.3.0] 2023-05-31
 
