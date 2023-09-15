@@ -363,6 +363,28 @@ class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
         except OIDCError as error:
             return self.error_response(error)
 
+    def validate_post_logout_redirect_uri(self, application, post_logout_redirect_uri):
+        """
+        Validate the OIDC RP-Initiated Logout Request post_logout_redirect_uri parameter
+        """
+
+        if not post_logout_redirect_uri:
+            return
+
+        if not application:
+            raise InvalidOIDCClientError()
+        scheme = urlparse(post_logout_redirect_uri)[0]
+        if not scheme:
+            raise InvalidOIDCRedirectURIError("A Scheme is required for the redirect URI.")
+        if oauth2_settings.OIDC_RP_INITIATED_LOGOUT_STRICT_REDIRECT_URIS and (
+            scheme == "http" and application.client_type != "confidential"
+        ):
+            raise InvalidOIDCRedirectURIError("http is only allowed with confidential clients.")
+        if scheme not in application.get_allowed_schemes():
+            raise InvalidOIDCRedirectURIError(f'Redirect to scheme "{scheme}" is not permitted.')
+        if not application.post_logout_redirect_uri_allowed(post_logout_redirect_uri):
+            raise InvalidOIDCRedirectURIError("This client does not have this redirect uri registered.")
+
     def validate_logout_request(self, id_token_hint, client_id, post_logout_redirect_uri):
         """
         Validate an OIDC RP-Initiated Logout Request.
@@ -395,21 +417,7 @@ class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
         elif id_token:
             application = id_token.application
 
-        # Validate `post_logout_redirect_uri`
-        if post_logout_redirect_uri:
-            if not application:
-                raise InvalidOIDCClientError()
-            scheme = urlparse(post_logout_redirect_uri)[0]
-            if not scheme:
-                raise InvalidOIDCRedirectURIError("A Scheme is required for the redirect URI.")
-            if oauth2_settings.OIDC_RP_INITIATED_LOGOUT_STRICT_REDIRECT_URIS and (
-                scheme == "http" and application.client_type != "confidential"
-            ):
-                raise InvalidOIDCRedirectURIError("http is only allowed with confidential clients.")
-            if scheme not in application.get_allowed_schemes():
-                raise InvalidOIDCRedirectURIError(f'Redirect to scheme "{scheme}" is not permitted.')
-            if not application.post_logout_redirect_uri_allowed(post_logout_redirect_uri):
-                raise InvalidOIDCRedirectURIError("This client does not have this redirect uri registered.")
+        self.validate_post_logout_redirect_uri(application, post_logout_redirect_uri)
 
         return application, id_token.user if id_token else None
 
