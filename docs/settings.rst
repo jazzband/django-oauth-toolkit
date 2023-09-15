@@ -255,6 +255,12 @@ The number of seconds an authorization token received from the introspection end
 If the expire time of the received token is less than ``RESOURCE_SERVER_TOKEN_CACHING_SECONDS`` the expire time
 will be used.
 
+AUTHENTICATION_SERVER_EXP_TIME_ZONE
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The exp (expiration date) of Access Tokens must be defined in UTC (Unix Timestamp). Although its wrong, sometimes
+a remote Authentication Server does not use UTC (eg. no timezone support and configured in local time other than UTC).
+Prior to fix #1292 this could be fixed by changing your own time zone. With the introduction of this fix, this workaround
+would not be possible anymore. This setting re-enables this workaround.
 
 PKCE_REQUIRED
 ~~~~~~~~~~~~~
