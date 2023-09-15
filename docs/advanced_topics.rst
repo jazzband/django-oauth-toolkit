@@ -100,3 +100,47 @@ You might want to completely bypass the authorization form, for instance if your
 in-house product or if you already trust the application owner by other means. To this end, you have to
 set ``skip_authorization = True`` on the ``Application`` model, either programmatically or within the
 Django admin. Users will *not* be prompted for authorization, even on the first use of the application.
+
+
+.. _override-views:
+
+Overriding views
+================
+
+You may want to override whole views from Django OAuth Toolkit, for instance if you want to
+change the login view for unregistred users depending on some query params.
+
+In order to do that, you need to write a custom urlpatterns
+
+.. code-block:: python
+
+    from django.urls import re_path
+    from oauth2_provider import views as oauth2_views
+    from oauth2_provider import urls
+
+    from .views import CustomeAuthorizationView
+
+
+    app_name = "oauth2_provider"
+
+    urlpatterns = [
+        # Base urls
+        re_path(r"^authorize/", CustomeAuthorizationView.as_view(), name="authorize"),
+        re_path(r"^token/$", oauth2_views.TokenView.as_view(), name="token"),
+        re_path(r"^revoke_token/$", oauth2_views.RevokeTokenView.as_view(), name="revoke-token"),
+        re_path(r"^introspect/$", oauth2_views.IntrospectTokenView.as_view(), name="introspect"),
+    ] + urls.management_urlpatterns + urls.oidc_urlpatterns
+
+You can then replace ``oauth2_provider.urls`` with the path to your urls file, but make sure you keep the
+same namespace as before.
+
+.. code-block:: python
+
+    from django.urls import include, path
+
+    urlpatterns = [
+        ...
+        path('o/', include('path.to.custom.urls', namespace='oauth2_provider')),
+    ]
+
+This method also allows to remove some of the urls (such as managements) urls if you don't want them.
