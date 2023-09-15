@@ -131,7 +131,7 @@ In order to do that, you need to write a custom urlpatterns
         re_path(r"^introspect/$", oauth2_views.IntrospectTokenView.as_view(), name="introspect"),
     ] + urls.management_urlpatterns + urls.oidc_urlpatterns
 
-You can then remplace ``oauth2_provider.urls`` with the path to your urls file, but make sure you keep the
+You can then replace ``oauth2_provider.urls`` with the path to your urls file, but make sure you keep the
 same namespace as before.
 
 .. code-block:: python
