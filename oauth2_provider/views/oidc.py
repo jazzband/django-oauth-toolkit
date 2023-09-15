@@ -385,6 +385,27 @@ class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
         if not application.post_logout_redirect_uri_allowed(post_logout_redirect_uri):
             raise InvalidOIDCRedirectURIError("This client does not have this redirect uri registered.")
 
+    def validate_logout_request_user(self, id_token_hint, client_id):
+        """
+        Validate the an OIDC RP-Initiated Logout Request user
+        """
+
+        if not id_token_hint:
+            return
+
+        # Only basic validation has been done on the IDToken at this point.
+        id_token, claims = _load_id_token(id_token_hint)
+
+        if not id_token or not _validate_claims(self.request, claims):
+            raise InvalidIDTokenError()
+
+        # If both id_token_hint and client_id are given it must be verified that they match.
+        if client_id:
+            if id_token.application.client_id != client_id:
+                raise ClientIdMissmatch()
+
+        return id_token
+
     def validate_logout_request(self, id_token_hint, client_id, post_logout_redirect_uri):
         """
         Validate an OIDC RP-Initiated Logout Request.
@@ -397,18 +418,7 @@ class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
         will be validated against each other.
         """
 
-        id_token = None
-        if id_token_hint:
-            # Only basic validation has been done on the IDToken at this point.
-            id_token, claims = _load_id_token(id_token_hint)
-
-            if not id_token or not _validate_claims(self.request, claims):
-                raise InvalidIDTokenError()
-
-            # If both id_token_hint and client_id are given it must be verified that they match.
-            if client_id:
-                if id_token.application.client_id != client_id:
-                    raise ClientIdMissmatch()
+        id_token = self.validate_logout_request_user(id_token_hint, client_id)
 
         application = None
         # Determine the application that is requesting the logout.
