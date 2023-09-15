@@ -406,6 +406,12 @@ class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
 
         return id_token
 
+    def get_request_application(self, id_token, client_id):
+        if client_id:
+            return get_application_model().objects.get(client_id=client_id)
+        if id_token:
+            return id_token.application
+
     def validate_logout_request(self, id_token_hint, client_id, post_logout_redirect_uri):
         """
         Validate an OIDC RP-Initiated Logout Request.
@@ -419,14 +425,7 @@ class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
         """
 
         id_token = self.validate_logout_request_user(id_token_hint, client_id)
-
-        application = None
-        # Determine the application that is requesting the logout.
-        if client_id:
-            application = get_application_model().objects.get(client_id=client_id)
-        elif id_token:
-            application = id_token.application
-
+        application = self.get_request_application(id_token, client_id)
         self.validate_post_logout_redirect_uri(application, post_logout_redirect_uri)
 
         return application, id_token.user if id_token else None
