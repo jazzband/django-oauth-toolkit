@@ -6,7 +6,12 @@ from django.urls import reverse
 from django.utils import timezone
 from pytest_django.asserts import assertRedirects
 
-from oauth2_provider.exceptions import ClientIdMissmatch, InvalidOIDCClientError, InvalidOIDCRedirectURIError
+from oauth2_provider.exceptions import (
+    ClientIdMissmatch,
+    InvalidIDTokenError,
+    InvalidOIDCClientError,
+    InvalidOIDCRedirectURIError,
+)
 from oauth2_provider.models import get_access_token_model, get_id_token_model, get_refresh_token_model
 from oauth2_provider.oauth2_validators import OAuth2Validator
 from oauth2_provider.settings import oauth2_settings
@@ -236,6 +241,13 @@ def test_deprecated_validate_logout_request(
         client_id=client_id,
         post_logout_redirect_uri="http://example.org",
     ) == (ALWAYS_PROMPT, ("http://example.org", application), oidc_tokens.user)
+    with pytest.raises(InvalidIDTokenError):
+        validate_logout_request(
+            request=mock_request_for(oidc_tokens.user),
+            id_token_hint="111",
+            client_id=public_application.client_id,
+            post_logout_redirect_uri="http://other.org",
+        )
     with pytest.raises(ClientIdMissmatch):
         validate_logout_request(
             request=mock_request_for(oidc_tokens.user),
@@ -271,10 +283,18 @@ def test_deprecated_validate_logout_request(
             client_id=client_id,
             post_logout_redirect_uri="http://other.org",
         )
+    with pytest.raises(InvalidOIDCRedirectURIError):
+        rp_settings.OIDC_RP_INITIATED_LOGOUT_STRICT_REDIRECT_URIS = True
+        validate_logout_request(
+            request=mock_request_for(oidc_tokens.user),
+            id_token_hint=None,
+            client_id=public_application.client_id,
+            post_logout_redirect_uri="http://other.org",
+        )
 
 
 @pytest.mark.django_db
-def test_validate_logout_request(oidc_tokens, public_application):
+def test_validate_logout_request(oidc_tokens, public_application, rp_settings):
     oidc_tokens = oidc_tokens
     application = oidc_tokens.application
     client_id = application.client_id
@@ -306,6 +326,12 @@ def test_validate_logout_request(oidc_tokens, public_application):
         client_id=client_id,
         post_logout_redirect_uri="http://example.org",
     ) == (application, oidc_tokens.user)
+    with pytest.raises(InvalidIDTokenError):
+        view.validate_logout_request(
+            id_token_hint="111",
+            client_id=public_application.client_id,
+            post_logout_redirect_uri="http://other.org",
+        )
     with pytest.raises(ClientIdMissmatch):
         view.validate_logout_request(
             id_token_hint=id_token,
@@ -334,6 +360,13 @@ def test_validate_logout_request(oidc_tokens, public_application):
         view.validate_logout_request(
             id_token_hint=None,
             client_id=client_id,
+            post_logout_redirect_uri="http://other.org",
+        )
+    with pytest.raises(InvalidOIDCRedirectURIError):
+        rp_settings.OIDC_RP_INITIATED_LOGOUT_STRICT_REDIRECT_URIS = True
+        view.validate_logout_request(
+            id_token_hint=None,
+            client_id=public_application.client_id,
             post_logout_redirect_uri="http://other.org",
         )
 
