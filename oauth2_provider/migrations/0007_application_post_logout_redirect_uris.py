@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="application",
             name="post_logout_redirect_uris",
-            field=models.TextField(blank=True, help_text="Allowed Post Logout URIs list, space separated"),
+            field=models.TextField(blank=True, help_text="Allowed Post Logout URIs list, space separated", default=""),
         ),
     ]
