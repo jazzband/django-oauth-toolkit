@@ -114,6 +114,7 @@ class AbstractApplication(models.Model):
     post_logout_redirect_uris = models.TextField(
         blank=True,
         help_text=_("Allowed Post Logout URIs list, space separated"),
+        default="",
     )
     client_type = models.CharField(max_length=32, choices=CLIENT_TYPES)
     authorization_grant_type = models.CharField(max_length=32, choices=GRANT_TYPES)
