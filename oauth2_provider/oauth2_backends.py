@@ -75,6 +75,8 @@ class OAuthLibCore:
             del headers["wsgi.errors"]
         if "HTTP_AUTHORIZATION" in headers:
             headers["Authorization"] = headers["HTTP_AUTHORIZATION"]
+        # Add Access-Control-Allow-Origin header to the token endpoint response for authentication code grant, if the origin is allowed by RequestValidator.is_origin_allowed.
+        # https://github.com/oauthlib/oauthlib/pull/791
         if "HTTP_ORIGIN" in headers:
             headers["Origin"] = headers["HTTP_ORIGIN"]
         if request.is_secure():

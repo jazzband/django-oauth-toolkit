@@ -20,8 +20,7 @@ from .generators import generate_client_id, generate_client_secret
 from .scopes import get_scopes_backend
 from .settings import oauth2_settings
 from .utils import jwk_from_pem
-from .validators import RedirectURIValidator, WildcardSet
-
+from .validators import RedirectURIValidator, WildcardSet, URIValidator
 
 logger = logging.getLogger(__name__)
 
@@ -132,7 +131,10 @@ class AbstractApplication(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     algorithm = models.CharField(max_length=5, choices=ALGORITHM_TYPES, default=NO_ALGORITHM, blank=True)
-
+    allowed_origins = models.TextField(
+        blank=True,
+        help_text=_("Allowed origins list to enable CORS, space separated"),
+    )
     class Meta:
         abstract = True
 
@@ -172,6 +174,14 @@ class AbstractApplication(models.Model):
         """
         return redirect_to_uri_allowed(uri, self.post_logout_redirect_uris.split())
 
+    def origin_allowed(self, origin):
+        """
+        Checks if given origin is one of the items in :attr:`allowed_origins` string
+
+        :param origin: Origin to check
+        """
+        return self.allowed_origins and is_origin_allowed(origin, self.allowed_origins.split())
+
     def clean(self):
         from django.core.exceptions import ValidationError
 
@@ -202,6 +212,13 @@ class AbstractApplication(models.Model):
                     grant_type=self.authorization_grant_type
                 )
             )
+        allowed_origins = self.allowed_origins.strip().split()
+        if allowed_origins:
+            # oauthlib allows only https scheme for CORS
+            validator = URIValidator({"https"})
+            for uri in allowed_origins:
+                validator(uri)
+
         if self.algorithm == AbstractApplication.RS256_ALGORITHM:
             if not oauth2_settings.OIDC_RSA_PRIVATE_KEY:
                 raise ValidationError(_("You must set OIDC_RSA_PRIVATE_KEY to use RSA algorithm"))
@@ -776,4 +793,21 @@ def redirect_to_uri_allowed(uri, allowed_uris):
             if aqs_set.issubset(uqs_set):
                 return True
 
+    return False
+
+
+def is_origin_allowed(origin, allowed_origins):
+    """
+    Checks if a given origin uri is allowed based on the provided allowed_origins configuration.
+
+    :param origin: Origin URI to check
+    :param allowed_origins: A list of Origin URIs that are allowed
+    """
+
+    parsed_origin = urlparse(origin)
+    for allowed_origin in allowed_origins:
+        parsed_allowed_origin = urlparse(allowed_origin)
+        if (parsed_allowed_origin.scheme == parsed_origin.scheme
+            and parsed_allowed_origin.netloc == parsed_origin.netloc):
+            return True
     return False
