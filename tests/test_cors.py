@@ -1,3 +1,4 @@
+import json
 from urllib.parse import parse_qs, urlparse
 
 import pytest
@@ -6,16 +7,9 @@ from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
 from oauth2_provider.models import get_application_model
-from oauth2_provider.oauth2_validators import OAuth2Validator
 
 from . import presets
 from .utils import get_basic_auth_header
-
-
-class CorsOAuth2Validator(OAuth2Validator):
-    def is_origin_allowed(self, client_id, origin, request, *args, **kwargs):
-        """Enable CORS in OAuthLib"""
-        return True
 
 
 Application = get_application_model()
@@ -50,10 +44,10 @@ class TestCors(TestCase):
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
             client_secret=CLEARTEXT_SECRET,
+            allowed_origins=CLIENT_URI,
         )
 
         self.oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES = ["https"]
-        self.oauth2_settings.OAUTH2_VALIDATOR_CLASS = CorsOAuth2Validator
 
     def tearDown(self):
         self.application.delete()
@@ -76,10 +70,42 @@ class TestCors(TestCase):
         auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
         auth_headers["HTTP_ORIGIN"] = CLIENT_URI
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+
+        content = json.loads(response.content.decode("utf-8"))
+
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Access-Control-Allow-Origin"], CLIENT_URI)
 
-    def test_no_cors_header(self):
+        token_request_data = {
+            "grant_type": "refresh_token",
+            "refresh_token": content["refresh_token"],
+            "scope": content["scope"],
+        }
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Access-Control-Allow-Origin"], CLIENT_URI)
+
+    def test_no_cors_header_origin_not_allowed(self):
+        """
+        Test that /token endpoint does not have Access-Control-Allow-Origin
+        when request origin is not in Application.allowed_origins
+        """
+        authorization_code = self._get_authorization_code()
+
+        # exchange authorization code for a valid access token
+        token_request_data = {
+            "grant_type": "authorization_code",
+            "code": authorization_code,
+            "redirect_uri": CLIENT_URI,
+        }
+
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
+        auth_headers["HTTP_ORIGIN"] = "another_example.org"
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.has_header("Access-Control-Allow-Origin"))
+
+    def test_no_cors_header_no_origin(self):
         """
         Test that /token endpoint does not have Access-Control-Allow-Origin
         """
