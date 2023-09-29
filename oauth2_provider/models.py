@@ -22,6 +22,7 @@ from .settings import oauth2_settings
 from .utils import jwk_from_pem
 from .validators import RedirectURIValidator, URIValidator, WildcardSet
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -136,6 +137,7 @@ class AbstractApplication(models.Model):
         help_text=_("Allowed origins list to enable CORS, space separated"),
         default="",
     )
+
     class Meta:
         abstract = True
 
