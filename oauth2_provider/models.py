@@ -20,7 +20,8 @@ from .generators import generate_client_id, generate_client_secret
 from .scopes import get_scopes_backend
 from .settings import oauth2_settings
 from .utils import jwk_from_pem
-from .validators import RedirectURIValidator, WildcardSet, URIValidator
+from .validators import RedirectURIValidator, URIValidator, WildcardSet
+
 
 logger = logging.getLogger(__name__)
 
@@ -135,6 +136,7 @@ class AbstractApplication(models.Model):
         blank=True,
         help_text=_("Allowed origins list to enable CORS, space separated"),
     )
+
     class Meta:
         abstract = True
 
@@ -807,7 +809,9 @@ def is_origin_allowed(origin, allowed_origins):
     parsed_origin = urlparse(origin)
     for allowed_origin in allowed_origins:
         parsed_allowed_origin = urlparse(allowed_origin)
-        if (parsed_allowed_origin.scheme == parsed_origin.scheme
-            and parsed_allowed_origin.netloc == parsed_origin.netloc):
+        if (
+            parsed_allowed_origin.scheme == parsed_origin.scheme
+            and parsed_allowed_origin.netloc == parsed_origin.netloc
+        ):
             return True
     return False
