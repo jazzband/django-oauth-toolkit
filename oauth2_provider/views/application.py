@@ -39,6 +39,7 @@ class ApplicationRegistration(LoginRequiredMixin, CreateView):
                 "authorization_grant_type",
                 "redirect_uris",
                 "post_logout_redirect_uris",
+                "allowed_origins",
                 "algorithm",
             ),
         )
@@ -99,6 +100,7 @@ class ApplicationUpdate(ApplicationOwnerIsUserMixin, UpdateView):
                 "authorization_grant_type",
                 "redirect_uris",
                 "post_logout_redirect_uris",
+                "allowed_origins",
                 "algorithm",
             ),
         )

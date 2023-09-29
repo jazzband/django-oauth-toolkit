@@ -958,3 +958,12 @@ class OAuth2Validator(RequestValidator):
 
     def get_additional_claims(self, request):
         return {}
+
+    def is_origin_allowed(self, client_id, origin, request, *args, **kwargs):
+        if request.client is None or not request.client.client_id:
+            return False
+        application = Application.objects.filter(client_id=request.client.client_id).first()
+        if application:
+            return application.origin_allowed(origin)
+        else:
+            return False

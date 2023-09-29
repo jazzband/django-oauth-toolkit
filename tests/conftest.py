@@ -108,6 +108,7 @@ def application():
         authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
         algorithm=Application.RS256_ALGORITHM,
         client_secret=CLEARTEXT_SECRET,
+        allowed_origins="https://example.com",
     )
 
 
