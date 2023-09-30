@@ -91,9 +91,10 @@ point your browser to http://localhost:8000/o/applications/ and add an Applicati
    specifies one of the verified redirection uris. For this tutorial, paste verbatim the value
    `https://www.getpostman.com/oauth2/callback`
 
- * `Allowed origins`: Web applications use Cross-Origin Resource Sharing (CORS) to request resources from origins other than their own.
-   You can provide list of origins of web applications that will have access to the token endpoint of :term:`Authorization Server`.
-   This setting controls only token endpoint and it is not related with Django CORS Headers settings.
+ * `Allowed origins`: Web applications use Cross-Origin Resource Sharing (CORS) to request resources from origins other
+   than their own. You can provide list of origins of web applications that will have access to the token endpoint
+   of :term:`Authorization Server`. This setting controls only token endpoint and it is not related
+   with Django CORS Headers settings.
 
  * `Client type`: this value affects the security level at which some communications between the client application and
    the authorization server are performed. For this tutorial choose *Confidential*.
