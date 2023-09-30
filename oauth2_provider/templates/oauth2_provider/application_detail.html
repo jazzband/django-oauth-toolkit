@@ -40,6 +40,11 @@
                 <p><b>{% trans "Post Logout Redirect Uris" %}</b></p>
                 <textarea class="input-block-level" readonly>{{ application.post_logout_redirect_uris }}</textarea>
             </li>
+
+            <li>
+                <p><b>{% trans "Allowed Origins" %}</b></p>
+                <textarea class="input-block-level" readonly>{{ application.allowed_origins }}</textarea>
+            </li>
         </ul>
 
         <div class="btn-toolbar">
