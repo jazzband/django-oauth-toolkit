@@ -960,10 +960,11 @@ class OAuth2Validator(RequestValidator):
         return {}
 
     def is_origin_allowed(self, client_id, origin, request, *args, **kwargs):
-        if request.client is None or not request.client.client_id:
-            return False
-        application = Application.objects.filter(client_id=request.client.client_id).first()
-        if application:
-            return application.origin_allowed(origin)
-        else:
-            return False
+        """Indicate if the given origin is allowed to access the token endpoint
+        via Cross-Origin Resource Sharing (CORS).  CORS is used by browser-based
+        clients, such as Single-Page Applications, to perform the Authorization
+        Code Grant.
+
+        Verifies if request's origin is within Application's allowed origins list.
+        """
+        return request.client.origin_allowed(origin)

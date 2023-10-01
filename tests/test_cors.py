@@ -20,6 +20,8 @@ CLEARTEXT_SECRET = "1234567890abcdefghijklmnopqrstuvwxyz"
 # CORS is allowed for https only
 CLIENT_URI = "https://example.org"
 
+CLIENT_URI_HTTP = "http://example.org"
+
 
 @pytest.mark.usefixtures("oauth2_settings")
 @pytest.mark.oauth2_settings(presets.DEFAULT_SCOPES_RW)
@@ -39,7 +41,7 @@ class TestCors(TestCase):
 
         self.application = Application.objects.create(
             name="Test Application",
-            redirect_uris=(CLIENT_URI),
+            redirect_uris=CLIENT_URI,
             user=self.dev_user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
@@ -84,6 +86,26 @@ class TestCors(TestCase):
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Access-Control-Allow-Origin"], CLIENT_URI)
+
+    def test_cors_header_no_https(self):
+        """
+        Test that CORS is not allowed if origin uri does not have https:// schema
+        """
+        authorization_code = self._get_authorization_code()
+
+        # exchange authorization code for a valid access token
+        token_request_data = {
+            "grant_type": "authorization_code",
+            "code": authorization_code,
+            "redirect_uri": CLIENT_URI,
+        }
+
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
+        auth_headers["HTTP_ORIGIN"] = CLIENT_URI_HTTP
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.has_header("Access-Control-Allow-Origin"))
 
     def test_no_cors_header_origin_not_allowed(self):
         """
