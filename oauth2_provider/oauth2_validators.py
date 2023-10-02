@@ -333,6 +333,19 @@ class OAuth2Validator(RequestValidator):
     def get_default_redirect_uri(self, client_id, request, *args, **kwargs):
         return request.client.default_redirect_uri
 
+    def get_or_create_user_from_content(self, content):
+        """
+        An optional layer to define where to store the profile in `UserModel` or a separate model. For example `UserOAuth`, where `user = models.OneToOneField(UserModel)` .
+
+        The function is called after checking that username is in the content.
+
+        Returns an UserModel instance;
+        """
+        user, _ = UserModel.objects.get_or_create(
+            **{UserModel.USERNAME_FIELD: content["username"]}
+        )
+        return user
+
     def _get_token_from_authentication_server(
         self, token, introspection_url, introspection_token, introspection_credentials
     ):
@@ -383,9 +396,7 @@ class OAuth2Validator(RequestValidator):
 
         if "active" in content and content["active"] is True:
             if "username" in content:
-                user, _created = UserModel.objects.get_or_create(
-                    **{UserModel.USERNAME_FIELD: content["username"]}
-                )
+                user = self.get_or_create_user_from_content(content)
             else:
                 user = None
 
