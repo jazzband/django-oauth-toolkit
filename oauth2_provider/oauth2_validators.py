@@ -341,9 +341,7 @@ class OAuth2Validator(RequestValidator):
 
         Returns an UserModel instance;
         """
-        user, _ = UserModel.objects.get_or_create(
-            **{UserModel.USERNAME_FIELD: content["username"]}
-        )
+        user, _ = UserModel.objects.get_or_create(**{UserModel.USERNAME_FIELD: content["username"]})
         return user
 
     def _get_token_from_authentication_server(
