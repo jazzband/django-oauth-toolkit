@@ -25,7 +25,7 @@ CLIENT_URI_HTTP = "http://example.org"
 
 @pytest.mark.usefixtures("oauth2_settings")
 @pytest.mark.oauth2_settings(presets.DEFAULT_SCOPES_RW)
-class TestCors(TestCase):
+class TestTokenEndpointCors(TestCase):
     """
     Test that CORS headers can be managed by OAuthLib.
     The objective is: http request 'Origin' header should be passed to OAuthLib
@@ -56,7 +56,7 @@ class TestCors(TestCase):
         self.test_user.delete()
         self.dev_user.delete()
 
-    def test_cors_header(self):
+    def test_valid_origin_with_https(self):
         """
         Test that /token endpoint has Access-Control-Allow-Origin
         """
@@ -87,7 +87,7 @@ class TestCors(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Access-Control-Allow-Origin"], CLIENT_URI)
 
-    def test_cors_header_no_https(self):
+    def test_valid_origin_no_https(self):
         """
         Test that CORS is not allowed if origin uri does not have https:// schema
         """
@@ -107,7 +107,7 @@ class TestCors(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.has_header("Access-Control-Allow-Origin"))
 
-    def test_no_cors_header_origin_not_allowed(self):
+    def test_origin_not_from_allowed_origins(self):
         """
         Test that /token endpoint does not have Access-Control-Allow-Origin
         when request origin is not in Application.allowed_origins
@@ -127,7 +127,7 @@ class TestCors(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.has_header("Access-Control-Allow-Origin"))
 
-    def test_no_cors_header_no_origin(self):
+    def test_no_origin(self):
         """
         Test that /token endpoint does not have Access-Control-Allow-Origin
         """

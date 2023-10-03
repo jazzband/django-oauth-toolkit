@@ -21,6 +21,7 @@ logo, acceptance of some user agreement and so on.
     * :attr:`user` ref to a Django user
     * :attr:`redirect_uris` The list of allowed redirect uri. The string consists of valid URLs separated by space
     * :attr:`post_logout_redirect_uris` The list of allowed redirect uris after an RP initiated logout. The string consists of valid URLs separated by space
+    * :attr:`allowed_origins` The list of origin URIs to enable CORS for token endpoint. The string consists of valid URLs separated by space
     * :attr:`client_type` Client type as described in :rfc:`2.1`
     * :attr:`authorization_grant_type` Authorization flows available to the Application
     * :attr:`client_secret` Confidential secret issued to the client during the registration process as described in :rfc:`2.2`
