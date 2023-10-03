@@ -92,9 +92,11 @@ point your browser to http://localhost:8000/o/applications/ and add an Applicati
    `https://www.getpostman.com/oauth2/callback`
 
  * `Allowed origins`: Browser-based clients use Cross-Origin Resource Sharing (CORS) to request resources from origins other
-   than their own. You can provide list of origins that will have access to the token endpoint
-   of :term:`Authorization Server`. This setting controls only token endpoint and it is not related
-   with Django CORS Headers settings.
+   than their own. Provide space-separated list of allowed origins for the token endpoint.
+   The origin must be in the form of `"://" [ ":" ]`, such as `https://login.mydomain.com` or `http://localhost:3000`.
+   Query strings and hash information are not taken into account when validating these URLs.
+   This does not include the 'Redirect URIs' or 'Post Logout Redirect URIs', if those domains will also use the token
+   endpoint, they must be included in this list.
 
  * `Client type`: this value affects the security level at which some communications between the client application and
    the authorization server are performed. For this tutorial choose *Confidential*.
