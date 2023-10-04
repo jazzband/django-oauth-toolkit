@@ -584,3 +584,13 @@ def test_application_clean(oauth2_settings, application):
     with pytest.raises(ValidationError) as exc:
         application.clean()
     assert "You cannot use HS256" in str(exc.value)
+
+    application.authorization_grant_type = Application.GRANT_AUTHORIZATION_CODE
+
+    # allowed_origins can be only https://
+    application.allowed_origins = "http://example.com"
+    with pytest.raises(ValidationError) as exc:
+        application.clean()
+    assert "Enter a valid URL" in str(exc.value)
+    application.allowed_origins = "https://example.com"
+    application.clean()

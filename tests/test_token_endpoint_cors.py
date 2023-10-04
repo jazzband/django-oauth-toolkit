@@ -122,7 +122,7 @@ class TestTokenEndpointCors(TestCase):
         }
 
         auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
-        auth_headers["HTTP_ORIGIN"] = "another_example.org"
+        auth_headers["HTTP_ORIGIN"] = "https://another_example.org"
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.has_header("Access-Control-Allow-Origin"))
