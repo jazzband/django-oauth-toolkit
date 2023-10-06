@@ -100,6 +100,18 @@ class TestOAuth2Validator(TransactionTestCase):
         self.blank_secret_request.client_secret = "wrong_client_secret"
         self.assertFalse(self.validator._authenticate_request_body(self.blank_secret_request))
 
+    def test_authenticate_request_body_unhashed_secret(self):
+        self.application.client_secret = CLEARTEXT_SECRET
+        self.application.hash_client_secret = False
+        self.application.save()
+
+        self.request.client_id = "client_id"
+        self.request.client_secret = CLEARTEXT_SECRET
+        self.assertTrue(self.validator._authenticate_request_body(self.request))
+
+        self.application.hash_client_secret = True
+        self.application.save()
+
     def test_extract_basic_auth(self):
         self.request.headers = {"HTTP_AUTHORIZATION": "Basic 123456"}
         self.assertEqual(self.validator._extract_basic_auth(self.request), "123456")
