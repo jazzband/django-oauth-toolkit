@@ -135,6 +135,7 @@ class AbstractApplication(models.Model):
     allowed_origins = models.TextField(
         blank=True,
         help_text=_("Allowed origins list to enable CORS, space separated"),
+        default="",
     )
 
     class Meta:

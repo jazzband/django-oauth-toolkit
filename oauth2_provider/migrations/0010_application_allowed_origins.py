@@ -13,6 +13,10 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="application",
             name="allowed_origins",
-            field=models.TextField(blank=True, help_text="Allowed origins list to enable CORS, space separated"),
+            field=models.TextField(
+                blank=True,
+                help_text="Allowed origins list to enable CORS, space separated",
+                default="",
+            ),
         ),
     ]
