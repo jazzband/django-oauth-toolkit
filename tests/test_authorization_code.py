@@ -851,9 +851,9 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
         self.assertIsNotNone(refresh_token.revoked)
         self.assertFalse(AccessToken.objects.filter(token=at).exists())
 
-    def test_refresh_twice_with_same_token_returns_401(self):
+    def test_refresh_twice_with_same_token_returns_400(self):
         """
-        Ensure that using a refresh token twice returns 401
+        Ensure that using a refresh token twice returns 400
         """
         self.client.login(username="test_user", password="123456")
         authorization_code = self.get_auth()
