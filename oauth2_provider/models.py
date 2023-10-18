@@ -20,8 +20,7 @@ from .generators import generate_client_id, generate_client_secret
 from .scopes import get_scopes_backend
 from .settings import oauth2_settings
 from .utils import jwk_from_pem
-from .validators import RedirectURIValidator, URIValidator, WildcardSet
-
+from .validators import RedirectURIValidator, URIValidator, WildcardSet, AllowedURIValidator
 
 logger = logging.getLogger(__name__)
 
@@ -218,7 +217,7 @@ class AbstractApplication(models.Model):
         allowed_origins = self.allowed_origins.strip().split()
         if allowed_origins:
             # oauthlib allows only https scheme for CORS
-            validator = URIValidator({"https"})
+            validator = AllowedURIValidator(oauth2_settings.ALLOWED_SCHEMES, "Origin")
             for uri in allowed_origins:
                 validator(uri)
 
@@ -808,6 +807,10 @@ def is_origin_allowed(origin, allowed_origins):
     """
 
     parsed_origin = urlparse(origin)
+
+    if parsed_origin.scheme not in oauth2_settings.ALLOWED_SCHEMES:
+        return False
+
     for allowed_origin in allowed_origins:
         parsed_allowed_origin = urlparse(allowed_origin)
         if (
