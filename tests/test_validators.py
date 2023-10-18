@@ -121,10 +121,10 @@ class TestValidators(TestCase):
             'https://["><script>alert()</script>',
             # Origin uri should not contain path, query of fragment parts
             # https://www.rfc-editor.org/rfc/rfc6454#section-7.1
-            "https:/example.com/",
-            "https:/example.com/test",
-            "https:/example.com/?q=test",
-            "https:/example.com/#test",
+            "https://example.com/",
+            "https://example.com/test",
+            "https://example.com/?q=test",
+            "https://example.com/#test",
         ]
 
         for uri in bad_uris:
