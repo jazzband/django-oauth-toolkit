@@ -20,7 +20,7 @@ from .generators import generate_client_id, generate_client_secret
 from .scopes import get_scopes_backend
 from .settings import oauth2_settings
 from .utils import jwk_from_pem
-from .validators import RedirectURIValidator, URIValidator, WildcardSet, AllowedURIValidator
+from .validators import AllowedURIValidator, RedirectURIValidator, WildcardSet
 
 logger = logging.getLogger(__name__)
 
