@@ -57,6 +57,7 @@ class AllowedURIValidator(URIValidator):
         if fragment and not self.allow_fragments:
             raise ValidationError("{} URIs must not contain fragments".format(self.name))
 
+
 ##
 # WildcardSet is a special set that contains everything.
 # This is required in order to move validation of the scheme from

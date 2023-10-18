@@ -2,7 +2,7 @@ import pytest
 from django.core.validators import ValidationError
 from django.test import TestCase
 
-from oauth2_provider.validators import RedirectURIValidator, AllowedURIValidator
+from oauth2_provider.validators import AllowedURIValidator, RedirectURIValidator
 
 
 @pytest.mark.usefixtures("oauth2_settings")
