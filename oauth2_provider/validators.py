@@ -34,11 +34,11 @@ class RedirectURIValidator(URIValidator):
 class AllowedURIValidator(URIValidator):
     def __init__(self, schemes, name, allow_path=False, allow_query=False, allow_fragments=False):
         """
-        :params schemes: List of allowed schemes. E.g.: ["https"]
-        :params name: Name of the validater URI required for validation message. E.g.: "Origin"
-        :params allow_path: If URI can contain path part
-        :params allow_query: If URI can contain query part
-        :params allow_fragments: If URI can contain fragments part
+        :param schemes: List of allowed schemes. E.g.: ["https"]
+        :param name: Name of the validated URI. It is required for validation message. E.g.: "Origin"
+        :param allow_path: If URI can contain path part
+        :param allow_query: If URI can contain query part
+        :param allow_fragments: If URI can contain fragments part
         """
         super().__init__(schemes=schemes)
         self.name = name
@@ -50,12 +50,12 @@ class AllowedURIValidator(URIValidator):
         super().__call__(value)
         value = force_str(value)
         scheme, netloc, path, query, fragment = urlsplit(value)
-        if path and not self.allow_path:
-            raise ValidationError("{} URIs must not contain path".format(self.name))
         if query and not self.allow_query:
             raise ValidationError("{} URIs must not contain query".format(self.name))
         if fragment and not self.allow_fragments:
             raise ValidationError("{} URIs must not contain fragments".format(self.name))
+        if path and not self.allow_path:
+            raise ValidationError("{} URIs must not contain path".format(self.name))
 
 
 ##
