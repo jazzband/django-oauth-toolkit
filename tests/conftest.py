@@ -125,6 +125,18 @@ def public_application():
 
 
 @pytest.fixture
+def cors_application():
+    return Application.objects.create(
+        name="Test CORS Application",
+        client_type=Application.CLIENT_CONFIDENTIAL,
+        authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+        algorithm=Application.RS256_ALGORITHM,
+        client_secret=CLEARTEXT_SECRET,
+        allowed_origins="https://example.com http://example.com",
+    )
+
+
+@pytest.fixture
 def logged_in_client(test_user):
     from django.test.client import Client
 

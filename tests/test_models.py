@@ -594,3 +594,19 @@ def test_application_clean(oauth2_settings, application):
     assert "Enter a valid URL" in str(exc.value)
     application.allowed_origins = "https://example.com"
     application.clean()
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.ALLOWED_SCHEMES_DEFAULT)
+def test_application_origin_allowed_default_https(oauth2_settings, cors_application):
+    """Test that http schemes are not allowed because ALLOWED_SCHEMES allows only https"""
+    assert cors_application.origin_allowed("https://example.com")
+    assert not cors_application.origin_allowed("http://example.com")
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.ALLOWED_SCHEMES_HTTP)
+def test_application_origin_allowed_http(oauth2_settings, cors_application):
+    """Test that http schemes are allowed because http was added to ALLOWED_SCHEMES"""
+    assert cors_application.origin_allowed("https://example.com")
+    assert cors_application.origin_allowed("http://example.com")
