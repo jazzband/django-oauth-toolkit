@@ -22,6 +22,7 @@ from .settings import oauth2_settings
 from .utils import jwk_from_pem
 from .validators import AllowedURIValidator, RedirectURIValidator, WildcardSet
 
+
 logger = logging.getLogger(__name__)
 
 
