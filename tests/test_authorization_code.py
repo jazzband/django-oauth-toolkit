@@ -881,6 +881,23 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 400)
 
+    def test_refresh_fails_with_bad_token(self):
+        """
+        Request an access token using a refresh token and passing scopes
+        """
+        self.client.login(username="test_user", password="123456")
+
+        token_request_data = {
+            "grant_type": "refresh_token",
+            "refresh_token": "bad_token",
+            "scope": "read write",
+        }
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
+
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+
+        self.assertEqual(response.status_code, 400)
+
     def test_refresh_no_scopes(self):
         """
         Request an access token using a refresh token without passing any scope
