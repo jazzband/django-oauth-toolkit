@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 
@@ -32,6 +33,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    "idp.apps.IDPAppConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -186,10 +188,10 @@ ipUMvb4Se0LDJnmFuv8v6gM6V4vyXkP855mNOiRHUOHOSKdQ3SeKrLlnR6I=
     "SCOPES": {
         "openid": "OpenID Connect scope",
     },
+    "ALLOWED_SCHEMES": ["https", "http"],
 }
-
-# just for this example
-CORS_ORIGIN_ALLOW_ALL = True
+# needs to be set to allow cors requests from the test app, along with ALLOWED_SCHEMES=["http"]
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 LOGGING = {
     "version": 1,
@@ -210,5 +212,11 @@ LOGGING = {
             "level": "DEBUG",
             "propagate": False,
         },
+        # occasionally you may want to see what's going on in upstream in oauthlib
+        # "oauthlib": {
+        #     "handlers": ["console"],
+        #     "level": "DEBUG",
+        #     "propagate": False,
+        # },
     },
 }
