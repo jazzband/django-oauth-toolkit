@@ -591,7 +591,7 @@ def test_application_clean(oauth2_settings, application):
     application.allowed_origins = "http://example.com"
     with pytest.raises(ValidationError) as exc:
         application.clean()
-    assert "Enter a valid URL" in str(exc.value)
+    assert "allowed origin URI Validation error. invalid_scheme: http://example.com" in str(exc.value)
     application.allowed_origins = "https://example.com"
     application.clean()
 
