@@ -381,9 +381,9 @@ class OAuth2Validator(RequestValidator):
             return None
 
         if "active" in content and content["active"] is True:
-            if "username" in content:
+            if oauth2_settings.RESOURCE_SERVER_INTROSPECTION_RESPONSE_FIELD in content:
                 user, _created = UserModel.objects.get_or_create(
-                    **{UserModel.USERNAME_FIELD: content["username"]}
+                    **{UserModel.USERNAME_FIELD: content[oauth2_settings.RESOURCE_SERVER_INTROSPECTION_RESPONSE_FIELD]}
                 )
             else:
                 user = None
