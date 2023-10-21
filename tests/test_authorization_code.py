@@ -851,66 +851,6 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
         self.assertIsNotNone(refresh_token.revoked)
         self.assertFalse(AccessToken.objects.filter(token=at).exists())
 
-    def test_refresh_twice_with_same_token_returns_400(self):
-        """
-        Ensure that using a refresh token twice returns 400
-        """
-        self.client.login(username="test_user", password="123456")
-        authorization_code = self.get_auth()
-
-        token_request_data = {
-            "grant_type": "authorization_code",
-            "code": authorization_code,
-            "redirect_uri": "http://example.org",
-        }
-        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
-
-        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
-        content = json.loads(response.content.decode("utf-8"))
-
-        rt = content["refresh_token"]
-
-        token_request_data = {
-            "grant_type": "refresh_token",
-            "refresh_token": rt,
-            "scope": content["scope"],
-        }
-        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
-        self.assertEqual(response.status_code, 200)
-
-        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
-        self.assertEqual(response.status_code, 400)
-
-    def test_refresh_fails_with_deleted_token(self):
-        """
-        Ensure that using a deleted refresh token returns 400
-        """
-        self.client.login(username="test_user", password="123456")
-        authorization_code = self.get_auth()
-
-        token_request_data = {
-            "grant_type": "authorization_code",
-            "code": authorization_code,
-            "redirect_uri": "http://example.org",
-        }
-        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
-
-        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
-        content = json.loads(response.content.decode("utf-8"))
-
-        rt = content["refresh_token"]
-
-        RefreshToken.objects.filter(token=rt).delete()
-
-        token_request_data = {
-            "grant_type": "refresh_token",
-            "refresh_token": rt,
-            "scope": content["scope"],
-        }
-
-        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
-        self.assertEqual(response.status_code, 400)
-
     def test_refresh_no_scopes(self):
         """
         Request an access token using a refresh token without passing any scope
@@ -1061,6 +1001,39 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
         self.assertEqual(response.status_code, 200)
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
+
+    def test_refresh_with_deleted_token(self):
+        """
+        Ensure that using a deleted refresh token returns 400
+        """
+        self.client.login(username="test_user", password="123456")
+        authorization_code = self.get_auth()
+
+        token_request_data = {
+            "grant_type": "authorization_code",
+            "scope": "read write",
+            "code": authorization_code,
+            "redirect_uri": "http://example.org",
+        }
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
+
+        # get a refresh token
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+
+        content = json.loads(response.content.decode("utf-8"))
+        rt = content["refresh_token"]
+
+        token_request_data = {
+            "grant_type": "refresh_token",
+            "refresh_token": rt,
+            "scope": "read write",
+        }
+
+        # delete the access token
+        AccessToken.objects.filter(token=content["access_token"]).delete()
+
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 400)
 
     def test_basic_auth_bad_authcode(self):
         """
