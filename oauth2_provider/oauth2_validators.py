@@ -305,7 +305,6 @@ class OAuth2Validator(RequestValidator):
         proceed only if the client exists and is not of type "Confidential".
         """
         if self._load_application(client_id, request) is not None:
-            log.debug("Application %r has type %r" % (client_id, request.client.client_type))
             return request.client.client_type != AbstractApplication.CLIENT_CONFIDENTIAL
         return False
 

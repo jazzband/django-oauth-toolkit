@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #1322 Instructions in documentation on how to create a code challenge and code verifier
 * #1284 Allow to logout with no id_token_hint even if the browser session already expired
 * #1296 Added reverse function in migration 0006_alter_application_client_secret
+* #1336 Fix encapsulation for Redirect URI scheme validation
 
 ## [2.3.0] 2023-05-31
 

@@ -20,7 +20,7 @@ from .generators import generate_client_id, generate_client_secret
 from .scopes import get_scopes_backend
 from .settings import oauth2_settings
 from .utils import jwk_from_pem
-from .validators import AllowedURIValidator, RedirectURIValidator, WildcardSet
+from .validators import AllowedURIValidator
 
 
 logger = logging.getLogger(__name__)
@@ -202,12 +202,11 @@ class AbstractApplication(models.Model):
         allowed_schemes = set(s.lower() for s in self.get_allowed_schemes())
 
         if redirect_uris:
-            validator = RedirectURIValidator(WildcardSet())
+            validator = AllowedURIValidator(
+                allowed_schemes, name="redirect uri", allow_path=True, allow_query=True
+            )
             for uri in redirect_uris:
                 validator(uri)
-                scheme = urlparse(uri).scheme
-                if scheme not in allowed_schemes:
-                    raise ValidationError(_("Unauthorized redirect scheme: {scheme}").format(scheme=scheme))
 
         elif self.authorization_grant_type in grant_types:
             raise ValidationError(
@@ -218,7 +217,7 @@ class AbstractApplication(models.Model):
         allowed_origins = self.allowed_origins.strip().split()
         if allowed_origins:
             # oauthlib allows only https scheme for CORS
-            validator = AllowedURIValidator(oauth2_settings.ALLOWED_SCHEMES, "Origin")
+            validator = AllowedURIValidator(oauth2_settings.ALLOWED_SCHEMES, "allowed origin")
             for uri in allowed_origins:
                 validator(uri)
 
