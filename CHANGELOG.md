@@ -53,6 +53,7 @@ These issues both result in `{"error": "invalid_client"}`:
 * Add Japanese(日本語) Language Support
 * #1244 implement [OIDC RP-Initiated Logout](https://openid.net/specs/openid-connect-rpinitiated-1_0.html)
 * #1092 Allow Authorization Code flow without a client_secret per [RFC 6749 2.3.1](https://www.rfc-editor.org/rfc/rfc6749.html#section-2.3.1)
+* #1264 Support Django 4.2.
 
 ### Changed
 * #1222 Remove expired ID tokens alongside access tokens in `cleartokens` management command
