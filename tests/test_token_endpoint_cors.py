@@ -31,30 +31,26 @@ class TestTokenEndpointCors(TestCase):
     The objective is: http request 'Origin' header should be passed to OAuthLib
     """
 
-    def setUp(self):
-        self.factory = RequestFactory()
-        self.test_user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
-        self.dev_user = UserModel.objects.create_user("dev_user", "dev@example.com", "123456")
+    factory = RequestFactory()
 
-        self.oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES = ["https"]
-        self.oauth2_settings.PKCE_REQUIRED = False
+    @classmethod
+    def setUpTestData(cls):
+        cls.test_user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
+        cls.dev_user = UserModel.objects.create_user("dev_user", "dev@example.com", "123456")
 
-        self.application = Application.objects.create(
+        cls.application = Application.objects.create(
             name="Test Application",
             redirect_uris=CLIENT_URI,
-            user=self.dev_user,
+            user=cls.dev_user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
             client_secret=CLEARTEXT_SECRET,
             allowed_origins=CLIENT_URI,
         )
 
+    def setUp(self):
         self.oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES = ["https"]
-
-    def tearDown(self):
-        self.application.delete()
-        self.test_user.delete()
-        self.dev_user.delete()
+        self.oauth2_settings.PKCE_REQUIRED = False
 
     def test_valid_origin_with_https(self):
         """

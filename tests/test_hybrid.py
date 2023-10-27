@@ -48,30 +48,29 @@ class ScopedResourceView(ScopedProtectedResourceView):
 
 @pytest.mark.usefixtures("oauth2_settings")
 class BaseTest(TestCase):
-    def setUp(self):
-        self.factory = RequestFactory()
-        self.hy_test_user = UserModel.objects.create_user("hy_test_user", "test_hy@example.com", "123456")
-        self.hy_dev_user = UserModel.objects.create_user("hy_dev_user", "dev_hy@example.com", "123456")
-        self.oauth2_settings.PKCE_REQUIRED = False
-        self.oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES = ["http", "custom-scheme"]
+    factory = RequestFactory()
 
-        self.application = Application(
+    @classmethod
+    def setUpTestData(cls):
+        cls.hy_test_user = UserModel.objects.create_user("hy_test_user", "test_hy@example.com", "123456")
+        cls.hy_dev_user = UserModel.objects.create_user("hy_dev_user", "dev_hy@example.com", "123456")
+
+        cls.application = Application(
             name="Hybrid Test Application",
             redirect_uris=(
                 "http://localhost http://example.com http://example.org custom-scheme://example.com"
             ),
-            user=self.hy_dev_user,
+            user=cls.hy_dev_user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_OPENID_HYBRID,
             algorithm=Application.RS256_ALGORITHM,
             client_secret=CLEARTEXT_SECRET,
         )
-        self.application.save()
+        cls.application.save()
 
-    def tearDown(self):
-        self.application.delete()
-        self.hy_test_user.delete()
-        self.hy_dev_user.delete()
+    def setUp(self):
+        self.oauth2_settings.PKCE_REQUIRED = False
+        self.oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES = ["http", "custom-scheme"]
 
 
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)

@@ -31,11 +31,9 @@ IDToken = get_id_token_model()
 
 
 class BaseTestModels(TestCase):
-    def setUp(self):
-        self.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
-
-    def tearDown(self):
-        self.user.delete()
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
 
 
 class TestModels(BaseTestModels):
@@ -252,19 +250,16 @@ class TestCustomModels(BaseTestModels):
 
 
 class TestGrantModel(BaseTestModels):
-    def setUp(self):
-        super().setUp()
-        self.application = Application.objects.create(
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.application = Application.objects.create(
             name="Test Application",
             redirect_uris="",
-            user=self.user,
+            user=cls.user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
         )
-
-    def tearDown(self):
-        self.application.delete()
-        super().tearDown()
 
     def test_str(self):
         grant = Grant(code="test_code")
@@ -324,32 +319,33 @@ class TestRefreshTokenModel(BaseTestModels):
 
 @pytest.mark.usefixtures("oauth2_settings")
 class TestClearExpired(BaseTestModels):
-    def setUp(self):
-        super().setUp()
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
         # Insert many tokens, both expired and not, and grants.
-        self.num_tokens = 100
-        self.delta_secs = 1000
-        self.now = timezone.now()
-        self.earlier = self.now - timedelta(seconds=self.delta_secs)
-        self.later = self.now + timedelta(seconds=self.delta_secs)
+        cls.num_tokens = 100
+        cls.delta_secs = 1000
+        cls.now = timezone.now()
+        cls.earlier = cls.now - timedelta(seconds=cls.delta_secs)
+        cls.later = cls.now + timedelta(seconds=cls.delta_secs)
 
         app = Application.objects.create(
             name="test_app",
             redirect_uris="http://localhost http://example.com http://example.org",
-            user=self.user,
+            user=cls.user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
         )
         # make 200 access tokens, half current and half expired.
         expired_access_tokens = [
-            AccessToken(token="expired AccessToken {}".format(i), expires=self.earlier)
-            for i in range(self.num_tokens)
+            AccessToken(token="expired AccessToken {}".format(i), expires=cls.earlier)
+            for i in range(cls.num_tokens)
         ]
         for a in expired_access_tokens:
             a.save()
 
         current_access_tokens = [
-            AccessToken(token=f"current AccessToken {i}", expires=self.later) for i in range(self.num_tokens)
+            AccessToken(token=f"current AccessToken {i}", expires=cls.later) for i in range(cls.num_tokens)
         ]
         for a in current_access_tokens:
             a.save()
@@ -361,7 +357,7 @@ class TestClearExpired(BaseTestModels):
                 token=f"expired AT's refresh token {i}",
                 application=app,
                 access_token=expired_access_tokens[i],
-                user=self.user,
+                user=cls.user,
             ).save()
 
         for i in range(1, len(current_access_tokens) // 2, 2):
@@ -369,24 +365,24 @@ class TestClearExpired(BaseTestModels):
                 token=f"current AT's refresh token {i}",
                 application=app,
                 access_token=current_access_tokens[i],
-                user=self.user,
+                user=cls.user,
             ).save()
 
         # Make some grants, half of which are expired.
-        for i in range(self.num_tokens):
+        for i in range(cls.num_tokens):
             Grant(
-                user=self.user,
+                user=cls.user,
                 code=f"old grant code {i}",
                 application=app,
-                expires=self.earlier,
+                expires=cls.earlier,
                 redirect_uri="https://localhost/redirect",
             ).save()
-        for i in range(self.num_tokens):
+        for i in range(cls.num_tokens):
             Grant(
-                user=self.user,
+                user=cls.user,
                 code=f"new grant code {i}",
                 application=app,
-                expires=self.later,
+                expires=cls.later,
                 redirect_uri="https://localhost/redirect",
             ).save()
 

@@ -43,29 +43,27 @@ class ResourceView(ProtectedResourceView):
 
 @pytest.mark.usefixtures("oauth2_settings")
 class BaseTest(TestCase):
-    def setUp(self):
-        self.factory = RequestFactory()
-        self.test_user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
-        self.dev_user = UserModel.objects.create_user("dev_user", "dev@example.com", "123456")
+    factory = RequestFactory()
 
-        self.oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES = ["http", "custom-scheme"]
-        self.oauth2_settings.PKCE_REQUIRED = False
+    @classmethod
+    def setUpTestData(cls):
+        cls.test_user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
+        cls.dev_user = UserModel.objects.create_user("dev_user", "dev@example.com", "123456")
 
-        self.application = Application.objects.create(
+        cls.application = Application.objects.create(
             name="Test Application",
             redirect_uris=(
                 "http://localhost http://example.com http://example.org custom-scheme://example.com"
             ),
-            user=self.dev_user,
+            user=cls.dev_user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
             client_secret=CLEARTEXT_SECRET,
         )
 
-    def tearDown(self):
-        self.application.delete()
-        self.test_user.delete()
-        self.dev_user.delete()
+    def setUp(self):
+        self.oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES = ["http", "custom-scheme"]
+        self.oauth2_settings.PKCE_REQUIRED = False
 
 
 class TestRegressionIssue315(BaseTest):
@@ -1592,10 +1590,11 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
 
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 class TestOIDCAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
-    def setUp(self):
-        super().setUp()
-        self.application.algorithm = Application.RS256_ALGORITHM
-        self.application.save()
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.application.algorithm = Application.RS256_ALGORITHM
+        cls.application.save()
 
     def test_id_token_public(self):
         """
@@ -1669,11 +1668,15 @@ class TestOIDCAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
 
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 class TestOIDCAuthorizationCodeHSAlgorithm(BaseAuthorizationCodeTokenView):
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.application.algorithm = Application.HS256_ALGORITHM
+        cls.application.save()
+
     def setUp(self):
         super().setUp()
         self.oauth2_settings.OIDC_RSA_PRIVATE_KEY = None
-        self.application.algorithm = Application.HS256_ALGORITHM
-        self.application.save()
 
     def test_id_token(self):
         """
@@ -1765,10 +1768,11 @@ class TestAuthorizationCodeProtectedResource(BaseTest):
 
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 class TestOIDCAuthorizationCodeProtectedResource(BaseTest):
-    def setUp(self):
-        super().setUp()
-        self.application.algorithm = Application.RS256_ALGORITHM
-        self.application.save()
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.application.algorithm = Application.RS256_ALGORITHM
+        cls.application.save()
 
     def test_id_token_resource_access_allowed(self):
         self.client.login(username="test_user", password="123456")
