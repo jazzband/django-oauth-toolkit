@@ -43,8 +43,8 @@ Please report any security issues to the JazzBand security team at <security@jaz
 Requirements
 ------------
 
-* Python 3.7+
-* Django 2.2, 3.2, 4.0 (4.0.1+ due to a regression), 4.1, or 4.2
+* Python 3.8+
+* Django 3.2, 4.0 (4.0.1+ due to a regression), 4.1, 4.2, or 5.0
 * oauthlib 3.1+
 
 Installation

@@ -57,13 +57,13 @@ class TestApplicationRegistrationView(BaseTest):
         app = get_application_model().objects.get(name="Foo app")
         self.assertEqual(app.user.username, "foo_user")
         app = Application.objects.get()
-        self.assertEquals(app.name, form_data["name"])
-        self.assertEquals(app.client_id, form_data["client_id"])
-        self.assertEquals(app.redirect_uris, form_data["redirect_uris"])
-        self.assertEquals(app.post_logout_redirect_uris, form_data["post_logout_redirect_uris"])
-        self.assertEquals(app.client_type, form_data["client_type"])
-        self.assertEquals(app.authorization_grant_type, form_data["authorization_grant_type"])
-        self.assertEquals(app.algorithm, form_data["algorithm"])
+        self.assertEqual(app.name, form_data["name"])
+        self.assertEqual(app.client_id, form_data["client_id"])
+        self.assertEqual(app.redirect_uris, form_data["redirect_uris"])
+        self.assertEqual(app.post_logout_redirect_uris, form_data["post_logout_redirect_uris"])
+        self.assertEqual(app.client_type, form_data["client_type"])
+        self.assertEqual(app.authorization_grant_type, form_data["authorization_grant_type"])
+        self.assertEqual(app.algorithm, form_data["algorithm"])
 
 
 class TestApplicationViews(BaseTest):
