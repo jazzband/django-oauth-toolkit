@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #1273 Add caching of loading of OIDC private key.
 * #1285 Add post_logout_redirect_uris field in application views.
 * #1311 Add option to disable client_secret hashing to allow verifying JWTs' signatures.
+* #1337 Gracefully handle expired or deleted refresh tokens, in `validate_user`.
 
 - ### Fixed
 * #1322 Instructions in documentation on how to create a code challenge and code verifier

@@ -1002,6 +1002,39 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
 
+    def test_refresh_with_deleted_token(self):
+        """
+        Ensure that using a deleted refresh token returns 400
+        """
+        self.client.login(username="test_user", password="123456")
+        authorization_code = self.get_auth()
+
+        token_request_data = {
+            "grant_type": "authorization_code",
+            "scope": "read write",
+            "code": authorization_code,
+            "redirect_uri": "http://example.org",
+        }
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
+
+        # get a refresh token
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+
+        content = json.loads(response.content.decode("utf-8"))
+        rt = content["refresh_token"]
+
+        token_request_data = {
+            "grant_type": "refresh_token",
+            "refresh_token": rt,
+            "scope": "read write",
+        }
+
+        # delete the access token
+        AccessToken.objects.filter(token=content["access_token"]).delete()
+
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 400)
+
     def test_basic_auth_bad_authcode(self):
         """
         Request an access token using a bad authorization code

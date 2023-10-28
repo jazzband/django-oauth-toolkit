@@ -725,8 +725,10 @@ class OAuth2Validator(RequestValidator):
         # validate_refresh_token.
         rt = request.refresh_token_instance
         if not rt.access_token_id:
-            return AccessToken.objects.get(source_refresh_token_id=rt.id).scope
-
+            try:
+                return AccessToken.objects.get(source_refresh_token_id=rt.id).scope
+            except AccessToken.DoesNotExist:
+                return []
         return rt.access_token.scope
 
     def validate_refresh_token(self, refresh_token, client, request, *args, **kwargs):
