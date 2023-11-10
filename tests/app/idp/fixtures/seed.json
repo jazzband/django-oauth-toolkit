@@ -3,7 +3,7 @@
   "model": "auth.user",
   "fields": {
     "password": "pbkdf2_sha256$390000$29LoVHfFRlvEOJ9clv73Wx$fx5ejfUJ+nYsnBXFf21jZvDsq4o3p5io3TrAGKAVTq4=",
-    "last_login": "2023-10-05T14:39:15.980Z",
+    "last_login": "2023-11-11T17:24:19.359Z",
     "is_superuser": true,
     "username": "superuser",
     "first_name": "",
@@ -30,8 +30,9 @@
     "name": "OIDC - Authorization Code",
     "skip_authorization": true,
     "created": "2023-05-01T20:27:46.167Z",
-    "updated": "2023-05-11T16:37:21.669Z",
-    "algorithm": "RS256"
+    "updated": "2023-11-11T17:23:44.643Z",
+    "algorithm": "RS256",
+    "allowed_origins": "http://localhost:5173\r\nhttp://127.0.0.1:5173"
   }
 }
 ]
