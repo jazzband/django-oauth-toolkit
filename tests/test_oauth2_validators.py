@@ -477,11 +477,12 @@ class TestOAuth2ValidatorErrorResourceToken(TestCase):
     is unsuccessful.
     """
 
-    def setUp(self):
-        self.token = "test_token"
-        self.introspection_url = "http://example.com/token/introspection/"
-        self.introspection_token = "test_introspection_token"
-        self.validator = OAuth2Validator()
+    @classmethod
+    def setUpTestData(cls):
+        cls.token = "test_token"
+        cls.introspection_url = "http://example.com/token/introspection/"
+        cls.introspection_token = "test_introspection_token"
+        cls.validator = OAuth2Validator()
 
     def test_response_when_auth_server_response_return_404(self):
         with self.assertLogs(logger="oauth2_provider") as mock_log:

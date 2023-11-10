@@ -24,23 +24,20 @@ class BaseTest(TestCase):
     Base class for cases in this module
     """
 
-    def setUp(self):
-        self.user = UserModel.objects.create_user("user", "test@example.com", "123456")
-        self.app = ApplicationModel.objects.create(
+    factory = RequestFactory()
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = UserModel.objects.create_user("user", "test@example.com", "123456")
+        cls.app = ApplicationModel.objects.create(
             name="app",
             client_type=ApplicationModel.CLIENT_CONFIDENTIAL,
             authorization_grant_type=ApplicationModel.GRANT_CLIENT_CREDENTIALS,
-            user=self.user,
+            user=cls.user,
         )
-        self.token = AccessTokenModel.objects.create(
-            user=self.user, token="tokstr", application=self.app, expires=now() + timedelta(days=365)
+        cls.token = AccessTokenModel.objects.create(
+            user=cls.user, token="tokstr", application=cls.app, expires=now() + timedelta(days=365)
         )
-        self.factory = RequestFactory()
-
-    def tearDown(self):
-        self.user.delete()
-        self.app.delete()
-        self.token.delete()
 
 
 class TestOAuth2Backend(BaseTest):
@@ -103,10 +100,6 @@ class TestOAuth2Backend(BaseTest):
     }
 )
 class TestOAuth2Middleware(BaseTest):
-    def setUp(self):
-        super().setUp()
-        self.anon_user = AnonymousUser()
-
     def dummy_get_response(self, request):
         return HttpResponse()
 
@@ -131,7 +124,7 @@ class TestOAuth2Middleware(BaseTest):
         request.user = self.user
         m(request)
         self.assertIs(request.user, self.user)
-        request.user = self.anon_user
+        request.user = AnonymousUser()
         m(request)
         self.assertEqual(request.user.pk, self.user.pk)
 
@@ -176,10 +169,6 @@ class TestOAuth2Middleware(BaseTest):
     }
 )
 class TestOAuth2ExtraTokenMiddleware(BaseTest):
-    def setUp(self):
-        super().setUp()
-        self.anon_user = AnonymousUser()
-
     def dummy_get_response(self, request):
         return HttpResponse()
 

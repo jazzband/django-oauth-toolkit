@@ -14,13 +14,10 @@ UserModel = get_user_model()
 
 
 class BaseTest(TestCase):
-    def setUp(self):
-        self.foo_user = UserModel.objects.create_user("foo_user", "test@example.com", "123456")
-        self.bar_user = UserModel.objects.create_user("bar_user", "dev@example.com", "123456")
-
-    def tearDown(self):
-        self.foo_user.delete()
-        self.bar_user.delete()
+    @classmethod
+    def setUpTestData(cls):
+        cls.foo_user = UserModel.objects.create_user("foo_user", "test@example.com", "123456")
+        cls.bar_user = UserModel.objects.create_user("bar_user", "dev@example.com", "123456")
 
 
 @pytest.mark.usefixtures("oauth2_settings")
@@ -67,8 +64,9 @@ class TestApplicationRegistrationView(BaseTest):
 
 
 class TestApplicationViews(BaseTest):
-    def _create_application(self, name, user):
-        app = Application.objects.create(
+    @classmethod
+    def _create_application(cls, name, user):
+        return Application.objects.create(
             name=name,
             redirect_uris="http://example.com",
             post_logout_redirect_uris="http://other_example.com",
@@ -76,20 +74,16 @@ class TestApplicationViews(BaseTest):
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
             user=user,
         )
-        return app
 
-    def setUp(self):
-        super().setUp()
-        self.app_foo_1 = self._create_application("app foo_user 1", self.foo_user)
-        self.app_foo_2 = self._create_application("app foo_user 2", self.foo_user)
-        self.app_foo_3 = self._create_application("app foo_user 3", self.foo_user)
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.app_foo_1 = cls._create_application("app foo_user 1", cls.foo_user)
+        cls.app_foo_2 = cls._create_application("app foo_user 2", cls.foo_user)
+        cls.app_foo_3 = cls._create_application("app foo_user 3", cls.foo_user)
 
-        self.app_bar_1 = self._create_application("app bar_user 1", self.bar_user)
-        self.app_bar_2 = self._create_application("app bar_user 2", self.bar_user)
-
-    def tearDown(self):
-        super().tearDown()
-        get_application_model().objects.all().delete()
+        cls.app_bar_1 = cls._create_application("app bar_user 1", cls.bar_user)
+        cls.app_bar_2 = cls._create_application("app bar_user 2", cls.bar_user)
 
     def test_application_list(self):
         self.client.login(username="foo_user", password="123456")

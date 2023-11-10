@@ -25,23 +25,20 @@ class ResourceView(ProtectedResourceView):
 
 @pytest.mark.usefixtures("oauth2_settings")
 class BaseTest(TestCase):
-    def setUp(self):
-        self.factory = RequestFactory()
-        self.test_user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
-        self.dev_user = UserModel.objects.create_user("dev_user", "dev@example.com", "123456")
+    factory = RequestFactory()
 
-        self.application = Application.objects.create(
+    @classmethod
+    def setUpTestData(cls):
+        cls.test_user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
+        cls.dev_user = UserModel.objects.create_user("dev_user", "dev@example.com", "123456")
+
+        cls.application = Application.objects.create(
             name="Test Implicit Application",
             redirect_uris="http://localhost http://example.com http://example.org",
-            user=self.dev_user,
+            user=cls.dev_user,
             client_type=Application.CLIENT_PUBLIC,
             authorization_grant_type=Application.GRANT_IMPLICIT,
         )
-
-    def tearDown(self):
-        self.application.delete()
-        self.test_user.delete()
-        self.dev_user.delete()
 
 
 @pytest.mark.oauth2_settings(presets.DEFAULT_SCOPES_RO)
@@ -276,10 +273,11 @@ class TestImplicitTokenView(BaseTest):
 @pytest.mark.usefixtures("oidc_key")
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 class TestOpenIDConnectImplicitFlow(BaseTest):
-    def setUp(self):
-        super().setUp()
-        self.application.algorithm = Application.RS256_ALGORITHM
-        self.application.save()
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.application.algorithm = Application.RS256_ALGORITHM
+        cls.application.save()
 
     def test_id_token_post_auth_allow(self):
         """

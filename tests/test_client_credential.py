@@ -35,23 +35,20 @@ class ResourceView(ProtectedResourceView):
 @pytest.mark.usefixtures("oauth2_settings")
 @pytest.mark.oauth2_settings(presets.DEFAULT_SCOPES_RW)
 class BaseTest(TestCase):
-    def setUp(self):
-        self.factory = RequestFactory()
-        self.test_user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
-        self.dev_user = UserModel.objects.create_user("dev_user", "dev@example.com", "123456")
+    factory = RequestFactory()
 
-        self.application = Application.objects.create(
+    @classmethod
+    def setUpTestData(cls):
+        cls.test_user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
+        cls.dev_user = UserModel.objects.create_user("dev_user", "dev@example.com", "123456")
+
+        cls.application = Application.objects.create(
             name="test_client_credentials_app",
-            user=self.dev_user,
+            user=cls.dev_user,
             client_type=Application.CLIENT_PUBLIC,
             authorization_grant_type=Application.GRANT_CLIENT_CREDENTIALS,
             client_secret=CLEARTEXT_SECRET,
         )
-
-    def tearDown(self):
-        self.application.delete()
-        self.test_user.delete()
-        self.dev_user.delete()
 
 
 class TestClientCredential(BaseTest):
@@ -98,7 +95,7 @@ class TestClientCredential(BaseTest):
         self.assertIsNone(access_token.user)
 
 
-class TestView(OAuthLibMixin, View):
+class ExampleView(OAuthLibMixin, View):
     server_class = BackendApplicationServer
     validator_class = OAuth2Validator
     oauthlib_backend_class = OAuthLibCore
@@ -132,7 +129,7 @@ class TestExtendedRequest(BaseTest):
         request = self.request_factory.get("/fake-req", **auth_headers)
         request.user = "fake"
 
-        test_view = TestView()
+        test_view = ExampleView()
         self.assertIsInstance(test_view.get_server(), BackendApplicationServer)
 
         valid, r = test_view.verify_request(request)
@@ -145,7 +142,7 @@ class TestExtendedRequest(BaseTest):
         request = self.request_factory.get("/fake-req?auth_token=%%7A")
 
         with pytest.raises(SuspiciousOperation):
-            TestView().verify_request(request)
+            ExampleView().verify_request(request)
 
     @patch("oauth2_provider.views.mixins.OAuthLibMixin.get_oauthlib_core")
     def test_reraises_value_errors_as_is(self, patched_core):
@@ -154,7 +151,7 @@ class TestExtendedRequest(BaseTest):
         request = self.request_factory.get("/fake-req")
 
         with pytest.raises(ValueError):
-            TestView().verify_request(request)
+            ExampleView().verify_request(request)
 
 
 class TestClientResourcePasswordBased(BaseTest):

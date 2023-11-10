@@ -89,44 +89,40 @@ class TestTokenIntrospectionAuth(TestCase):
     Tests for Authorization through token introspection
     """
 
-    def setUp(self):
-        self.validator = OAuth2Validator()
-        self.request = mock.MagicMock(wraps=Request)
-        self.resource_server_user = UserModel.objects.create_user(
+    @classmethod
+    def setUpTestData(cls):
+        cls.validator = OAuth2Validator()
+        cls.request = mock.MagicMock(wraps=Request)
+        cls.resource_server_user = UserModel.objects.create_user(
             "resource_server", "test@example.com", "123456"
         )
 
-        self.application = Application.objects.create(
+        cls.application = Application.objects.create(
             name="Test Application",
             redirect_uris="http://localhost http://example.com http://example.org",
-            user=self.resource_server_user,
+            user=cls.resource_server_user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
         )
 
-        self.resource_server_token = AccessToken.objects.create(
-            user=self.resource_server_user,
+        cls.resource_server_token = AccessToken.objects.create(
+            user=cls.resource_server_user,
             token="12345678900",
-            application=self.application,
+            application=cls.application,
             expires=timezone.now() + datetime.timedelta(days=1),
             scope="introspection",
         )
 
-        self.invalid_token = AccessToken.objects.create(
-            user=self.resource_server_user,
+        cls.invalid_token = AccessToken.objects.create(
+            user=cls.resource_server_user,
             token="12345678901",
-            application=self.application,
+            application=cls.application,
             expires=timezone.now() + datetime.timedelta(days=-1),
             scope="read write dolphin",
         )
 
+    def setUp(self):
         self.oauth2_settings.RESOURCE_SERVER_AUTH_TOKEN = self.resource_server_token.token
-
-    def tearDown(self):
-        self.resource_server_token.delete()
-        self.application.delete()
-        AccessToken.objects.all().delete()
-        UserModel.objects.all().delete()
 
     @mock.patch("requests.post", side_effect=mocked_requests_post)
     def test_get_token_from_authentication_server_not_existing_token(self, mock_get):
