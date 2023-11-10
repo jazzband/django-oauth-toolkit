@@ -57,13 +57,13 @@ class TestApplicationRegistrationView(BaseTest):
         app = get_application_model().objects.get(name="Foo app")
         self.assertEqual(app.user.username, "foo_user")
         app = Application.objects.get()
-        self.assertEquals(app.name, form_data["name"])
-        self.assertEquals(app.client_id, form_data["client_id"])
-        self.assertEquals(app.redirect_uris, form_data["redirect_uris"])
-        self.assertEquals(app.post_logout_redirect_uris, form_data["post_logout_redirect_uris"])
-        self.assertEquals(app.client_type, form_data["client_type"])
-        self.assertEquals(app.authorization_grant_type, form_data["authorization_grant_type"])
-        self.assertEquals(app.algorithm, form_data["algorithm"])
+        self.assertEqual(app.name, form_data["name"])
+        self.assertEqual(app.client_id, form_data["client_id"])
+        self.assertEqual(app.redirect_uris, form_data["redirect_uris"])
+        self.assertEqual(app.post_logout_redirect_uris, form_data["post_logout_redirect_uris"])
+        self.assertEqual(app.client_type, form_data["client_type"])
+        self.assertEqual(app.authorization_grant_type, form_data["authorization_grant_type"])
+        self.assertEqual(app.algorithm, form_data["algorithm"])
 
 
 class TestApplicationViews(BaseTest):
@@ -115,7 +115,7 @@ class TestApplicationViews(BaseTest):
         response = self.client.get(reverse("oauth2_provider:detail", args=(self.app_bar_1.pk,)))
         self.assertEqual(response.status_code, 404)
 
-    def test_application_udpate(self):
+    def test_application_update(self):
         self.client.login(username="foo_user", password="123456")
 
         form_data = {
@@ -132,8 +132,8 @@ class TestApplicationViews(BaseTest):
         self.assertRedirects(response, reverse("oauth2_provider:detail", args=(self.app_foo_1.pk,)))
 
         self.app_foo_1.refresh_from_db()
-        self.assertEquals(self.app_foo_1.client_id, form_data["client_id"])
-        self.assertEquals(self.app_foo_1.redirect_uris, form_data["redirect_uris"])
-        self.assertEquals(self.app_foo_1.post_logout_redirect_uris, form_data["post_logout_redirect_uris"])
-        self.assertEquals(self.app_foo_1.client_type, form_data["client_type"])
-        self.assertEquals(self.app_foo_1.authorization_grant_type, form_data["authorization_grant_type"])
+        self.assertEqual(self.app_foo_1.client_id, form_data["client_id"])
+        self.assertEqual(self.app_foo_1.redirect_uris, form_data["redirect_uris"])
+        self.assertEqual(self.app_foo_1.post_logout_redirect_uris, form_data["post_logout_redirect_uris"])
+        self.assertEqual(self.app_foo_1.client_type, form_data["client_type"])
+        self.assertEqual(self.app_foo_1.authorization_grant_type, form_data["authorization_grant_type"])
