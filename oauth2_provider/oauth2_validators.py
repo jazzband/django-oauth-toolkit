@@ -183,7 +183,7 @@ class OAuth2Validator(RequestValidator):
         # TODO: check if oauthlib has already unquoted client_id and client_secret
         try:
             client_id = request.client_id
-            client_secret = getattr(request, "client_secret", "")
+            client_secret = getattr(request, "client_secret", "") or ""
         except AttributeError:
             return False
 
