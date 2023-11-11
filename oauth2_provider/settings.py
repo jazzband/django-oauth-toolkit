@@ -295,7 +295,7 @@ class OAuth2ProviderSettings:
         else:
             raise TypeError("request must be a django or oauthlib request: got %r" % request)
         abs_url = django_request.build_absolute_uri(reverse("oauth2_provider:oidc-connect-discovery-info"))
-        return abs_url[: -len("/.well-known/openid-configuration/")]
+        return abs_url[: -len("/.well-known/openid-configuration")]
 
 
 oauth2_settings = OAuth2ProviderSettings(USER_SETTINGS, DEFAULTS, IMPORT_STRINGS, MANDATORY)
