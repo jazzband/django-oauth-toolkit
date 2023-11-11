@@ -18,8 +18,8 @@ back to the defaults.
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+from django.core.signals import setting_changed
 from django.http import HttpRequest
-from django.test.signals import setting_changed
 from django.urls import reverse
 from django.utils.module_loading import import_string
 from oauthlib.common import Request
