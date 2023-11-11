@@ -1,3 +1,20 @@
+venv
+__pycache__
+.tox
+.github
+.vscode
+.django_oauth_toolkit.egg-info
+.coverage
+coverage.xml
+
+# every time we change this we need to do the COPY . /code and
+# RUN pip install -r requirements.txt again
+# so don't include the Dockerfile in the context.
+Dockerfile
+docker-compose.yml
+
+
+# from .gitignore
 *.py[cod]
 
 *.swp
@@ -54,5 +71,3 @@ _build
 
 db.sqlite3
 venv/
-
-/tests/app/idp/static
