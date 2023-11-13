@@ -366,7 +366,7 @@ Default: ``""``
 The URL of the issuer that is used in the ID token JWT and advertised in the
 OIDC discovery metadata. Clients use this location to retrieve the OIDC
 discovery metadata from ``OIDC_ISS_ENDPOINT`` +
-``/.well-known/openid-configuration/``.
+``/.well-known/openid-configuration``.
 
 If unset, the default location is used, eg if ``django-oauth-toolkit`` is
 mounted at ``/o``, it will be ``<server-address>/o``.

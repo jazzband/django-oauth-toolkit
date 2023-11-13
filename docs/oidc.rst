@@ -407,7 +407,7 @@ the URLs accordingly.
 ConnectDiscoveryInfoView
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Available at ``/o/.well-known/openid-configuration/``, this view provides auto
+Available at ``/o/.well-known/openid-configuration``, this view provides auto
 discovery information to OIDC clients, telling them the JWT issuer to use, the
 location of the JWKs to verify JWTs with, the token and userinfo endpoints to
 query, and other details.
