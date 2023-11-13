@@ -26,6 +26,7 @@ from ..exceptions import (
 from ..forms import ConfirmLogoutForm
 from ..http import OAuth2ResponseRedirect
 from ..models import (
+    AbstractGrant,
     get_access_token_model,
     get_application_model,
     get_id_token_model,
@@ -96,6 +97,7 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
             "token_endpoint_auth_methods_supported": (
                 oauth2_settings.OIDC_TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED
             ),
+            "code_challenge_methods_supported": [key for key, _ in AbstractGrant.CODE_CHALLENGE_METHODS],
             "claims_supported": oidc_claims,
         }
         if oauth2_settings.OIDC_RP_INITIATED_LOGOUT_ENABLED:
