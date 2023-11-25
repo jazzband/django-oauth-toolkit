@@ -572,8 +572,6 @@ class TestOIDCAuthorizationCodeView(BaseTest):
         self.assertIn("scope=openid", next)
         self.assertIn("redirect_uri=http%3A%2F%2Fexample.org", next)
 
-
-
     def test_id_token_skip_authorization_completely(self):
         """
         If application.skip_authorization = True, should skip the authorization page.
