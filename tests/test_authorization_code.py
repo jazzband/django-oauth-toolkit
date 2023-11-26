@@ -545,6 +545,33 @@ class TestAuthorizationCodeView(BaseTest):
 
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 class TestOIDCAuthorizationCodeView(BaseTest):
+    def test_login(self):
+        """
+        Test login page is rendered if user is not authenticated
+        """
+        self.oauth2_settings.PKCE_REQUIRED = False
+
+        query_data = {
+            "client_id": self.application.client_id,
+            "response_type": "code",
+            "state": "random_state_string",
+            "scope": "openid",
+            "redirect_uri": "http://example.org",
+        }
+        path = reverse("oauth2_provider:authorize")
+        response = self.client.get(path, data=query_data)
+        # The authorization view redirects to the login page with the
+        self.assertEqual(response.status_code, 302)
+        scheme, netloc, path, params, query, fragment = urlparse(response["Location"])
+        self.assertEqual(path, settings.LOGIN_URL)
+        parsed_query = parse_qs(query)
+        next = parsed_query["next"][0]
+        self.assertIn(f"client_id={self.application.client_id}", next)
+        self.assertIn("response_type=code", next)
+        self.assertIn("state=random_state_string", next)
+        self.assertIn("scope=openid", next)
+        self.assertIn("redirect_uri=http%3A%2F%2Fexample.org", next)
+
     def test_id_token_skip_authorization_completely(self):
         """
         If application.skip_authorization = True, should skip the authorization page.
@@ -644,6 +671,33 @@ class TestOIDCAuthorizationCodeView(BaseTest):
         self.assertIn(f"client_id={self.application.client_id}", next)
 
         self.assertNotIn("prompt=login", next)
+
+    def test_prompt_none_unauthorized(self):
+        """
+        Test response for redirect when supplied with prompt: none
+
+        Should redirect to redirect_uri with an error of login_required
+        """
+        self.oauth2_settings.PKCE_REQUIRED = False
+
+        query_data = {
+            "client_id": self.application.client_id,
+            "response_type": "code",
+            "state": "random_state_string",
+            "scope": "read write",
+            "redirect_uri": "http://example.org",
+            "prompt": "none",
+        }
+
+        response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
+
+        self.assertEqual(response.status_code, 302)
+
+        scheme, netloc, path, params, query, fragment = urlparse(response["Location"])
+        parsed_query = parse_qs(query)
+
+        self.assertIn("login_required", parsed_query["error"])
+        self.assertIn("random_state_string", parsed_query["state"])
 
 
 class BaseAuthorizationCodeTokenView(BaseTest):

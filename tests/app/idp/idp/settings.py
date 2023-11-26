@@ -129,6 +129,7 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 OAUTH2_PROVIDER = {
+    "OAUTH2_VALIDATOR_CLASS": "idp.oauth.CustomOAuth2Validator",
     "OIDC_ENABLED": True,
     "OIDC_RP_INITIATED_LOGOUT_ENABLED": True,
     # this key is just for out test app, you should never store a key like this in a production environment.

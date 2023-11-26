@@ -26,8 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #1311 Add option to disable client_secret hashing to allow verifying JWTs' signatures.
 * #1337 Gracefully handle expired or deleted refresh tokens, in `validate_user`.
 * #1350 Support Python 3.12 and Django 5.0
-* #1249 Add code_challenge_methods_supported property to auto discovery informations
-  per [RFC 8414 section 2](https://www.rfc-editor.org/rfc/rfc8414.html#page-7)
+* #1249 Add code_challenge_methods_supported property to auto discovery informations, per [RFC 8414 section 2](https://www.rfc-editor.org/rfc/rfc8414.html#page-7)
+
 
 ### Fixed
 * #1322 Instructions in documentation on how to create a code challenge and code verifier
@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #1296 Added reverse function in migration 0006_alter_application_client_secret
 * #1336 Fix encapsulation for Redirect URI scheme validation
 * #1357 Move import of setting_changed signal from test to django core modules
+* #1268 fix prompt=none redirects to login screen
 
 ### Removed
 * #1350 Remove support for Python 3.7 and Django 2.2
