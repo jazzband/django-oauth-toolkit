@@ -26,6 +26,6 @@ repos:
       - id: flake8
         exclude: ^(oauth2_provider/migrations/|tests/migrations/)
   - repo: https://github.com/sphinx-contrib/sphinx-lint
-    rev: v0.8.2
+    rev: v0.9.0
     hooks:
       - id: sphinx-lint
