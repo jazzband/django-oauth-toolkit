@@ -21,8 +21,8 @@ If you need help please submit a `question <https://github.com/jazzband/django-o
 Requirements
 ------------
 
-* Python 3.7+
-* Django 2.2, 3.2, 4.0.1+
+* Python 3.8+
+* Django 3.2, 4.0 (4.0.1+ due to a regression), 4.1, 4.2, or 5.0
 * oauthlib 3.1+
 
 Index
