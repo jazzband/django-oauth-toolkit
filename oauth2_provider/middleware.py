@@ -3,7 +3,7 @@ import logging
 from django.contrib.auth import authenticate
 from django.utils.cache import patch_vary_headers
 
-from oauth2_provider.models import AccessToken
+from oauth2_provider.models import get_access_token_model
 
 
 log = logging.getLogger(__name__)
@@ -53,6 +53,7 @@ class OAuth2ExtraTokenMiddleware:
         authheader = request.META.get("HTTP_AUTHORIZATION", "")
         if authheader.startswith("Bearer"):
             tokenstring = authheader.split()[1]
+            AccessToken = get_access_token_model()
             try:
                 token = AccessToken.objects.get(token=tokenstring)
                 request.access_token = token
