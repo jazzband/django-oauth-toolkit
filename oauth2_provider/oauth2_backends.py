@@ -1,6 +1,6 @@
-import json
 import base64
-from urllib.parse import urlparse, urlunparse, unquote
+import json
+from urllib.parse import unquote, urlparse, urlunparse
 
 from oauthlib import oauth2
 from oauthlib.common import Request as OauthlibRequest
@@ -237,6 +237,7 @@ class JSONOAuthLibCore(OAuthLibCore):
             body = ""
 
         return body
+
 
 class JSONAndFormUrlencodedOAuthLibCore(JSONOAuthLibCore):
     def extract_body(self, request):
