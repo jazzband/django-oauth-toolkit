@@ -245,7 +245,7 @@ class JSONAndFormUrlencodedOAuthLibCore(JSONOAuthLibCore):
             try:
                 query_string = request.body.decode("utf-8")
                 query_params = {
-                    p.split("=")[0]: parse.unquote(p.split("=")[1]) for p in query_string.split("&")
+                    p.split("=")[0]: unquote(p.split("=")[1]) for p in query_string.split("&")
                 }
                 res = query_params.items()
 
