@@ -244,7 +244,9 @@ class JSONAndFormUrlencodedOAuthLibCore(JSONOAuthLibCore):
         if request.content_type in ["application/x-www-form-urlencoded"]:
             try:
                 query_string = request.body.decode("utf-8")
-                query_params = {p.split("=")[0]: parse.unquote(p.split("=")[1]) for p in query_string.split("&")}
+                query_params = {
+                    p.split("=")[0]: parse.unquote(p.split("=")[1]) for p in query_string.split("&")
+                }
                 res = query_params.items()
 
                 return res
