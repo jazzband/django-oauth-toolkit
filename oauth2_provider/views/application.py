@@ -6,6 +6,7 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 from ..models import get_application_model
 from ..settings import oauth2_settings
 
+
 class ApplicationOwnerIsUserMixin(LoginRequiredMixin):
     """
     This mixin is used to provide an Application queryset filtered by the current request.user.
@@ -30,7 +31,8 @@ class ApplicationRegistration(LoginRequiredMixin, CreateView):
         """
         return modelform_factory(
             get_application_model(),
-            fields = oauth2_settings.APPLICATION_FIELDS or (
+            fields=oauth2_settings.APPLICATION_FIELDS
+            or (
                 "name",
                 "client_id",
                 "client_secret",
@@ -88,7 +90,8 @@ class ApplicationUpdate(ApplicationOwnerIsUserMixin, UpdateView):
         """
         return modelform_factory(
             get_application_model(),
-            fields = oauth2_settings.APPLICATION_FIELDS or (
+            fields=oauth2_settings.APPLICATION_FIELDS
+            or (
                 "name",
                 "client_id",
                 "client_secret",
