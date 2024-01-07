@@ -4,7 +4,7 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from ..models import get_application_model
-
+from ..settings import oauth2_settings
 
 class ApplicationOwnerIsUserMixin(LoginRequiredMixin):
     """
@@ -30,16 +30,13 @@ class ApplicationRegistration(LoginRequiredMixin, CreateView):
         """
         return modelform_factory(
             get_application_model(),
-            fields=(
+            fields = oauth2_settings.APPLICATION_FIELDS or (
                 "name",
                 "client_id",
                 "client_secret",
-                "hash_client_secret",
                 "client_type",
                 "authorization_grant_type",
                 "redirect_uris",
-                "post_logout_redirect_uris",
-                "allowed_origins",
                 "algorithm",
             ),
         )
@@ -91,16 +88,13 @@ class ApplicationUpdate(ApplicationOwnerIsUserMixin, UpdateView):
         """
         return modelform_factory(
             get_application_model(),
-            fields=(
+            fields = oauth2_settings.APPLICATION_FIELDS or (
                 "name",
                 "client_id",
                 "client_secret",
-                "hash_client_secret",
                 "client_type",
                 "authorization_grant_type",
                 "redirect_uris",
-                "post_logout_redirect_uris",
-                "allowed_origins",
                 "algorithm",
             ),
         )
