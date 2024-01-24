@@ -11,7 +11,7 @@ exclude = '''
 
 # Ref: https://github.com/codespell-project/codespell#using-a-config-file
 [tool.codespell]
-skip = '.git,package-lock.json'
+skip = '.git,package-lock.json,locale'
 check-hidden = true
-# ignore-regex = ''
+ignore-regex = '.*pragma: codespell-ignore.*'
 # ignore-words-list = ''
