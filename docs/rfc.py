@@ -1,6 +1,7 @@
 """
 Custom Sphinx documentation module to link to parts of the OAuth2 RFC.
 """
+
 from docutils import nodes
 
 
