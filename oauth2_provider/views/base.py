@@ -1,6 +1,6 @@
 import json
 import logging
-from urllib.parse import parse_qsl, urlencode, urlparse, parse_qs
+from urllib.parse import parse_qs, parse_qsl, urlencode, urlparse
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import redirect_to_login
@@ -271,6 +271,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         else:
             return super().handle_no_permission()
 
+
 class AuthorizationJSONView(AuthorizationView):
     """
     Modified verion of AuthorizationView that replaces URL param response with
@@ -289,10 +290,9 @@ class AuthorizationJSONView(AuthorizationView):
 
         o = urlparse(redirect_instance.url)
         parsed = parse_qs(o.query)
-        parsed = {i:parsed[i][0] for i in parsed}
+        parsed = {i: parsed[i][0] for i in parsed}
         redirect_instance.content = json.dumps(parsed)
         return redirect_instance
-
 
 
 @method_decorator(csrf_exempt, name="dispatch")
