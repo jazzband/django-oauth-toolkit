@@ -271,6 +271,29 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         else:
             return super().handle_no_permission()
 
+class AuthorizationJSONView(AuthorizationView):
+    """
+    Modified verion of AuthorizationView that replaces URL param response with
+    JSON body response instead.
+
+    Overall class is same, except for a modification in `form_valid` to extract
+    the URL parameters for the code exchange and return them as JSON as well.
+    """
+
+    def form_valid(self, form):
+        """
+        Call parent class form_valid method to get the response object.
+        Then we can modify the content so it's passed as JSON in the body.
+        """
+        redirect_instance = super().form_valid(form)
+
+        o = urlparse(redirect_instance.url)
+        parsed = parse_qs(o.query)
+        parsed = {i:parsed[i][0] for i in parsed}
+        redirect_instance.content = json.dumps(parsed)
+        return redirect_instance
+
+
 
 @method_decorator(csrf_exempt, name="dispatch")
 class TokenView(OAuthLibMixin, View):
