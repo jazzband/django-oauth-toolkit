@@ -119,7 +119,7 @@ Test Your Authorization Server
 Your authorization server is ready and can begin issuing access tokens. To test the process you need an OAuth2
 consumer; if you are familiar enough with OAuth2, you can use curl, requests, or anything that speaks HTTP.
 
-For this tutorial, we suggest using [Postman](https://www.postman.com/downloads/) :
+For this tutorial, we suggest using `Postman <https://www.postman.com/downloads/>`_.
 
 Open up the Authorization tab under a request and, for this tutorial, set the fields as follows:
 
@@ -150,7 +150,7 @@ again to the consumer service.
 
 Possible errors:
 
-* loginTemplate: If you are not redirected to the correct page after logging in successfully, you probably need to `setup your login template correctly`__.
+* loginTemplate: If you are not redirected to the correct page after logging in successfully, you probably need to `setup your login template correctly <loginTemplate_>`_.
 * invalid client: client id and client secret needs to be correct. Secret cannot be copied from Django admin after creation.
   (but you can reset it by pasting the same random string into Django admin and into Postman, to avoid recreating the app)
 * invalid callback url: Add the postman link into your app in Django admin.
