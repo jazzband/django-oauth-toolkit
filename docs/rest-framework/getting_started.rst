@@ -4,9 +4,7 @@ Getting started
 Django OAuth Toolkit provide a support layer for `Django REST Framework <http://django-rest-framework.org/>`_.
 This tutorial is based on the Django REST Framework example and shows you how to easily integrate with it.
 
-**NOTE**
-
-The following code has been tested with Django 2.0.3 and Django REST Framework 3.7.7
+.. note:: The following code has been tested with Django 2.0.3 and Django REST Framework 3.7.7
 
 Step 1: Minimal setup
 ---------------------

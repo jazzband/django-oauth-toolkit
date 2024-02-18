@@ -61,7 +61,7 @@ to the migration class.
 
 That's all, now Django OAuth Toolkit will use your model wherever an Application instance is needed.
 
-    **Notice:** `OAUTH2_PROVIDER_APPLICATION_MODEL` is the only setting variable that is not namespaced, this
+.. note:: ``OAUTH2_PROVIDER_APPLICATION_MODEL`` is the only setting variable that is not namespaced, this
     is because of the way Django currently implements swappable models.
     See issue #90 (https://github.com/jazzband/django-oauth-toolkit/issues/90) for details
 
