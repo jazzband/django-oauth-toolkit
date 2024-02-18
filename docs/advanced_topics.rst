@@ -109,7 +109,7 @@ Overriding views
 ================
 
 You may want to override whole views from Django OAuth Toolkit, for instance if you want to
-change the login view for unregistred users depending on some query params.
+change the login view for unregistered users depending on some query params.
 
 In order to do that, you need to write a custom urlpatterns
 

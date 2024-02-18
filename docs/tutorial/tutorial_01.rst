@@ -117,7 +117,7 @@ process we'll explain shortly)
 Test Your Authorization Server
 ------------------------------
 Your authorization server is ready and can begin issuing access tokens. To test the process you need an OAuth2
-consumer; if you are familiar enough with OAuth2, you can use curl, requests, or anything that speaks http.
+consumer; if you are familiar enough with OAuth2, you can use curl, requests, or anything that speaks HTTP.
 
 For this tutorial, we suggest using [Postman](https://www.postman.com/downloads/) :
 

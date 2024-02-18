@@ -42,7 +42,7 @@ Create a Django project::
 
     django-admin startproject iam
 
-This will create a mysite directory in your current directory. With the following estructure::
+This will create a mysite directory in your current directory. With the following structure::
 
     .
     └── iam
