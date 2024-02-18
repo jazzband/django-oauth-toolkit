@@ -281,11 +281,6 @@ According to `OAuth 2.0 Security Best Current Practice <https://oauth.net/2/oaut
 - Public clients MUST use PKCE `RFC7636 <https://datatracker.ietf.org/doc/html/rfc7636>`_
 - For confidential clients, the use of PKCE `RFC7636 <https://datatracker.ietf.org/doc/html/rfc7636>`_ is RECOMMENDED.
 
-
-
-
-
-
 OIDC_RSA_PRIVATE_KEY
 ~~~~~~~~~~~~~~~~~~~~
 Default: ``""``
