@@ -162,8 +162,6 @@ References
 
 The preceding is based on these references:
 
-https://docs.celeryq.dev/en/stable/django/first-steps-with-django.html
-
-https://docs.celeryq.dev/en/stable/userguide/periodic-tasks.html#beat-custom-schedulers
-
-https://django-celery-beat.readthedocs.io/en/latest/index.html
+* https://docs.celeryq.dev/en/stable/django/first-steps-with-django.html
+* https://docs.celeryq.dev/en/stable/userguide/periodic-tasks.html#beat-custom-schedulers
+* https://django-celery-beat.readthedocs.io/en/latest/index.html
