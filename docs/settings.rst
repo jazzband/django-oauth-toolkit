@@ -72,7 +72,7 @@ A list of schemes that the ``allowed_origins`` field will be validated against.
 Setting this to ``["https"]`` only in production is strongly recommended.
 Adding ``"http"`` to the list is considered to be safe only for local development and testing.
 Note that `OAUTHLIB_INSECURE_TRANSPORT <https://oauthlib.readthedocs.io/en/latest/oauth2/security.html#envvar-OAUTHLIB_INSECURE_TRANSPORT>`_
-environment variable should be also set to allow http origins.
+environment variable should be also set to allow HTTP origins.
 
 
 APPLICATION_MODEL
