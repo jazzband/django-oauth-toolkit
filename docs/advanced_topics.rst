@@ -44,7 +44,7 @@ module)::
 Then you need to tell Django OAuth Toolkit which model you want to use to represent applications.
 Write something like this in your settings module::
 
-    OAUTH2_PROVIDER_APPLICATION_MODEL='your_app_name.MyApplication'
+    OAUTH2_PROVIDER_APPLICATION_MODEL = 'your_app_name.MyApplication'
 
 Be aware that, when you intend to swap the application model, you should create and run the
 migration defining the swapped application model prior to setting ``OAUTH2_PROVIDER_APPLICATION_MODEL``.
