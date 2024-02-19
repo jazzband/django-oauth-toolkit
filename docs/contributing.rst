@@ -194,7 +194,7 @@ Then merge the changes that you fetched::
 
     git merge upstream/master
 
-For more info, see http://help.github.com/fork-a-repo/
+For more information, see the `GitHub Docs on forking the repository <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo>`_.
 
 .. note:: Please be sure to rebase your commits on the master when possible, so your commits can be fast-forwarded: we
     try to avoid *merge commits* when they are not necessary.
