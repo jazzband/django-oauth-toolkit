@@ -1,8 +1,8 @@
 Installation
 ============
 
-Install with pip
-::
+Install with pip::
+
     pip install django-oauth-toolkit
 
 Add ``oauth2_provider`` to your ``INSTALLED_APPS``

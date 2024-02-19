@@ -209,7 +209,7 @@ The Checklist
 
 A checklist template is automatically added to your PR when you create it. Make sure you've done all the
 applicable steps and check them off to indicate you have done so. This is
-what you'll see when creating your PR:
+what you'll see when creating your PR::
 
   Fixes #
 
@@ -263,8 +263,9 @@ Try reading our code and grasp the overall philosophy regarding method and varia
 the sake of readability, keep in mind that *simple is better than complex*. If you feel the code is not straightforward,
 add a comment. If you think a function is not trivial, add a docstrings.
 
-To see if your code formatting will pass muster use: `tox -e flake8`
+To see if your code formatting will pass muster use::
 
+  tox -e flake8
 
 The contents of this page are heavily based on the docs from `django-admin2 <https://github.com/twoscoops/django-admin2>`_
 

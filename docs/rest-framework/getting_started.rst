@@ -9,9 +9,7 @@ This tutorial is based on the Django REST Framework example and shows you how to
 Step 1: Minimal setup
 ---------------------
 
-Create a virtualenv and install following packages using `pip`...
-
-::
+Create a virtualenv and install following packages using ``pip``::
 
     pip install django-oauth-toolkit djangorestframework
 
@@ -156,9 +154,7 @@ Save your app!
 Step 4: Get your token and use your API
 ---------------------------------------
 
-At this point we're ready to request an access_token. Open your shell
-
-::
+At this point we're ready to request an access_token. Open your shell::
 
     curl -X POST -d "grant_type=password&username=<user_name>&password=<password>" -u"<client_id>:<client_secret>" http://localhost:8000/o/token/
 
@@ -175,9 +171,7 @@ Response should be something like:
         "scope": "read write groups"
     }
 
-Grab your access_token and start using your new OAuth2 API:
-
-::
+Grab your access_token and start using your new OAuth2 API::
 
     # Retrieve users
     curl -H "Authorization: Bearer <your_access_token>" http://localhost:8000/users/
@@ -189,9 +183,7 @@ Grab your access_token and start using your new OAuth2 API:
     # Insert a new user
     curl -H "Authorization: Bearer <your_access_token>" -X POST -d"username=foo&password=bar&scope=write" http://localhost:8000/users/
 
-Some time has passed and your access token is about to expire, you can get renew the access token issued using the `refresh token`:
-
-::
+Some time has passed and your access token is about to expire, you can get renew the access token issued using the `refresh token`::
 
     curl -X POST -d "grant_type=refresh_token&refresh_token=<your_refresh_token>&client_id=<your_client_id>&client_secret=<your_client_secret>" http://localhost:8000/o/token/
 
@@ -212,9 +204,7 @@ Your response should be similar to your first ``access_token`` request, containi
 Step 5: Testing Restricted Access
 ---------------------------------
 
-Let's try to access resources using a token with a restricted scope adding a `scope` parameter to the token request
-
-::
+Let's try to access resources using a token with a restricted scope adding a ``scope`` parameter to the token request::
 
     curl -X POST -d "grant_type=password&username=<user_name>&password=<password>&scope=read" -u"<client_id>:<client_secret>" http://localhost:8000/o/token/
 
@@ -230,9 +220,7 @@ As you can see the only scope provided is ``read``:
         "scope": "read"
     }
 
-We now try to access our resources:
-
-::
+We now try to access our resources::
 
     # Retrieve users
     curl -H "Authorization: Bearer <your_access_token>" http://localhost:8000/users/
