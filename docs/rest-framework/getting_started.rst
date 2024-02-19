@@ -15,7 +15,7 @@ Create a virtualenv and install following packages using `pip`...
 
     pip install django-oauth-toolkit djangorestframework
 
-Start a new Django project and add `'rest_framework'` and `'oauth2_provider'` to your `INSTALLED_APPS` setting.
+Start a new Django project and add ``'rest_framework'`` and ``'oauth2_provider'`` to your ``INSTALLED_APPS`` setting.
 
 .. code-block:: python
 
@@ -27,7 +27,7 @@ Start a new Django project and add `'rest_framework'` and `'oauth2_provider'` to
     )
 
 Now we need to tell Django REST Framework to use the new authentication backend.
-To do so add the following lines at the end of your `settings.py` module:
+To do so add the following lines at the end of your :file:`settings.py` module:
 
 .. code-block:: python
 
@@ -42,7 +42,7 @@ Step 2: Create a simple API
 
 Let's create a simple API for accessing users and groups.
 
-Here's our project's root `urls.py` module:
+Here's our project's root :file:`urls.py` module:
 
 .. code-block:: python
 
@@ -93,7 +93,7 @@ Here's our project's root `urls.py` module:
         # ...
     ]
 
-Also add the following to your `settings.py` module:
+Also add the following to your :file:`settings.py` module:
 
 .. code-block:: python
 
@@ -112,7 +112,7 @@ Also add the following to your `settings.py` module:
 
     LOGIN_URL = '/admin/login/'
 
-`OAUTH2_PROVIDER.SCOPES` setting parameter contains the scopes that the application will be aware of,
+``OAUTH2_PROVIDER.SCOPES`` setting parameter contains the scopes that the application will be aware of,
 so we can use them for permission check.
 
 Now run the following commands:
@@ -195,7 +195,7 @@ Some time has passed and your access token is about to expire, you can get renew
 
     curl -X POST -d "grant_type=refresh_token&refresh_token=<your_refresh_token>&client_id=<your_client_id>&client_secret=<your_client_secret>" http://localhost:8000/o/token/
 
-Your response should be similar to your first access_token request, containing a new access_token and refresh_token:
+Your response should be similar to your first ``access_token`` request, containing a new access_token and refresh_token:
 
 .. code-block:: javascript
 
@@ -218,7 +218,7 @@ Let's try to access resources using a token with a restricted scope adding a `sc
 
     curl -X POST -d "grant_type=password&username=<user_name>&password=<password>&scope=read" -u"<client_id>:<client_secret>" http://localhost:8000/o/token/
 
-As you can see the only scope provided is `read`:
+As you can see the only scope provided is ``read``:
 
 .. code-block:: javascript
 
@@ -238,7 +238,7 @@ We now try to access our resources:
     curl -H "Authorization: Bearer <your_access_token>" http://localhost:8000/users/
     curl -H "Authorization: Bearer <your_access_token>" http://localhost:8000/users/1/
 
-Ok, this one works since users read only requires `read` scope.
+OK, this one works since users read only requires ``read`` scope.
 
 ::
 
@@ -248,5 +248,5 @@ Ok, this one works since users read only requires `read` scope.
     # 'write' scope needed
     curl -H "Authorization: Bearer <your_access_token>" -X POST -d"username=foo&password=bar" http://localhost:8000/users/
 
-You'll get a `"You do not have permission to perform this action"` error because your access_token does not provide the
-required scopes `groups` and `write`.
+You'll get a ``"You do not have permission to perform this action"`` error because your access_token does not provide the
+required scopes ``groups`` and ``write``.
