@@ -195,7 +195,7 @@ when close to expiration, theoretically).
 
 REFRESH_TOKEN_GENERATOR
 ~~~~~~~~~~~~~~~~~~~~~~~
-See `ACCESS_TOKEN_GENERATOR`. This is the same but for refresh tokens.
+See `ACCESS_TOKEN_GENERATOR`_. This is the same but for refresh tokens.
 Defaults to access token generator if not provided.
 
 REQUEST_APPROVAL_PROMPT
