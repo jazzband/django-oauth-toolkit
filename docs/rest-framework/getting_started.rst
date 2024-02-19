@@ -161,7 +161,7 @@ At this point we're ready to request an access_token. Open your shell::
 The *user_name* and *password* are the credential of the users registered in your :term:`Authorization Server`, like any user created in Step 2.
 Response should be something like:
 
-.. code-block:: javascript
+.. code-block:: json
 
     {
         "access_token": "<your_access_token>",
@@ -189,7 +189,7 @@ Some time has passed and your access token is about to expire, you can get renew
 
 Your response should be similar to your first ``access_token`` request, containing a new access_token and refresh_token:
 
-.. code-block:: javascript
+.. code-block:: json
 
     {
         "access_token": "<your_new_access_token>",
@@ -210,7 +210,7 @@ Let's try to access resources using a token with a restricted scope adding a ``s
 
 As you can see the only scope provided is ``read``:
 
-.. code-block:: javascript
+.. code-block:: json
 
     {
         "access_token": "<your_access_token>",

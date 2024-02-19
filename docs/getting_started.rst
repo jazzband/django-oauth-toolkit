@@ -332,7 +332,7 @@ To be more easy to visualize::
 
 The OAuth2 provider will return the follow response:
 
-.. code-block:: javascript
+.. code-block:: json
 
     {
       "access_token": "jooqrnOrNa0BrNWlg68u9sl6SkdFZg",
@@ -402,7 +402,7 @@ To be easier to visualize::
 
 The OAuth2 provider will return the following response:
 
-.. code-block:: javascript
+.. code-block:: json
 
     {
         "access_token": "PaZDOD5UwzbGOFsQr34LQ7JUYOj3yK",
