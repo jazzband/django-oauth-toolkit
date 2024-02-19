@@ -34,7 +34,6 @@ Or using ``re_path()``
 
     urlpatterns = [
         ...
-
         re_path(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     ]
 
@@ -43,7 +42,7 @@ Sync your database
 
 .. sourcecode:: sh
 
-    $ python manage.py migrate oauth2_provider
+    python manage.py migrate oauth2_provider
 
 Next step is :doc:`getting started <getting_started>` or :doc:`first tutorial <tutorial/tutorial_01>`.
 
