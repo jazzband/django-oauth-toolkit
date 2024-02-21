@@ -239,7 +239,7 @@ just return the same claims as the ID token.
 
 To configure all of these things we need to customize the
 ``OAUTH2_VALIDATOR_CLASS`` in ``django-oauth-toolkit``. Create a new file in
-our project, eg ``my_project/oauth_validator.py``::
+our project, eg ``my_project/oauth_validators.py``::
 
     from oauth2_provider.oauth2_validators import OAuth2Validator
 

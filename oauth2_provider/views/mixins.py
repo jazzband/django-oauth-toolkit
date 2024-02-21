@@ -279,7 +279,6 @@ class ReadWriteScopedResourceMixin(ScopedResourceMixin, OAuthLibMixin):
 
 
 class ClientProtectedResourceMixin(OAuthLibMixin):
-
     """Mixin for protecting resources with client authentication as mentioned in rfc:`3.2.1`
     This involves authenticating with any of: HTTP Basic Auth, Client Credentials and
     Access token in that order. Breaks off after first validation.
