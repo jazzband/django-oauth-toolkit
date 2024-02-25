@@ -112,6 +112,8 @@ Also add the following to your `settings.py` module:
         )
     }
 
+    LOGIN_URL = '/admin/login/'
+
 `OAUTH2_PROVIDER.SCOPES` setting parameter contains the scopes that the application will be aware of,
 so we can use them for permission check.
 

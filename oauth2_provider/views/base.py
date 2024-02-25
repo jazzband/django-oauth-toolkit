@@ -244,6 +244,33 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             self.get_redirect_field_name(),
         )
 
+    def handle_no_permission(self):
+        """
+        Generate response for unauthorized users.
+
+        If prompt is set to none, then we redirect with an error code
+        as defined by OIDC 3.1.2.6
+
+        Some code copied from OAuthLibMixin.error_response, but that is designed
+        to operated on OAuth1Error from oauthlib wrapped in a OAuthToolkitError
+        """
+        prompt = self.request.GET.get("prompt")
+        redirect_uri = self.request.GET.get("redirect_uri")
+        if prompt == "none" and redirect_uri:
+            response_parameters = {"error": "login_required"}
+
+            # REQUIRED if the Authorization Request included the state parameter.
+            # Set to the value received from the Client
+            state = self.request.GET.get("state")
+            if state:
+                response_parameters["state"] = state
+
+            separator = "&" if "?" in redirect_uri else "?"
+            redirect_to = redirect_uri + separator + urlencode(response_parameters)
+            return self.redirect(redirect_to, application=None)
+        else:
+            return super().handle_no_permission()
+
 
 @method_decorator(csrf_exempt, name="dispatch")
 class TokenView(OAuthLibMixin, View):

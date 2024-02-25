@@ -20,7 +20,7 @@ const metadata = {};
 
 {#if browser}
 <OidcContext
- issuer="http://127.0.0.1:8000/o"
+ issuer="http://localhost:8000/o"
  client_id="2EIxgjlyy5VgCp2fjhEpKLyRtSMMPK0hZ0gBpNdm"
  redirect_uri="http://localhost:5173"
  post_logout_redirect_uri="http://localhost:5173"

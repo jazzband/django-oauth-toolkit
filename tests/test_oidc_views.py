@@ -48,13 +48,41 @@ class TestConnectDiscoveryInfoView(TestCase):
             "subject_types_supported": ["public"],
             "id_token_signing_alg_values_supported": ["RS256", "HS256"],
             "token_endpoint_auth_methods_supported": ["client_secret_post", "client_secret_basic"],
+            "code_challenge_methods_supported": ["plain", "S256"],
             "claims_supported": ["sub"],
         }
-        response = self.client.get(reverse("oauth2_provider:oidc-connect-discovery-info"))
+        response = self.client.get("/o/.well-known/openid-configuration")
         self.assertEqual(response.status_code, 200)
         assert response.json() == expected_response
 
-    def expect_json_response_with_rp(self, base):
+    def test_get_connect_discovery_info_deprecated(self):
+        expected_response = {
+            "issuer": "http://localhost/o",
+            "authorization_endpoint": "http://localhost/o/authorize/",
+            "token_endpoint": "http://localhost/o/token/",
+            "userinfo_endpoint": "http://localhost/o/userinfo/",
+            "jwks_uri": "http://localhost/o/.well-known/jwks.json",
+            "scopes_supported": ["read", "write", "openid"],
+            "response_types_supported": [
+                "code",
+                "token",
+                "id_token",
+                "id_token token",
+                "code token",
+                "code id_token",
+                "code id_token token",
+            ],
+            "subject_types_supported": ["public"],
+            "id_token_signing_alg_values_supported": ["RS256", "HS256"],
+            "token_endpoint_auth_methods_supported": ["client_secret_post", "client_secret_basic"],
+            "code_challenge_methods_supported": ["plain", "S256"],
+            "claims_supported": ["sub"],
+        }
+        response = self.client.get("/o/.well-known/openid-configuration/")
+        self.assertEqual(response.status_code, 200)
+        assert response.json() == expected_response
+
+    def expect_json_response_with_rp_logout(self, base):
         expected_response = {
             "issuer": f"{base}",
             "authorization_endpoint": f"{base}/authorize/",
@@ -74,6 +102,7 @@ class TestConnectDiscoveryInfoView(TestCase):
             "subject_types_supported": ["public"],
             "id_token_signing_alg_values_supported": ["RS256", "HS256"],
             "token_endpoint_auth_methods_supported": ["client_secret_post", "client_secret_basic"],
+            "code_challenge_methods_supported": ["plain", "S256"],
             "claims_supported": ["sub"],
             "end_session_endpoint": f"{base}/logout/",
         }
@@ -83,7 +112,7 @@ class TestConnectDiscoveryInfoView(TestCase):
 
     def test_get_connect_discovery_info_with_rp_logout(self):
         self.oauth2_settings.OIDC_RP_INITIATED_LOGOUT_ENABLED = True
-        self.expect_json_response_with_rp(self.oauth2_settings.OIDC_ISS_ENDPOINT)
+        self.expect_json_response_with_rp_logout(self.oauth2_settings.OIDC_ISS_ENDPOINT)
 
     def test_get_connect_discovery_info_without_issuer_url(self):
         self.oauth2_settings.OIDC_ISS_ENDPOINT = None
@@ -107,6 +136,7 @@ class TestConnectDiscoveryInfoView(TestCase):
             "subject_types_supported": ["public"],
             "id_token_signing_alg_values_supported": ["RS256", "HS256"],
             "token_endpoint_auth_methods_supported": ["client_secret_post", "client_secret_basic"],
+            "code_challenge_methods_supported": ["plain", "S256"],
             "claims_supported": ["sub"],
         }
         response = self.client.get(reverse("oauth2_provider:oidc-connect-discovery-info"))
@@ -117,7 +147,7 @@ class TestConnectDiscoveryInfoView(TestCase):
         self.oauth2_settings.OIDC_RP_INITIATED_LOGOUT_ENABLED = True
         self.oauth2_settings.OIDC_ISS_ENDPOINT = None
         self.oauth2_settings.OIDC_USERINFO_ENDPOINT = None
-        self.expect_json_response_with_rp("http://testserver/o")
+        self.expect_json_response_with_rp_logout("http://testserver/o")
 
     def test_get_connect_discovery_info_without_rsa_key(self):
         self.oauth2_settings.OIDC_RSA_PRIVATE_KEY = None

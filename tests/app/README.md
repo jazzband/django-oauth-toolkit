@@ -1,7 +1,8 @@
 # Test Apps
 
 These apps are for local end to end testing of DOT features. They were implemented to save maintainers the trouble of setting up
-local test environments.
+local test environments. You should be able to start both and instance of the IDP and RP using the directions below, then test the
+functionality of the IDP using the RP.
 
 ## /tests/app/idp
 
@@ -29,7 +30,7 @@ password: password
   You can update data in the IDP and then dump the data to a new seed file as follows.
 
   ```
-  python -Xutf8 ./manage.py dumpdata -e sessions  -e admin.logentry -e auth.permission -e contenttypes.contenttype --natural-foreign --natural-primary --indent 2 > fixtures/seed.json
+python -Xutf8 ./manage.py dumpdata -e sessions  -e admin.logentry -e auth.permission -e contenttypes.contenttype -e oauth2_provider.accesstoken  -e oauth2_provider.refreshtoken -e oauth2_provider.idtoken --natural-foreign --natural-primary --indent 2 > fixtures/seed.json
   ```
 
 ## /test/app/rp
