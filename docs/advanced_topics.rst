@@ -31,7 +31,7 @@ Django OAuth Toolkit lets you extend the AbstractApplication model in a fashion 
 custom user models.
 
 If you need, let's say, application logo and user agreement acceptance field, you can do this in
-your Django app (provided that your app is in the list of the INSTALLED_APPS in your settings
+your Django app (provided that your app is in the list of the ``INSTALLED_APPS`` in your settings
 module)::
 
     from django.db import models
@@ -44,11 +44,11 @@ module)::
 Then you need to tell Django OAuth Toolkit which model you want to use to represent applications.
 Write something like this in your settings module::
 
-    OAUTH2_PROVIDER_APPLICATION_MODEL='your_app_name.MyApplication'
+    OAUTH2_PROVIDER_APPLICATION_MODEL = 'your_app_name.MyApplication'
 
 Be aware that, when you intend to swap the application model, you should create and run the
-migration defining the swapped application model prior to setting OAUTH2_PROVIDER_APPLICATION_MODEL.
-You'll run into models.E022 in Core system checks if you don't get the order right.
+migration defining the swapped application model prior to setting ``OAUTH2_PROVIDER_APPLICATION_MODEL``.
+You'll run into ``models.E022`` in Core system checks if you don't get the order right.
 
 You can force your migration providing the custom model to run in the right order by
 adding::
@@ -61,15 +61,15 @@ to the migration class.
 
 That's all, now Django OAuth Toolkit will use your model wherever an Application instance is needed.
 
-    **Notice:** `OAUTH2_PROVIDER_APPLICATION_MODEL` is the only setting variable that is not namespaced, this
+.. note:: ``OAUTH2_PROVIDER_APPLICATION_MODEL`` is the only setting variable that is not namespaced, this
     is because of the way Django currently implements swappable models.
-    See issue #90 (https://github.com/jazzband/django-oauth-toolkit/issues/90) for details
+    See `issue #90 <https://github.com/jazzband/django-oauth-toolkit/issues/90>`_ for details.
 
 Multiple Grants
 ~~~~~~~~~~~~~~~
 
 The default application model supports a single OAuth grant (e.g. authorization code, client credentials). If you need
-applications to support multiple grants, override the `allows_grant_type` method. For example, if you want applications
+applications to support multiple grants, override the ``allows_grant_type`` method. For example, if you want applications
 to support the authorization code *and* client credentials grants, you might do the following::
 
     from oauth2_provider.models import AbstractApplication
@@ -86,12 +86,12 @@ Skip authorization form
 
 Depending on the OAuth2 flow in use and the access token policy, users might be prompted for the
 same authorization multiple times: sometimes this is acceptable or even desirable but other times it isn't.
-To control DOT behaviour you can use the `approval_prompt` parameter when hitting the authorization endpoint.
+To control DOT behaviour you can use the ``approval_prompt`` parameter when hitting the authorization endpoint.
 Possible values are:
 
-* `force` - users are always prompted for authorization.
+* ``force`` - users are always prompted for authorization.
 
-* `auto` - users are prompted only the first time, subsequent authorizations for the same application
+* ``auto`` - users are prompted only the first time, subsequent authorizations for the same application
   and scopes will be automatically accepted.
 
 Skip authorization completely for trusted applications
@@ -109,7 +109,7 @@ Overriding views
 ================
 
 You may want to override whole views from Django OAuth Toolkit, for instance if you want to
-change the login view for unregistred users depending on some query params.
+change the login view for unregistered users depending on some query params.
 
 In order to do that, you need to write a custom urlpatterns
 
