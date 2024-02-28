@@ -5,7 +5,7 @@ from django.contrib.sessions.middleware import SessionMiddleware
 from oauth2_provider.oauth2_validators import OAuth2Validator
 
 
-# get_response is required for middlware, it doesn't need to do anything
+# get_response is required for middleware, it doesn't need to do anything
 # the way we're using it, so we just use a lambda that returns None
 def get_response():
     None
