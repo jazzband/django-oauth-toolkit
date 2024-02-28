@@ -361,7 +361,7 @@ class TestOpenIDConnectImplicitFlow(BaseTest):
         response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
         self.assertEqual(response.status_code, 302)
         self.assertIn("error=invalid_request", response["Location"])
-        self.assertIn("error_description=Request+is+missing+mandatory+nonce+paramete", response["Location"])
+        self.assertIn("error_description=Request+is+missing+mandatory+nonce+parameter", response["Location"])
 
     def test_id_token_post_auth_deny(self):
         """

@@ -111,7 +111,7 @@ Configure ``users.User`` to be the model used for the ``auth`` application by ad
 
     AUTH_USER_MODEL = 'users.User'
 
-Create inital migration for ``users`` application ``User`` model::
+Create initial migration for ``users`` application ``User`` model::
 
     python manage.py makemigrations
 
