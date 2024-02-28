@@ -34,7 +34,7 @@ that must be provided. ``django-oauth-toolkit`` supports two different
 algorithms for signing JWT tokens, ``RS256``, which uses asymmetric RSA keys (a
 public key and a private key), and ``HS256``, which uses a symmetric key.
 
-It is preferrable to use ``RS256``, because this produces a token that can be
+It is preferable to use ``RS256``, because this produces a token that can be
 verified by anyone using the public key (which is made available and
 discoverable by OIDC service auto-discovery, included with
 ``django-oauth-toolkit``). ``HS256`` on the other hand uses the
@@ -372,7 +372,7 @@ for a POST request.
 
 Again, to modify the content delivered, we need to add a function to our
 custom validator. The default implementation adds the claims from the ID
-token, so you will probably want to re-use that::
+token, so you will probably want to reuse that::
 
     class CustomOAuth2Validator(OAuth2Validator):
 

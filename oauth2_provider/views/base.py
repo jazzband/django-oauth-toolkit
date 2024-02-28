@@ -77,10 +77,10 @@ class AuthorizationView(BaseAuthorizationView, FormView):
 
     * then receive a ``POST`` request possibly after user authorized the access
 
-    Some informations contained in the ``GET`` request and needed to create a Grant token during
+    Some information contained in the ``GET`` request and needed to create a Grant token during
     the ``POST`` request would be lost between the two steps above, so they are temporarily stored in
     hidden fields on the form.
-    A possible alternative could be keeping such informations in the session.
+    A possible alternative could be keeping such information in the session.
 
     The endpoint is used in the following flows:
     * Authorization code

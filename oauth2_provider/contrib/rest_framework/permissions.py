@@ -107,7 +107,7 @@ class IsAuthenticatedOrTokenHasScope(BasePermission):
     This only returns True if the user is authenticated, but not using a token
     or using a token, and the token has the correct scope.
 
-    This is usefull when combined with the DjangoModelPermissions to allow people browse
+    This is useful when combined with the DjangoModelPermissions to allow people browse
     the browsable api's if they log in using the a non token bassed middleware,
     and let them access the api's using a rest client with a token
     """
