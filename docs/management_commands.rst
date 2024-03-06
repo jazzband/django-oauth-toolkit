@@ -92,5 +92,5 @@ The ``createapplication`` management command provides a shortcut to create a new
       --force-color         Force colorization of the command output.
       --skip-checks         Skip system checks.
 
-If you let `createapplication` auto-generate the secret then it displays the value before hashing it.
+If you let ``createapplication`` auto-generate the secret then it displays the value before hashing it.
 

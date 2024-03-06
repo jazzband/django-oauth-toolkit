@@ -12,7 +12,7 @@ This is a `Jazzband <https://jazzband.co>`_ project. By contributing you agree t
 Setup
 =====
 
-Fork `django-oauth-toolkit` repository on `GitHub <https://github.com/jazzband/django-oauth-toolkit>`_ and follow these steps:
+Fork ``django-oauth-toolkit`` repository on `GitHub <https://github.com/jazzband/django-oauth-toolkit>`_ and follow these steps:
 
  * Create a virtualenv and activate it
  * Clone your repository locally
@@ -55,14 +55,14 @@ is a better way to structure the code so that it is more readable.
 Documentation
 =============
 
-You can edit the documentation by editing files in ``docs/``. This project
+You can edit the documentation by editing files in :file:`docs/`. This project
 uses sphinx to turn ``ReStructuredText`` into the HTML docs you are reading.
 
 In order to build the docs in to HTML, you can run::
 
     tox -e docs
 
-This will build the docs, and place the result in ``docs/_build/html``.
+This will build the docs, and place the result in :file:`docs/_build/html`.
 Alternatively, you can run::
 
     tox -e livedocs
@@ -89,7 +89,7 @@ For example, to add Deutsch::
     cd oauth2_provider
     django-admin makemessages --locale de
 
-Then edit ``locale/de/LC_MESSAGES/django.po`` to add your translations.
+Then edit :file:`locale/de/LC_MESSAGES/django.po` to add your translations.
 
 When deploying your app, don't forget to compile the messages with::
 
@@ -108,8 +108,8 @@ And, if a new migration is needed, use::
 
     django-admin makemigrations --settings tests.mig_settings
 
-Auto migrations frequently have ugly names like `0004_auto_20200902_2022`. You can make your migration
-name "better" by adding the `-n name` option::
+Auto migrations frequently have ugly names like ``0004_auto_20200902_2022``. You can make your migration
+name "better" by adding the ``-n name`` option::
 
     django-admin makemigrations --settings tests.mig_settings -n widget
 
@@ -117,7 +117,7 @@ name "better" by adding the `-n name` option::
 Pull requests
 =============
 
-Please avoid providing a pull request from your `master` and use **topic branches** instead; you can add as many commits
+Please avoid providing a pull request from your ``master`` and use **topic branches** instead; you can add as many commits
 as you want but please keep them in one branch which aims to solve one single issue. Then submit your pull request. To
 create a topic branch, simply do::
 
@@ -129,7 +129,7 @@ When you're ready to submit your pull request, first push the topic branch to yo
     git push origin fix-that-issue
 
 Now you can go to your repository dashboard on GitHub and open a pull request starting from your topic branch. You can
-apply your pull request to the `master` branch of django-oauth-toolkit (this should be the default behaviour of GitHub
+apply your pull request to the ``master`` branch of django-oauth-toolkit (this should be the default behaviour of GitHub
 user interface).
 
 When you begin your PR, you'll be asked to provide the following:
@@ -150,29 +150,29 @@ When you begin your PR, you'll be asked to provide the following:
 
 * Update the documentation (in `docs/`) to describe the new or changed functionality.
 
-* Update `CHANGELOG.md` (only for user relevant changes). We use `Keep A Changelog <https://keepachangelog.com/en/1.0.0/>`_
+* Update ``CHANGELOG.md`` (only for user relevant changes). We use `Keep A Changelog <https://keepachangelog.com/en/1.0.0/>`_
   format which categorizes the changes as:
 
-  * `Added` for new features.
+  * ``Added`` for new features.
 
-  * `Changed` for changes in existing functionality.
+  * ``Changed`` for changes in existing functionality.
 
-  * `Deprecated` for soon-to-be removed features.
+  * ``Deprecated`` for soon-to-be removed features.
 
-  * `Removed` for now removed features.
+  * ``Removed`` for now removed features.
 
-  * `Fixed` for any bug fixes.
+  * ``Fixed`` for any bug fixes.
 
-  * `Security` in case of vulnerabilities. (Please report any security issues to the
-     JazzBand security team `<security@jazzband.co>`. Do not file an issue on the tracker
+  * ``Security`` in case of vulnerabilities. (Please report any security issues to the
+     JazzBand security team ``<security@jazzband.co>``. Do not file an issue on the tracker
      or submit a PR until directed to do so.)
 
-* Make sure your name is in `AUTHORS`. We want to give credit to all contributors!
+* Make sure your name is in :file:`AUTHORS`. We want to give credit to all contributors!
 
 If your PR is not yet ready to be merged mark it as a Work-in-Progress
-By prepending `WIP:` to the PR title so that it doesn't get inadvertently approved and merged.
+By prepending ``WIP:`` to the PR title so that it doesn't get inadvertently approved and merged.
 
-Make sure to request a review by assigning Reviewer `jazzband/django-oauth-toolkit`.
+Make sure to request a review by assigning Reviewer ``jazzband/django-oauth-toolkit``.
 This will assign the review to the project team and a member will review it. In the meantime you can continue to add
 commits to your topic branch (and push them up to GitHub) either if you see something that needs changing, or in
 response to a reviewer's comments.  If a reviewer asks for changes, you do not need to close the pull and reissue it
@@ -194,7 +194,7 @@ Then merge the changes that you fetched::
 
     git merge upstream/master
 
-For more info, see http://help.github.com/fork-a-repo/
+For more information, see the `GitHub Docs on forking the repository <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo>`_.
 
 .. note:: Please be sure to rebase your commits on the master when possible, so your commits can be fast-forwarded: we
     try to avoid *merge commits* when they are not necessary.
@@ -209,7 +209,7 @@ The Checklist
 
 A checklist template is automatically added to your PR when you create it. Make sure you've done all the
 applicable steps and check them off to indicate you have done so. This is
-what you'll see when creating your PR:
+what you'll see when creating your PR::
 
   Fixes #
 
@@ -251,7 +251,7 @@ You can check your coverage locally with the `coverage <https://pypi.org/project
   pip install coverage
   coverage html -d mycoverage
 
-Open mycoverage/index.html in your browser and you can see a coverage summary and coverage details for each file.
+Open :file:`mycoverage/index.html` in your browser and you can see a coverage summary and coverage details for each file.
 
 There's no need to wait for Codecov to complain after you submit your PR.
 
@@ -263,8 +263,9 @@ Try reading our code and grasp the overall philosophy regarding method and varia
 the sake of readability, keep in mind that *simple is better than complex*. If you feel the code is not straightforward,
 add a comment. If you think a function is not trivial, add a docstrings.
 
-To see if your code formatting will pass muster use: `tox -e flake8`
+To see if your code formatting will pass muster use::
 
+  tox -e flake8
 
 The contents of this page are heavily based on the docs from `django-admin2 <https://github.com/twoscoops/django-admin2>`_
 
@@ -301,14 +302,14 @@ and rtfd.io. This checklist is a reminder of the required steps.
   to make them meaningful to users.
 - Make a final PR for the release that updates:
 
-  - CHANGELOG to show the release date.
-  - `oauth2_provider/__init__.py` to set `__version__ = "..."`
+  - :file:`CHANGELOG.md` to show the release date.
+  - :file:`oauth2_provider/__init__.py` to set ``__version__ = "..."``
 
 - Once the final PR is merged, create and push a tag for the release. You'll shortly
   get a notification from Jazzband of the availability of two pypi packages (source tgz
   and wheel). Download these locally before releasing them.
-- Do a `tox -e build` and extract the downloaded and bullt wheel zip and tgz files into
-  temp directories and do a `diff -r` to make sure they have the same content.
+- Do a ``tox -e build`` and extract the downloaded and built wheel zip and tgz files into
+  temp directories and do a ``diff -r`` to make sure they have the same content.
   (Unfortunately the checksums do not match due to timestamps in the metadata
   so you need to compare all the files.)
 - Once happy that the above comparison checks out, approve the releases to Pypi.org.
