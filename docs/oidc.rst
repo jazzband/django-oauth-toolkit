@@ -430,5 +430,5 @@ customize the details included in the response as described above.
 RPInitiatedLogoutView
 ~~~~~~~~~~~~~~~~~~~~~
 
-Available at ``/o/rp-initiated-logout/``, this view allows a :term:`Client` (Relying Party) to request that a :term:`Resource Owner`
+Available at ``/o/logout/``, this view allows a :term:`Client` (Relying Party) to request that a :term:`Resource Owner`
 is logged out at the :term:`Authorization Server` (OpenID Provider).
