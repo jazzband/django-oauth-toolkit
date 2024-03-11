@@ -287,6 +287,12 @@ According to `OAuth 2.0 Security Best Current Practice <https://oauth.net/2/oaut
 - Public clients MUST use PKCE `RFC7636 <https://datatracker.ietf.org/doc/html/rfc7636>`_
 - For confidential clients, the use of PKCE `RFC7636 <https://datatracker.ietf.org/doc/html/rfc7636>`_ is RECOMMENDED.
 
+OIDC_ENABLED
+~~~~~~~~~~~~
+Default: ``False``
+
+Whether or not `OpenID Connect <https://openid.net/specs/openid-connect-core-1_0.html>`_ auth flow is enabled.
+
 OIDC_RSA_PRIVATE_KEY
 ~~~~~~~~~~~~~~~~~~~~
 Default: ``""``
