@@ -34,7 +34,7 @@ oidc_urlpatterns = [
     # .well-known/openid-configuration/ is deprecated
     # https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfig
     # does not specify a trailing slash
-    # Support for trailing slash should shall be removed in a future release.
+    # Support for trailing slash shall be removed in a future release.
     re_path(
         r"^\.well-known/openid-configuration/?$",
         views.ConnectDiscoveryInfoView.as_view(),
