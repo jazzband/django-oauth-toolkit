@@ -16,7 +16,7 @@ class AuthorizedTokensListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         """
-        Show only user"s tokens
+        Show only user's tokens
         """
         return super().get_queryset().select_related("application").filter(user=self.request.user)
 

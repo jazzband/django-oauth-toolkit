@@ -42,7 +42,7 @@ Create a Django project::
 
     django-admin startproject iam
 
-This will create a mysite directory in your current directory. With the following estructure::
+This will create a mysite directory in your current directory. With the following structure::
 
     .
     └── iam
@@ -109,7 +109,7 @@ Configure ``users.User`` to be the model used for the ``auth`` application by ad
 
 .. code-block:: python
 
-    AUTH_USER_MODEL='users.User'
+    AUTH_USER_MODEL = 'users.User'
 
 Create inital migration for ``users`` application ``User`` model::
 
@@ -203,7 +203,7 @@ Last change, add ``LOGIN_URL`` to :file:`iam/settings.py`:
 
 .. code-block:: python
 
-    LOGIN_URL='/admin/login/'
+    LOGIN_URL = '/admin/login/'
 
 We will use Django Admin login to make our life easy.
 
@@ -332,7 +332,7 @@ To be more easy to visualize::
 
 The OAuth2 provider will return the follow response:
 
-.. code-block:: javascript
+.. code-block:: json
 
     {
       "access_token": "jooqrnOrNa0BrNWlg68u9sl6SkdFZg",
@@ -402,7 +402,7 @@ To be easier to visualize::
 
 The OAuth2 provider will return the following response:
 
-.. code-block:: javascript
+.. code-block:: json
 
     {
         "access_token": "PaZDOD5UwzbGOFsQr34LQ7JUYOj3yK",
