@@ -25,23 +25,20 @@ class ResourceView(ProtectedResourceView):
 
 @pytest.mark.usefixtures("oauth2_settings")
 class BaseTest(TestCase):
-    def setUp(self):
-        self.factory = RequestFactory()
-        self.test_user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
-        self.dev_user = UserModel.objects.create_user("dev_user", "dev@example.com", "123456")
+    factory = RequestFactory()
 
-        self.application = Application.objects.create(
+    @classmethod
+    def setUpTestData(cls):
+        cls.test_user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
+        cls.dev_user = UserModel.objects.create_user("dev_user", "dev@example.com", "123456")
+
+        cls.application = Application.objects.create(
             name="Test Password Application",
-            user=self.dev_user,
+            user=cls.dev_user,
             client_type=Application.CLIENT_PUBLIC,
             authorization_grant_type=Application.GRANT_PASSWORD,
             client_secret=CLEARTEXT_SECRET,
         )
-
-    def tearDown(self):
-        self.application.delete()
-        self.test_user.delete()
-        self.dev_user.delete()
 
 
 class TestPasswordTokenView(BaseTest):

@@ -43,29 +43,27 @@ class ResourceView(ProtectedResourceView):
 
 @pytest.mark.usefixtures("oauth2_settings")
 class BaseTest(TestCase):
-    def setUp(self):
-        self.factory = RequestFactory()
-        self.test_user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
-        self.dev_user = UserModel.objects.create_user("dev_user", "dev@example.com", "123456")
+    factory = RequestFactory()
 
-        self.oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES = ["http", "custom-scheme"]
-        self.oauth2_settings.PKCE_REQUIRED = False
+    @classmethod
+    def setUpTestData(cls):
+        cls.test_user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
+        cls.dev_user = UserModel.objects.create_user("dev_user", "dev@example.com", "123456")
 
-        self.application = Application.objects.create(
+        cls.application = Application.objects.create(
             name="Test Application",
             redirect_uris=(
                 "http://localhost http://example.com http://example.org custom-scheme://example.com"
             ),
-            user=self.dev_user,
+            user=cls.dev_user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
             client_secret=CLEARTEXT_SECRET,
         )
 
-    def tearDown(self):
-        self.application.delete()
-        self.test_user.delete()
-        self.dev_user.delete()
+    def setUp(self):
+        self.oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES = ["http", "custom-scheme"]
+        self.oauth2_settings.PKCE_REQUIRED = False
 
 
 class TestRegressionIssue315(BaseTest):
@@ -483,7 +481,7 @@ class TestAuthorizationCodeView(BaseTest):
         """
         Tests that a redirection uri with query string is allowed
         and query string is retained on redirection.
-        See http://tools.ietf.org/html/rfc6749#section-3.1.2
+        See https://rfc-editor.org/rfc/rfc6749.html#section-3.1.2
         """
         self.client.login(username="test_user", password="123456")
 
@@ -547,6 +545,33 @@ class TestAuthorizationCodeView(BaseTest):
 
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 class TestOIDCAuthorizationCodeView(BaseTest):
+    def test_login(self):
+        """
+        Test login page is rendered if user is not authenticated
+        """
+        self.oauth2_settings.PKCE_REQUIRED = False
+
+        query_data = {
+            "client_id": self.application.client_id,
+            "response_type": "code",
+            "state": "random_state_string",
+            "scope": "openid",
+            "redirect_uri": "http://example.org",
+        }
+        path = reverse("oauth2_provider:authorize")
+        response = self.client.get(path, data=query_data)
+        # The authorization view redirects to the login page with the
+        self.assertEqual(response.status_code, 302)
+        scheme, netloc, path, params, query, fragment = urlparse(response["Location"])
+        self.assertEqual(path, settings.LOGIN_URL)
+        parsed_query = parse_qs(query)
+        next = parsed_query["next"][0]
+        self.assertIn(f"client_id={self.application.client_id}", next)
+        self.assertIn("response_type=code", next)
+        self.assertIn("state=random_state_string", next)
+        self.assertIn("scope=openid", next)
+        self.assertIn("redirect_uri=http%3A%2F%2Fexample.org", next)
+
     def test_id_token_skip_authorization_completely(self):
         """
         If application.skip_authorization = True, should skip the authorization page.
@@ -646,6 +671,33 @@ class TestOIDCAuthorizationCodeView(BaseTest):
         self.assertIn(f"client_id={self.application.client_id}", next)
 
         self.assertNotIn("prompt=login", next)
+
+    def test_prompt_none_unauthorized(self):
+        """
+        Test response for redirect when supplied with prompt: none
+
+        Should redirect to redirect_uri with an error of login_required
+        """
+        self.oauth2_settings.PKCE_REQUIRED = False
+
+        query_data = {
+            "client_id": self.application.client_id,
+            "response_type": "code",
+            "state": "random_state_string",
+            "scope": "read write",
+            "redirect_uri": "http://example.org",
+            "prompt": "none",
+        }
+
+        response = self.client.get(reverse("oauth2_provider:authorize"), data=query_data)
+
+        self.assertEqual(response.status_code, 302)
+
+        scheme, netloc, path, params, query, fragment = urlparse(response["Location"])
+        parsed_query = parse_qs(query)
+
+        self.assertIn("login_required", parsed_query["error"])
+        self.assertIn("random_state_string", parsed_query["state"])
 
 
 class BaseAuthorizationCodeTokenView(BaseTest):
@@ -1001,6 +1053,39 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
         self.assertEqual(response.status_code, 200)
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
+
+    def test_refresh_with_deleted_token(self):
+        """
+        Ensure that using a deleted refresh token returns 400
+        """
+        self.client.login(username="test_user", password="123456")
+        authorization_code = self.get_auth()
+
+        token_request_data = {
+            "grant_type": "authorization_code",
+            "scope": "read write",
+            "code": authorization_code,
+            "redirect_uri": "http://example.org",
+        }
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
+
+        # get a refresh token
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+
+        content = json.loads(response.content.decode("utf-8"))
+        rt = content["refresh_token"]
+
+        token_request_data = {
+            "grant_type": "refresh_token",
+            "refresh_token": rt,
+            "scope": "read write",
+        }
+
+        # delete the access token
+        AccessToken.objects.filter(token=content["access_token"]).delete()
+
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 400)
 
     def test_basic_auth_bad_authcode(self):
         """
@@ -1559,10 +1644,11 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
 
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 class TestOIDCAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
-    def setUp(self):
-        super().setUp()
-        self.application.algorithm = Application.RS256_ALGORITHM
-        self.application.save()
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.application.algorithm = Application.RS256_ALGORITHM
+        cls.application.save()
 
     def test_id_token_public(self):
         """
@@ -1636,11 +1722,15 @@ class TestOIDCAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
 
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 class TestOIDCAuthorizationCodeHSAlgorithm(BaseAuthorizationCodeTokenView):
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.application.algorithm = Application.HS256_ALGORITHM
+        cls.application.save()
+
     def setUp(self):
         super().setUp()
         self.oauth2_settings.OIDC_RSA_PRIVATE_KEY = None
-        self.application.algorithm = Application.HS256_ALGORITHM
-        self.application.save()
 
     def test_id_token(self):
         """
@@ -1732,10 +1822,11 @@ class TestAuthorizationCodeProtectedResource(BaseTest):
 
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 class TestOIDCAuthorizationCodeProtectedResource(BaseTest):
-    def setUp(self):
-        super().setUp()
-        self.application.algorithm = Application.RS256_ALGORITHM
-        self.application.save()
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.application.algorithm = Application.RS256_ALGORITHM
+        cls.application.save()
 
     def test_id_token_resource_access_allowed(self):
         self.client.login(username="test_user", password="123456")

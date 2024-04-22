@@ -133,6 +133,9 @@ If you would prefer to use just ``HS256`` keys, you don't need to create any
 additional keys, ``django-oauth-toolkit`` will just use the application's
 ``client_secret`` to sign the JWT token.
 
+To be able to verify the JWT's signature using the ``client_secret``, you
+must set the application's ``hash_client_secret`` to ``False``.
+
 In this case, you just need to enable OIDC and add ``openid`` to your list of
 scopes in your ``settings.py``::
 
@@ -236,7 +239,7 @@ just return the same claims as the ID token.
 
 To configure all of these things we need to customize the
 ``OAUTH2_VALIDATOR_CLASS`` in ``django-oauth-toolkit``. Create a new file in
-our project, eg ``my_project/oauth_validator.py``::
+our project, eg ``my_project/oauth_validators.py``::
 
     from oauth2_provider.oauth2_validators import OAuth2Validator
 
@@ -404,7 +407,7 @@ the URLs accordingly.
 ConnectDiscoveryInfoView
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Available at ``/o/.well-known/openid-configuration/``, this view provides auto
+Available at ``/o/.well-known/openid-configuration``, this view provides auto
 discovery information to OIDC clients, telling them the JWT issuer to use, the
 location of the JWKs to verify JWTs with, the token and userinfo endpoints to
 query, and other details.

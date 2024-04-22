@@ -19,9 +19,11 @@ except ImportError:
 
 @pytest.mark.usefixtures("oauth2_settings")
 class TestOAuthLibCoreBackend(TestCase):
-    def setUp(self):
-        self.factory = RequestFactory()
-        self.oauthlib_core = OAuthLibCore()
+    factory = RequestFactory()
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.oauthlib_core = OAuthLibCore()
 
     def test_swappable_server_class(self):
         self.oauth2_settings.OAUTH2_SERVER_CLASS = mock.MagicMock
@@ -60,22 +62,20 @@ AccessTokenModel = get_access_token_model()
 
 @pytest.mark.usefixtures("oauth2_settings")
 class TestOAuthLibCoreBackendErrorHandling(TestCase):
-    def setUp(self):
-        self.factory = RequestFactory()
-        self.oauthlib_core = OAuthLibCore()
-        self.user = UserModel.objects.create_user("john", "test@example.com", "123456")
-        self.app = ApplicationModel.objects.create(
+    factory = RequestFactory()
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.oauthlib_core = OAuthLibCore()
+        cls.user = UserModel.objects.create_user("john", "test@example.com", "123456")
+        cls.app = ApplicationModel.objects.create(
             name="app",
             client_id="app_id",
             client_secret="app_secret",
             client_type=ApplicationModel.CLIENT_CONFIDENTIAL,
             authorization_grant_type=ApplicationModel.GRANT_PASSWORD,
-            user=self.user,
+            user=cls.user,
         )
-
-    def tearDown(self):
-        self.user.delete()
-        self.app.delete()
 
     def test_create_token_response_valid(self):
         payload = (
@@ -153,8 +153,7 @@ class TestCustomOAuthLibCoreBackend(TestCase):
         def _get_extra_credentials(self, request):
             return 1
 
-    def setUp(self):
-        self.factory = RequestFactory()
+    factory = RequestFactory()
 
     def test_create_token_response_gets_extra_credentials(self):
         """
@@ -172,9 +171,7 @@ class TestCustomOAuthLibCoreBackend(TestCase):
 
 
 class TestJSONOAuthLibCoreBackend(TestCase):
-    def setUp(self):
-        self.factory = RequestFactory()
-        self.oauthlib_core = JSONOAuthLibCore()
+    factory = RequestFactory()
 
     def test_application_json_extract_params(self):
         payload = json.dumps(
@@ -185,16 +182,16 @@ class TestJSONOAuthLibCoreBackend(TestCase):
             }
         )
         request = self.factory.post("/o/token/", payload, content_type="application/json")
+        oauthlib_core = JSONOAuthLibCore()
 
-        uri, http_method, body, headers = self.oauthlib_core._extract_params(request)
+        uri, http_method, body, headers = oauthlib_core._extract_params(request)
         self.assertIn("grant_type=password", body)
         self.assertIn("username=john", body)
         self.assertIn("password=123456", body)
 
 
 class TestOAuthLibCore(TestCase):
-    def setUp(self):
-        self.factory = RequestFactory()
+    factory = RequestFactory()
 
     def test_validate_authorization_request_unsafe_query(self):
         auth_headers = {

@@ -12,12 +12,13 @@ from urllib.parse import unquote_plus
 import requests
 from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
-from django.contrib.auth.hashers import check_password
+from django.contrib.auth.hashers import check_password, identify_hasher
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.db.models import Q
 from django.http import HttpRequest
 from django.utils import dateformat, timezone
+from django.utils.crypto import constant_time_compare
 from django.utils.timezone import make_aware
 from django.utils.translation import gettext_lazy as _
 from jwcrypto import jws, jwt
@@ -113,6 +114,18 @@ class OAuth2Validator(RequestValidator):
 
         return auth_string
 
+    def _check_secret(self, provided_secret, stored_secret):
+        """
+        Checks whether the provided client secret is valid.
+
+        Supports both hashed and unhashed secrets.
+        """
+        try:
+            identify_hasher(stored_secret)
+            return check_password(provided_secret, stored_secret)
+        except ValueError:  # Raised if the stored_secret is not hashed.
+            return constant_time_compare(provided_secret, stored_secret)
+
     def _authenticate_basic_auth(self, request):
         """
         Authenticates with HTTP Basic Auth.
@@ -153,7 +166,7 @@ class OAuth2Validator(RequestValidator):
         elif request.client.client_id != client_id:
             log.debug("Failed basic auth: wrong client id %s" % client_id)
             return False
-        elif not check_password(client_secret, request.client.client_secret):
+        elif not self._check_secret(client_secret, request.client.client_secret):
             log.debug("Failed basic auth: wrong client secret %s" % client_secret)
             return False
         else:
@@ -178,7 +191,7 @@ class OAuth2Validator(RequestValidator):
         if self._load_application(client_id, request) is None:
             log.debug("Failed body auth: Application %s does not exists" % client_id)
             return False
-        elif not check_password(client_secret, request.client.client_secret):
+        elif not self._check_secret(client_secret, request.client.client_secret):
             log.debug("Failed body auth: wrong client secret %s" % client_secret)
             return False
         else:
@@ -293,7 +306,6 @@ class OAuth2Validator(RequestValidator):
         proceed only if the client exists and is not of type "Confidential".
         """
         if self._load_application(client_id, request) is not None:
-            log.debug("Application %r has type %r" % (client_id, request.client.client_type))
             return request.client.client_type != AbstractApplication.CLIENT_CONFIDENTIAL
         return False
 
@@ -541,7 +553,7 @@ class OAuth2Validator(RequestValidator):
         Save access and refresh token, If refresh token is issued, remove or
         reuse old refresh token as in rfc:`6`
 
-        @see: https://tools.ietf.org/html/draft-ietf-oauth-v2-31#page-43
+        @see: https://rfc-editor.org/rfc/rfc6749.html#section-6
         """
 
         if "scope" not in token:
@@ -718,8 +730,10 @@ class OAuth2Validator(RequestValidator):
         # validate_refresh_token.
         rt = request.refresh_token_instance
         if not rt.access_token_id:
-            return AccessToken.objects.get(source_refresh_token_id=rt.id).scope
-
+            try:
+                return AccessToken.objects.get(source_refresh_token_id=rt.id).scope
+            except AccessToken.DoesNotExist:
+                return []
         return rt.access_token.scope
 
     def validate_refresh_token(self, refresh_token, client, request, *args, **kwargs):
@@ -950,3 +964,13 @@ class OAuth2Validator(RequestValidator):
 
     def get_additional_claims(self, request):
         return {}
+
+    def is_origin_allowed(self, client_id, origin, request, *args, **kwargs):
+        """Indicate if the given origin is allowed to access the token endpoint
+        via Cross-Origin Resource Sharing (CORS).  CORS is used by browser-based
+        clients, such as Single-Page Applications, to perform the Authorization
+        Code Grant.
+
+        Verifies if request's origin is within Application's allowed origins list.
+        """
+        return request.client.origin_allowed(origin)

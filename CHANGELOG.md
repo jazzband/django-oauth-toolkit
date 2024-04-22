@@ -21,12 +21,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #1292 Introduce setting `AUTHENTICATION_SERVER_EXP_TIME_ZONE` to enable different time zone in case remote
   authentication server doe snot provide EXP in UTC
 
+### WARNING
+* If you are going to revert migration 0006 make note that previously hashed client_secret cannot be reverted
+
 ### Added
+* #1185 Add middleware for adding access token to request
 * #1273 Add caching of loading of OIDC private key.
 * #1285 Add post_logout_redirect_uris field in application views.
+* #1311 Add option to disable client_secret hashing to allow verifying JWTs' signatures.
+* #1337 Gracefully handle expired or deleted refresh tokens, in `validate_user`.
+* #1350 Support Python 3.12 and Django 5.0
+* #1249 Add code_challenge_methods_supported property to auto discovery informations, per [RFC 8414 section 2](https://www.rfc-editor.org/rfc/rfc8414.html#page-7)
 
-- ### Fixed
-* #1284 Allow to logout whith no id_token_hint even if the browser session already expired
+
+### Fixed
+* #1322 Instructions in documentation on how to create a code challenge and code verifier
+* #1284 Allow to logout with no id_token_hint even if the browser session already expired
+* #1296 Added reverse function in migration 0006_alter_application_client_secret
+* #1336 Fix encapsulation for Redirect URI scheme validation
+* #1357 Move import of setting_changed signal from test to django core modules
+* #1268 fix prompt=none redirects to login screen
+
+### Removed
+* #1350 Remove support for Python 3.7 and Django 2.2
 
 ## [2.3.0] 2023-05-31
 
@@ -45,6 +62,7 @@ These issues both result in `{"error": "invalid_client"}`:
 * Add Japanese(日本語) Language Support
 * #1244 implement [OIDC RP-Initiated Logout](https://openid.net/specs/openid-connect-rpinitiated-1_0.html)
 * #1092 Allow Authorization Code flow without a client_secret per [RFC 6749 2.3.1](https://www.rfc-editor.org/rfc/rfc6749.html#section-2.3.1)
+* #1264 Support Django 4.2.
 
 ### Changed
 * #1222 Remove expired ID tokens alongside access tokens in `cleartokens` management command

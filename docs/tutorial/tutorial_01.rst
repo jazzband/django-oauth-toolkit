@@ -91,6 +91,13 @@ point your browser to http://localhost:8000/o/applications/ and add an Applicati
    specifies one of the verified redirection uris. For this tutorial, paste verbatim the value
    `https://www.getpostman.com/oauth2/callback`
 
+ * `Allowed origins`: Browser-based clients use Cross-Origin Resource Sharing (CORS) to request resources from origins other
+   than their own. Provide space-separated list of allowed origins for the token endpoint.
+   The origin must be in the form of `"://" [ ":" ]`, such as `https://login.mydomain.com` or `http://localhost:3000`.
+   Query strings and hash information are not taken into account when validating these URLs.
+   This does not include the 'Redirect URIs' or 'Post Logout Redirect URIs', if those domains will also use the token
+   endpoint, they must be included in this list.
+
  * `Client type`: this value affects the security level at which some communications between the client application and
    the authorization server are performed. For this tutorial choose *Confidential*.
 
@@ -99,15 +106,20 @@ point your browser to http://localhost:8000/o/applications/ and add an Applicati
  * `Name`: this is the name of the client application on the server, and will be displayed on the authorization request
    page, where users can allow/deny access to their data.
 
+ * `Hash client secret`: checking this hashes the client secret on save so it cannot be retrieved later. This should be
+   unchecked if you plan to use OIDC with ``HS256`` and want to check the tokens' signatures using JWT. Otherwise,
+   Django OAuth Toolkit cannot use `Client Secret` to sign the tokens (as it cannot be retrieved later) and the hashed
+   value will be used when signing. This may lead to incompatibilities with some OIDC Relying Party libraries.
+
 Take note of the `Client id` and the `Client Secret` then logout (this is needed only for testing the authorization
 process we'll explain shortly)
 
 Test Your Authorization Server
 ------------------------------
 Your authorization server is ready and can begin issuing access tokens. To test the process you need an OAuth2
-consumer; if you are familiar enough with OAuth2, you can use curl, requests, or anything that speaks http.
+consumer; if you are familiar enough with OAuth2, you can use curl, requests, or anything that speaks HTTP.
 
-For this tutorial, we suggest using [Postman](https://www.postman.com/downloads/) :
+For this tutorial, we suggest using `Postman <https://www.postman.com/downloads/>`_.
 
 Open up the Authorization tab under a request and, for this tutorial, set the fields as follows:
 
@@ -138,7 +150,7 @@ again to the consumer service.
 
 Possible errors:
 
-* loginTemplate: If you are not redirected to the correct page after logging in successfully, you probably need to `setup your login template correctly`__.
+* loginTemplate: If you are not redirected to the correct page after logging in successfully, you probably need to `setup your login template correctly <loginTemplate_>`_.
 * invalid client: client id and client secret needs to be correct. Secret cannot be copied from Django admin after creation.
   (but you can reset it by pasting the same random string into Django admin and into Postman, to avoid recreating the app)
 * invalid callback url: Add the postman link into your app in Django admin.

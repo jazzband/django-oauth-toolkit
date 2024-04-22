@@ -57,3 +57,11 @@ INTROSPECTION_SETTINGS = {
     "READ_SCOPE": "read",
     "WRITE_SCOPE": "write",
 }
+
+ALLOWED_SCHEMES_DEFAULT = {
+    "ALLOWED_SCHEMES": ["https"],
+}
+
+ALLOWED_SCHEMES_HTTP = {
+    "ALLOWED_SCHEMES": ["https", "http"],
+}

@@ -13,7 +13,7 @@ from oauth2_provider.views.generic import ClientProtectedScopedResourceView
 class IntrospectTokenView(ClientProtectedScopedResourceView):
     """
     Implements an endpoint for token introspection based
-    on RFC 7662 https://tools.ietf.org/html/rfc7662
+    on RFC 7662 https://rfc-editor.org/rfc/rfc7662.html
 
     To access this view the request must pass a OAuth2 Bearer Token
     which is allowed to access the scope `introspection`.

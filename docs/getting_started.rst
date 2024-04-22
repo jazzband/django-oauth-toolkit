@@ -42,7 +42,7 @@ Create a Django project::
 
     django-admin startproject iam
 
-This will create a mysite directory in your current directory. With the following estructure::
+This will create a mysite directory in your current directory. With the following structure::
 
     .
     └── iam
@@ -109,7 +109,7 @@ Configure ``users.User`` to be the model used for the ``auth`` application by ad
 
 .. code-block:: python
 
-    AUTH_USER_MODEL='users.User'
+    AUTH_USER_MODEL = 'users.User'
 
 Create inital migration for ``users`` application ``User`` model::
 
@@ -203,7 +203,7 @@ Last change, add ``LOGIN_URL`` to :file:`iam/settings.py`:
 
 .. code-block:: python
 
-    LOGIN_URL='/admin/login/'
+    LOGIN_URL = '/admin/login/'
 
 We will use Django Admin login to make our life easy.
 
@@ -244,7 +244,9 @@ Start the development server::
 
 Point your browser to http://127.0.0.1:8000/o/applications/register/ lets create an application.
 
-Fill the form as show in the screenshot bellow and before save take note of ``Client id`` and ``Client secret`` we will use it in a minute.
+Fill the form as show in the screenshot below and before save take note of ``Client id`` and ``Client secret``, we will use it in a minute.
+
+If you want to use this application with OIDC and ``HS256`` (see :doc:`OpenID Connect <oidc>`), uncheck ``Hash client secret`` to allow verifying tokens using JWT signatures. This means your client secret will be stored in cleartext but is the only way to successfully use signed JWT's.
 
 .. image:: _images/application-register-auth-code.png
    :alt: Authorization code application registration
@@ -266,9 +268,8 @@ Now let's generate an authentication code grant with PKCE (Proof Key for Code Ex
     import hashlib
 
     code_verifier = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(random.randint(43, 128)))
-    code_verifier = base64.urlsafe_b64encode(code_verifier.encode('utf-8'))
 
-    code_challenge = hashlib.sha256(code_verifier).digest()
+    code_challenge = hashlib.sha256(code_verifier.encode('utf-8')).digest()
     code_challenge = base64.urlsafe_b64encode(code_challenge).decode('utf-8').replace('=', '')
 
 Take note of ``code_challenge`` since we will include it in the code flow URL. It should look something like ``XRi41b-5yHtTojvCpXFpsLUnmGFz6xR15c3vpPANAvM``.
@@ -331,7 +332,7 @@ To be more easy to visualize::
 
 The OAuth2 provider will return the follow response:
 
-.. code-block:: javascript
+.. code-block:: json
 
     {
       "access_token": "jooqrnOrNa0BrNWlg68u9sl6SkdFZg",
@@ -401,7 +402,7 @@ To be easier to visualize::
 
 The OAuth2 provider will return the following response:
 
-.. code-block:: javascript
+.. code-block:: json
 
     {
         "access_token": "PaZDOD5UwzbGOFsQr34LQ7JUYOj3yK",
@@ -416,7 +417,7 @@ Next step is :doc:`first tutorial <tutorial/tutorial_01>`.
 .. _Whitson Gordon: https://en.wikipedia.org/wiki/OAuth#cite_note-1
 .. _User: https://docs.djangoproject.com/en/3.0/ref/contrib/auth/#django.contrib.auth.models.User
 .. _Django documentation: https://docs.djangoproject.com/en/3.0/topics/auth/customizing/#using-a-custom-user-model-when-starting-a-project
-.. _RFC6749: https://tools.ietf.org/html/rfc6749#section-1.3
+.. _RFC6749: https://rfc-editor.org/rfc/rfc6749.html#section-1.3
 .. _Grant Types: https://oauth.net/2/grant-types/
 .. _URL: http://127.0.0.1:8000/o/authorize/?response_type=code&client_id=vW1RcAl7Mb0d5gyHNQIAcH110lWoOW2BmWJIero8&redirect_uri=http://127.0.0.1:8000/noexist/callback
 

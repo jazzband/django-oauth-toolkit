@@ -27,63 +27,59 @@ class TestTokenIntrospectionViews(TestCase):
     Tests for Authorized Token Introspection Views
     """
 
-    def setUp(self):
-        self.resource_server_user = UserModel.objects.create_user("resource_server", "test@example.com")
-        self.test_user = UserModel.objects.create_user("bar_user", "dev@example.com")
+    @classmethod
+    def setUpTestData(cls):
+        cls.resource_server_user = UserModel.objects.create_user("resource_server", "test@example.com")
+        cls.test_user = UserModel.objects.create_user("bar_user", "dev@example.com")
 
-        self.application = Application.objects.create(
+        cls.application = Application.objects.create(
             name="Test Application",
             redirect_uris="http://localhost http://example.com http://example.org",
-            user=self.test_user,
+            user=cls.test_user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
             client_secret=CLEARTEXT_SECRET,
         )
 
-        self.resource_server_token = AccessToken.objects.create(
-            user=self.resource_server_user,
+        cls.resource_server_token = AccessToken.objects.create(
+            user=cls.resource_server_user,
             token="12345678900",
-            application=self.application,
+            application=cls.application,
             expires=timezone.now() + datetime.timedelta(days=1),
             scope="introspection",
         )
 
-        self.valid_token = AccessToken.objects.create(
-            user=self.test_user,
+        cls.valid_token = AccessToken.objects.create(
+            user=cls.test_user,
             token="12345678901",
-            application=self.application,
+            application=cls.application,
             expires=timezone.now() + datetime.timedelta(days=1),
             scope="read write dolphin",
         )
 
-        self.invalid_token = AccessToken.objects.create(
-            user=self.test_user,
+        cls.invalid_token = AccessToken.objects.create(
+            user=cls.test_user,
             token="12345678902",
-            application=self.application,
+            application=cls.application,
             expires=timezone.now() + datetime.timedelta(days=-1),
             scope="read write dolphin",
         )
 
-        self.token_without_user = AccessToken.objects.create(
+        cls.token_without_user = AccessToken.objects.create(
             user=None,
             token="12345678903",
-            application=self.application,
+            application=cls.application,
             expires=timezone.now() + datetime.timedelta(days=1),
             scope="read write dolphin",
         )
 
-        self.token_without_app = AccessToken.objects.create(
-            user=self.test_user,
+        cls.token_without_app = AccessToken.objects.create(
+            user=cls.test_user,
             token="12345678904",
             application=None,
             expires=timezone.now() + datetime.timedelta(days=1),
             scope="read write dolphin",
         )
-
-    def tearDown(self):
-        AccessToken.objects.all().delete()
-        Application.objects.all().delete()
-        UserModel.objects.all().delete()
 
     def test_view_forbidden(self):
         """

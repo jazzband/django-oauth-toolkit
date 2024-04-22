@@ -18,8 +18,8 @@ back to the defaults.
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+from django.core.signals import setting_changed
 from django.http import HttpRequest
-from django.test.signals import setting_changed
 from django.urls import reverse
 from django.utils.module_loading import import_string
 from oauthlib.common import Request
@@ -68,6 +68,7 @@ DEFAULTS = {
     "REFRESH_TOKEN_ADMIN_CLASS": "oauth2_provider.admin.RefreshTokenAdmin",
     "REQUEST_APPROVAL_PROMPT": "force",
     "ALLOWED_REDIRECT_URI_SCHEMES": ["http", "https"],
+    "ALLOWED_SCHEMES": ["https"],
     "OIDC_ENABLED": False,
     "OIDC_ISS_ENDPOINT": "",
     "OIDC_USERINFO_ENDPOINT": "",
@@ -296,7 +297,7 @@ class OAuth2ProviderSettings:
         else:
             raise TypeError("request must be a django or oauthlib request: got %r" % request)
         abs_url = django_request.build_absolute_uri(reverse("oauth2_provider:oidc-connect-discovery-info"))
-        return abs_url[: -len("/.well-known/openid-configuration/")]
+        return abs_url[: -len("/.well-known/openid-configuration")]
 
 
 oauth2_settings = OAuth2ProviderSettings(USER_SETTINGS, DEFAULTS, IMPORT_STRINGS, MANDATORY)

@@ -1,7 +1,13 @@
+import logging
+
 from django.db import migrations
-from oauth2_provider import settings
+
 import oauth2_provider.generators
 import oauth2_provider.models
+from oauth2_provider import settings
+
+
+logger = logging.getLogger()
 
 
 def forwards_func(apps, schema_editor):
@@ -12,6 +18,13 @@ def forwards_func(apps, schema_editor):
     applications = Application._default_manager.all()
     for application in applications:
         application.save(update_fields=['client_secret'])
+
+
+def reverse_func(apps, schema_editor):
+    warning_color_code = "\033[93m"
+    end_color_code = "\033[0m"
+    msg = f"\n{warning_color_code}The previously hashed client_secret cannot be reverted, and it remains hashed{end_color_code}"
+    logger.warning(msg)
 
 
 class Migration(migrations.Migration):
@@ -26,5 +39,5 @@ class Migration(migrations.Migration):
             name='client_secret',
             field=oauth2_provider.models.ClientSecretField(blank=True, db_index=True, default=oauth2_provider.generators.generate_client_secret, help_text='Hashed on Save. Copy it now if this is a new secret.', max_length=255),
         ),
-        migrations.RunPython(forwards_func),
+        migrations.RunPython(forwards_func, reverse_func),
     ]
