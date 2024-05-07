@@ -38,6 +38,7 @@ from .models import (
 )
 from .scopes import get_scopes_backend
 from .settings import oauth2_settings
+from .utils import get_timezone
 
 
 log = logging.getLogger("oauth2_provider")
@@ -400,7 +401,11 @@ class OAuth2Validator(RequestValidator):
                 expires = max_caching_time
 
             scope = content.get("scope", "")
-            expires = make_aware(expires) if settings.USE_TZ else expires
+
+            if settings.USE_TZ:
+                expires = make_aware(
+                    expires, timezone=get_timezone(oauth2_settings.AUTHENTICATION_SERVER_EXP_TIME_ZONE)
+                )
 
             access_token, _created = AccessToken.objects.update_or_create(
                 token=token,

@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Fixed
+* #1292 Interpret `EXP` in AccessToken always as UTC instead of own key
+* #1292 Introduce setting `AUTHENTICATION_SERVER_EXP_TIME_ZONE` to enable different time zone in case remote
+  authentication server doe snot provide EXP in UTC
+
 ### WARNING
 * If you are going to revert migration 0006 make note that previously hashed client_secret cannot be reverted
 

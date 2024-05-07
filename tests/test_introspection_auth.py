@@ -29,7 +29,7 @@ Application = get_application_model()
 AccessToken = get_access_token_model()
 UserModel = get_user_model()
 
-exp = datetime.datetime.now() + datetime.timedelta(days=1)
+default_exp = datetime.datetime.now() + datetime.timedelta(days=1)
 
 
 class ScopeResourceView(ScopedProtectedResourceView):
@@ -42,18 +42,19 @@ class ScopeResourceView(ScopedProtectedResourceView):
         return HttpResponse("This is a protected resource", 200)
 
 
+class MockResponse:
+    def __init__(self, json_data, status_code):
+        self.json_data = json_data
+        self.status_code = status_code
+
+    def json(self):
+        return self.json_data
+
+
 def mocked_requests_post(url, data, *args, **kwargs):
     """
     Mock the response from the authentication server
     """
-
-    class MockResponse:
-        def __init__(self, json_data, status_code):
-            self.json_data = json_data
-            self.status_code = status_code
-
-        def json(self):
-            return self.json_data
 
     if "token" in data and data["token"] and data["token"] != "12345678900":
         return MockResponse(
@@ -62,7 +63,7 @@ def mocked_requests_post(url, data, *args, **kwargs):
                 "scope": "read write dolphin",
                 "client_id": "client_id_{}".format(data["token"]),
                 "username": "{}_user".format(data["token"]),
-                "exp": int(calendar.timegm(exp.timetuple())),
+                "exp": int(calendar.timegm(default_exp.timetuple())),
             },
             200,
         )
@@ -70,6 +71,21 @@ def mocked_requests_post(url, data, *args, **kwargs):
     return MockResponse(
         {
             "active": False,
+        },
+        200,
+    )
+
+
+def mocked_introspect_request_short_living_token(url, data, *args, **kwargs):
+    exp = datetime.datetime.now() + datetime.timedelta(minutes=30)
+
+    return MockResponse(
+        {
+            "active": True,
+            "scope": "read write dolphin",
+            "client_id": "client_id_{}".format(data["token"]),
+            "username": "{}_user".format(data["token"]),
+            "exp": int(calendar.timegm(exp.timetuple())),
         },
         200,
     )
@@ -152,24 +168,76 @@ class TestTokenIntrospectionAuth(TestCase):
         self.assertEqual(token.user.username, "foo_user")
         self.assertEqual(token.scope, "read write dolphin")
 
-    @mock.patch("requests.post", side_effect=mocked_requests_post)
-    def test_get_token_from_authentication_server_expires_timezone(self, mock_get):
+    @mock.patch("requests.post", side_effect=mocked_introspect_request_short_living_token)
+    def test_get_token_from_authentication_server_expires_no_timezone(self, mock_get):
         """
         Test method _get_token_from_authentication_server for projects with USE_TZ False
         """
         settings_use_tz_backup = settings.USE_TZ
         settings.USE_TZ = False
         try:
-            self.validator._get_token_from_authentication_server(
+            access_token = self.validator._get_token_from_authentication_server(
                 "foo",
                 oauth2_settings.RESOURCE_SERVER_INTROSPECTION_URL,
                 oauth2_settings.RESOURCE_SERVER_AUTH_TOKEN,
                 oauth2_settings.RESOURCE_SERVER_INTROSPECTION_CREDENTIALS,
             )
+
+            self.assertFalse(access_token.is_expired())
         except ValueError as exception:
             self.fail(str(exception))
         finally:
             settings.USE_TZ = settings_use_tz_backup
+
+    @mock.patch("requests.post", side_effect=mocked_introspect_request_short_living_token)
+    def test_get_token_from_authentication_server_expires_utc_timezone(self, mock_get):
+        """
+        Test method _get_token_from_authentication_server for projects with USE_TZ True and a UTC Timezone
+        """
+        settings_use_tz_backup = settings.USE_TZ
+        settings_time_zone_backup = settings.TIME_ZONE
+        settings.USE_TZ = True
+        settings.TIME_ZONE = "UTC"
+        try:
+            access_token = self.validator._get_token_from_authentication_server(
+                "foo",
+                oauth2_settings.RESOURCE_SERVER_INTROSPECTION_URL,
+                oauth2_settings.RESOURCE_SERVER_AUTH_TOKEN,
+                oauth2_settings.RESOURCE_SERVER_INTROSPECTION_CREDENTIALS,
+            )
+
+            self.assertFalse(access_token.is_expired())
+        except ValueError as exception:
+            self.fail(str(exception))
+        finally:
+            settings.USE_TZ = settings_use_tz_backup
+            settings.TIME_ZONE = settings_time_zone_backup
+
+    @mock.patch("requests.post", side_effect=mocked_introspect_request_short_living_token)
+    def test_get_token_from_authentication_server_expires_non_utc_timezone(self, mock_get):
+        """
+        Test method _get_token_from_authentication_server for projects with USE_TZ True and a non UTC Timezone
+
+        This test is important to check if the UTC Exp. date gets converted correctly
+        """
+        settings_use_tz_backup = settings.USE_TZ
+        settings_time_zone_backup = settings.TIME_ZONE
+        settings.USE_TZ = True
+        settings.TIME_ZONE = "Europe/Amsterdam"
+        try:
+            access_token = self.validator._get_token_from_authentication_server(
+                "foo",
+                oauth2_settings.RESOURCE_SERVER_INTROSPECTION_URL,
+                oauth2_settings.RESOURCE_SERVER_AUTH_TOKEN,
+                oauth2_settings.RESOURCE_SERVER_INTROSPECTION_CREDENTIALS,
+            )
+
+            self.assertFalse(access_token.is_expired())
+        except ValueError as exception:
+            self.fail(str(exception))
+        finally:
+            settings.USE_TZ = settings_use_tz_backup
+            settings.TIME_ZONE = settings_time_zone_backup
 
     @mock.patch("requests.post", side_effect=mocked_requests_post)
     def test_validate_bearer_token(self, mock_get):
