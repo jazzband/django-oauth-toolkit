@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #1357 Move import of setting_changed signal from test to django core modules
 * #1268 fix prompt=none redirects to login screen
 * #1381 fix AttributeError in OAuth2ExtraTokenMiddleware when a custom AccessToken model is used
+* #1288 fixes #1276 which attempt to resolve #1092 for requests that don't have a client_secret per [RFC 6749 4.1.1](https://www.rfc-editor.org/rfc/rfc6749.html#section-4.1.1)
 
 ### Removed
 * #1350 Remove support for Python 3.7 and Django 2.2
