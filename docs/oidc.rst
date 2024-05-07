@@ -4,8 +4,8 @@ OpenID Connect
 OpenID Connect support
 ======================
 
-``django-oauth-toolkit`` supports OpenID Connect (OIDC), which standardizes
-authentication flows and provides a plug and play integration with other
+``django-oauth-toolkit`` supports `OpenID Connect <https://openid.net/specs/openid-connect-core-1_0.html>`_
+(OIDC), which standardizes authentication flows and provides a plug and play integration with other
 systems. OIDC is built on top of OAuth 2.0 to provide:
 
 * Generating ID tokens as part of the login process. These are JWT that

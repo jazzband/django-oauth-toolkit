@@ -146,7 +146,7 @@ OAUTH2_SERVER_CLASS
 ~~~~~~~~~~~~~~~~~~~
 The import string for the ``server_class`` (or ``oauthlib.oauth2.Server`` subclass)
 used in the ``OAuthLibMixin`` that implements OAuth2 grant types. It defaults
-to ``oauthlib.oauth2.Server``, except when OIDC support is enabled, when the
+to ``oauthlib.oauth2.Server``, except when :doc:`oidc` is enabled, when the
 default is ``oauthlib.openid.Server``.
 
 OAUTH2_VALIDATOR_CLASS
@@ -291,7 +291,8 @@ OIDC_ENABLED
 ~~~~~~~~~~~~
 Default: ``False``
 
-Whether or not `OpenID Connect <https://openid.net/specs/openid-connect-core-1_0.html>`_ auth flow is enabled.
+Whether or not :doc:`oidc` support is enabled.
+
 
 OIDC_RSA_PRIVATE_KEY
 ~~~~~~~~~~~~~~~~~~~~
