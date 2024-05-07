@@ -14,26 +14,24 @@ UserModel = get_user_model()
 
 
 class TestProtectedResourceDecorator(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.request_factory = RequestFactory()
-        super().setUpClass()
+    request_factory = RequestFactory()
 
-    def setUp(self):
-        self.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
-        self.application = Application.objects.create(
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
+        cls.application = Application.objects.create(
             name="test_client_credentials_app",
-            user=self.user,
+            user=cls.user,
             client_type=Application.CLIENT_PUBLIC,
             authorization_grant_type=Application.GRANT_CLIENT_CREDENTIALS,
         )
 
-        self.access_token = AccessToken.objects.create(
-            user=self.user,
+        cls.access_token = AccessToken.objects.create(
+            user=cls.user,
             scope="read write",
             expires=timezone.now() + timedelta(seconds=300),
             token="secret-access-token-key",
-            application=self.application,
+            application=cls.application,
         )
 
     def test_access_denied(self):

@@ -1,5 +1,12 @@
+import logging
+
 from django.contrib.auth import authenticate
 from django.utils.cache import patch_vary_headers
+
+from oauth2_provider.models import get_access_token_model
+
+
+log = logging.getLogger(__name__)
 
 
 class OAuth2TokenMiddleware:
@@ -35,4 +42,22 @@ class OAuth2TokenMiddleware:
 
         response = self.get_response(request)
         patch_vary_headers(response, ("Authorization",))
+        return response
+
+
+class OAuth2ExtraTokenMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        authheader = request.META.get("HTTP_AUTHORIZATION", "")
+        if authheader.startswith("Bearer"):
+            tokenstring = authheader.split()[1]
+            AccessToken = get_access_token_model()
+            try:
+                token = AccessToken.objects.get(token=tokenstring)
+                request.access_token = token
+            except AccessToken.DoesNotExist as e:
+                log.exception(e)
+        response = self.get_response(request)
         return response

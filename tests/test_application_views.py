@@ -14,13 +14,10 @@ UserModel = get_user_model()
 
 
 class BaseTest(TestCase):
-    def setUp(self):
-        self.foo_user = UserModel.objects.create_user("foo_user", "test@example.com", "123456")
-        self.bar_user = UserModel.objects.create_user("bar_user", "dev@example.com", "123456")
-
-    def tearDown(self):
-        self.foo_user.delete()
-        self.bar_user.delete()
+    @classmethod
+    def setUpTestData(cls):
+        cls.foo_user = UserModel.objects.create_user("foo_user", "test@example.com", "123456")
+        cls.bar_user = UserModel.objects.create_user("bar_user", "dev@example.com", "123456")
 
 
 @pytest.mark.usefixtures("oauth2_settings")
@@ -57,18 +54,19 @@ class TestApplicationRegistrationView(BaseTest):
         app = get_application_model().objects.get(name="Foo app")
         self.assertEqual(app.user.username, "foo_user")
         app = Application.objects.get()
-        self.assertEquals(app.name, form_data["name"])
-        self.assertEquals(app.client_id, form_data["client_id"])
-        self.assertEquals(app.redirect_uris, form_data["redirect_uris"])
-        self.assertEquals(app.post_logout_redirect_uris, form_data["post_logout_redirect_uris"])
-        self.assertEquals(app.client_type, form_data["client_type"])
-        self.assertEquals(app.authorization_grant_type, form_data["authorization_grant_type"])
-        self.assertEquals(app.algorithm, form_data["algorithm"])
+        self.assertEqual(app.name, form_data["name"])
+        self.assertEqual(app.client_id, form_data["client_id"])
+        self.assertEqual(app.redirect_uris, form_data["redirect_uris"])
+        self.assertEqual(app.post_logout_redirect_uris, form_data["post_logout_redirect_uris"])
+        self.assertEqual(app.client_type, form_data["client_type"])
+        self.assertEqual(app.authorization_grant_type, form_data["authorization_grant_type"])
+        self.assertEqual(app.algorithm, form_data["algorithm"])
 
 
 class TestApplicationViews(BaseTest):
-    def _create_application(self, name, user):
-        app = Application.objects.create(
+    @classmethod
+    def _create_application(cls, name, user):
+        return Application.objects.create(
             name=name,
             redirect_uris="http://example.com",
             post_logout_redirect_uris="http://other_example.com",
@@ -76,20 +74,16 @@ class TestApplicationViews(BaseTest):
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
             user=user,
         )
-        return app
 
-    def setUp(self):
-        super().setUp()
-        self.app_foo_1 = self._create_application("app foo_user 1", self.foo_user)
-        self.app_foo_2 = self._create_application("app foo_user 2", self.foo_user)
-        self.app_foo_3 = self._create_application("app foo_user 3", self.foo_user)
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.app_foo_1 = cls._create_application("app foo_user 1", cls.foo_user)
+        cls.app_foo_2 = cls._create_application("app foo_user 2", cls.foo_user)
+        cls.app_foo_3 = cls._create_application("app foo_user 3", cls.foo_user)
 
-        self.app_bar_1 = self._create_application("app bar_user 1", self.bar_user)
-        self.app_bar_2 = self._create_application("app bar_user 2", self.bar_user)
-
-    def tearDown(self):
-        super().tearDown()
-        get_application_model().objects.all().delete()
+        cls.app_bar_1 = cls._create_application("app bar_user 1", cls.bar_user)
+        cls.app_bar_2 = cls._create_application("app bar_user 2", cls.bar_user)
 
     def test_application_list(self):
         self.client.login(username="foo_user", password="123456")
@@ -115,7 +109,7 @@ class TestApplicationViews(BaseTest):
         response = self.client.get(reverse("oauth2_provider:detail", args=(self.app_bar_1.pk,)))
         self.assertEqual(response.status_code, 404)
 
-    def test_application_udpate(self):
+    def test_application_update(self):
         self.client.login(username="foo_user", password="123456")
 
         form_data = {
@@ -132,8 +126,8 @@ class TestApplicationViews(BaseTest):
         self.assertRedirects(response, reverse("oauth2_provider:detail", args=(self.app_foo_1.pk,)))
 
         self.app_foo_1.refresh_from_db()
-        self.assertEquals(self.app_foo_1.client_id, form_data["client_id"])
-        self.assertEquals(self.app_foo_1.redirect_uris, form_data["redirect_uris"])
-        self.assertEquals(self.app_foo_1.post_logout_redirect_uris, form_data["post_logout_redirect_uris"])
-        self.assertEquals(self.app_foo_1.client_type, form_data["client_type"])
-        self.assertEquals(self.app_foo_1.authorization_grant_type, form_data["authorization_grant_type"])
+        self.assertEqual(self.app_foo_1.client_id, form_data["client_id"])
+        self.assertEqual(self.app_foo_1.redirect_uris, form_data["redirect_uris"])
+        self.assertEqual(self.app_foo_1.post_logout_redirect_uris, form_data["post_logout_redirect_uris"])
+        self.assertEqual(self.app_foo_1.client_type, form_data["client_type"])
+        self.assertEqual(self.app_foo_1.authorization_grant_type, form_data["authorization_grant_type"])

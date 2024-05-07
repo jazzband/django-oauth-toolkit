@@ -2,6 +2,7 @@ from datetime import timedelta
 
 import pytest
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import check_password
 from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.test import TestCase
 from django.test.utils import override_settings
@@ -19,6 +20,8 @@ from oauth2_provider.models import (
 from . import presets
 
 
+CLEARTEXT_SECRET = "1234567890abcdefghijklmnopqrstuvwxyz"
+
 Application = get_application_model()
 Grant = get_grant_model()
 AccessToken = get_access_token_model()
@@ -28,11 +31,9 @@ IDToken = get_id_token_model()
 
 
 class BaseTestModels(TestCase):
-    def setUp(self):
-        self.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
-
-    def tearDown(self):
-        self.user.delete()
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = UserModel.objects.create_user("test_user", "test@example.com", "123456")
 
 
 class TestModels(BaseTestModels):
@@ -53,6 +54,33 @@ class TestModels(BaseTestModels):
         self.assertTrue(access_token.allow_scopes(["write", "read", "read"]))
         self.assertTrue(access_token.allow_scopes([]))
         self.assertFalse(access_token.allow_scopes(["write", "destroy"]))
+
+    def test_hashed_secret(self):
+        app = Application.objects.create(
+            name="test_app",
+            redirect_uris="http://localhost http://example.com http://example.org",
+            user=self.user,
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+            client_secret=CLEARTEXT_SECRET,
+            hash_client_secret=True,
+        )
+
+        self.assertNotEqual(app.client_secret, CLEARTEXT_SECRET)
+        self.assertTrue(check_password(CLEARTEXT_SECRET, app.client_secret))
+
+    def test_unhashed_secret(self):
+        app = Application.objects.create(
+            name="test_app",
+            redirect_uris="http://localhost http://example.com http://example.org",
+            user=self.user,
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+            client_secret=CLEARTEXT_SECRET,
+            hash_client_secret=False,
+        )
+
+        self.assertEqual(app.client_secret, CLEARTEXT_SECRET)
 
     def test_grant_authorization_code_redirect_uris(self):
         app = Application(
@@ -222,19 +250,16 @@ class TestCustomModels(BaseTestModels):
 
 
 class TestGrantModel(BaseTestModels):
-    def setUp(self):
-        super().setUp()
-        self.application = Application.objects.create(
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.application = Application.objects.create(
             name="Test Application",
             redirect_uris="",
-            user=self.user,
+            user=cls.user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
         )
-
-    def tearDown(self):
-        self.application.delete()
-        super().tearDown()
 
     def test_str(self):
         grant = Grant(code="test_code")
@@ -294,32 +319,33 @@ class TestRefreshTokenModel(BaseTestModels):
 
 @pytest.mark.usefixtures("oauth2_settings")
 class TestClearExpired(BaseTestModels):
-    def setUp(self):
-        super().setUp()
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
         # Insert many tokens, both expired and not, and grants.
-        self.num_tokens = 100
-        self.delta_secs = 1000
-        self.now = timezone.now()
-        self.earlier = self.now - timedelta(seconds=self.delta_secs)
-        self.later = self.now + timedelta(seconds=self.delta_secs)
+        cls.num_tokens = 100
+        cls.delta_secs = 1000
+        cls.now = timezone.now()
+        cls.earlier = cls.now - timedelta(seconds=cls.delta_secs)
+        cls.later = cls.now + timedelta(seconds=cls.delta_secs)
 
         app = Application.objects.create(
             name="test_app",
             redirect_uris="http://localhost http://example.com http://example.org",
-            user=self.user,
+            user=cls.user,
             client_type=Application.CLIENT_CONFIDENTIAL,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
         )
         # make 200 access tokens, half current and half expired.
         expired_access_tokens = [
-            AccessToken(token="expired AccessToken {}".format(i), expires=self.earlier)
-            for i in range(self.num_tokens)
+            AccessToken(token="expired AccessToken {}".format(i), expires=cls.earlier)
+            for i in range(cls.num_tokens)
         ]
         for a in expired_access_tokens:
             a.save()
 
         current_access_tokens = [
-            AccessToken(token=f"current AccessToken {i}", expires=self.later) for i in range(self.num_tokens)
+            AccessToken(token=f"current AccessToken {i}", expires=cls.later) for i in range(cls.num_tokens)
         ]
         for a in current_access_tokens:
             a.save()
@@ -331,7 +357,7 @@ class TestClearExpired(BaseTestModels):
                 token=f"expired AT's refresh token {i}",
                 application=app,
                 access_token=expired_access_tokens[i],
-                user=self.user,
+                user=cls.user,
             ).save()
 
         for i in range(1, len(current_access_tokens) // 2, 2):
@@ -339,24 +365,24 @@ class TestClearExpired(BaseTestModels):
                 token=f"current AT's refresh token {i}",
                 application=app,
                 access_token=current_access_tokens[i],
-                user=self.user,
+                user=cls.user,
             ).save()
 
         # Make some grants, half of which are expired.
-        for i in range(self.num_tokens):
+        for i in range(cls.num_tokens):
             Grant(
-                user=self.user,
+                user=cls.user,
                 code=f"old grant code {i}",
                 application=app,
-                expires=self.earlier,
+                expires=cls.earlier,
                 redirect_uri="https://localhost/redirect",
             ).save()
-        for i in range(self.num_tokens):
+        for i in range(cls.num_tokens):
             Grant(
-                user=self.user,
+                user=cls.user,
                 code=f"new grant code {i}",
                 application=app,
-                expires=self.later,
+                expires=cls.later,
                 redirect_uri="https://localhost/redirect",
             ).save()
 
@@ -554,3 +580,29 @@ def test_application_clean(oauth2_settings, application):
     with pytest.raises(ValidationError) as exc:
         application.clean()
     assert "You cannot use HS256" in str(exc.value)
+
+    application.authorization_grant_type = Application.GRANT_AUTHORIZATION_CODE
+
+    # allowed_origins can be only https://
+    application.allowed_origins = "http://example.com"
+    with pytest.raises(ValidationError) as exc:
+        application.clean()
+    assert "allowed origin URI Validation error. invalid_scheme: http://example.com" in str(exc.value)
+    application.allowed_origins = "https://example.com"
+    application.clean()
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.ALLOWED_SCHEMES_DEFAULT)
+def test_application_origin_allowed_default_https(oauth2_settings, cors_application):
+    """Test that http schemes are not allowed because ALLOWED_SCHEMES allows only https"""
+    assert cors_application.origin_allowed("https://example.com")
+    assert not cors_application.origin_allowed("http://example.com")
+
+
+@pytest.mark.django_db
+@pytest.mark.oauth2_settings(presets.ALLOWED_SCHEMES_HTTP)
+def test_application_origin_allowed_http(oauth2_settings, cors_application):
+    """Test that http schemes are allowed because http was added to ALLOWED_SCHEMES"""
+    assert cors_application.origin_allowed("https://example.com")
+    assert cors_application.origin_allowed("http://example.com")

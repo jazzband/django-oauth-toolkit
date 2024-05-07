@@ -2,14 +2,13 @@ from django.views.generic import View
 
 from .mixins import (
     ClientProtectedResourceMixin,
-    OAuthLibMixin,
     ProtectedResourceMixin,
     ReadWriteScopedResourceMixin,
     ScopedResourceMixin,
 )
 
 
-class ProtectedResourceView(ProtectedResourceMixin, OAuthLibMixin, View):
+class ProtectedResourceView(ProtectedResourceMixin, View):
     """
     Generic view protecting resources by providing OAuth2 authentication out of the box
     """
@@ -35,8 +34,7 @@ class ReadWriteScopedResourceView(ReadWriteScopedResourceMixin, ProtectedResourc
     pass
 
 
-class ClientProtectedResourceView(ClientProtectedResourceMixin, OAuthLibMixin, View):
-
+class ClientProtectedResourceView(ClientProtectedResourceMixin, View):
     """View for protecting a resource with client-credentials method.
     This involves allowing access tokens, Basic Auth and plain credentials in request body.
     """
@@ -45,7 +43,6 @@ class ClientProtectedResourceView(ClientProtectedResourceMixin, OAuthLibMixin, V
 
 
 class ClientProtectedScopedResourceView(ScopedResourceMixin, ClientProtectedResourceView):
-
     """Impose scope restrictions if client protection fallsback to access token."""
 
     pass

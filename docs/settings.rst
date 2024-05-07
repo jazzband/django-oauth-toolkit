@@ -1,10 +1,10 @@
 Settings
 ========
 
-Our configurations are all namespaced under the `OAUTH2_PROVIDER` settings with the exception of
-`OAUTH2_PROVIDER_APPLICATION_MODEL, OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL, OAUTH2_PROVIDER_GRANT_MODEL,
-OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL`: this is because of the way Django currently implements
-swappable models. See issue #90 (https://github.com/jazzband/django-oauth-toolkit/issues/90) for details.
+Our configurations are all namespaced under the ``OAUTH2_PROVIDER`` settings with the exception of
+``OAUTH2_PROVIDER_APPLICATION_MODEL``, ``OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL``, ``OAUTH2_PROVIDER_GRANT_MODEL``,
+``OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL``: this is because of the way Django currently implements
+swappable models. See `issue #90 <https://github.com/jazzband/django-oauth-toolkit/issues/90>`_ for details.
 
 For example:
 
@@ -45,7 +45,7 @@ this value if you wrote your own implementation (subclass of
 ACCESS_TOKEN_GENERATOR
 ~~~~~~~~~~~~~~~~~~~~~~
 Import path of a callable used to generate access tokens.
-oauthlib.oauth2.rfc6749.tokens.random_token_generator is (normally) used if not provided.
+``oauthlib.oauth2.rfc6749.tokens.random_token_generator`` is (normally) used if not provided.
 
 ALLOWED_REDIRECT_URI_SCHEMES
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -62,6 +62,17 @@ assigned ports.
 
 Note that you may override ``Application.get_allowed_schemes()`` to set this on
 a per-application basis.
+
+ALLOWED_SCHEMES
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Default: ``["https"]``
+
+A list of schemes that the ``allowed_origins`` field will be validated against.
+Setting this to ``["https"]`` only in production is strongly recommended.
+Adding ``"http"`` to the list is considered to be safe only for local development and testing.
+Note that `OAUTHLIB_INSECURE_TRANSPORT <https://oauthlib.readthedocs.io/en/latest/oauth2/security.html#envvar-OAUTHLIB_INSECURE_TRANSPORT>`_
+environment variable should be also set to allow HTTP origins.
 
 
 APPLICATION_MODEL
@@ -176,15 +187,15 @@ this value if you wrote your own implementation (subclass of
 
 ROTATE_REFRESH_TOKEN
 ~~~~~~~~~~~~~~~~~~~~
-When is set to `True` (default) a new refresh token is issued to the client when the client refreshes an access token.
-If `False`, it will reuse the same refresh token and only update the access token with a new token value.
+When is set to ``True`` (default) a new refresh token is issued to the client when the client refreshes an access token.
+If ``False``, it will reuse the same refresh token and only update the access token with a new token value.
 See also: validator's rotate_refresh_token method can be overridden to make this variable
 (could be usable with expiring refresh tokens, in particular, so that they are rotated
 when close to expiration, theoretically).
 
 REFRESH_TOKEN_GENERATOR
 ~~~~~~~~~~~~~~~~~~~~~~~
-See `ACCESS_TOKEN_GENERATOR`. This is the same but for refresh tokens.
+See `ACCESS_TOKEN_GENERATOR`_. This is the same but for refresh tokens.
 Defaults to access token generator if not provided.
 
 REQUEST_APPROVAL_PROMPT
@@ -199,7 +210,7 @@ Defaults to ``oauth2_provider.scopes.SettingsScopes``, which reads scopes throug
 
 SCOPES
 ~~~~~~
-.. note:: (0.12.0+) Only used if `SCOPES_BACKEND_CLASS` is set to the SettingsScopes default.
+.. note:: (0.12.0+) Only used if ``ACCESS_TOKEN_GENERATOR`` is set to the SettingsScopes default.
 
 A dictionary mapping each scope name to its human description.
 
@@ -207,11 +218,11 @@ A dictionary mapping each scope name to its human description.
 
 DEFAULT_SCOPES
 ~~~~~~~~~~~~~~
-.. note:: (0.12.0+) Only used if `SCOPES_BACKEND_CLASS` is set to the SettingsScopes default.
+.. note:: (0.12.0+) Only used if ``ACCESS_TOKEN_GENERATOR`` is set to the SettingsScopes default.
 
 A list of scopes that should be returned by default.
-This is a subset of the keys of the SCOPES setting.
-By default this is set to '__all__' meaning that the whole set of SCOPES will be returned.
+This is a subset of the keys of the ``SCOPES`` setting.
+By default this is set to ``'__all__'`` meaning that the whole set of ``SCOPES`` will be returned.
 
 .. code-block:: python
 
@@ -219,13 +230,13 @@ By default this is set to '__all__' meaning that the whole set of SCOPES will be
 
 READ_SCOPE
 ~~~~~~~~~~
-.. note:: (0.12.0+) Only used if `SCOPES_BACKEND_CLASS` is set to the SettingsScopes default.
+.. note:: (0.12.0+) Only used if ``ACCESS_TOKEN_GENERATOR`` is set to the SettingsScopes default.
 
 The name of the *read* scope.
 
 WRITE_SCOPE
 ~~~~~~~~~~~
-.. note:: (0.12.0+) Only used if `SCOPES_BACKEND_CLASS` is set to the SettingsScopes default.
+.. note:: (0.12.0+) Only used if ``ACCESS_TOKEN_GENERATOR`` is set to the SettingsScopes default.
 
 The name of the *write* scope.
 
@@ -237,8 +248,8 @@ Only applicable when used with `Django REST Framework <http://django-rest-framew
 RESOURCE_SERVER_INTROSPECTION_URL
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The introspection endpoint for validating token remotely (RFC7662). This URL requires either an authorization
-token (RESOURCE_SERVER_AUTH_TOKEN)
-or HTTP Basic Auth client credentials (RESOURCE_SERVER_INTROSPECTION_CREDENTIALS):
+token (``RESOURCE_SERVER_AUTH_TOKEN``)
+or HTTP Basic Auth client credentials (``RESOURCE_SERVER_INTROSPECTION_CREDENTIALS``).
 
 RESOURCE_SERVER_AUTH_TOKEN
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -247,7 +258,7 @@ The bearer token to authenticate the introspection request towards the introspec
 RESOURCE_SERVER_INTROSPECTION_CREDENTIALS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The HTTP Basic Auth Client_ID and Client_Secret to authenticate the introspection request
-towards the introspect endpoint (RFC7662) as a tuple: (client_id,client_secret).
+towards the introspect endpoint (RFC7662) as a tuple: ``(client_id, client_secret)``.
 
 RESOURCE_SERVER_TOKEN_CACHING_SECONDS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -269,11 +280,6 @@ According to `OAuth 2.0 Security Best Current Practice <https://oauth.net/2/oaut
 
 - Public clients MUST use PKCE `RFC7636 <https://datatracker.ietf.org/doc/html/rfc7636>`_
 - For confidential clients, the use of PKCE `RFC7636 <https://datatracker.ietf.org/doc/html/rfc7636>`_ is RECOMMENDED.
-
-
-
-
-
 
 OIDC_RSA_PRIVATE_KEY
 ~~~~~~~~~~~~~~~~~~~~
@@ -317,7 +323,7 @@ OIDC_RP_INITIATED_LOGOUT_ENABLED
 ~~~~~~~~~~~~~~~~~~~~~~~~
 Default: ``False``
 
-When is set to `False` (default) the `OpenID Connect RP-Initiated Logout <https://openid.net/specs/openid-connect-rpinitiated-1_0.html>`_
+When is set to ``False`` (default) the `OpenID Connect RP-Initiated Logout <https://openid.net/specs/openid-connect-rpinitiated-1_0.html>`_
 endpoint is not enabled. OpenID Connect RP-Initiated Logout enables an :term:`Client` (Relying Party)
 to request that a :term:`Resource Owner` (End User) is logged out at the :term:`Authorization Server` (OpenID Provider).
 
@@ -345,7 +351,7 @@ OIDC_RP_INITIATED_LOGOUT_DELETE_TOKENS
 Default: ``True``
 
 Whether to delete the access, refresh and ID tokens of the user that is being logged out.
-The types of applications for which tokens are deleted can be customized with `RPInitiatedLogoutView.token_types_to_delete`.
+The types of applications for which tokens are deleted can be customized with ``RPInitiatedLogoutView.token_types_to_delete``.
 The default is to delete the tokens of all applications if this flag is enabled.
 
 OIDC_ISS_ENDPOINT
@@ -355,7 +361,7 @@ Default: ``""``
 The URL of the issuer that is used in the ID token JWT and advertised in the
 OIDC discovery metadata. Clients use this location to retrieve the OIDC
 discovery metadata from ``OIDC_ISS_ENDPOINT`` +
-``/.well-known/openid-configuration/``.
+``/.well-known/openid-configuration``.
 
 If unset, the default location is used, eg if ``django-oauth-toolkit`` is
 mounted at ``/o``, it will be ``<server-address>/o``.
@@ -401,7 +407,7 @@ Default: ``0``
 
 Time of sleep in seconds used by ``cleartokens`` management command between batch deletions.
 
-Set this to a non-zero value (e.g. `0.1`) to add a pause between batch sizes to reduce system
+Set this to a non-zero value (e.g. ``0.1``) to add a pause between batch sizes to reduce system
 load when clearing large batches of expired tokens.
 
 

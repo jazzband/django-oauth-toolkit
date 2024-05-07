@@ -6,11 +6,21 @@ from django.urls import reverse
 from django.utils import timezone
 from pytest_django.asserts import assertRedirects
 
-from oauth2_provider.exceptions import ClientIdMissmatch, InvalidOIDCClientError, InvalidOIDCRedirectURIError
+from oauth2_provider.exceptions import (
+    ClientIdMissmatch,
+    InvalidIDTokenError,
+    InvalidOIDCClientError,
+    InvalidOIDCRedirectURIError,
+)
 from oauth2_provider.models import get_access_token_model, get_id_token_model, get_refresh_token_model
 from oauth2_provider.oauth2_validators import OAuth2Validator
 from oauth2_provider.settings import oauth2_settings
-from oauth2_provider.views.oidc import _load_id_token, _validate_claims, validate_logout_request
+from oauth2_provider.views.oidc import (
+    RPInitiatedLogoutView,
+    _load_id_token,
+    _validate_claims,
+    validate_logout_request,
+)
 
 from . import presets
 
@@ -38,13 +48,41 @@ class TestConnectDiscoveryInfoView(TestCase):
             "subject_types_supported": ["public"],
             "id_token_signing_alg_values_supported": ["RS256", "HS256"],
             "token_endpoint_auth_methods_supported": ["client_secret_post", "client_secret_basic"],
+            "code_challenge_methods_supported": ["plain", "S256"],
             "claims_supported": ["sub"],
         }
-        response = self.client.get(reverse("oauth2_provider:oidc-connect-discovery-info"))
+        response = self.client.get("/o/.well-known/openid-configuration")
         self.assertEqual(response.status_code, 200)
         assert response.json() == expected_response
 
-    def expect_json_response_with_rp(self, base):
+    def test_get_connect_discovery_info_deprecated(self):
+        expected_response = {
+            "issuer": "http://localhost/o",
+            "authorization_endpoint": "http://localhost/o/authorize/",
+            "token_endpoint": "http://localhost/o/token/",
+            "userinfo_endpoint": "http://localhost/o/userinfo/",
+            "jwks_uri": "http://localhost/o/.well-known/jwks.json",
+            "scopes_supported": ["read", "write", "openid"],
+            "response_types_supported": [
+                "code",
+                "token",
+                "id_token",
+                "id_token token",
+                "code token",
+                "code id_token",
+                "code id_token token",
+            ],
+            "subject_types_supported": ["public"],
+            "id_token_signing_alg_values_supported": ["RS256", "HS256"],
+            "token_endpoint_auth_methods_supported": ["client_secret_post", "client_secret_basic"],
+            "code_challenge_methods_supported": ["plain", "S256"],
+            "claims_supported": ["sub"],
+        }
+        response = self.client.get("/o/.well-known/openid-configuration/")
+        self.assertEqual(response.status_code, 200)
+        assert response.json() == expected_response
+
+    def expect_json_response_with_rp_logout(self, base):
         expected_response = {
             "issuer": f"{base}",
             "authorization_endpoint": f"{base}/authorize/",
@@ -64,6 +102,7 @@ class TestConnectDiscoveryInfoView(TestCase):
             "subject_types_supported": ["public"],
             "id_token_signing_alg_values_supported": ["RS256", "HS256"],
             "token_endpoint_auth_methods_supported": ["client_secret_post", "client_secret_basic"],
+            "code_challenge_methods_supported": ["plain", "S256"],
             "claims_supported": ["sub"],
             "end_session_endpoint": f"{base}/logout/",
         }
@@ -73,7 +112,7 @@ class TestConnectDiscoveryInfoView(TestCase):
 
     def test_get_connect_discovery_info_with_rp_logout(self):
         self.oauth2_settings.OIDC_RP_INITIATED_LOGOUT_ENABLED = True
-        self.expect_json_response_with_rp(self.oauth2_settings.OIDC_ISS_ENDPOINT)
+        self.expect_json_response_with_rp_logout(self.oauth2_settings.OIDC_ISS_ENDPOINT)
 
     def test_get_connect_discovery_info_without_issuer_url(self):
         self.oauth2_settings.OIDC_ISS_ENDPOINT = None
@@ -97,6 +136,7 @@ class TestConnectDiscoveryInfoView(TestCase):
             "subject_types_supported": ["public"],
             "id_token_signing_alg_values_supported": ["RS256", "HS256"],
             "token_endpoint_auth_methods_supported": ["client_secret_post", "client_secret_basic"],
+            "code_challenge_methods_supported": ["plain", "S256"],
             "claims_supported": ["sub"],
         }
         response = self.client.get(reverse("oauth2_provider:oidc-connect-discovery-info"))
@@ -107,7 +147,7 @@ class TestConnectDiscoveryInfoView(TestCase):
         self.oauth2_settings.OIDC_RP_INITIATED_LOGOUT_ENABLED = True
         self.oauth2_settings.OIDC_ISS_ENDPOINT = None
         self.oauth2_settings.OIDC_USERINFO_ENDPOINT = None
-        self.expect_json_response_with_rp("http://testserver/o")
+        self.expect_json_response_with_rp_logout("http://testserver/o")
 
     def test_get_connect_discovery_info_without_rsa_key(self):
         self.oauth2_settings.OIDC_RSA_PRIVATE_KEY = None
@@ -187,7 +227,9 @@ def mock_request_for(user):
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("ALWAYS_PROMPT", [True, False])
-def test_validate_logout_request(oidc_tokens, public_application, other_user, rp_settings, ALWAYS_PROMPT):
+def test_deprecated_validate_logout_request(
+    oidc_tokens, public_application, other_user, rp_settings, ALWAYS_PROMPT
+):
     rp_settings.OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT = ALWAYS_PROMPT
     oidc_tokens = oidc_tokens
     application = oidc_tokens.application
@@ -229,6 +271,13 @@ def test_validate_logout_request(oidc_tokens, public_application, other_user, rp
         client_id=client_id,
         post_logout_redirect_uri="http://example.org",
     ) == (ALWAYS_PROMPT, ("http://example.org", application), oidc_tokens.user)
+    with pytest.raises(InvalidIDTokenError):
+        validate_logout_request(
+            request=mock_request_for(oidc_tokens.user),
+            id_token_hint="111",
+            client_id=public_application.client_id,
+            post_logout_redirect_uri="http://other.org",
+        )
     with pytest.raises(ClientIdMissmatch):
         validate_logout_request(
             request=mock_request_for(oidc_tokens.user),
@@ -264,6 +313,105 @@ def test_validate_logout_request(oidc_tokens, public_application, other_user, rp
             client_id=client_id,
             post_logout_redirect_uri="http://other.org",
         )
+    with pytest.raises(InvalidOIDCRedirectURIError):
+        rp_settings.OIDC_RP_INITIATED_LOGOUT_STRICT_REDIRECT_URIS = True
+        validate_logout_request(
+            request=mock_request_for(oidc_tokens.user),
+            id_token_hint=None,
+            client_id=public_application.client_id,
+            post_logout_redirect_uri="http://other.org",
+        )
+
+
+@pytest.mark.django_db
+def test_validate_logout_request(oidc_tokens, public_application, rp_settings):
+    oidc_tokens = oidc_tokens
+    application = oidc_tokens.application
+    client_id = application.client_id
+    id_token = oidc_tokens.id_token
+    view = RPInitiatedLogoutView()
+    view.request = mock_request_for(oidc_tokens.user)
+    assert view.validate_logout_request(
+        id_token_hint=None,
+        client_id=None,
+        post_logout_redirect_uri=None,
+    ) == (None, None)
+    assert view.validate_logout_request(
+        id_token_hint=None,
+        client_id=client_id,
+        post_logout_redirect_uri=None,
+    ) == (application, None)
+    assert view.validate_logout_request(
+        id_token_hint=None,
+        client_id=client_id,
+        post_logout_redirect_uri="http://example.org",
+    ) == (application, None)
+    assert view.validate_logout_request(
+        id_token_hint=id_token,
+        client_id=None,
+        post_logout_redirect_uri="http://example.org",
+    ) == (application, oidc_tokens.user)
+    assert view.validate_logout_request(
+        id_token_hint=id_token,
+        client_id=client_id,
+        post_logout_redirect_uri="http://example.org",
+    ) == (application, oidc_tokens.user)
+    with pytest.raises(InvalidIDTokenError):
+        view.validate_logout_request(
+            id_token_hint="111",
+            client_id=public_application.client_id,
+            post_logout_redirect_uri="http://other.org",
+        )
+    with pytest.raises(ClientIdMissmatch):
+        view.validate_logout_request(
+            id_token_hint=id_token,
+            client_id=public_application.client_id,
+            post_logout_redirect_uri="http://other.org",
+        )
+    with pytest.raises(InvalidOIDCClientError):
+        view.validate_logout_request(
+            id_token_hint=None,
+            client_id=None,
+            post_logout_redirect_uri="http://example.org",
+        )
+    with pytest.raises(InvalidOIDCRedirectURIError):
+        view.validate_logout_request(
+            id_token_hint=None,
+            client_id=client_id,
+            post_logout_redirect_uri="example.org",
+        )
+    with pytest.raises(InvalidOIDCRedirectURIError):
+        view.validate_logout_request(
+            id_token_hint=None,
+            client_id=client_id,
+            post_logout_redirect_uri="imap://example.org",
+        )
+    with pytest.raises(InvalidOIDCRedirectURIError):
+        view.validate_logout_request(
+            id_token_hint=None,
+            client_id=client_id,
+            post_logout_redirect_uri="http://other.org",
+        )
+    with pytest.raises(InvalidOIDCRedirectURIError):
+        rp_settings.OIDC_RP_INITIATED_LOGOUT_STRICT_REDIRECT_URIS = True
+        view.validate_logout_request(
+            id_token_hint=None,
+            client_id=public_application.client_id,
+            post_logout_redirect_uri="http://other.org",
+        )
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("ALWAYS_PROMPT", [True, False])
+def test_must_prompt(oidc_tokens, other_user, rp_settings, ALWAYS_PROMPT):
+    rp_settings.OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT = ALWAYS_PROMPT
+    oidc_tokens = oidc_tokens
+    assert RPInitiatedLogoutView(request=mock_request_for(oidc_tokens.user)).must_prompt(None) is True
+    assert (
+        RPInitiatedLogoutView(request=mock_request_for(oidc_tokens.user)).must_prompt(oidc_tokens.user)
+        == ALWAYS_PROMPT
+    )
+    assert RPInitiatedLogoutView(request=mock_request_for(other_user)).must_prompt(oidc_tokens.user) is True
 
 
 def test__load_id_token():
