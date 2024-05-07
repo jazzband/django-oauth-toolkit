@@ -82,7 +82,7 @@ Let's register your application.
 
 You need to be logged in before registration. So, go to http://localhost:8000/admin and log in. After that
 point your browser to http://localhost:8000/o/applications/ and add an Application instance.
-`Client id` and `Client Secret` are automatically generated; you have to provide the rest of the informations:
+`Client id` and `Client Secret` are automatically generated; you have to provide the rest of the information:
 
  * `User`: the owner of the Application (e.g. a developer, or the currently logged in user.)
 

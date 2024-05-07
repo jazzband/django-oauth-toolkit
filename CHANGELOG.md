@@ -31,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #1311 Add option to disable client_secret hashing to allow verifying JWTs' signatures.
 * #1337 Gracefully handle expired or deleted refresh tokens, in `validate_user`.
 * #1350 Support Python 3.12 and Django 5.0
-* #1249 Add code_challenge_methods_supported property to auto discovery informations, per [RFC 8414 section 2](https://www.rfc-editor.org/rfc/rfc8414.html#page-7)
+* #1249 Add code_challenge_methods_supported property to auto discovery information, per [RFC 8414 section 2](https://www.rfc-editor.org/rfc/rfc8414.html#page-7)
 
 
 ### Fixed
@@ -144,7 +144,7 @@ This is a major release with **BREAKING** changes. Please make sure to review th
 
 ### Added
 * #969 Add batching of expired token deletions in `cleartokens` management command and `models.clear_expired()`
-  to improve performance for removal of large numers of expired tokens. Configure with
+  to improve performance for removal of large numbers of expired tokens. Configure with
   [`CLEAR_EXPIRED_TOKENS_BATCH_SIZE`](https://django-oauth-toolkit.readthedocs.io/en/latest/settings.html#clear-expired-tokens-batch-size) and
   [`CLEAR_EXPIRED_TOKENS_BATCH_INTERVAL`](https://django-oauth-toolkit.readthedocs.io/en/latest/settings.html#clear-expired-tokens-batch-interval).
 * #1070 Add a Celery task for clearing expired tokens, e.g. to be scheduled as a [periodic task](https://docs.celeryproject.org/en/stable/userguide/periodic-tasks.html).
@@ -229,7 +229,7 @@ This is a major release with **BREAKING** changes. Please make sure to review th
 
 ### Added
 * #917 Documentation improvement for Access Token expiration.
-* #916 (for DOT contributors) Added `tox -e livedocs` which launches a local web server on `locahost:8000`
+* #916 (for DOT contributors) Added `tox -e livedocs` which launches a local web server on `localhost:8000`
   to display Sphinx documentation with live updates as you edit.
 * #891 (for DOT contributors) Added [details](https://django-oauth-toolkit.readthedocs.io/en/latest/contributing.html)
   on how best to contribute to this project.
@@ -434,7 +434,7 @@ This is a major release with **BREAKING** changes. Please make sure to review th
 * #185: fixed vulnerabilities on Basic authentication
 * #173: ProtectResourceMixin now allows OPTIONS requests
 * Fixed `client_id` and `client_secret` characters set
-* #169: hide sensitive informations in error emails
+* #169: hide sensitive information in error emails
 * #161: extend search to all token types when revoking a token
 * #160: return empty response on successful token revocation
 * #157: skip authorization form with ``skip_authorization_completely`` class field

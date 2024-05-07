@@ -36,7 +36,7 @@ obtained in :doc:`part 1 <tutorial_01>`. If your application type is `Confidenti
     token=XXXX&client_id=XXXX&client_secret=XXXX
 
 
-The server will respond wih a ``200`` status code on successful revocation. You can use ``curl`` to make a revoke request on your server. If you have access to a local installation of your authorization server, you can test revoking a token with a request like that shown below, for a `Confidential` client.
+The server will respond with a ``200`` status code on successful revocation. You can use ``curl`` to make a revoke request on your server. If you have access to a local installation of your authorization server, you can test revoking a token with a request like that shown below, for a `Confidential` client.
 
 ::
 

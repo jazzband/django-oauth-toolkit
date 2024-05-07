@@ -104,10 +104,10 @@ class OAuth2Validator(RequestValidator):
         if not auth:
             return None
 
-        splitted = auth.split(" ", 1)
-        if len(splitted) != 2:
+        split = auth.split(" ", 1)
+        if len(split) != 2:
             return None
-        auth_type, auth_string = splitted
+        auth_type, auth_string = split
 
         if auth_type != "Basic":
             return None
@@ -927,7 +927,7 @@ class OAuth2Validator(RequestValidator):
         return Application.objects.filter(client_id__in=audience).first()
 
     def validate_user_match(self, id_token_hint, scopes, claims, request):
-        # TODO: Fix to validate when necessary acording
+        # TODO: Fix to validate when necessary according
         # https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/request_validator.py#L556
         # http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest id_token_hint section
         return True
