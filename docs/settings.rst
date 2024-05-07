@@ -146,7 +146,7 @@ OAUTH2_SERVER_CLASS
 ~~~~~~~~~~~~~~~~~~~
 The import string for the ``server_class`` (or ``oauthlib.oauth2.Server`` subclass)
 used in the ``OAuthLibMixin`` that implements OAuth2 grant types. It defaults
-to ``oauthlib.oauth2.Server``, except when OIDC support is enabled, when the
+to ``oauthlib.oauth2.Server``, except when :doc:`oidc` is enabled, when the
 default is ``oauthlib.openid.Server``.
 
 OAUTH2_VALIDATOR_CLASS
@@ -286,6 +286,13 @@ According to `OAuth 2.0 Security Best Current Practice <https://oauth.net/2/oaut
 
 - Public clients MUST use PKCE `RFC7636 <https://datatracker.ietf.org/doc/html/rfc7636>`_
 - For confidential clients, the use of PKCE `RFC7636 <https://datatracker.ietf.org/doc/html/rfc7636>`_ is RECOMMENDED.
+
+OIDC_ENABLED
+~~~~~~~~~~~~
+Default: ``False``
+
+Whether or not :doc:`oidc` support is enabled.
+
 
 OIDC_RSA_PRIVATE_KEY
 ~~~~~~~~~~~~~~~~~~~~
