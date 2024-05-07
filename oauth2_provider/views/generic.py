@@ -35,7 +35,6 @@ class ReadWriteScopedResourceView(ReadWriteScopedResourceMixin, ProtectedResourc
 
 
 class ClientProtectedResourceView(ClientProtectedResourceMixin, View):
-
     """View for protecting a resource with client-credentials method.
     This involves allowing access tokens, Basic Auth and plain credentials in request body.
     """
@@ -44,7 +43,6 @@ class ClientProtectedResourceView(ClientProtectedResourceMixin, View):
 
 
 class ClientProtectedScopedResourceView(ScopedResourceMixin, ClientProtectedResourceView):
-
     """Impose scope restrictions if client protection fallsback to access token."""
 
     pass

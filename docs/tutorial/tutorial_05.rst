@@ -38,7 +38,7 @@ See the `RabbitMQ Installing on Windows <https://www.rabbitmq.com/install-window
 
 Add Celery
 ----------
-Make sure you virtualenv is active and install `celery` and
+Make sure you virtualenv is active and install ``celery`` and
 `django-celery-beat <https://django-celery-beat.readthedocs.io/>`_.
 
 ::
@@ -58,7 +58,7 @@ in the database and adds a Django Admin interface for configuring them.
     }
 
 
-Now add a new file to your app to add Celery: ``tutorial/celery.py``:
+Now add a new file to your app to add Celery: :file:`tutorial/celery.py`:
 
 .. code-block:: python
 
@@ -74,8 +74,8 @@ Now add a new file to your app to add Celery: ``tutorial/celery.py``:
     # Load task modules from all registered Django apps.
     app.autodiscover_tasks()
 
-This will autodiscover any ``tasks.py`` files in the list of installed apps.
-We'll add ours now in ``tutorial/tasks.py``:
+This will autodiscover any :file:`tasks.py` files in the list of installed apps.
+We'll add ours now in :file:`tutorial/tasks.py`:
 
 .. code-block:: python
 
@@ -87,7 +87,7 @@ We'll add ours now in ``tutorial/tasks.py``:
 
         clear_expired()
 
-Finally, update ``tutorial/__init__.py`` to make sure Celery gets loaded when the app starts up:
+Finally, update :file:`tutorial/__init__.py` to make sure Celery gets loaded when the app starts up:
 
 .. code-block:: python
 
@@ -162,8 +162,6 @@ References
 
 The preceding is based on these references:
 
-https://docs.celeryq.dev/en/stable/django/first-steps-with-django.html
-
-https://docs.celeryq.dev/en/stable/userguide/periodic-tasks.html#beat-custom-schedulers
-
-https://django-celery-beat.readthedocs.io/en/latest/index.html
+* https://docs.celeryq.dev/en/stable/django/first-steps-with-django.html
+* https://docs.celeryq.dev/en/stable/userguide/periodic-tasks.html#beat-custom-schedulers
+* https://django-celery-beat.readthedocs.io/en/latest/index.html
