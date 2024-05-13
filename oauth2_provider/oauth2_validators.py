@@ -335,7 +335,8 @@ class OAuth2Validator(RequestValidator):
 
     def get_or_create_user_from_content(self, content):
         """
-        An optional layer to define where to store the profile in `UserModel` or a separate model. For example `UserOAuth`, where `user = models.OneToOneField(UserModel)` .
+        An optional layer to define where to store the profile in `UserModel` or a separate model.
+        For example `UserOAuth`, where `user = models.OneToOneField(UserModel)` .
 
         The function is called after checking that username is in the content.
 
