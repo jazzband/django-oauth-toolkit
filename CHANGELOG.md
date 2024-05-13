@@ -15,19 +15,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   -->
 
 ## [unreleased]
-
+### Added
+### Changed
+### Deprecated
+### Removed
 ### Fixed
-* #1292 Interpret `EXP` in AccessToken always as UTC instead of own key
-* #1292 Introduce setting `AUTHENTICATION_SERVER_EXP_TIME_ZONE` to enable different time zone in case remote
-  authentication server doe snot provide EXP in UTC
+### Security
+
+## [2.4.0] - 2024-05-08
 
 ### WARNING
-* If you are going to revert migration 0006 make note that previously hashed client_secret cannot be reverted
+Issues caused by **Release 2.0.0 breaking changes** continue to be logged. Please **make sure to carefully read these release notes** before
+performing a MAJOR upgrade to 2.x.
+
+These issues both result in `{"error": "invalid_client"}`:
+
+1. The application client secret is now hashed upon save. You must copy it before it is saved. Using the hashed value will fail.
+
+2. `PKCE_REQUIRED` is now `True` by default. You should use PKCE with your client or set `PKCE_REQUIRED=False` if you are unable to fix the client.
+
+3. If you are going to revert migration 0006 make note that previously hashed client_secret cannot be reverted!
 
 ### Added
-* #1185 Add middleware for adding access token to request
-* #1273 Add caching of loading of OIDC private key.
-* #1285 Add post_logout_redirect_uris field in application views.
+* #1304 Add `OAuth2ExtraTokenMiddleware` for adding access token to request.
+  See [Setup a provider](https://django-oauth-toolkit.readthedocs.io/en/latest/tutorial/tutorial_03.html#setup-a-provider) in the Tutorial.
+* #1273 Performance improvement: Add caching of loading of OIDC private key.
+* #1285 Add `post_logout_redirect_uris` field in the [Application Registration form](https://django-oauth-toolkit.readthedocs.io/en/latest/templates.html#application-registration-form-html)
 * #1311 Add option to disable client_secret hashing to allow verifying JWTs' signatures.
 * #1337 Gracefully handle expired or deleted refresh tokens, in `validate_user`.
 * #1350 Support Python 3.12 and Django 5.0
@@ -36,6 +49,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ### Fixed
+* #1292 Interpret `EXP` in AccessToken always as UTC instead of (possibly) local timezone.
+* #1292 Introduce setting `AUTHENTICATION_SERVER_EXP_TIME_ZONE` to enable different time zone in case remote
+  authentication server doe snot provide EXP in UTC
 * #1322 Instructions in documentation on how to create a code challenge and code verifier
 * #1284 Allow to logout with no id_token_hint even if the browser session already expired
 * #1296 Added reverse function in migration 0006_alter_application_client_secret
