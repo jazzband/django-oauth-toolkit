@@ -336,9 +336,7 @@ class TestOAuth2Validator(TransactionTestCase):
         assert create_refresh_token_mock.call_count == 1
 
     def test_get_or_create_user_from_content(self):
-        content = {
-            "username": "test_user"
-        }
+        content = {"username": "test_user"}
         UserModel.objects.filter(username=content["username"]).delete()
         user = self.validator.get_or_create_user_from_content(content)
 
