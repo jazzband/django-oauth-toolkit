@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #1337 Gracefully handle expired or deleted refresh tokens, in `validate_user`.
 * #1350 Support Python 3.12 and Django 5.0
 * #1249 Add code_challenge_methods_supported property to auto discovery information, per [RFC 8414 section 2](https://www.rfc-editor.org/rfc/rfc8414.html#page-7)
+* #1328 Adds the ability to define how to store a user profile
 
 
 ### Fixed
