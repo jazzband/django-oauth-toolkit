@@ -149,8 +149,8 @@ scopes in your ``settings.py``::
     }
 
 .. note::
-    If you want to enable ``RS256`` at a later date, you can do so - just add
-    the private key as described above.
+    ``RS256`` is the more secure algorithm for signing your JWTs. Only use ``HS256`` if you must.
+    Using ``RS256`` will allow you to keep your ``client_secret`` hashed.
 
 
 RP-Initiated Logout

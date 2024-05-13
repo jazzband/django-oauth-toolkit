@@ -41,7 +41,9 @@ These issues both result in `{"error": "invalid_client"}`:
   See [Setup a provider](https://django-oauth-toolkit.readthedocs.io/en/latest/tutorial/tutorial_03.html#setup-a-provider) in the Tutorial.
 * #1273 Performance improvement: Add caching of loading of OIDC private key.
 * #1285 Add `post_logout_redirect_uris` field in the [Application Registration form](https://django-oauth-toolkit.readthedocs.io/en/latest/templates.html#application-registration-form-html)
-* #1311 Add option to disable client_secret hashing to allow verifying JWTs' signatures.
+* #1311 (**Security**) Add option to disable client_secret hashing to allow verifying JWTs' signatures when using
+  [HS256 keys](https://django-oauth-toolkit.readthedocs.io/en/latest/oidc.html#using-hs256-keys).
+  This means your client secret will be stored in cleartext but is the only way to successfully use HS256 signed JWT's.
 * #1337 Gracefully handle expired or deleted refresh tokens, in `validate_user`.
 * #1350 Support Python 3.12 and Django 5.0
 * #1249 Add code_challenge_methods_supported property to auto discovery information, per [RFC 8414 section 2](https://www.rfc-editor.org/rfc/rfc8414.html#page-7)
