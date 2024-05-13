@@ -335,6 +335,14 @@ class TestOAuth2Validator(TransactionTestCase):
         assert create_access_token_mock.call_count == 1
         assert create_refresh_token_mock.call_count == 1
 
+    def test_get_or_create_user_from_content(self):
+        content = {"username": "test_user"}
+        UserModel.objects.filter(username=content["username"]).delete()
+        user = self.validator.get_or_create_user_from_content(content)
+
+        self.assertIsNotNone(user)
+        self.assertEqual(content["username"], user.username)
+
 
 class TestOAuth2ValidatorProvidesErrorData(TransactionTestCase):
     """These test cases check that the recommended error codes are returned

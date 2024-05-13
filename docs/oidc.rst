@@ -404,6 +404,17 @@ In the docs below, it assumes that you have mounted the
 the URLs accordingly.
 
 
+Define where to store the profile
+=================================
+
+.. py:function:: OAuth2Validator.get_or_create_user_from_content(content)
+
+An optional layer to define where to store the profile in ``UserModel`` or a separate model. For example ``UserOAuth``, where ``user = models.OneToOneField(UserModel)``.
+
+The function is called after checking that the username is present in the content.
+
+:return: An instance of the ``UserModel`` representing the user fetched or created.
+
 ConnectDiscoveryInfoView
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
