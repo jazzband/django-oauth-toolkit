@@ -15,35 +15,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   -->
 
 ## [unreleased]
-
+### Added
+### Changed
+### Deprecated
+### Removed
 ### Fixed
-* #1292 Interpret `EXP` in AccessToken always as UTC instead of own key
-* #1292 Introduce setting `AUTHENTICATION_SERVER_EXP_TIME_ZONE` to enable different time zone in case remote
-  authentication server doe snot provide EXP in UTC
+### Security
+
+## [2.4.0] - 2024-05-13
 
 ### WARNING
-* If you are going to revert migration 0006 make note that previously hashed client_secret cannot be reverted
+Issues caused by **Release 2.0.0 breaking changes** continue to be logged. Please **make sure to carefully read these release notes** before
+performing a MAJOR upgrade to 2.x.
+
+These issues both result in `{"error": "invalid_client"}`:
+
+1. The application client secret is now hashed upon save. You must copy it before it is saved. Using the hashed value will fail.
+
+2. `PKCE_REQUIRED` is now `True` by default. You should use PKCE with your client or set `PKCE_REQUIRED=False` if you are unable to fix the client.
+
+If you are going to revert migration 0006 make note that previously hashed client_secret cannot be reverted!
 
 ### Added
-* #1185 Add middleware for adding access token to request
-* #1273 Add caching of loading of OIDC private key.
-* #1285 Add post_logout_redirect_uris field in application views.
-* #1311 Add option to disable client_secret hashing to allow verifying JWTs' signatures.
-* #1337 Gracefully handle expired or deleted refresh tokens, in `validate_user`.
+* #1304 Add `OAuth2ExtraTokenMiddleware` for adding access token to request.
+  See [Setup a provider](https://django-oauth-toolkit.readthedocs.io/en/latest/tutorial/tutorial_03.html#setup-a-provider) in the Tutorial.
+* #1273 Performance improvement: Add caching of loading of OIDC private key.
+* #1285 Add `post_logout_redirect_uris` field in the [Application Registration form](https://django-oauth-toolkit.readthedocs.io/en/latest/templates.html#application-registration-form-html)
+* #1311,#1334 (**Security**) Add option to disable client_secret hashing to allow verifying JWTs' signatures when using
+  [HS256 keys](https://django-oauth-toolkit.readthedocs.io/en/latest/oidc.html#using-hs256-keys).
+  This means your client secret will be stored in cleartext but is the only way to successfully use HS256 signed JWT's.
 * #1350 Support Python 3.12 and Django 5.0
-* #1249 Add code_challenge_methods_supported property to auto discovery information, per [RFC 8414 section 2](https://www.rfc-editor.org/rfc/rfc8414.html#page-7)
-* #1328 Adds the ability to define how to store a user profile
-
+* #1367 Add `code_challenge_methods_supported` property to auto discovery information, per [RFC 8414 section 2](https://www.rfc-editor.org/rfc/rfc8414.html#page-7)
+* #1328 Adds the ability to [define how to store a user profile](https://django-oauth-toolkit.readthedocs.io/en/latest/oidc.html#define-where-to-store-the-profile).
 
 ### Fixed
-* #1322 Instructions in documentation on how to create a code challenge and code verifier
-* #1284 Allow to logout with no id_token_hint even if the browser session already expired
-* #1296 Added reverse function in migration 0006_alter_application_client_secret
-* #1336 Fix encapsulation for Redirect URI scheme validation
-* #1357 Move import of setting_changed signal from test to django core modules
-* #1268 fix prompt=none redirects to login screen
-* #1381 fix AttributeError in OAuth2ExtraTokenMiddleware when a custom AccessToken model is used
-* #1288 fixes #1276 which attempt to resolve #1092 for requests that don't have a client_secret per [RFC 6749 4.1.1](https://www.rfc-editor.org/rfc/rfc6749.html#section-4.1.1)
+* #1292 Interpret `EXP` in AccessToken always as UTC instead of (possibly) local timezone.
+  Use setting `AUTHENTICATION_SERVER_EXP_TIME_ZONE` to enable different time zone in case the remote
+  authentication server does not provide EXP in UTC.
+* #1323 Fix instructions in [documentation](https://django-oauth-toolkit.readthedocs.io/en/latest/getting_started.html#authorization-code)
+  on how to create a code challenge and code verifier
+* #1284 Fix a 500 error when trying to logout with no id_token_hint even if the browser session already expired.
+* #1296 Added reverse function in migration `0006_alter_application_client_secret`. Note that reversing this migration cannot undo a hashed `client_secret`.
+* #1345 Fix encapsulation for Redirect URI scheme validation. Deprecates `RedirectURIValidator` in favor of `AllowedURIValidator`.
+* #1357 Move import of setting_changed signal from test to django core modules.
+* #1361 Fix prompt=none redirects to login screen
+* #1380 Fix AttributeError in OAuth2ExtraTokenMiddleware when a custom AccessToken model is used.
+* #1288 Fix #1276 which attempted to resolve #1092 for requests that don't have a client_secret per [RFC 6749 4.1.1](https://www.rfc-editor.org/rfc/rfc6749.html#section-4.1.1)
+* #1337 Gracefully handle expired or deleted refresh tokens, in `validate_user`.
+* Various documentation improvements: #1410, #1408, #1405, #1399, #1401, #1396, #1375, #1162, #1315, #1307
 
 ### Removed
 * #1350 Remove support for Python 3.7 and Django 2.2
