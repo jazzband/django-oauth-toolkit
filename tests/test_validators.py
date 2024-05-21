@@ -8,7 +8,7 @@ from oauth2_provider.validators import AllowedURIValidator, RedirectURIValidator
 @pytest.mark.usefixtures("oauth2_settings")
 class TestValidators(TestCase):
     def test_validate_good_uris(self):
-        validator = RedirectURIValidator(allowed_schemes=["https"])
+        validator = RedirectURIValidator(allowed_schemes=["https", "http"])
         good_uris = [
             "https://example.com/",
             "https://example.org/?key=val",
@@ -24,7 +24,7 @@ class TestValidators(TestCase):
             validator(uri)
 
     def test_validate_custom_uri_scheme(self):
-        validator = RedirectURIValidator(allowed_schemes=["my-scheme", "https", "git+ssh"])
+        validator = RedirectURIValidator(allowed_schemes=["my-scheme", "https", "git+ssh", "http"])
         good_uris = [
             "my-scheme://example.com",
             "my-scheme://example",
