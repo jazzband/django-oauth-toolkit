@@ -205,9 +205,8 @@ class TestOAuthLibCore(TestCase):
 
 @pytest.mark.parametrize(
     "uri, expected_result",
-
     [
-        ("http://localhost:3456", True), # localhost is supported
+        ("http://localhost:3456", True),  # localhost is supported
         # only http scheme is supported for loopback URIs
         ("https://127.0.0.1:3456", False),
         ("http://127.0.0.1:3456", True),
