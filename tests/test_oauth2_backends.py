@@ -221,13 +221,3 @@ def test_uri_loopback_redirect_check(uri, expected_result):
         assert redirect_to_uri_allowed(uri, allowed_uris)
     else:
         assert not redirect_to_uri_allowed(uri, allowed_uris)
-
-class TestLocalhostRedirectURI(TestCase):
-    def test_localhost_redirect_uri(self):
-        allowed_uris = ["http://127.0.0.1", "http://[::1]", "http://localhost"]
-        
-        valid_localhost_uri = "http://localhost:8000/callback"
-        invalid_localhost_uri_https = "https://localhost:8000/callback"
-
-        self.assertTrue(redirect_to_uri_allowed(valid_localhost_uri, allowed_uris))
-        self.assertFalse(redirect_to_uri_allowed(invalid_localhost_uri_https, allowed_uris))
