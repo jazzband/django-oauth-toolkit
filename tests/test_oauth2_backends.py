@@ -205,9 +205,9 @@ class TestOAuthLibCore(TestCase):
 
 @pytest.mark.parametrize(
     "uri, expected_result",
-    # localhost is _not_ a loopback URI
+
     [
-        ("http://localhost:3456", False),
+        ("http://localhost:3456", True), # localhost is supported
         # only http scheme is supported for loopback URIs
         ("https://127.0.0.1:3456", False),
         ("http://127.0.0.1:3456", True),
@@ -216,8 +216,18 @@ class TestOAuthLibCore(TestCase):
     ],
 )
 def test_uri_loopback_redirect_check(uri, expected_result):
-    allowed_uris = ["http://127.0.0.1", "http://[::1]"]
+    allowed_uris = ["http://127.0.0.1", "http://[::1]", "http://localhost"]
     if expected_result:
         assert redirect_to_uri_allowed(uri, allowed_uris)
     else:
         assert not redirect_to_uri_allowed(uri, allowed_uris)
+
+class TestLocalhostRedirectURI(TestCase):
+    def test_localhost_redirect_uri(self):
+        allowed_uris = ["http://127.0.0.1", "http://[::1]", "http://localhost"]
+        
+        valid_localhost_uri = "http://localhost:8000/callback"
+        invalid_localhost_uri_https = "https://localhost:8000/callback"
+
+        self.assertTrue(redirect_to_uri_allowed(valid_localhost_uri, allowed_uris))
+        self.assertFalse(redirect_to_uri_allowed(invalid_localhost_uri_https, allowed_uris))

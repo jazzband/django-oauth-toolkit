@@ -17,6 +17,7 @@ class TestValidators(TestCase):
             "https://1.1.1.1",
             "https://127.0.0.1",
             "https://255.255.255.255",
+            "http://localhost",
         ]
         for uri in good_uris:
             # Check ValidationError not thrown
@@ -31,6 +32,7 @@ class TestValidators(TestCase):
             "https://example.com",
             "HTTPS://example.com",
             "git+ssh://example.com",
+            "http://localhost",
         ]
         for uri in good_uris:
             # Check ValidationError not thrown
