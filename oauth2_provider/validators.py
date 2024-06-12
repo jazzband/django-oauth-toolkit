@@ -1,5 +1,4 @@
 import re
-import warnings
 from urllib.parse import urlsplit
 
 from django.core.exceptions import ValidationError
@@ -17,20 +16,6 @@ class URIValidator(URLValidator):
     port_re = r"(?::\d{2,5})?"
     path_re = r"(?:[/?#][^\s]*)?"
     regex = re.compile(scheme_re + host_re + port_re + path_re, re.IGNORECASE)
-
-
-class RedirectURIValidator(URIValidator):
-    def __init__(self, allowed_schemes, allow_fragments=False):
-        warnings.warn("This class is deprecated and will be removed in version 2.5.0.", DeprecationWarning)
-        super().__init__(schemes=allowed_schemes)
-        self.allow_fragments = allow_fragments
-
-    def __call__(self, value):
-        super().__call__(value)
-        value = force_str(value)
-        scheme, netloc, path, query, fragment = urlsplit(value)
-        if fragment and not self.allow_fragments:
-            raise ValidationError("Redirect URIs must not contain fragments")
 
 
 class AllowedURIValidator(URIValidator):
@@ -90,22 +75,3 @@ class AllowedURIValidator(URIValidator):
                 "%(name)s URI validation error. %(cause)s: %(value)s",
                 params={"name": self.name, "value": value, "cause": e},
             )
-
-
-##
-# WildcardSet is a special set that contains everything.
-# This is required in order to move validation of the scheme from
-# URLValidator (the base class of URIValidator), to OAuth2Application.clean().
-
-
-class WildcardSet(set):
-    """
-    A set that always returns True on `in`.
-    """
-
-    def __init__(self, *args, **kwargs):
-        warnings.warn("This class is deprecated and will be removed in version 2.5.0.", DeprecationWarning)
-        super().__init__(*args, **kwargs)
-
-    def __contains__(self, item):
-        return True
