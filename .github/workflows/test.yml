@@ -117,7 +117,7 @@ jobs:
   success:
     needs:
       - test-package
-      - test-rp
+      - test-demo-rp
     runs-on: ubuntu-latest
     name: Test successful
     steps:
