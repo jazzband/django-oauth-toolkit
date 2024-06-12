@@ -3,8 +3,8 @@ name: Test
 on: [push, pull_request]
 
 jobs:
-  build:
-    name: build (Python ${{ matrix.python-version }}, Django ${{ matrix.django-version }})
+  test-package:
+    name: Test Package (Python ${{ matrix.python-version }}, Django ${{ matrix.django-version }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -84,8 +84,40 @@ jobs:
       with:
         name: Python ${{ matrix.python-version }}
 
+  test-demo-rp:
+    name: Test Demo Relying Party
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version:
+          - "18.x"
+          - "20.x"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up NodeJS
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: tests/app/rp
+
+      - name: Run Lint
+        run: npm run lint
+        working-directory: tests/app/rp
+
+      - name: Run build
+        run: npm run build
+        working-directory: tests/app/rp
+
   success:
-    needs: build
+    needs:
+      - test-package
+      - test-demo-rp
     runs-on: ubuntu-latest
     name: Test successful
     steps:
