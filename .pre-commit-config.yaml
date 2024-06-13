@@ -29,11 +29,11 @@ repos:
     rev: v0.9.1
     hooks:
       - id: sphinx-lint
-  # Configuration for codespell is in pyproject.toml
-  # - repo: https://github.com/codespell-project/codespell
-  #   rev: v2.3.0
-  #   hooks:
-  #   - id: codespell
-  #     exclude: (package-lock.json|/locale/)
-  #     additional_dependencies:
-  #     - tomli
+#  Configuration for codespell is in pyproject.toml
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.3.0
+    hooks:
+    - id: codespell
+      exclude: (package-lock.json|/locale/)
+      additional_dependencies:
+      - tomli

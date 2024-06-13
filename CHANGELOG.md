@@ -206,7 +206,7 @@ This is a major release with **BREAKING** changes. Please make sure to review th
 
 ## [1.6.0] 2021-12-19
 ### Added
-* #949 Provide django.contrib.auth.authenticate() with a `request` for compatibiity with more backends (like django-axes).
+* #949 Provide django.contrib.auth.authenticate() with a `request` for compatibility with more backends (like django-axes).
 * #968, #1039 Add support for Django 3.2 and 4.0.
 * #953 Allow loopback redirect URIs using random ports as described in [RFC8252 section 7.3](https://datatracker.ietf.org/doc/html/rfc8252#section-7.3).
 * #972 Add Farsi/fa language support.

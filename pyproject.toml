@@ -10,8 +10,8 @@ exclude = '''
 '''
 
 # Ref: https://github.com/codespell-project/codespell#using-a-config-file
-# [tool.codespell]
-# skip = '.git,package-lock.json,locale'
-# check-hidden = true
-# ignore-regex = '.*pragma: codespell-ignore.*'
-# ignore-words-list = ''
+[tool.codespell]
+skip = '.git,package-lock.json,locale,AUTHORS,tox.ini'
+check-hidden = true
+ignore-regex = '.*pragma: codespell-ignore.*'
+ignore-words-list = 'assertIn'
