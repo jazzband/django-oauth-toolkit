@@ -20,10 +20,11 @@ If you need an OAuth2 provider you'll want to add the following to your :file:`u
 .. code-block:: python
 
     from django.urls import include, path
+    from oauth2_provider import urls as oauth2_urls
 
     urlpatterns = [
         ...
-        path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+        path('o/', include(oauth2_urls),
     ]
 
 Sync your database
