@@ -54,7 +54,7 @@ Install with pip::
 
     pip install django-oauth-toolkit
 
-Add `oauth2_provider` to your `INSTALLED_APPS`
+Add ``oauth2_provider`` to your ``INSTALLED_APPS``
 
 .. code-block:: python
 
@@ -64,8 +64,8 @@ Add `oauth2_provider` to your `INSTALLED_APPS`
     )
 
 
-If you need an OAuth2 provider you'll want to add the following to your urls.py.
-Notice that `oauth2_provider` namespace is mandatory.
+If you need an OAuth2 provider you'll want to add the following to your ``urls.py``.
+Notice that ``oauth2_provider`` namespace is mandatory.
 
 .. code-block:: python
 
