@@ -51,6 +51,7 @@ Here's our project's root :file:`urls.py` module:
 
     from rest_framework import generics, permissions, serializers
 
+    from oauth2_provider import urls as oauth2_urls
     from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope, TokenHasScope
 
     # first we define the serializers
@@ -84,7 +85,7 @@ Here's our project's root :file:`urls.py` module:
     # Setup the URLs and include login URLs for the browsable API.
     urlpatterns = [
         path('admin/', admin.site.urls),
-        path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+        path('o/', include(oauth2_urls)),
         path('users/', UserList.as_view()),
         path('users/<pk>/', UserDetails.as_view()),
         path('groups/', GroupList.as_view()),

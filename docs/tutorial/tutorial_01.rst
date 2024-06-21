@@ -34,10 +34,11 @@ Include the Django OAuth Toolkit urls in your `urls.py`, choosing the urlspace y
 .. code-block:: python
 
     from django.urls import path, include
+    from oauth2_provider import urls as oauth2_urls
 
     urlpatterns = [
         path("admin", admin.site.urls),
-        path("o/", include('oauth2_provider.urls', namespace='oauth2_provider')),
+        path("o/", include(oauth2_urls)),
         # ...
     ]
 

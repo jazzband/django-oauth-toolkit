@@ -65,13 +65,14 @@ Add ``oauth2_provider`` to your ``INSTALLED_APPS``
 
 
 If you need an OAuth2 provider you'll want to add the following to your ``urls.py``.
-Notice that ``oauth2_provider`` namespace is mandatory.
 
 .. code-block:: python
 
+    from oauth2_provider import urls as oauth2_urls
+
     urlpatterns = [
         ...
-        path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+        path('o/', include(oauth2_urls)),
     ]
 
 Changelog

@@ -191,10 +191,11 @@ Include ``oauth2_provider.urls`` to :file:`iam/urls.py` as follows:
 
     from django.contrib import admin
     from django.urls import include, path
+    from oauth2_provider import urls as oauth2_urls
 
     urlpatterns = [
         path('admin/', admin.site.urls),
-        path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+        path('o/', include(oauth2_urls)),
     ]
 
 This will make available endpoints to authorize, generate token and create OAuth applications.
