@@ -24,7 +24,7 @@ If you need an OAuth2 provider you'll want to add the following to your :file:`u
 
     urlpatterns = [
         ...
-        path('o/', include(oauth2_urls),
+        path('o/', include(oauth2_urls)),
     ]
 
 Sync your database
