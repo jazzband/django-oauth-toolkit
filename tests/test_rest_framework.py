@@ -415,3 +415,9 @@ class TestOAuth2Authentication(TestCase):
         auth = self._create_authorization_header(self.access_token.token)
         response = self.client.get("/oauth2-authentication-none/", HTTP_AUTHORIZATION=auth)
         self.assertEqual(response.status_code, 401)
+
+    def test_invalid_hex_string_in_query(self):
+        auth = self._create_authorization_header(self.access_token.token)
+        response = self.client.get("/oauth2-test/?q=73%%20of%20Arkansans", HTTP_AUTHORIZATION=auth)
+        # Should respond with a 400 rather than raise a ValueError
+        self.assertEqual(response.status_code, 400)
