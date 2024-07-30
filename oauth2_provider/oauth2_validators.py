@@ -792,9 +792,9 @@ class OAuth2Validator(RequestValidator):
 
     def get_claim_dict(self, request):
         if self._get_additional_claims_is_request_agnostic():
-            claims = {"sub": lambda r: str(r.user.id)}
+            claims = {"sub": lambda r: str(r.user.pk)}
         else:
-            claims = {"sub": str(request.user.id)}
+            claims = {"sub": str(request.user.pk)}
 
         # https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
         if self._get_additional_claims_is_request_agnostic():
