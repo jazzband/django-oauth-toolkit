@@ -617,7 +617,7 @@ class OAuth2Validator(RequestValidator):
                     # from the db while acquiring a lock on it
                     # We also put it in the "request cache"
                     refresh_token_instance = RefreshToken.objects.select_for_update().get(
-                        id=refresh_token_instance.id
+                        pk=refresh_token_instance.pk
                     )
                     request.refresh_token_instance = refresh_token_instance
 
@@ -741,7 +741,7 @@ class OAuth2Validator(RequestValidator):
         rt = request.refresh_token_instance
         if not rt.access_token_id:
             try:
-                return AccessToken.objects.get(source_refresh_token_id=rt.id).scope
+                return AccessToken.objects.get(source_refresh_token_id=rt.pk).scope
             except AccessToken.DoesNotExist:
                 return []
         return rt.access_token.scope
