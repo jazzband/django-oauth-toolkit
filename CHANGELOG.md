@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #1425 Remove deprecated `RedirectURIValidator`, `WildcardSet` per #1345; `validate_logout_request` per #1274
 
 ### Fixed
+* fix user pk in creating OIDC JWT token
 ### Security
 
 ## [2.4.0] - 2024-05-13
