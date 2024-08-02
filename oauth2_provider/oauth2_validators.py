@@ -1,5 +1,6 @@
 import base64
 import binascii
+import hashlib
 import http.client
 import inspect
 import json
@@ -462,7 +463,12 @@ class OAuth2Validator(RequestValidator):
             return False
 
     def _load_access_token(self, token):
-        return AccessToken.objects.select_related("application", "user").filter(token=token).first()
+        token_checksum = hashlib.sha256(token.encode("utf-8")).hexdigest()
+        return (
+            AccessToken.objects.select_related("application", "user")
+            .filter(token_checksum=token_checksum)
+            .first()
+        )
 
     def validate_code(self, client_id, code, client, request, *args, **kwargs):
         try:

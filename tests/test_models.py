@@ -1,3 +1,5 @@
+import hashlib
+import secrets
 from datetime import timedelta
 
 import pytest
@@ -309,6 +311,17 @@ class TestAccessTokenModel(BaseTestModels):
         access_token = AccessToken(token="test_token")
         self.assertIsNone(access_token.expires)
         self.assertTrue(access_token.is_expired())
+
+    def test_token_checksum_field(self):
+        token = secrets.token_urlsafe(32)
+        access_token = AccessToken.objects.create(
+            user=self.user,
+            token=token,
+            expires=timezone.now() + timedelta(hours=1),
+        )
+        expected_checksum = hashlib.sha256(token.encode()).hexdigest()
+
+        self.assertEqual(access_token.token_checksum, expected_checksum)
 
 
 class TestRefreshTokenModel(BaseTestModels):
