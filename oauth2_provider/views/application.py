@@ -1,6 +1,9 @@
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.forms.models import modelform_factory
 from django.urls import reverse_lazy
+from django.utils.safestring import mark_safe
+from django.utils.translation import gettext as _
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from ..models import get_application_model
@@ -22,9 +25,7 @@ class ApplicationRegistration(LoginRequiredMixin, CreateView):
     View used to register a new Application for the request.user
     """
 
-    context_object_name = "application"
     template_name = "oauth2_provider/application_registration_form.html"
-    success_template_name = "oauth2_provider/application_detail.html"
 
     def get_form_class(self):
         """
@@ -46,22 +47,23 @@ class ApplicationRegistration(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.user = self.request.user
-        if not form.cleaned_data["hash_client_secret"]:
-            return super().form_valid(form)
-
-        client_secret = form.instance.client_secret
-        self.object = form.save()
-        return self.response_class(
-            request=self.request,
-            template=self.success_template_name,
-            context=self.get_context_data(
-                client_secret=client_secret,
-                show_client_secret_once=self.object.hash_client_secret,
-                **{self.context_object_name: self.object},
-            ),
-            using=self.template_engine,
-            content_type=self.content_type,
-        )
+        # If we are hashing the client secret, display the cleartext value in a flash message with
+        # Django's messages framework
+        if form.cleaned_data["hash_client_secret"]:
+            messages.add_message(
+                self.request,
+                messages.SUCCESS,
+                # Since the client_secret is not user-supplied, we can manually mark this entire
+                # string as safe so Django doesn't re-encode the HTML markup
+                mark_safe(
+                    _(
+                        "The application client secret is:<br /><code>%s</code><br />"
+                        "This will only be shown once, so copy it now!"
+                    )
+                    % form.instance.client_secret
+                ),
+            )
+        return super().form_valid(form)
 
 
 class ApplicationDetail(ApplicationOwnerIsUserMixin, DetailView):

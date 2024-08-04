@@ -245,9 +245,9 @@ Start the development server::
 
 Point your browser to http://127.0.0.1:8000/o/applications/register/ lets create an application.
 
-Fill the form as show in the screenshot below and before save take note of ``Client id`` and ``Client secret``, we will use it in a minute.
+Fill the form as show in the screenshot below and after saving take note of the ``client secret`` (possibly shown in the flash message) and the ``client ID``, we will use them both in a minute.
 
-If you want to use this application with OIDC and ``HS256`` (see :doc:`OpenID Connect <oidc>`), uncheck ``Hash client secret`` to allow verifying tokens using JWT signatures. This means your client secret will be stored in cleartext but is the only way to successfully use signed JWT's with ``HS256``.
+If you want to use this application with OIDC and ``HS256`` (see :doc:`OpenID Connect <oidc>`), uncheck ``Hash client secret`` to allow verifying tokens using JWT signatures. Unchecking that means your client secret will be stored on the server in cleartext but is the only way to successfully use signed JWT's with ``HS256``.
 
 .. note::
     ``RS256`` is the more secure algorithm for signing your JWTs. Only use ``HS256`` if you must.

@@ -5,7 +5,7 @@ Install with pip::
 
     pip install django-oauth-toolkit
 
-Add ``oauth2_provider`` to your ``INSTALLED_APPS``
+Enable and configure Django's messages framework, and add ``oauth2_provider`` to your ``INSTALLED_APPS``
 
 .. code-block:: python
 
