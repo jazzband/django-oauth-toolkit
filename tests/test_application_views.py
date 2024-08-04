@@ -39,8 +39,6 @@ class TestApplicationRegistrationView(BaseTest):
 
         form_data = {
             "name": "Foo app",
-            "client_id": "client_id",
-            "client_secret": "client_secret",
             "client_type": Application.CLIENT_CONFIDENTIAL,
             "redirect_uris": "http://example.com",
             "post_logout_redirect_uris": "http://other_example.com",
@@ -55,7 +53,8 @@ class TestApplicationRegistrationView(BaseTest):
         self.assertEqual(app.user.username, "foo_user")
         app = Application.objects.get()
         self.assertEqual(app.name, form_data["name"])
-        self.assertEqual(app.client_id, form_data["client_id"])
+        self.assertIsNotNone(app.client_id)
+        self.assertIsNotNone(app.client_secret)
         self.assertEqual(app.redirect_uris, form_data["redirect_uris"])
         self.assertEqual(app.post_logout_redirect_uris, form_data["post_logout_redirect_uris"])
         self.assertEqual(app.client_type, form_data["client_type"])
@@ -113,7 +112,6 @@ class TestApplicationViews(BaseTest):
         self.client.login(username="foo_user", password="123456")
 
         form_data = {
-            "client_id": "new_client_id",
             "redirect_uris": "http://new_example.com",
             "post_logout_redirect_uris": "http://new_other_example.com",
             "client_type": Application.CLIENT_PUBLIC,
@@ -126,7 +124,6 @@ class TestApplicationViews(BaseTest):
         self.assertRedirects(response, reverse("oauth2_provider:detail", args=(self.app_foo_1.pk,)))
 
         self.app_foo_1.refresh_from_db()
-        self.assertEqual(self.app_foo_1.client_id, form_data["client_id"])
         self.assertEqual(self.app_foo_1.redirect_uris, form_data["redirect_uris"])
         self.assertEqual(self.app_foo_1.post_logout_redirect_uris, form_data["post_logout_redirect_uris"])
         self.assertEqual(self.app_foo_1.client_type, form_data["client_type"])
