@@ -135,7 +135,9 @@ class AbstractApplication(models.Model):
         db_index=True,
         help_text=_("Hashed on Save. Copy it now if this is a new secret."),
     )
-    hash_client_secret = models.BooleanField(default=True)
+    hash_client_secret = models.BooleanField(
+        default=True, help_text=_("Uncheck if you need to support OIDC with JWT and HS256.")
+    )
     name = models.CharField(max_length=255, blank=True)
     skip_authorization = models.BooleanField(default=False)
 
