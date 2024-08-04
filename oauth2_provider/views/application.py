@@ -1,9 +1,8 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.forms.models import modelform_factory
+from django.template.loader import render_to_string
 from django.urls import reverse_lazy
-from django.utils.safestring import mark_safe
-from django.utils.translation import gettext as _
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from ..models import get_application_model
@@ -53,14 +52,9 @@ class ApplicationRegistration(LoginRequiredMixin, CreateView):
             messages.add_message(
                 self.request,
                 messages.SUCCESS,
-                # Since the client_secret is not user-supplied, we can manually mark this entire
-                # string as safe so Django doesn't re-encode the HTML markup
-                mark_safe(
-                    _(
-                        "The application client secret is:<br /><code>%s</code><br />"
-                        "This will only be shown once, so copy it now!"
-                    )
-                    % form.instance.client_secret
+                render_to_string(
+                    "oauth2_provider/application_client_secret_message.html",
+                    {"client_secret": form.instance.client_secret},
                 ),
             )
         return super().form_valid(form)
