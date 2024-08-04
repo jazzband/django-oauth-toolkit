@@ -22,7 +22,9 @@ class ApplicationRegistration(LoginRequiredMixin, CreateView):
     View used to register a new Application for the request.user
     """
 
+    context_object_name = "application"
     template_name = "oauth2_provider/application_registration_form.html"
+    success_template_name = "oauth2_provider/application_detail.html"
 
     def get_form_class(self):
         """
@@ -32,8 +34,6 @@ class ApplicationRegistration(LoginRequiredMixin, CreateView):
             get_application_model(),
             fields=(
                 "name",
-                "client_id",
-                "client_secret",
                 "hash_client_secret",
                 "client_type",
                 "authorization_grant_type",
@@ -46,7 +46,22 @@ class ApplicationRegistration(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.user = self.request.user
-        return super().form_valid(form)
+        if not form.cleaned_data["hash_client_secret"]:
+            return super().form_valid(form)
+
+        client_secret = form.instance.client_secret
+        self.object = form.save()
+        return self.response_class(
+            request=self.request,
+            template=self.success_template_name,
+            context=self.get_context_data(
+                client_secret=client_secret,
+                show_client_secret_once=self.object.hash_client_secret,
+                **{self.context_object_name: self.object},
+            ),
+            using=self.template_engine,
+            content_type=self.content_type,
+        )
 
 
 class ApplicationDetail(ApplicationOwnerIsUserMixin, DetailView):
@@ -56,6 +71,12 @@ class ApplicationDetail(ApplicationOwnerIsUserMixin, DetailView):
 
     context_object_name = "application"
     template_name = "oauth2_provider/application_detail.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        if not ctx["application"].hash_client_secret:
+            ctx["client_secret"] = ctx["application"].client_secret
+        return ctx
 
 
 class ApplicationList(ApplicationOwnerIsUserMixin, ListView):

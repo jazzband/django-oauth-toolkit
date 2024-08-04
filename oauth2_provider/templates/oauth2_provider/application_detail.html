@@ -7,9 +7,19 @@
 
         <ul class="unstyled">
             <li>
-                <p><b>{% trans "Client id" %}</b></p>
+                <p><b>{% trans "Client ID" %}</b></p>
                 <p>{{ application.client_id }}</p>
             </li>
+
+            {% if client_secret %}
+            <li>
+                <p><b>{% trans "Client secret" %}</b></p>
+                <p>{{ client_secret }}</p>
+                {% if show_client_secret_once %}
+                <p class="error">{% translate "This will only be displayed once - copy it now!" %}</p>
+                {% endif %}
+            </li>
+            {% endif %}
 
             <li>
                 <p><b>{% trans "Hash client secret" %}</b></p>
