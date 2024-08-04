@@ -93,7 +93,6 @@ class ApplicationUpdate(ApplicationOwnerIsUserMixin, UpdateView):
             get_application_model(),
             fields=(
                 "name",
-                "client_id",
                 "client_type",
                 "authorization_grant_type",
                 "redirect_uris",

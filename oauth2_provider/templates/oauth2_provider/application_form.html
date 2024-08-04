@@ -3,12 +3,22 @@
 {% load i18n %}
 {% block content %}
     <div class="block-center">
-        <form class="form-horizontal" method="post" action="{% block app-form-action-url %}{% url 'oauth2_provider:update' application.pk %}{% endblock app-form-action-url %}">
-            <h3 class="block-center-heading">
-                {% block app-form-title %}
-                    {% trans "Edit application" %} {{ application.name }}
-                {% endblock app-form-title %}
-            </h3>
+        <h3 class="block-center-heading">
+            {% block app-form-title %}
+                {% trans "Edit application" %} {{ application.name }}
+            {% endblock app-form-title %}
+        </h3>
+
+        {% if application.client_id %}
+        <div class="control-group">
+            <label class="control-label">{% translate "Client ID" %}</label>
+            <div class="controls">
+                {{ application.client_id }}
+            </div>
+        </div>
+        {% endif %}
+
+        <form id="application-form" class="form-horizontal" method="post" action="{% block app-form-action-url %}{% url 'oauth2_provider:update' application.id %}{% endblock app-form-action-url %}">
             {% csrf_token %}
 
             {% for field in form %}
@@ -22,21 +32,21 @@
                     </div>
                 </div>
             {% endfor %}
-
-            <div class="control-group {% if form.non_field_errors %}error{% endif %}">
-                {% for error in form.non_field_errors %}
-                    <span class="help-inline">{{ error }}</span>
-                {% endfor %}
-            </div>
-
-            <div class="control-group">
-                <div class="controls">
-                    <a class="btn" href="{% block app-form-back-url %}{% url "oauth2_provider:detail" application.pk %}{% endblock app-form-back-url %}">
-                        {% trans "Go Back" %}
-                    </a>
-                    <button type="submit" class="btn btn-primary">{% trans "Save" %}</button>
-                </div>
-            </div>
         </form>
+
+        <div class="control-group {% if form.non_field_errors %}error{% endif %}">
+            {% for error in form.non_field_errors %}
+                <span class="help-inline">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="control-group">
+            <div class="controls">
+                <a class="btn" href="{% block app-form-back-url %}{% url "oauth2_provider:detail" application.id %}{% endblock app-form-back-url %}">
+                    {% trans "Go Back" %}
+                </a>
+                <button form="application-form" type="submit" class="btn btn-primary">{% trans "Save" %}</button>
+            </div>
+        </div>
     </div>
 {% endblock %}
