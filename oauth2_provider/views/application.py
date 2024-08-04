@@ -94,7 +94,6 @@ class ApplicationUpdate(ApplicationOwnerIsUserMixin, UpdateView):
             fields=(
                 "name",
                 "client_id",
-                "hash_client_secret",
                 "client_type",
                 "authorization_grant_type",
                 "redirect_uris",
