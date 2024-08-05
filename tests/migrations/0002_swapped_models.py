@@ -118,10 +118,14 @@ class Migration(migrations.Migration):
             field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='s_refreshed_access_token', to=settings.OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL),
         ),
         migrations.AddField(
-            model_name='sampleaccesstoken',
-            name='token',
-            field=models.CharField(max_length=255, unique=True),
-            preserve_default=False,
+            model_name="sampleaccesstoken",
+            name="token",
+            field=models.TextField(),
+        ),
+        migrations.AddField(
+            model_name="sampleaccesstoken",
+            name="token_checksum",
+            field=models.CharField(max_length=64, unique=True, db_index=True),
         ),
         migrations.AddField(
             model_name='sampleaccesstoken',
