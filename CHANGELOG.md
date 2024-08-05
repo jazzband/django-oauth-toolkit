@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Add migration to include `token_checksum` field in AbstractAccessToken model.
 ### Changed
 * Update token to TextField from CharField with 255 character limit in AbstractAccessToken model. Removing the 255 character limit enables supporting JWT tokens with additional claims
- 
+
 * Update middleware, validators, and views to use token checksums instead of token for token retrieval and validation.
 ### Deprecated
 ### Removed
