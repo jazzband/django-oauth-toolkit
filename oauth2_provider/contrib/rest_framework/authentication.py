@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+from django.core.exceptions import SuspiciousOperation
 from rest_framework.authentication import BaseAuthentication
 
 from ...oauth2_backends import get_oauthlib_core
@@ -23,10 +24,18 @@ class OAuth2Authentication(BaseAuthentication):
         Returns two-tuple of (user, token) if authentication succeeds,
         or None otherwise.
         """
+        if request is None:
+            return None
         oauthlib_core = get_oauthlib_core()
-        valid, r = oauthlib_core.verify_request(request, scopes=[])
-        if valid:
-            return r.user, r.access_token
+        try:
+            valid, r = oauthlib_core.verify_request(request, scopes=[])
+        except ValueError as error:
+            if str(error) == "Invalid hex encoding in query string.":
+                raise SuspiciousOperation(error)
+            raise
+        else:
+            if valid:
+                return r.user, r.access_token
         request.oauth2_error = getattr(r, "oauth2_error", {})
         return None
 
