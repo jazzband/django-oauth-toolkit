@@ -1,11 +1,13 @@
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory
 from django.utils import timezone
 
 from oauth2_provider.decorators import protected_resource, rw_protected_resource
 from oauth2_provider.models import get_access_token_model, get_application_model
+
+from .common_testing import OAuth2ProviderTestCase as TestCase
 
 
 Application = get_application_model()

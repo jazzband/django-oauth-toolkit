@@ -3,7 +3,7 @@ from urllib.parse import parse_qs, urlparse
 
 import pytest
 from django.contrib.auth import get_user_model
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory
 from django.urls import reverse
 from jwcrypto import jwt
 
@@ -11,6 +11,7 @@ from oauth2_provider.models import get_application_model
 from oauth2_provider.views import ProtectedResourceView
 
 from . import presets
+from .common_testing import OAuth2ProviderTestCase as TestCase
 
 
 Application = get_application_model()

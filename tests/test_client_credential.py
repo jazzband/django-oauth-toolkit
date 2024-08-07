@@ -4,7 +4,7 @@ from unittest.mock import patch
 import pytest
 from django.contrib.auth import get_user_model
 from django.core.exceptions import SuspiciousOperation
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory
 from django.urls import reverse
 from django.views.generic import View
 from oauthlib.oauth2 import BackendApplicationServer
@@ -16,6 +16,7 @@ from oauth2_provider.views import ProtectedResourceView
 from oauth2_provider.views.mixins import OAuthLibMixin
 
 from . import presets
+from .common_testing import OAuth2ProviderTestCase as TestCase
 from .utils import get_basic_auth_header
 
 

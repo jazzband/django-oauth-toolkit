@@ -5,7 +5,6 @@ import json
 import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
-from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
 from jwcrypto import jwt
 from oauthlib.common import Request
@@ -16,6 +15,9 @@ from oauth2_provider.oauth2_backends import get_oauthlib_core
 from oauth2_provider.oauth2_validators import OAuth2Validator
 
 from . import presets
+from .common_testing import OAuth2ProviderTestCase as TestCase
+from .common_testing import OAuth2ProviderTransactionTestCase as TransactionTestCase
+from .common_testing import test_database_names
 from .utils import get_basic_auth_header
 
 
@@ -545,7 +547,7 @@ def test_get_jwt_bearer_token(oauth2_settings, mocker):
     assert mock_get_id_token.call_args[1] == {}
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=test_database_names)
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 def test_validate_id_token_expired_jwt(oauth2_settings, mocker, oidc_tokens):
     mocker.patch("oauth2_provider.oauth2_validators.jwt.JWT", side_effect=jwt.JWTExpired)
@@ -561,7 +563,7 @@ def test_validate_id_token_no_token(oauth2_settings, mocker):
     assert status is False
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=test_database_names)
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 def test_validate_id_token_app_removed(oauth2_settings, mocker, oidc_tokens):
     oidc_tokens.application.delete()
@@ -570,7 +572,7 @@ def test_validate_id_token_app_removed(oauth2_settings, mocker, oidc_tokens):
     assert status is False
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=test_database_names)
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
 def test_validate_id_token_bad_token_no_aud(oauth2_settings, mocker, oidc_key):
     token = jwt.JWT(header=json.dumps({"alg": "RS256"}), claims=json.dumps({"bad": "token"}))

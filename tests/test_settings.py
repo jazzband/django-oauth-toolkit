@@ -1,6 +1,5 @@
 import pytest
 from django.core.exceptions import ImproperlyConfigured
-from django.test import TestCase
 from django.test.utils import override_settings
 from oauthlib.common import Request
 
@@ -19,6 +18,7 @@ from tests.admin import (
     CustomIDTokenAdmin,
     CustomRefreshTokenAdmin,
 )
+from tests.common_testing import OAuth2ProviderTestCase as TestCase
 
 from . import presets
 

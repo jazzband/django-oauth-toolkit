@@ -1,8 +1,9 @@
 import pytest
 from django.core.validators import ValidationError
-from django.test import TestCase
 
 from oauth2_provider.validators import AllowedURIValidator
+
+from .common_testing import OAuth2ProviderTestCase as TestCase
 
 
 @pytest.mark.usefixtures("oauth2_settings")
