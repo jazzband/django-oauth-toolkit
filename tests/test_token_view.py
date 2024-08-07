@@ -1,11 +1,12 @@
 import datetime
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
 from oauth2_provider.models import get_access_token_model, get_application_model
+
+from .common_testing import OAuth2ProviderTestCase as TestCase
 
 
 Application = get_application_model()

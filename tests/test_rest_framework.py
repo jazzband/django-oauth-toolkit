@@ -5,7 +5,6 @@ from django.conf.urls import include
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponse
-from django.test import TestCase
 from django.test.utils import override_settings
 from django.urls import path, re_path
 from django.utils import timezone
@@ -25,6 +24,7 @@ from oauth2_provider.contrib.rest_framework import (
 from oauth2_provider.models import get_access_token_model, get_application_model
 
 from . import presets
+from .common_testing import OAuth2ProviderTestCase as TestCase
 
 
 Application = get_application_model()

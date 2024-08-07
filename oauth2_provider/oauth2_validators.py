@@ -15,7 +15,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.hashers import check_password, identify_hasher
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import transaction
+from django.db import router, transaction
 from django.http import HttpRequest
 from django.utils import dateformat, timezone
 from django.utils.crypto import constant_time_compare
@@ -562,8 +562,12 @@ class OAuth2Validator(RequestValidator):
         """
         return oauth2_settings.ROTATE_REFRESH_TOKEN
 
-    @transaction.atomic
     def save_bearer_token(self, token, request, *args, **kwargs):
+        # Use the AccessToken's database instead of making the assumption it is in 'default'.
+        with transaction.atomic(using=router.db_for_write(AccessToken)):
+            return self._save_bearer_token_internals(token, request, *args, **kwargs)
+
+    def _save_bearer_token_internals(self, token, request, *args, **kwargs):
         """
         Save access and refresh token, If refresh token is issued, remove or
         reuse old refresh token as in rfc:`6`
@@ -788,7 +792,6 @@ class OAuth2Validator(RequestValidator):
 
         return rt.application == client
 
-    @transaction.atomic
     def _save_id_token(self, jti, request, expires, *args, **kwargs):
         scopes = request.scope or " ".join(request.scopes)
 
@@ -889,7 +892,9 @@ class OAuth2Validator(RequestValidator):
             claims=json.dumps(id_token, default=str),
         )
         jwt_token.make_signed_token(request.client.jwk_key)
-        id_token = self._save_id_token(id_token["jti"], request, expiration_time)
+        # Use the IDToken's database instead of making the assumption it is in 'default'.
+        with transaction.atomic(using=router.db_for_write(IDToken)):
+            id_token = self._save_id_token(id_token["jti"], request, expiration_time)
         # this is needed by django rest framework
         request.access_token = id_token
         request.id_token = id_token
