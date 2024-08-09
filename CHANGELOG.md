@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [unreleased]
 ### Added
 ### Changed
+* Transactions wrapping writes of the Tokens now rely on Django's database routers to determine the correct
+  database to use instead of assuming that 'default' is the correct one.
+
 ### Deprecated
 ### Removed
 * #1425 Remove deprecated `RedirectURIValidator`, `WildcardSet` per #1345; `validate_logout_request` per #1274

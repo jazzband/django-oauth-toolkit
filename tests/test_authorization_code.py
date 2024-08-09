@@ -7,7 +7,7 @@ from urllib.parse import parse_qs, urlparse
 import pytest
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.crypto import get_random_string
@@ -23,6 +23,7 @@ from oauth2_provider.models import (
 from oauth2_provider.views import ProtectedResourceView
 
 from . import presets
+from .common_testing import OAuth2ProviderTestCase as TestCase
 from .utils import get_basic_auth_header
 
 
