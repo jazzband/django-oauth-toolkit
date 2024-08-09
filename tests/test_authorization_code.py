@@ -1013,6 +1013,7 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
             "refresh_token": content["refresh_token"],
             "scope": content["scope"],
         }
+        # First response works as usual
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 200)
         new_tokens = json.loads(response.content.decode("utf-8"))
@@ -1021,7 +1022,7 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 400)
 
-        # Previously returned tokens are now invalid
+        # Previously returned tokens are now invalid as well
         new_token_request_data = {
             "grant_type": "refresh_token",
             "refresh_token": new_tokens["refresh_token"],
