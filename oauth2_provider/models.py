@@ -490,6 +490,7 @@ class AbstractRefreshToken(models.Model):
         null=True,
         related_name="refresh_token",
     )
+    token_family = models.UUIDField(null=True, blank=True, editable=False)
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
