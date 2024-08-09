@@ -563,14 +563,22 @@ class OAuth2Validator(RequestValidator):
         return oauth2_settings.ROTATE_REFRESH_TOKEN
 
     def save_bearer_token(self, token, request, *args, **kwargs):
+        """
+        Save access and refresh token.
+
+        Override _save_bearer_token and not this function when adding custom logic
+        for the storing of these token. This allows the transaction logic to be
+        separate from the token handling.
+        """
         # Use the AccessToken's database instead of making the assumption it is in 'default'.
         with transaction.atomic(using=router.db_for_write(AccessToken)):
-            return self._save_bearer_token_internals(token, request, *args, **kwargs)
+            return self._save_bearer_token(token, request, *args, **kwargs)
 
-    def _save_bearer_token_internals(self, token, request, *args, **kwargs):
+    def _save_bearer_token(self, token, request, *args, **kwargs):
         """
-        Save access and refresh token, If refresh token is issued, remove or
-        reuse old refresh token as in rfc:`6`
+        Save access and refresh token.
+
+        If refresh token is issued, remove or reuse old refresh token as in rfc:`6`.
 
         @see: https://rfc-editor.org/rfc/rfc6749.html#section-6
         """

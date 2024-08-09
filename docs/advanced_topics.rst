@@ -65,6 +65,17 @@ That's all, now Django OAuth Toolkit will use your model wherever an Application
     is because of the way Django currently implements swappable models.
     See `issue #90 <https://github.com/jazzband/django-oauth-toolkit/issues/90>`_ for details.
 
+Configuring multiple databases
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There is no requirement that the tokens are stored in the default database or that there is a
+default database provided the database routers can determine the correct Token locations. Because the
+Tokens have foreign keys to the ``User`` model, you likely want to keep the tokens in the same database
+as your User model. It is also important that all of the tokens are stored in the same database.
+This could happen for instance if one of the Tokens is locally overridden and stored in a separate database.
+The reason for this is transactions will only be made for the database where AccessToken is stored
+even when writing to RefreshToken or other tokens.
+
 Multiple Grants
 ~~~~~~~~~~~~~~~
 

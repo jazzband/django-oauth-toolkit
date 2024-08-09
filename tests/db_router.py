@@ -1,13 +1,14 @@
-apps_in_beta = {"some_other_app", "this_one_too"}
+apps_in_beta = {"tests", "some_other_app", "this_one_too"}
 
 # These are bare minimum routers to fake the scenario where there is actually a
 # decision around where an application's models might live.
-# alpha is where the core Django models are stored including user. To keep things
-# simple this is where the oauth2 provider models are stored as well because they
-# have a foreign key to User.
 
 
 class AlphaRouter:
+    # alpha is where the core Django models are stored including user. To keep things
+    # simple this is where the oauth2 provider models are stored as well because they
+    # have a foreign key to User.
+
     def db_for_read(self, model, **hints):
         if model._meta.app_label not in apps_in_beta:
             return "alpha"

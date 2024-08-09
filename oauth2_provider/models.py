@@ -513,17 +513,8 @@ class AbstractRefreshToken(models.Model):
         Mark this refresh token revoked and revoke related access token
         """
         access_token_model = get_access_token_model()
-        refresh_token_model = get_refresh_token_model()
-
         access_token_database = router.db_for_write(access_token_model)
-        refresh_token_database = router.db_for_write(refresh_token_model)
-
-        # This is highly unlikely, but let's warn people just in case it does.
-        if access_token_database != refresh_token_database:
-            logger.warning(
-                "access token and refresh token are in separate databases but a transaction"
-                " is only used for the access token"
-            )
+        refresh_token_model = get_refresh_token_model()
 
         # Use the access_token_database instead of making the assumption it is in 'default'.
         with transaction.atomic(using=access_token_database):
@@ -667,7 +658,7 @@ def get_access_token_model():
 
 
 def get_id_token_model():
-    """Return the AccessToken model that is active in this project."""
+    """Return the IDToken model that is active in this project."""
     return apps.get_model(oauth2_settings.ID_TOKEN_MODEL)
 
 
