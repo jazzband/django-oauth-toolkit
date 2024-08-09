@@ -53,7 +53,7 @@ class TestRevocationView(BaseTest):
         response = self.client.post(url, data=data)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b"")
-        self.assertFalse(AccessToken.objects.filter(id=tok.id).exists())
+        self.assertFalse(AccessToken.objects.filter(pk=tok.pk).exists())
 
     def test_revoke_access_token_public(self):
         public_app = Application(
@@ -101,7 +101,7 @@ class TestRevocationView(BaseTest):
         url = reverse("oauth2_provider:revoke-token")
         response = self.client.post(url, data=data)
         self.assertEqual(response.status_code, 200)
-        self.assertFalse(AccessToken.objects.filter(id=tok.id).exists())
+        self.assertFalse(AccessToken.objects.filter(pk=tok.pk).exists())
 
     def test_revoke_access_token_with_invalid_hint(self):
         tok = AccessToken.objects.create(
@@ -123,7 +123,7 @@ class TestRevocationView(BaseTest):
         url = reverse("oauth2_provider:revoke-token")
         response = self.client.post(url, data=data)
         self.assertEqual(response.status_code, 200)
-        self.assertFalse(AccessToken.objects.filter(id=tok.id).exists())
+        self.assertFalse(AccessToken.objects.filter(pk=tok.pk).exists())
 
     def test_revoke_refresh_token(self):
         tok = AccessToken.objects.create(
@@ -146,9 +146,9 @@ class TestRevocationView(BaseTest):
         url = reverse("oauth2_provider:revoke-token")
         response = self.client.post(url, data=data)
         self.assertEqual(response.status_code, 200)
-        refresh_token = RefreshToken.objects.filter(id=rtok.id).first()
+        refresh_token = RefreshToken.objects.filter(pk=rtok.pk).first()
         self.assertIsNotNone(refresh_token.revoked)
-        self.assertFalse(AccessToken.objects.filter(id=rtok.access_token.id).exists())
+        self.assertFalse(AccessToken.objects.filter(pk=rtok.access_token.pk).exists())
 
     def test_revoke_refresh_token_with_revoked_access_token(self):
         tok = AccessToken.objects.create(
@@ -172,8 +172,8 @@ class TestRevocationView(BaseTest):
             response = self.client.post(url, data=data)
             self.assertEqual(response.status_code, 200)
 
-        self.assertFalse(AccessToken.objects.filter(id=tok.id).exists())
-        refresh_token = RefreshToken.objects.filter(id=rtok.id).first()
+        self.assertFalse(AccessToken.objects.filter(pk=tok.pk).exists())
+        refresh_token = RefreshToken.objects.filter(pk=rtok.pk).first()
         self.assertIsNotNone(refresh_token.revoked)
 
     def test_revoke_token_with_wrong_hint(self):
@@ -202,4 +202,4 @@ class TestRevocationView(BaseTest):
         url = reverse("oauth2_provider:revoke-token")
         response = self.client.post(url, data=data)
         self.assertEqual(response.status_code, 200)
-        self.assertFalse(AccessToken.objects.filter(id=tok.id).exists())
+        self.assertFalse(AccessToken.objects.filter(pk=tok.pk).exists())
