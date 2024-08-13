@@ -985,6 +985,54 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 400)
 
+    def test_refresh_repeating_requests_revokes_old_token(self):
+        """
+        If a refresh token is reused, the server should invalidate *all* access tokens that have a relation
+        to the re-used token. This forces a malicious actor to be logged out.
+        The server can't determine whether the first or the second client was legitimate, so it needs to
+        revoke both.
+        See https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics-29#name-recommendations
+        """
+        self.oauth2_settings.REFRESH_TOKEN_REUSE_PROTECTION = True
+        self.client.login(username="test_user", password="123456")
+        authorization_code = self.get_auth()
+
+        token_request_data = {
+            "grant_type": "authorization_code",
+            "code": authorization_code,
+            "redirect_uri": "http://example.org",
+        }
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
+
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+        content = json.loads(response.content.decode("utf-8"))
+        self.assertTrue("refresh_token" in content)
+
+        token_request_data = {
+            "grant_type": "refresh_token",
+            "refresh_token": content["refresh_token"],
+            "scope": content["scope"],
+        }
+        # First response works as usual
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 200)
+        new_tokens = json.loads(response.content.decode("utf-8"))
+
+        # Second request fails
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 400)
+
+        # Previously returned tokens are now invalid as well
+        new_token_request_data = {
+            "grant_type": "refresh_token",
+            "refresh_token": new_tokens["refresh_token"],
+            "scope": new_tokens["scope"],
+        }
+        response = self.client.post(
+            reverse("oauth2_provider:token"), data=new_token_request_data, **auth_headers
+        )
+        self.assertEqual(response.status_code, 400)
+
     def test_refresh_repeating_requests(self):
         """
         Trying to refresh an access token with the same refresh token more than
@@ -1022,6 +1070,63 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
         rt.save()
 
         response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 400)
+
+    def test_refresh_repeating_requests_grace_period_with_reuse_protection(self):
+        """
+        Trying to refresh an access token with the same refresh token more than
+        once succeeds. Should work within the grace period, but should revoke previous tokens
+        """
+        self.oauth2_settings.REFRESH_TOKEN_GRACE_PERIOD_SECONDS = 120
+        self.oauth2_settings.REFRESH_TOKEN_REUSE_PROTECTION = True
+        self.client.login(username="test_user", password="123456")
+        authorization_code = self.get_auth()
+
+        token_request_data = {
+            "grant_type": "authorization_code",
+            "code": authorization_code,
+            "redirect_uri": "http://example.org",
+        }
+        auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
+
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+        content = json.loads(response.content.decode("utf-8"))
+        self.assertTrue("refresh_token" in content)
+
+        refresh_token_1 = content["refresh_token"]
+        token_request_data = {
+            "grant_type": "refresh_token",
+            "refresh_token": refresh_token_1,
+            "scope": content["scope"],
+        }
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 200)
+        refresh_token_2 = json.loads(response.content.decode("utf-8"))["refresh_token"]
+
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 200)
+        refresh_token_3 = json.loads(response.content.decode("utf-8"))["refresh_token"]
+
+        self.assertEqual(refresh_token_2, refresh_token_3)
+
+        # Let the first refresh token expire
+        rt = RefreshToken.objects.get(token=refresh_token_1)
+        rt.revoked = timezone.now() - datetime.timedelta(minutes=10)
+        rt.save()
+
+        # Using the expired token fails
+        response = self.client.post(reverse("oauth2_provider:token"), data=token_request_data, **auth_headers)
+        self.assertEqual(response.status_code, 400)
+
+        # Because we used the expired token, the recently issued token is also revoked
+        new_token_request_data = {
+            "grant_type": "refresh_token",
+            "refresh_token": refresh_token_2,
+            "scope": content["scope"],
+        }
+        response = self.client.post(
+            reverse("oauth2_provider:token"), data=new_token_request_data, **auth_headers
+        )
         self.assertEqual(response.status_code, 400)
 
     def test_refresh_repeating_requests_non_rotating_tokens(self):

@@ -16,7 +16,6 @@ from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.hashers import check_password, identify_hasher
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
-from django.db.models import Q
 from django.http import HttpRequest
 from django.utils import dateformat, timezone
 from django.utils.crypto import constant_time_compare
@@ -650,7 +649,9 @@ class OAuth2Validator(RequestValidator):
                         source_refresh_token=refresh_token_instance,
                     )
 
-                    self._create_refresh_token(request, refresh_token_code, access_token)
+                    self._create_refresh_token(
+                        request, refresh_token_code, access_token, refresh_token_instance
+                    )
                 else:
                     # make sure that the token data we're returning matches
                     # the existing token
@@ -694,9 +695,17 @@ class OAuth2Validator(RequestValidator):
             claims=json.dumps(request.claims or {}),
         )
 
-    def _create_refresh_token(self, request, refresh_token_code, access_token):
+    def _create_refresh_token(self, request, refresh_token_code, access_token, previous_refresh_token):
+        if previous_refresh_token:
+            token_family = previous_refresh_token.token_family
+        else:
+            token_family = uuid.uuid4()
         return RefreshToken.objects.create(
-            user=request.user, token=refresh_token_code, application=request.client, access_token=access_token
+            user=request.user,
+            token=refresh_token_code,
+            application=request.client,
+            access_token=access_token,
+            token_family=token_family,
         )
 
     def revoke_token(self, token, token_type_hint, request, *args, **kwargs):
@@ -758,22 +767,25 @@ class OAuth2Validator(RequestValidator):
         Also attach User instance to the request object
         """
 
-        null_or_recent = Q(revoked__isnull=True) | Q(
-            revoked__gt=timezone.now() - timedelta(seconds=oauth2_settings.REFRESH_TOKEN_GRACE_PERIOD_SECONDS)
-        )
-        rt = (
-            RefreshToken.objects.filter(null_or_recent, token=refresh_token)
-            .select_related("access_token")
-            .first()
-        )
+        rt = RefreshToken.objects.filter(token=refresh_token).select_related("access_token").first()
 
         if not rt:
+            return False
+
+        if rt.revoked is not None and rt.revoked <= timezone.now() - timedelta(
+            seconds=oauth2_settings.REFRESH_TOKEN_GRACE_PERIOD_SECONDS
+        ):
+            if oauth2_settings.REFRESH_TOKEN_REUSE_PROTECTION and rt.token_family:
+                rt_token_family = RefreshToken.objects.filter(token_family=rt.token_family)
+                for related_rt in rt_token_family.all():
+                    related_rt.revoke()
             return False
 
         request.user = rt.user
         request.refresh_token = rt.token
         # Temporary store RefreshToken instance to be reused by get_original_scopes and save_bearer_token.
         request.refresh_token_instance = rt
+
         return rt.application == client
 
     @transaction.atomic

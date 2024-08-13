@@ -16,10 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 ### Added
-* Add TokenChecksumField to compute and store SHA-256 checksums for tokens in AbstractAccessToken model.
 * Add migration to include `token_checksum` field in AbstractAccessToken model.
+* #1404 Add a new setting `REFRESH_TOKEN_REUSE_PROTECTION`
 ### Changed
-* Update token to TextField from CharField with 255 character limit in AbstractAccessToken model. Removing the 255 character limit enables supporting JWT tokens with additional claims
+* Update token to TextField from CharField with 255 character limit and SHA-256 checksum in AbstractAccessToken model. Removing the 255 character limit enables supporting JWT tokens with additional claims
 
 * Update middleware, validators, and views to use token checksums instead of token for token retrieval and validation.
 ### Deprecated
@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #1425 Remove deprecated `RedirectURIValidator`, `WildcardSet` per #1345; `validate_logout_request` per #1274
 
 ### Fixed
+* #1443 Query strings with invalid hex values now raise a SuspiciousOperation exception (in DRF extension) instead of raising a 500 ValueError: Invalid hex encoding in query string.
 ### Security
 
 ## [2.4.0] - 2024-05-13
