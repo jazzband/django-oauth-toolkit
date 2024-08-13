@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 ### Added
+* #1404 Add a new setting `REFRESH_TOKEN_REUSE_PROTECTION`
 ### Changed
 ### Deprecated
 ### Removed
