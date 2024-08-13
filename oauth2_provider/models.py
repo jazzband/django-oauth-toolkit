@@ -1,3 +1,4 @@
+import hashlib
 import logging
 import time
 import uuid
@@ -41,6 +42,14 @@ class ClientSecretField(models.CharField):
             hashed_secret = make_password(secret)
             setattr(model_instance, self.attname, hashed_secret)
             return hashed_secret
+        return super().pre_save(model_instance, add)
+
+
+class TokenChecksumField(models.CharField):
+    def pre_save(self, model_instance, add):
+        token = getattr(model_instance, "token")
+        checksum = hashlib.sha256(token.encode("utf-8")).hexdigest()
+        setattr(model_instance, self.attname, checksum)
         return super().pre_save(model_instance, add)
 
 
@@ -379,8 +388,10 @@ class AbstractAccessToken(models.Model):
         null=True,
         related_name="refreshed_access_token",
     )
-    token = models.CharField(
-        max_length=255,
+    token = models.TextField()
+    token_checksum = TokenChecksumField(
+        max_length=64,
+        blank=True,
         unique=True,
         db_index=True,
     )

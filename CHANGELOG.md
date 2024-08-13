@@ -16,8 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 ### Added
+* Add migration to include `token_checksum` field in AbstractAccessToken model.
 * #1404 Add a new setting `REFRESH_TOKEN_REUSE_PROTECTION`
 ### Changed
+* Update token to TextField from CharField with 255 character limit and SHA-256 checksum in AbstractAccessToken model. Removing the 255 character limit enables supporting JWT tokens with additional claims
+
+* Update middleware, validators, and views to use token checksums instead of token for token retrieval and validation.
 ### Deprecated
 ### Removed
 * #1425 Remove deprecated `RedirectURIValidator`, `WildcardSet` per #1345; `validate_logout_request` per #1274
