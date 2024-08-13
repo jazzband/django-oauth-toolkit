@@ -7,7 +7,7 @@ from oauth2_provider.settings import oauth2_settings
 class Migration(migrations.Migration):
     dependencies = [
         ("oauth2_provider", "0011_refreshtoken_token_family"),
-        migrations.swappable_dependency(oauth2_settings.OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL),
+        migrations.swappable_dependency(oauth2_settings.ACCESS_TOKEN_MODEL),
     ]
 
     operations = [
