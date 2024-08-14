@@ -40,7 +40,7 @@ oidc_urlpatterns = [
         views.ConnectDiscoveryInfoView.as_view(),
         name="oidc-connect-discovery-info",
     ),
-    path("\.well-known/jwks.json", views.JwksInfoView.as_view(), name="jwks-info"),
+    path(".well-known/jwks.json", views.JwksInfoView.as_view(), name="jwks-info"),
     path("userinfo/", views.UserInfoView.as_view(), name="user-info"),
     path("logout/", views.RPInitiatedLogoutView.as_view(), name="rp-initiated-logout"),
 ]
