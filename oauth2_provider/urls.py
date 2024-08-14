@@ -23,7 +23,8 @@ management_urlpatterns = [
     path("applications/<slug:pk>/update/", views.ApplicationUpdate.as_view(), name="update"),
     # Token management views
     path("authorized_tokens/", views.AuthorizedTokensListView.as_view(), name="authorized-token-list"),
-    path("authorized_tokens/<slug:pk>/delete/",
+    path(
+        "authorized_tokens/<slug:pk>/delete/",
         views.AuthorizedTokenDeleteView.as_view(),
         name="authorized-token-delete",
     ),
