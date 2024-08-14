@@ -16,11 +16,9 @@ jobs:
         - '3.11'
         - '3.12'
         django-version:
-        - '3.2'
-        - '4.0'
-        - '4.1'
         - '4.2'
         - '5.0'
+        - '5.1'
         - 'main'
         exclude:
           # https://docs.djangoproject.com/en/dev/faq/install/#what-python-version-can-i-use-with-django
@@ -31,19 +29,13 @@ jobs:
           - python-version: '3.9'
             django-version: '5.0'
           - python-version: '3.8'
+            django-version: '5.1'
+          - python-version: '3.9'
+            django-version: '5.1'
+          - python-version: '3.8'
             django-version: 'main'
           - python-version: '3.9'
             django-version: 'main'
-
-          # Python 3.12 is not supported by Django < 5.0
-          - python-version: '3.12'
-            django-version: '3.2'
-          - python-version: '3.12'
-            django-version: '4.0'
-          - python-version: '3.12'
-            django-version: '4.1'
-          - python-version: '3.12'
-            django-version: '4.2'
 
     steps:
     - uses: actions/checkout@v4
