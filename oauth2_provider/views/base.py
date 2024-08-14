@@ -13,6 +13,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import FormView, View
 
+from ..compat import login_not_required
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
 from ..http import OAuth2ResponseRedirect
@@ -274,6 +275,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
 
 
 @method_decorator(csrf_exempt, name="dispatch")
+@method_decorator(login_not_required, name="dispatch")
 class TokenView(OAuthLibMixin, View):
     """
     Implements an endpoint to provide access tokens
@@ -301,6 +303,7 @@ class TokenView(OAuthLibMixin, View):
 
 
 @method_decorator(csrf_exempt, name="dispatch")
+@method_decorator(login_not_required, name="dispatch")
 class RevokeTokenView(OAuthLibMixin, View):
     """
     Implements an endpoint to revoke access or refresh tokens
