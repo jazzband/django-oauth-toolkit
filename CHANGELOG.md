@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [unreleased]
 ### Added
 * Add migration to include `token_checksum` field in AbstractAccessToken model.
+* Added compatibility with LoginRequiredMiddleware introduced in Django 5.1
 * #1404 Add a new setting `REFRESH_TOKEN_REUSE_PROTECTION`
 ### Changed
 * Update token to TextField from CharField with 255 character limit and SHA-256 checksum in AbstractAccessToken model. Removing the 255 character limit enables supporting JWT tokens with additional claims
