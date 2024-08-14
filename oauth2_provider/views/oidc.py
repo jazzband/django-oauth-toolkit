@@ -39,6 +39,7 @@ from .mixins import OAuthLibMixin, OIDCLogoutOnlyMixin, OIDCOnlyMixin
 
 Application = get_application_model()
 
+
 @method_decorator(login_not_required, name="dispatch")
 class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
     """
@@ -105,6 +106,7 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
         response = JsonResponse(data)
         response["Access-Control-Allow-Origin"] = "*"
         return response
+
 
 @method_decorator(login_not_required, name="dispatch")
 class JwksInfoView(OIDCOnlyMixin, View):
@@ -211,6 +213,7 @@ def _validate_claims(request, claims):
         return False
 
     return True
+
 
 @method_decorator(login_not_required, name="dispatch")
 class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
