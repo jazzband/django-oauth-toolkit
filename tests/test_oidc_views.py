@@ -19,7 +19,6 @@ from oauth2_provider.views.oidc import RPInitiatedLogoutView, _load_id_token, _v
 
 from . import presets
 from .common_testing import OAuth2ProviderTestCase as TestCase
-from .common_testing import test_database_names
 
 
 @pytest.mark.usefixtures("oauth2_settings")
@@ -222,7 +221,7 @@ def mock_request_for(user):
     return request
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 def test_validate_logout_request(oidc_tokens, public_application, rp_settings):
     oidc_tokens = oidc_tokens
     application = oidc_tokens.application
@@ -300,7 +299,7 @@ def test_validate_logout_request(oidc_tokens, public_application, rp_settings):
         )
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 @pytest.mark.parametrize("ALWAYS_PROMPT", [True, False])
 def test_must_prompt(oidc_tokens, other_user, rp_settings, ALWAYS_PROMPT):
     rp_settings.OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT = ALWAYS_PROMPT
@@ -321,14 +320,14 @@ def is_logged_in(client):
     return get_user(client).is_authenticated
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 def test_rp_initiated_logout_get(logged_in_client, rp_settings):
     rsp = logged_in_client.get(reverse("oauth2_provider:rp-initiated-logout"), data={})
     assert rsp.status_code == 200
     assert is_logged_in(logged_in_client)
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 def test_rp_initiated_logout_get_id_token(logged_in_client, oidc_tokens, rp_settings):
     rsp = logged_in_client.get(
         reverse("oauth2_provider:rp-initiated-logout"), data={"id_token_hint": oidc_tokens.id_token}
@@ -338,7 +337,7 @@ def test_rp_initiated_logout_get_id_token(logged_in_client, oidc_tokens, rp_sett
     assert not is_logged_in(logged_in_client)
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 def test_rp_initiated_logout_get_revoked_id_token(logged_in_client, oidc_tokens, rp_settings):
     validator = oauth2_settings.OAUTH2_VALIDATOR_CLASS()
     validator._load_id_token(oidc_tokens.id_token).revoke()
@@ -349,7 +348,7 @@ def test_rp_initiated_logout_get_revoked_id_token(logged_in_client, oidc_tokens,
     assert is_logged_in(logged_in_client)
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 def test_rp_initiated_logout_get_id_token_redirect(logged_in_client, oidc_tokens, rp_settings):
     rsp = logged_in_client.get(
         reverse("oauth2_provider:rp-initiated-logout"),
@@ -360,7 +359,7 @@ def test_rp_initiated_logout_get_id_token_redirect(logged_in_client, oidc_tokens
     assert not is_logged_in(logged_in_client)
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 def test_rp_initiated_logout_get_id_token_redirect_with_state(logged_in_client, oidc_tokens, rp_settings):
     rsp = logged_in_client.get(
         reverse("oauth2_provider:rp-initiated-logout"),
@@ -375,7 +374,7 @@ def test_rp_initiated_logout_get_id_token_redirect_with_state(logged_in_client, 
     assert not is_logged_in(logged_in_client)
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 def test_rp_initiated_logout_get_id_token_missmatch_client_id(
     logged_in_client, oidc_tokens, public_application, rp_settings
 ):
@@ -387,7 +386,7 @@ def test_rp_initiated_logout_get_id_token_missmatch_client_id(
     assert is_logged_in(logged_in_client)
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 def test_rp_initiated_logout_public_client_redirect_client_id(
     logged_in_client, oidc_non_confidential_tokens, public_application, rp_settings
 ):
@@ -403,7 +402,7 @@ def test_rp_initiated_logout_public_client_redirect_client_id(
     assert not is_logged_in(logged_in_client)
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 def test_rp_initiated_logout_public_client_strict_redirect_client_id(
     logged_in_client, oidc_non_confidential_tokens, public_application, oauth2_settings
 ):
@@ -420,7 +419,7 @@ def test_rp_initiated_logout_public_client_strict_redirect_client_id(
     assert is_logged_in(logged_in_client)
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 def test_rp_initiated_logout_get_client_id(logged_in_client, oidc_tokens, rp_settings):
     rsp = logged_in_client.get(
         reverse("oauth2_provider:rp-initiated-logout"), data={"client_id": oidc_tokens.application.client_id}
@@ -429,7 +428,7 @@ def test_rp_initiated_logout_get_client_id(logged_in_client, oidc_tokens, rp_set
     assert is_logged_in(logged_in_client)
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 def test_rp_initiated_logout_post(logged_in_client, oidc_tokens, rp_settings):
     form_data = {
         "client_id": oidc_tokens.application.client_id,
@@ -439,7 +438,7 @@ def test_rp_initiated_logout_post(logged_in_client, oidc_tokens, rp_settings):
     assert is_logged_in(logged_in_client)
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 def test_rp_initiated_logout_post_allowed(logged_in_client, oidc_tokens, rp_settings):
     form_data = {"client_id": oidc_tokens.application.client_id, "allow": True}
     rsp = logged_in_client.post(reverse("oauth2_provider:rp-initiated-logout"), form_data)
@@ -448,7 +447,7 @@ def test_rp_initiated_logout_post_allowed(logged_in_client, oidc_tokens, rp_sett
     assert not is_logged_in(logged_in_client)
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 def test_rp_initiated_logout_post_no_session(client, oidc_tokens, rp_settings):
     form_data = {"client_id": oidc_tokens.application.client_id, "allow": True}
     rsp = client.post(reverse("oauth2_provider:rp-initiated-logout"), form_data)
@@ -457,7 +456,7 @@ def test_rp_initiated_logout_post_no_session(client, oidc_tokens, rp_settings):
     assert not is_logged_in(client)
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_LOGOUT)
 def test_rp_initiated_logout_expired_tokens_accept(logged_in_client, application, expired_id_token):
     # Accepting expired (but otherwise valid and signed by us) tokens is enabled. Logout should go through.
@@ -472,7 +471,7 @@ def test_rp_initiated_logout_expired_tokens_accept(logged_in_client, application
     assert not is_logged_in(logged_in_client)
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_LOGOUT_DENY_EXPIRED)
 def test_rp_initiated_logout_expired_tokens_deny(logged_in_client, application, expired_id_token):
     # Expired tokens should not be accepted by default.
@@ -487,14 +486,14 @@ def test_rp_initiated_logout_expired_tokens_deny(logged_in_client, application, 
     assert is_logged_in(logged_in_client)
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_LOGOUT)
 def test_load_id_token_accept_expired(expired_id_token):
     id_token, _ = _load_id_token(expired_id_token)
     assert isinstance(id_token, get_id_token_model())
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_LOGOUT)
 def test_load_id_token_wrong_aud(id_token_wrong_aud):
     id_token, claims = _load_id_token(id_token_wrong_aud)
@@ -502,7 +501,7 @@ def test_load_id_token_wrong_aud(id_token_wrong_aud):
     assert claims is None
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_LOGOUT_DENY_EXPIRED)
 def test_load_id_token_deny_expired(expired_id_token):
     id_token, claims = _load_id_token(expired_id_token)
@@ -510,7 +509,7 @@ def test_load_id_token_deny_expired(expired_id_token):
     assert claims is None
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_LOGOUT)
 def test_validate_claims_wrong_iss(id_token_wrong_iss):
     id_token, claims = _load_id_token(id_token_wrong_iss)
@@ -519,7 +518,7 @@ def test_validate_claims_wrong_iss(id_token_wrong_iss):
     assert not _validate_claims(mock_request(), claims)
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_LOGOUT)
 def test_validate_claims(oidc_tokens):
     id_token, claims = _load_id_token(oidc_tokens.id_token)
@@ -527,7 +526,7 @@ def test_validate_claims(oidc_tokens):
     assert _validate_claims(mock_request_for(oidc_tokens.user), claims)
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 @pytest.mark.parametrize("method", ["get", "post"])
 def test_userinfo_endpoint(oidc_tokens, client, method):
     auth_header = "Bearer %s" % oidc_tokens.access_token
@@ -540,7 +539,7 @@ def test_userinfo_endpoint(oidc_tokens, client, method):
     assert data["sub"] == str(oidc_tokens.user.pk)
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 def test_userinfo_endpoint_bad_token(oidc_tokens, client):
     # No access token
     rsp = client.get(reverse("oauth2_provider:user-info"))
@@ -553,7 +552,7 @@ def test_userinfo_endpoint_bad_token(oidc_tokens, client):
     assert rsp.status_code == 401
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 def test_token_deletion_on_logout(oidc_tokens, logged_in_client, rp_settings):
     AccessToken = get_access_token_model()
     IDToken = get_id_token_model()
@@ -576,7 +575,7 @@ def test_token_deletion_on_logout(oidc_tokens, logged_in_client, rp_settings):
     assert all([token.revoked <= timezone.now() for token in RefreshToken.objects.all()])
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 def test_token_deletion_on_logout_expired_session(oidc_tokens, client, rp_settings):
     AccessToken = get_access_token_model()
     IDToken = get_id_token_model()
@@ -617,7 +616,7 @@ def test_token_deletion_on_logout_expired_session(oidc_tokens, client, rp_settin
     assert all(token.revoked <= timezone.now() for token in RefreshToken.objects.all())
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 @pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_LOGOUT_KEEP_TOKENS)
 def test_token_deletion_on_logout_disabled(oidc_tokens, logged_in_client, rp_settings):
     rp_settings.OIDC_RP_INITIATED_LOGOUT_DELETE_TOKENS = False
@@ -653,7 +652,7 @@ def claim_user_email(request):
     return EXAMPLE_EMAIL
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 def test_userinfo_endpoint_custom_claims_callable(oidc_tokens, client, oauth2_settings):
     class CustomValidator(OAuth2Validator):
         oidc_claim_scope = None
@@ -681,7 +680,7 @@ def test_userinfo_endpoint_custom_claims_callable(oidc_tokens, client, oauth2_se
     assert data["email"] == EXAMPLE_EMAIL
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 def test_userinfo_endpoint_custom_claims_email_scope_callable(
     oidc_email_scope_tokens, client, oauth2_settings
 ):
@@ -708,7 +707,7 @@ def test_userinfo_endpoint_custom_claims_email_scope_callable(
     assert data["email"] == EXAMPLE_EMAIL
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 def test_userinfo_endpoint_custom_claims_plain(oidc_tokens, client, oauth2_settings):
     class CustomValidator(OAuth2Validator):
         oidc_claim_scope = None
@@ -736,7 +735,7 @@ def test_userinfo_endpoint_custom_claims_plain(oidc_tokens, client, oauth2_setti
     assert data["email"] == EXAMPLE_EMAIL
 
 
-@pytest.mark.django_db(databases=test_database_names)
+@pytest.mark.django_db
 def test_userinfo_endpoint_custom_claims_email_scopeplain(oidc_email_scope_tokens, client, oauth2_settings):
     class CustomValidator(OAuth2Validator):
         def get_additional_claims(self, request):

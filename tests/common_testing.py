@@ -10,8 +10,6 @@ from django.test import TransactionTestCase as DjangoTransactionTestCase
 # no assumption that 'default' is a valid database.
 # For any test that would usually use Django's TestCase or TransactionTestCase using
 # the classes defined here is all that is required.
-# Any test that uses pytest's django_db need to include a databases parameter using
-# test_database_names defined below.
 # In test code, anywhere the database is referenced the Django router needs to be used
 # exactly like the package's code.
 # For instance:
@@ -20,11 +18,19 @@ from django.test import TransactionTestCase as DjangoTransactionTestCase
 # Without the 'using' option, this test fails in the multiple database scenario because
 # 'default' is used.
 
-test_database_names = ["alpha", "beta"] if len(settings.DATABASES) > 1 else ["default"]
+
+def retrieve_current_databases():
+    if len(settings.DATABASES) > 1:
+        return [name for name in settings.DATABASES if name != "default"]
+    else:
+        return ["default"]
 
 
 class OAuth2ProviderBase:
-    databases = test_database_names
+    @classmethod
+    def setUpClass(cls):
+        cls.databases = retrieve_current_databases()
+        super().setUpClass()
 
 
 class OAuth2ProviderTestCase(OAuth2ProviderBase, DjangoTestCase):
