@@ -1,17 +1,10 @@
-[tool.black]
-line-length = 110
-target-version = ['py38']
-exclude = '''
-^/(
-        oauth2_provider/migrations/
-    |   tests/migrations/
-    |   .tox
-)
-'''
-
 # Ref: https://github.com/codespell-project/codespell#using-a-config-file
 [tool.codespell]
 skip = '.git,package-lock.json,locale,AUTHORS,tox.ini'
 check-hidden = true
 ignore-regex = '.*pragma: codespell-ignore.*'
 ignore-words-list = 'assertIn'
+
+[tool.ruff]
+line-length = 110
+exclude = [".tox", "oauth2_provider/migrations/", "tests/migrations/", "manage.py"]
