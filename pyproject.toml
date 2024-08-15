@@ -8,3 +8,10 @@ ignore-words-list = 'assertIn'
 [tool.ruff]
 line-length = 110
 exclude = [".tox", "oauth2_provider/migrations/", "tests/migrations/", "manage.py"]
+
+[tool.ruff.lint]
+select = ["I", "Q"]
+
+[tool.ruff.lint.isort]
+lines-after-imports = 2
+known-first-party = ["oauth2_provider"]
