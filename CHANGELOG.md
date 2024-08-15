@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Deprecated
 ### Removed
 * #1425 Remove deprecated `RedirectURIValidator`, `WildcardSet` per #1345; `validate_logout_request` per #1274
+* Remove support for Django versions below 4.2
 
 ### Fixed
 * #1443 Query strings with invalid hex values now raise a SuspiciousOperation exception (in DRF extension) instead of raising a 500 ValueError: Invalid hex encoding in query string.
