@@ -26,7 +26,8 @@ from .mixins import OAuthLibMixin
 
 log = logging.getLogger("oauth2_provider")
 
-# login_not_required decorator to bypass LoginRequiredMiddleware 
+
+# login_not_required decorator to bypass LoginRequiredMiddleware
 @method_decorator(login_not_required, name="dispatch")
 class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
     """
