@@ -244,7 +244,7 @@ class AbstractApplication(models.Model):
                 raise ValidationError(_("You cannot use HS256 with public grants or clients"))
 
     def get_absolute_url(self):
-        return reverse("oauth2_provider:detail", args=[str(self.id)])
+        return reverse("oauth2_provider:detail", args=[str(self.pk)])
 
     def get_allowed_schemes(self):
         """
@@ -520,7 +520,7 @@ class AbstractRefreshToken(models.Model):
             self = list(token)[0]
 
             try:
-                access_token_model.objects.get(id=self.access_token_id).revoke()
+                access_token_model.objects.get(pk=self.access_token_id).revoke()
             except access_token_model.DoesNotExist:
                 pass
             self.access_token = None
