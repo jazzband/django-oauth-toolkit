@@ -298,7 +298,10 @@ def oidc_non_confidential_tokens(oauth2_settings, public_application, test_user,
 
 
 @pytest.fixture(autouse=True)
-def django_login_required_middleware(settings):
+def django_login_required_middleware(settings, request):
+    if 'nologinrequiredmiddleware' in request.keywords:
+        return
+
     # Django 5.1 introduced LoginRequiredMiddleware
     if VERSION[0] >= 5 and VERSION[1] >= 1:
         settings.MIDDLEWARE = [*settings.MIDDLEWARE, "django.contrib.auth.middleware.LoginRequiredMiddleware"]
