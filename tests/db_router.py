@@ -1,4 +1,4 @@
-apps_in_beta = {"tests", "some_other_app", "this_one_too"}
+apps_in_beta = {"some_other_app", "this_one_too"}
 
 # These are bare minimum routers to fake the scenario where there is actually a
 # decision around where an application's models might live.
