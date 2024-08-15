@@ -622,7 +622,7 @@ class OAuth2Validator(RequestValidator):
                     # from the db while acquiring a lock on it
                     # We also put it in the "request cache"
                     refresh_token_instance = RefreshToken.objects.select_for_update().get(
-                        id=refresh_token_instance.id
+                        pk=refresh_token_instance.pk
                     )
                     request.refresh_token_instance = refresh_token_instance
 
@@ -756,7 +756,7 @@ class OAuth2Validator(RequestValidator):
         rt = request.refresh_token_instance
         if not rt.access_token_id:
             try:
-                return AccessToken.objects.get(source_refresh_token_id=rt.id).scope
+                return AccessToken.objects.get(source_refresh_token_id=rt.pk).scope
             except AccessToken.DoesNotExist:
                 return []
         return rt.access_token.scope
@@ -810,9 +810,9 @@ class OAuth2Validator(RequestValidator):
 
     def get_claim_dict(self, request):
         if self._get_additional_claims_is_request_agnostic():
-            claims = {"sub": lambda r: str(r.user.id)}
+            claims = {"sub": lambda r: str(r.user.pk)}
         else:
-            claims = {"sub": str(request.user.id)}
+            claims = {"sub": str(request.user.pk)}
 
         # https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
         if self._get_additional_claims_is_request_agnostic():

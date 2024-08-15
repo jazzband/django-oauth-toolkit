@@ -49,8 +49,8 @@
 
         <div class="btn-toolbar">
             <a class="btn" href="{% url "oauth2_provider:list" %}">{% trans "Go Back" %}</a>
-            <a class="btn btn-primary" href="{% url "oauth2_provider:update" application.id %}">{% trans "Edit" %}</a>
-            <a class="btn btn-danger" href="{% url "oauth2_provider:delete" application.id %}">{% trans "Delete" %}</a>
+            <a class="btn btn-primary" href="{% url "oauth2_provider:update" application.pk %}">{% trans "Edit" %}</a>
+            <a class="btn btn-danger" href="{% url "oauth2_provider:delete" application.pk %}">{% trans "Delete" %}</a>
         </div>
     </div>
 {% endblock content %}
