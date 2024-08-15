@@ -13,6 +13,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import FormView, View
 
+from ..compat import login_not_required
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
 from ..http import OAuth2ResponseRedirect
@@ -26,6 +27,8 @@ from .mixins import OAuthLibMixin
 log = logging.getLogger("oauth2_provider")
 
 
+# login_not_required decorator to bypass LoginRequiredMiddleware
+@method_decorator(login_not_required, name="dispatch")
 class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
     """
     Implements a generic endpoint to handle *Authorization Requests* as in :rfc:`4.1.1`. The view
@@ -274,6 +277,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
 
 
 @method_decorator(csrf_exempt, name="dispatch")
+@method_decorator(login_not_required, name="dispatch")
 class TokenView(OAuthLibMixin, View):
     """
     Implements an endpoint to provide access tokens
@@ -301,6 +305,7 @@ class TokenView(OAuthLibMixin, View):
 
 
 @method_decorator(csrf_exempt, name="dispatch")
+@method_decorator(login_not_required, name="dispatch")
 class RevokeTokenView(OAuthLibMixin, View):
     """
     Implements an endpoint to revoke access or refresh tokens
