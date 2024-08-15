@@ -15,3 +15,9 @@ skip = '.git,package-lock.json,locale,AUTHORS,tox.ini'
 check-hidden = true
 ignore-regex = '.*pragma: codespell-ignore.*'
 ignore-words-list = 'assertIn'
+
+[tool.pytest.ini_options]
+markers = [
+    "nologinrequiredmiddleware",
+    "oauth2_settings",
+]
