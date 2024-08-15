@@ -27,13 +27,11 @@ add a comment stating you're working on it.
 Code Style
 ==========
 
-The project uses `flake8 <https://flake8.pycqa.org/en/latest/>`_ for linting,
-`ruff <https://docs.astral.sh/ruff/>`_ for formatting the code and sorting imports,
-and `pre-commit <https://pre-commit.com/>`_ for checking/fixing commits for
-correctness before they are made.
+The project uses `ruff <https://docs.astral.sh/ruff/>`_ for linting, formatting the code and sorting imports,
+and `pre-commit <https://pre-commit.com/>`_ for checking/fixing commits for correctness before they are made.
 
 You will need to install ``pre-commit`` yourself, and then ``pre-commit`` will
-take care of installing ``flake8`` and ``ruff``.
+take care of installing ``ruff``.
 
 After cloning your repository, go into it and run::
 
@@ -264,7 +262,7 @@ add a comment. If you think a function is not trivial, add a docstrings.
 
 To see if your code formatting will pass muster use::
 
-  tox -e flake8
+  tox -e lint
 
 The contents of this page are heavily based on the docs from `django-admin2 <https://github.com/twoscoops/django-admin2>`_
 

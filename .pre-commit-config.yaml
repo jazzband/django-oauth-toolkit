@@ -16,11 +16,6 @@ repos:
       - id: check-yaml
       - id: mixed-line-ending
         args: ['--fix=lf']
-  - repo: https://github.com/PyCQA/flake8
-    rev: 7.1.1
-    hooks:
-      - id: flake8
-        exclude: ^(oauth2_provider/migrations/|tests/migrations/)
   - repo: https://github.com/sphinx-contrib/sphinx-lint
     rev: v0.9.1
     hooks:
