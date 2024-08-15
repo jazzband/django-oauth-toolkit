@@ -11,6 +11,7 @@ from django.urls import path
 from django.utils import timezone
 from oauthlib.common import Request
 
+from oauth2_provider.compat import login_not_required
 from oauth2_provider.models import get_access_token_model, get_application_model
 from oauth2_provider.oauth2_validators import OAuth2Validator
 from oauth2_provider.settings import oauth2_settings
@@ -93,7 +94,7 @@ def mocked_introspect_request_short_living_token(url, data, *args, **kwargs):
 
 urlpatterns = [
     path("oauth2/", include("oauth2_provider.urls")),
-    path("oauth2-test-resource/", ScopeResourceView.as_view()),
+    path("oauth2-test-resource/", login_not_required(ScopeResourceView.as_view())),
 ]
 
 

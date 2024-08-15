@@ -14,6 +14,7 @@ from jwcrypto.jws import InvalidJWSObject
 from jwcrypto.jwt import JWTExpired
 from oauthlib.common import add_params_to_uri
 
+from ..compat import login_not_required
 from ..exceptions import (
     ClientIdMissmatch,
     InvalidIDTokenError,
@@ -39,6 +40,7 @@ from .mixins import OAuthLibMixin, OIDCLogoutOnlyMixin, OIDCOnlyMixin
 Application = get_application_model()
 
 
+@method_decorator(login_not_required, name="dispatch")
 class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
     """
     View used to show oidc provider configuration information per
@@ -106,6 +108,7 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
         return response
 
 
+@method_decorator(login_not_required, name="dispatch")
 class JwksInfoView(OIDCOnlyMixin, View):
     """
     View used to show oidc json web key set document
@@ -134,6 +137,7 @@ class JwksInfoView(OIDCOnlyMixin, View):
 
 
 @method_decorator(csrf_exempt, name="dispatch")
+@method_decorator(login_not_required, name="dispatch")
 class UserInfoView(OIDCOnlyMixin, OAuthLibMixin, View):
     """
     View used to show Claims about the authenticated End-User
@@ -211,6 +215,7 @@ def _validate_claims(request, claims):
     return True
 
 
+@method_decorator(login_not_required, name="dispatch")
 class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
     template_name = "oauth2_provider/logout_confirm.html"
     form_class = ConfirmLogoutForm

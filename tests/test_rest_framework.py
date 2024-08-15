@@ -127,6 +127,7 @@ urlpatterns = [
 
 
 @override_settings(ROOT_URLCONF=__name__)
+@pytest.mark.nologinrequiredmiddleware
 @pytest.mark.usefixtures("oauth2_settings")
 @pytest.mark.oauth2_settings(presets.REST_FRAMEWORK_SCOPES)
 class TestOAuth2Authentication(TestCase):
