@@ -296,6 +296,7 @@ def oidc_non_confidential_tokens(oauth2_settings, public_application, test_user,
         "http://other.org",
     )
 
+
 @pytest.fixture(autouse=True)
 def django_login_required_middleware(settings):
     # Django 5.1 introduced LoginRequiredMiddleware
