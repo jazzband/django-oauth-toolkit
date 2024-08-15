@@ -1,4 +1,5 @@
 import calendar
+import hashlib
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
@@ -24,8 +25,11 @@ class IntrospectTokenView(ClientProtectedScopedResourceView):
     @staticmethod
     def get_token_response(token_value=None):
         try:
+            token_checksum = hashlib.sha256(token_value.encode("utf-8")).hexdigest()
             token = (
-                get_access_token_model().objects.select_related("user", "application").get(token=token_value)
+                get_access_token_model()
+                .objects.select_related("user", "application")
+                .get(token_checksum=token_checksum)
             )
         except ObjectDoesNotExist:
             return JsonResponse({"active": False}, status=200)

@@ -185,6 +185,18 @@ The import string of the class (model) representing your refresh tokens. Overwri
 this value if you wrote your own implementation (subclass of
 ``oauth2_provider.models.RefreshToken``).
 
+REFRESH_TOKEN_REUSE_PROTECTION
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+When this is set to ``True`` (default ``False``), and ``ROTATE_REFRESH_TOKEN`` is used, the server will check
+if a previously, already revoked refresh token is used a second time. If it detects a reuse, it will automatically
+revoke all related refresh tokens.
+A reused refresh token indicates a breach. Since the server can't determine which request came from the legitimate
+user and which from an attacker, it will end the session for both. The user is required to perform a new login.
+
+Can be used in combination with ``REFRESH_TOKEN_GRACE_PERIOD_SECONDS``
+
+More details at https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics-29#name-recommendations
+
 ROTATE_REFRESH_TOKEN
 ~~~~~~~~~~~~~~~~~~~~
 When is set to ``True`` (default) a new refresh token is issued to the client when the client refreshes an access token.
