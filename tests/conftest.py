@@ -4,6 +4,7 @@ from types import SimpleNamespace
 from urllib.parse import parse_qs, urlparse
 
 import pytest
+from django import VERSION
 from django.conf import settings as test_settings
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -294,3 +295,9 @@ def oidc_non_confidential_tokens(oauth2_settings, public_application, test_user,
         "openid",
         "http://other.org",
     )
+
+@pytest.fixture(autouse=True)
+def django_login_required_middleware(settings):
+    # Django 5.1 introduced LoginRequiredMiddleware
+    if VERSION[0] >= 5 and VERSION[1] >= 1:
+        settings.MIDDLEWARE = [*settings.MIDDLEWARE, "django.contrib.auth.middleware.LoginRequiredMiddleware"]

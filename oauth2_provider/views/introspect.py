@@ -6,11 +6,13 @@ from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
-from oauth2_provider.models import get_access_token_model
-from oauth2_provider.views.generic import ClientProtectedScopedResourceView
+from ..compat import login_not_required
+from ..models import get_access_token_model
+from ..views.generic import ClientProtectedScopedResourceView
 
 
 @method_decorator(csrf_exempt, name="dispatch")
+@method_decorator(login_not_required, name="dispatch")
 class IntrospectTokenView(ClientProtectedScopedResourceView):
     """
     Implements an endpoint for token introspection based
