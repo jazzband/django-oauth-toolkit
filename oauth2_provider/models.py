@@ -243,7 +243,6 @@ class AbstractApplication(models.Model):
             ):
                 raise ValidationError(_("You cannot use HS256 with public grants or clients"))
 
-    # TODO: I removed usage of this in templates. so it can label as deprecated.`
     def get_absolute_url(self):
         return reverse("oauth2_provider:detail", args=[str(self.pk)])
 
