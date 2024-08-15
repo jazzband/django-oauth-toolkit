@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.OAUTH2_PROVIDER_APPLICATION_MODEL),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('tests', '0005_basetestapplication_allowed_origins_and_more'),
+        ('tests', '0006_basetestapplication_token_family'),
     ]
 
     operations = [
