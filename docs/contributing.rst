@@ -252,6 +252,26 @@ Open :file:`mycoverage/index.html` in your browser and you can see a coverage su
 
 There's no need to wait for Codecov to complain after you submit your PR.
 
+The tests are generic and written to work with both single database and multiple database configurations. tox will run
+tests both ways. You can see the configurations used in tests/settings.py and tests/multi_db_settins.py.
+
+When there are multiple databases defined, Django tests will not work unless they are told which database(s) to work with.
+For test writers this means any test must either:
+- instead of Django's TestCase or TransactionTestCase use the versions of those
+  classes defined in tests/common_testing.py
+- when using pytest's `django_db` mark, define it like this:
+  `@pytest.mark.django_db(databases=retrieve_current_databases())`
+
+In test code, anywhere the database is referenced the Django router needs to be used exactly like the package's code.
+
+.. code-block:: python
+
+    token_database = router.db_for_write(AccessToken)
+    with self.assertNumQueries(1, using=token_database):
+        # call something using the database
+
+Without the 'using' option, this test fails in the multiple database scenario because 'default' will be used instead.
+
 Code conventions matter
 -----------------------
 
