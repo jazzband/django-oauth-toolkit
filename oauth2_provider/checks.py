@@ -7,7 +7,6 @@ from .settings import oauth2_settings
 
 @checks.register(checks.Tags.database)
 def validate_token_configuration(app_configs, **kwargs):
-    breakpoint()
     databases = set(
         router.db_for_write(apps.get_model(model))
         for model in (
