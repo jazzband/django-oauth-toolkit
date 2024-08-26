@@ -253,7 +253,7 @@ Open :file:`mycoverage/index.html` in your browser and you can see a coverage su
 There's no need to wait for Codecov to complain after you submit your PR.
 
 The tests are generic and written to work with both single database and multiple database configurations. tox will run
-tests both ways. You can see the configurations used in tests/settings.py and tests/multi_db_settins.py.
+tests both ways. You can see the configurations used in tests/settings.py and tests/multi_db_settings.py.
 
 When there are multiple databases defined, Django tests will not work unless they are told which database(s) to work with.
 For test writers this means any test must either:
