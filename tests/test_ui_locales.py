@@ -4,17 +4,20 @@ from django.urls import reverse
 
 from oauth2_provider.models import get_application_model
 
+
 UserModel = get_user_model()
 Application = get_application_model()
 
 
-@override_settings(OAUTH2_PROVIDER={
-    "OIDC_ENABLED": True,
-    "PKCE_REQUIRED": False,
-    "SCOPES": {
-        "openid": "OpenID connect",
-    },
-})
+@override_settings(
+    OAUTH2_PROVIDER={
+        "OIDC_ENABLED": True,
+        "PKCE_REQUIRED": False,
+        "SCOPES": {
+            "openid": "OpenID connect",
+        },
+    }
+)
 class TestUILocalesParam(TestCase):
     @classmethod
     def setUpTestData(cls):
