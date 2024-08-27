@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 * #1443 Query strings with invalid hex values now raise a SuspiciousOperation exception (in DRF extension) instead of raising a 500 ValueError: Invalid hex encoding in query string.
+* #1468 `ui_locales` request parameter triggers `AttributeError` under certain circumstances
 ### Security
 
 ## [2.4.0] - 2024-05-13
