@@ -186,6 +186,10 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         # a successful response depending on "approval_prompt" url parameter
         require_approval = request.GET.get("approval_prompt", oauth2_settings.REQUEST_APPROVAL_PROMPT)
 
+        if "ui_locales" in credentials and isinstance(credentials["ui_locales"], list):
+            # Make sure ui_locales a space separated string for oauthlib to handle it correctly.
+            credentials["ui_locales"] = " ".join(credentials["ui_locales"])
+
         try:
             # If skip_authorization field is True, skip the authorization screen even
             # if this is the first use of the application and there was no previous authorization.
