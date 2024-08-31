@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
   -->
 
-## [unreleased]
+## [2.5.0] - 2024-09-01
 ### Added
 * Add migration to include `token_checksum` field in AbstractAccessToken model.
 * Added compatibility with `LoginRequiredMiddleware` introduced in Django 5.1
