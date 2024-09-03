@@ -24,7 +24,7 @@ from django.utils.translation import gettext_lazy as _
 from jwcrypto import jws, jwt
 from jwcrypto.common import JWException
 from jwcrypto.jwt import JWTExpired
-from oauthlib.oauth2.rfc6749 import utils
+from oauthlib.oauth2.rfc6749 import errors, utils
 from oauthlib.openid import RequestValidator
 
 from .exceptions import FatalClientError
@@ -318,10 +318,15 @@ class OAuth2Validator(RequestValidator):
 
     def invalidate_authorization_code(self, client_id, code, request, *args, **kwargs):
         """
-        Remove the temporary grant used to swap the authorization token
+        Remove the temporary grant used to swap the authorization token.
+
+        :raises: InvalidGrantError if the grant does not exist.
         """
-        grant = Grant.objects.get(code=code, application=request.client)
-        grant.delete()
+        try:
+            grant = Grant.objects.get(code=code, application=request.client)
+            grant.delete()
+        except Grant.DoesNotExist:
+            raise errors.InvalidGrantError(request=request)
 
     def validate_client_id(self, client_id, request, *args, **kwargs):
         """

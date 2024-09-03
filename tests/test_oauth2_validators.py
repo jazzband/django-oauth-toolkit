@@ -8,9 +8,15 @@ from django.contrib.auth.hashers import make_password
 from django.utils import timezone
 from jwcrypto import jwt
 from oauthlib.common import Request
+from oauthlib.oauth2.rfc6749 import errors as rfc6749_errors
 
 from oauth2_provider.exceptions import FatalClientError
-from oauth2_provider.models import get_access_token_model, get_application_model, get_refresh_token_model
+from oauth2_provider.models import (
+    get_access_token_model,
+    get_application_model,
+    get_grant_model,
+    get_refresh_token_model,
+)
 from oauth2_provider.oauth2_backends import get_oauthlib_core
 from oauth2_provider.oauth2_validators import OAuth2Validator
 
@@ -30,6 +36,7 @@ except ImportError:
 UserModel = get_user_model()
 Application = get_application_model()
 AccessToken = get_access_token_model()
+Grant = get_grant_model()
 RefreshToken = get_refresh_token_model()
 
 CLEARTEXT_SECRET = "1234567890abcdefghijklmnopqrstuvwxyz"
@@ -580,3 +587,14 @@ def test_validate_id_token_bad_token_no_aud(oauth2_settings, mocker, oidc_key):
     validator = OAuth2Validator()
     status = validator.validate_id_token(token.serialize(), ["openid"], mocker.sentinel.request)
     assert status is False
+
+
+@pytest.mark.django_db
+def test_invalidate_authorization_token_returns_invalid_grant_error_when_grant_does_not_exist():
+    client_id = "123"
+    code = "12345"
+    request = Request("/")
+    assert Grant.objects.all().count() == 0
+    with pytest.raises(rfc6749_errors.InvalidGrantError):
+        validator = OAuth2Validator()
+        validator.invalidate_authorization_code(client_id=client_id, code=code, request=request)
