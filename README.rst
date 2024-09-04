@@ -141,4 +141,4 @@ Become a Project Lead
 ~~~~~~~~~~~~~~~~~~~~~
 
 If you are interested in stepping up to be a Project Lead, please take a look at
-the discussion about this <https://github.com/jazzband/django-oauth-toolkit/discussions/1479>`__.
+the `discussion about this <https://github.com/jazzband/django-oauth-toolkit/discussions/1479>`__.
