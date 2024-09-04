@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Update token to TextField from CharField with 255 character limit and SHA-256 checksum in AbstractAccessToken model. Removing the 255 character limit enables supporting JWT tokens with additional claims
 * Update middleware, validators, and views to use token checksums instead of token for token retrieval and validation.
 * #1446 use generic models pk instead of id.
-* Bump oauthlib version to 3.2.0 and above
+* Bump oauthlib version to 3.2.2 and above
 * Update the OAuth2Validator's invalidate_authorization_code method to return an InvalidGrantError if the associated grant does not exist.
 
 ### Deprecated
