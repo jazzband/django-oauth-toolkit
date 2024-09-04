@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #1446 use generic models pk instead of id.
 * Transactions wrapping writes of the Tokens now rely on Django's database routers to determine the correct
   database to use instead of assuming that 'default' is the correct one.
-* Bump oauthlib version to 3.2.0 and above
+* Bump oauthlib version to 3.2.2 and above
 * Update the OAuth2Validator's invalidate_authorization_code method to return an InvalidGrantError if the associated grant does not exist.
 
 ### Deprecated
