@@ -145,6 +145,5 @@ class CreateApplicationTest(TestCase):
         self.assertIn("783", output_str)
         # newer Django (>5.1) changes the error message from "does not exist" to "is not a valid choice"
         self.assertTrue(
-            any(substring in output_str for substring in ["does not exist", "is not a valid choice"]),
-            f"Output did not contain 'does not exist' or 'is not a valid choice'. Actual output: {output_str}",
+            any(substring in output_str for substring in ["does not exist", "is not a valid choice"])
         )
