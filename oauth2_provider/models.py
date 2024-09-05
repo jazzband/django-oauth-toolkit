@@ -2,6 +2,7 @@ import hashlib
 import logging
 import time
 import uuid
+from contextlib import suppress
 from datetime import timedelta
 from urllib.parse import parse_qsl, urlparse
 
@@ -9,7 +10,7 @@ from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.hashers import identify_hasher, make_password
 from django.core.exceptions import ImproperlyConfigured
-from django.db import models, transaction
+from django.db import models, router, transaction
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -512,17 +513,19 @@ class AbstractRefreshToken(models.Model):
         Mark this refresh token revoked and revoke related access token
         """
         access_token_model = get_access_token_model()
+        access_token_database = router.db_for_write(access_token_model)
         refresh_token_model = get_refresh_token_model()
-        with transaction.atomic():
+
+        # Use the access_token_database instead of making the assumption it is in 'default'.
+        with transaction.atomic(using=access_token_database):
             token = refresh_token_model.objects.select_for_update().filter(pk=self.pk, revoked__isnull=True)
             if not token:
                 return
             self = list(token)[0]
 
-            try:
-                access_token_model.objects.get(pk=self.access_token_id).revoke()
-            except access_token_model.DoesNotExist:
-                pass
+            with suppress(access_token_model.DoesNotExist):
+                access_token_model.objects.get(id=self.access_token_id).revoke()
+
             self.access_token = None
             self.revoked = timezone.now()
             self.save()
@@ -655,7 +658,7 @@ def get_access_token_model():
 
 
 def get_id_token_model():
-    """Return the AccessToken model that is active in this project."""
+    """Return the IDToken model that is active in this project."""
     return apps.get_model(oauth2_settings.ID_TOKEN_MODEL)
 
 
