@@ -14,29 +14,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
   -->
 
-## [unreleased]
-### Added
-* Add migration to include `token_checksum` field in AbstractAccessToken model.
-* Added compatibility with `LoginRequiredMiddleware` introduced in Django 5.1
-* #1404 Add a new setting `REFRESH_TOKEN_REUSE_PROTECTION`
-### Changed
-* Update token to TextField from CharField with 255 character limit and SHA-256 checksum in AbstractAccessToken model. Removing the 255 character limit enables supporting JWT tokens with additional claims
-* Update middleware, validators, and views to use token checksums instead of token for token retrieval and validation.
-* #1446 use generic models pk instead of id.
-* Transactions wrapping writes of the Tokens now rely on Django's database routers to determine the correct
-  database to use instead of assuming that 'default' is the correct one.
-* Bump oauthlib version to 3.2.2 and above
-* Update the OAuth2Validator's invalidate_authorization_code method to return an InvalidGrantError if the associated grant does not exist.
+## [3.0.0] - 2024-09-05
 
-### Deprecated
+### WARNING - POTENTIAL BREAKING CHANGES
+* Changes to the `AbstractAccessToken` model require doing a `manage.py migrate` after upgrading.
+* If you use swappable models you will need to make sure your custom models are also updated (usually `manage.py makemigrations`).
+* Old Django versions below 4.2 are no longer supported.
+* A few deprecations warned about in 2.4.0 (#1345) have been removed. See below.
+
+### Added
+* #1366 Add Docker containerized apps for testing IDP and RP.
+* #1454 Added compatibility with `LoginRequiredMiddleware` introduced in Django 5.1.
+
+### Changed
+* Many documentation and project internals improvements.
+* #1446 Use generic models `pk` instead of `id`. This enables, for example, custom swapped models to have a different primary key field.
+* #1447 Update token to TextField from CharField. Removing the 255 character limit enables supporting JWT tokens with additional claims.
+  This adds a SHA-256 `token_checksum` field that is used to validate tokens.
+* #1450 Transactions wrapping writes of the Tokens now rely on Django's database routers to determine the correct
+  database to use instead of assuming that 'default' is the correct one.
+* #1455 Changed minimum supported Django version to >=4.2.
+
 ### Removed
 * #1425 Remove deprecated `RedirectURIValidator`, `WildcardSet` per #1345; `validate_logout_request` per #1274
-* Remove support for Django versions below 4.2
 
 ### Fixed
-* #1443 Query strings with invalid hex values now raise a SuspiciousOperation exception (in DRF extension) instead of raising a 500 ValueError: Invalid hex encoding in query string.
-* #1468 `ui_locales` request parameter triggers `AttributeError` under certain circumstances
+* #1444, #1476 Fix several 500 errors to instead raise appropriate errors.
+* #1469 Fix `ui_locales` request parameter triggers `AttributeError` under certain circumstances
+
 ### Security
+* #1452 Add a new setting [`REFRESH_TOKEN_REUSE_PROTECTION`](https://django-oauth-toolkit.readthedocs.io/en/latest/settings.html#refresh-token-reuse-protection).
+  In combination with [`ROTATE_REFRESH_TOKEN`](https://django-oauth-toolkit.readthedocs.io/en/latest/settings.html#rotate-refresh-token),
+  this prevents refresh tokens from being used more than once. See more at
+  [OAuth 2.0 Security Best Current Practice](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics-29#name-recommendations)
+* #1481 Bump oauthlib version required to 3.2.2 and above to address [CVE-2022-36087](https://github.com/advisories/GHSA-3pgj-pg6c-r5p7).
 
 ## [2.4.0] - 2024-05-13
 
