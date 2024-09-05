@@ -114,6 +114,12 @@ info and the open
 especially those labeled
 `help-wanted <https://github.com/jazzband/django-oauth-toolkit/labels/help-wanted>`__.
 
+Discussions
+~~~~~~~~~~~
+Have questions or want to discuss the project?
+See `the discussions <https://github.com/jazzband/django-oauth-toolkit/discussions>`__.
+
+
 Submit PRs and Perform Reviews
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -134,6 +140,5 @@ release for the leads to deal with “unexpected” merged PRs.
 Become a Project Lead
 ~~~~~~~~~~~~~~~~~~~~~
 
-If you are interested in stepping up to be a Project Lead, please join
-the
-`discussion <https://github.com/orgs/jazzband/teams/django-oauth-toolkit>`__.
+If you are interested in stepping up to be a Project Lead, please take a look at
+the `discussion about this <https://github.com/jazzband/django-oauth-toolkit/discussions/1479>`__.
