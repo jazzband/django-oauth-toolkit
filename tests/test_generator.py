@@ -1,7 +1,8 @@
 import pytest
-from django.test import TestCase
 
 from oauth2_provider.generators import BaseHashGenerator, generate_client_id, generate_client_secret
+
+from .common_testing import OAuth2ProviderTestCase as TestCase
 
 
 class MockHashGenerator(BaseHashGenerator):

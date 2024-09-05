@@ -4,6 +4,7 @@ from oauth2_provider.models import (
     AbstractAccessToken,
     AbstractApplication,
     AbstractGrant,
+    AbstractIDToken,
     AbstractRefreshToken,
 )
 from oauth2_provider.settings import oauth2_settings
@@ -54,3 +55,9 @@ class SampleRefreshToken(AbstractRefreshToken):
 
 class SampleGrant(AbstractGrant):
     custom_field = models.CharField(max_length=255)
+
+
+class LocalIDToken(AbstractIDToken):
+    """Exists to be improperly configured for multiple databases."""
+
+    # The other token types will be in 'alpha' database.

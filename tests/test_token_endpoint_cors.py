@@ -3,12 +3,13 @@ from urllib.parse import parse_qs, urlparse
 
 import pytest
 from django.contrib.auth import get_user_model
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory
 from django.urls import reverse
 
 from oauth2_provider.models import get_application_model
 
 from . import presets
+from .common_testing import OAuth2ProviderTestCase as TestCase
 from .utils import get_basic_auth_header
 
 

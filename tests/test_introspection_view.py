@@ -3,13 +3,14 @@ import datetime
 
 import pytest
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.db import router
 from django.urls import reverse
 from django.utils import timezone
 
 from oauth2_provider.models import get_access_token_model, get_application_model
 
 from . import presets
+from .common_testing import OAuth2ProviderTestCase as TestCase
 from .utils import get_basic_auth_header
 
 
@@ -343,5 +344,6 @@ class TestTokenIntrospectionViews(TestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_select_related_in_view_for_less_db_queries(self):
-        with self.assertNumQueries(1):
+        token_database = router.db_for_write(AccessToken)
+        with self.assertNumQueries(1, using=token_database):
             self.client.post(reverse("oauth2_provider:introspect"))

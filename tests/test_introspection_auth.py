@@ -6,7 +6,7 @@ from django.conf import settings
 from django.conf.urls import include
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
-from django.test import TestCase, override_settings
+from django.test import override_settings
 from django.urls import path
 from django.utils import timezone
 from oauthlib.common import Request
@@ -18,6 +18,7 @@ from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views import ScopedProtectedResourceView
 
 from . import presets
+from .common_testing import OAuth2ProviderTestCase as TestCase
 
 
 try:
