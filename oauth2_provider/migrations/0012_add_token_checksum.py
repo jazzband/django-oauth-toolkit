@@ -4,6 +4,16 @@ import oauth2_provider.models
 from django.db import migrations, models
 from oauth2_provider.settings import oauth2_settings
 
+def forwards_func(apps, schema_editor):
+    """
+    Forward migration touches every "old" accesstoken.token which will cause the checksum to be computed.
+    """
+    AccessToken = apps.get_model(oauth2_settings.ACCESS_TOKEN_MODEL)
+    accesstokens = AccessToken._default_manager.all()
+    for accesstoken in accesstokens:
+        accesstoken.save(update_fields=['token_checksum'])
+
+
 class Migration(migrations.Migration):
     dependencies = [
         ("oauth2_provider", "0011_refreshtoken_token_family"),
@@ -15,7 +25,7 @@ class Migration(migrations.Migration):
             model_name="accesstoken",
             name="token_checksum",
             field=oauth2_provider.models.TokenChecksumField(
-                blank=True, db_index=True, max_length=64, unique=True
+                blank=True, null=True, db_index=True, max_length=64, unique=True
             ),
         ),
         migrations.AlterField(
@@ -23,4 +33,5 @@ class Migration(migrations.Migration):
             name="token",
             field=models.TextField(),
         ),
+        migrations.RunPython(forwards_func),
     ]
