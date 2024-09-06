@@ -24,14 +24,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="accesstoken",
             name="token_checksum",
-            field=oauth2_provider.models.TokenChecksumField(
-                blank=True, null=True, db_index=True, max_length=64, unique=True
-            ),
+            field=oauth2_provider.models.TokenChecksumField(blank=True, null=True, max_length=64),
         ),
         migrations.AlterField(
             model_name="accesstoken",
             name="token",
             field=models.TextField(),
         ),
-        migrations.RunPython(forwards_func),
+        migrations.RunPython(forwards_func, migrations.RunPython.noop),
+        migrations.AlterField(
+            model_name='accesstoken',
+            name='token_checksum',
+            field=oauth2_provider.models.TokenChecksumField(blank=False, max_length=64,  db_index=True, unique=True),
+        ),
     ]
