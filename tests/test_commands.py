@@ -130,6 +130,8 @@ class CreateApplicationTest(TestCase):
         self.assertEqual(app.algorithm, "RS256")
 
     def test_validation_failed_message(self):
+        import django
+
         output = StringIO()
         call_command(
             "createapplication",
@@ -143,7 +145,7 @@ class CreateApplicationTest(TestCase):
         output_str = output.getvalue()
         self.assertIn("user", output_str)
         self.assertIn("783", output_str)
-        # newer Django (>5.1) changes the error message from "does not exist" to "is not a valid choice"
-        self.assertTrue(
-            any(substring in output_str for substring in ["does not exist", "is not a valid choice"])
-        )
+        if django.VERSION < (5, 2):
+            self.assertIn("does not exist", output_str)
+        else:
+            self.assertIn("is not a valid choice", output_str)
