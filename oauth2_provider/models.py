@@ -392,7 +392,7 @@ class AbstractAccessToken(models.Model):
     token = models.TextField()
     token_checksum = TokenChecksumField(
         max_length=64,
-        blank=True,
+        blank=False,
         unique=True,
         db_index=True,
     )
