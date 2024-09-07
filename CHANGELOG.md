@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
   -->
 
+## [3.0.1] - 2024-09-07
+### Fixed
+* #1491 Fix migration error when there are pre-existing Access Tokens.
+
 ## [3.0.0] - 2024-09-05
 
 ### WARNING - POTENTIAL BREAKING CHANGES
