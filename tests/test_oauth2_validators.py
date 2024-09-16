@@ -501,17 +501,19 @@ class TestOAuth2ValidatorErrorResourceToken(TestCase):
         cls.introspection_token = "test_introspection_token"
         cls.validator = OAuth2Validator()
 
-    def test_response_when_auth_server_response_return_404(self):
+    def test_response_when_auth_server_response_return_404_405(self):
+        """
+        Deal with either 404 or 405 response
+        """
         with self.assertLogs(logger="oauth2_provider") as mock_log:
             self.validator._get_token_from_authentication_server(
                 self.token, self.introspection_url, self.introspection_token, None
             )
-            self.assertIn(
-                "ERROR:oauth2_provider:Introspection: Failed to "
-                "get a valid response from authentication server. "
-                "Status code: 404, Reason: "
-                "Not Found.\nNoneType: None",
-                mock_log.output,
+            self.assertTrue(
+                any(
+                    "Failed to get a valid response from authentication server" in message
+                    for message in mock_log.output
+                )
             )
 
 
