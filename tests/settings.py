@@ -89,6 +89,8 @@ INSTALLED_APPS = (
     "tests",
 )
 
+PASSWORD_HASHERS = django.conf.settings.PASSWORD_HASHERS + ["tests.custom_hasher.MyPBKDF2PasswordHasher"]
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
