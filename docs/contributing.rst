@@ -272,6 +272,27 @@ In test code, anywhere the database is referenced the Django router needs to be 
 
 Without the 'using' option, this test fails in the multiple database scenario because 'default' will be used instead.
 
+Debugging the Tests Interactively
+---------------------------------
+
+Interactive Debugging allows you to set breakpoints and inspect the state of the program at runtime. We strongly
+recommend using an interactive debugger to streamline your development process.
+
+VS Code
+^^^^^^^
+
+VS Code is a popular IDE that supports debugging Python code. You can debug the tests interactively in VS Code by
+following these steps:
+
+.. code-block:: bash
+
+    pip install .[dev]
+    # open the project in VS Code
+    # click Testing (erlenmeyer flask) on the Activity Bar
+    # select the test you want to run or debug
+
+
+
 Code conventions matter
 -----------------------
 
