@@ -501,9 +501,9 @@ class TestOAuth2ValidatorErrorResourceToken(TestCase):
         cls.introspection_token = "test_introspection_token"
         cls.validator = OAuth2Validator()
 
-    def test_response_when_auth_server_response_return_404_405(self):
+    def test_response_when_auth_server_response_not_200(self):
         """
-        Deal with either 404 or 405 response
+        Ensure we log the error when the authentication server returns a non-200 response.
         """
         with self.assertLogs(logger="oauth2_provider") as mock_log:
             self.validator._get_token_from_authentication_server(
