@@ -40,6 +40,14 @@ dependencies = [
 	"jwcrypto >= 1.5.0",
 ]
 
+[project.optional-dependencies]
+dev = [
+	"pytest",
+	"pytest-cov",
+	"m2r",
+	"sphinx-rtd-theme",
+]
+
 [project.urls]
 Homepage = "https://django-oauth-toolkit.readthedocs.io/"
 Repository = "https://github.com/jazzband/django-oauth-toolkit"
