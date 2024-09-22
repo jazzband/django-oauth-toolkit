@@ -40,7 +40,7 @@ class ClientSecretField(models.CharField):
             logger.debug(f"{model_instance}: {self.attname} is already hashed with {hasher}.")
         except ValueError:
             logger.debug(f"{model_instance}: {self.attname} is not hashed; hashing it now.")
-            hashed_secret = make_password(secret)
+            hashed_secret = make_password(secret, hasher=oauth2_settings.CLIENT_SECRET_HASHER)
             setattr(model_instance, self.attname, hashed_secret)
             return hashed_secret
         return super().pre_save(model_instance, add)

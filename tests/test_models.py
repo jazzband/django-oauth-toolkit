@@ -72,6 +72,22 @@ class TestModels(BaseTestModels):
         self.assertNotEqual(app.client_secret, CLEARTEXT_SECRET)
         self.assertTrue(check_password(CLEARTEXT_SECRET, app.client_secret))
 
+    @override_settings(OAUTH2_PROVIDER={"CLIENT_SECRET_HASHER": "fast_pbkdf2"})
+    def test_hashed_from_settings(self):
+        app = Application.objects.create(
+            name="test_app",
+            redirect_uris="http://localhost http://example.com http://example.org",
+            user=self.user,
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+            client_secret=CLEARTEXT_SECRET,
+            hash_client_secret=True,
+        )
+
+        self.assertNotEqual(app.client_secret, CLEARTEXT_SECRET)
+        self.assertIn("fast_pbkdf2", app.client_secret)
+        self.assertTrue(check_password(CLEARTEXT_SECRET, app.client_secret))
+
     def test_unhashed_secret(self):
         app = Application.objects.create(
             name="test_app",

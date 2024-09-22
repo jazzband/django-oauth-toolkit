@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!--
 ## [unreleased]
 ### Added
+* Support for specifying client secret hasher via CLIENT_SECRET_HASHER setting.
 ### Changed
 ### Deprecated
 ### Removed

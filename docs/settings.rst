@@ -104,6 +104,10 @@ CLIENT_SECRET_GENERATOR_LENGTH
 The length of the generated secrets, in characters. If this value is too low,
 secrets may become subject to bruteforce guessing.
 
+CLIENT_SECRET_HASHER
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The hasher for storing generated secrets. By default library will use the first hasher in PASSWORD_HASHERS.
+
 EXTRA_SERVER_KWARGS
 ~~~~~~~~~~~~~~~~~~~
 A dictionary to be passed to oauthlib's Server class. Three options
