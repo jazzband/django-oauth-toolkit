@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('oauth2_provider', '0010_application_allowed_origins'),
+        ('oauth2_provider', '0012_add_token_checksum'),
     ]
 
     operations = [
