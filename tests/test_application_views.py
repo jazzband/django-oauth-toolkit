@@ -37,6 +37,12 @@ class TestApplicationRegistrationView(BaseTest):
     def test_application_registration_user(self):
         self.client.login(username="foo_user", password="123456")
 
+        get_response = self.client.get(reverse("oauth2_provider:register"))
+        self.assertEqual(get_response.status_code, 200)
+
+        self.assertNotIn("client_id", get_response.context["form"].fields)
+        self.assertNotIn("client_secret", get_response.context["form"].fields)
+
         form_data = {
             "name": "Foo app",
             "client_type": Application.CLIENT_CONFIDENTIAL,
@@ -45,6 +51,10 @@ class TestApplicationRegistrationView(BaseTest):
             "authorization_grant_type": Application.GRANT_AUTHORIZATION_CODE,
             "algorithm": "",
         }
+
+        # Check that all fields in form_data are form fields
+        for field in form_data.keys():
+            self.assertIn(field, get_response.context["form"].fields.keys())
 
         response = self.client.post(reverse("oauth2_provider:register"), form_data)
         self.assertEqual(response.status_code, 302)
@@ -96,11 +106,20 @@ class TestApplicationViews(BaseTest):
 
         response = self.client.get(reverse("oauth2_provider:detail", args=(self.app_foo_1.pk,)))
         self.assertEqual(response.status_code, 200)
+        self.assertNotIn("client_secret", response.context)
         self.assertContains(response, self.app_foo_1.name)
         self.assertContains(response, self.app_foo_1.redirect_uris)
         self.assertContains(response, self.app_foo_1.post_logout_redirect_uris)
         self.assertContains(response, self.app_foo_1.client_type)
         self.assertContains(response, self.app_foo_1.authorization_grant_type)
+
+        # We don't allow users to update this, setting it False to test context
+        self.app_foo_1.hash_client_secret = False
+        self.app_foo_1.save()
+
+        response = self.client.get(reverse("oauth2_provider:detail", args=(self.app_foo_1.pk,)))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("client_secret", response.context)
 
     def test_application_detail_not_owner(self):
         self.client.login(username="foo_user", password="123456")
@@ -111,12 +130,28 @@ class TestApplicationViews(BaseTest):
     def test_application_update(self):
         self.client.login(username="foo_user", password="123456")
 
+        get_response = self.client.get(reverse("oauth2_provider:update", args=(self.app_foo_1.pk,)))
+        self.assertEqual(get_response.status_code, 200)
+
+        self.assertNotIn("client_id", get_response.context["form"].fields)
+        self.assertNotIn("client_secret", get_response.context)
+        self.assertNotIn("client_secret", get_response.context["form"].fields)
+        self.assertNotIn("hash_client_secret", get_response.context["form"].fields)
+
+        new_app_name = self.app_foo_1.name + " - Updated"
+
         form_data = {
+            "name": new_app_name,
             "redirect_uris": "http://new_example.com",
             "post_logout_redirect_uris": "http://new_other_example.com",
             "client_type": Application.CLIENT_PUBLIC,
             "authorization_grant_type": Application.GRANT_OPENID_HYBRID,
         }
+
+        # Check that all fields in form_data are form fields
+        for field in form_data.keys():
+            self.assertIn(field, get_response.context["form"].fields.keys())
+
         response = self.client.post(
             reverse("oauth2_provider:update", args=(self.app_foo_1.pk,)),
             data=form_data,
@@ -124,6 +159,7 @@ class TestApplicationViews(BaseTest):
         self.assertRedirects(response, reverse("oauth2_provider:detail", args=(self.app_foo_1.pk,)))
 
         self.app_foo_1.refresh_from_db()
+        self.assertEqual(self.app_foo_1.name, new_app_name)
         self.assertEqual(self.app_foo_1.redirect_uris, form_data["redirect_uris"])
         self.assertEqual(self.app_foo_1.post_logout_redirect_uris, form_data["post_logout_redirect_uris"])
         self.assertEqual(self.app_foo_1.client_type, form_data["client_type"])
