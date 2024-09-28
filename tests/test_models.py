@@ -16,6 +16,7 @@ from oauth2_provider.models import (
     get_grant_model,
     get_id_token_model,
     get_refresh_token_model,
+    redirect_to_uri_allowed,
 )
 
 from . import presets
@@ -622,6 +623,79 @@ def test_application_clean(oauth2_settings, application):
     application.clean()
 
 
+def _test_wildcard_redirect_uris_valid(oauth2_settings, application, uris):
+    oauth2_settings.ALLOW_URI_WILDCARDS = True
+    application.redirect_uris = uris
+    application.clean()
+
+
+def _test_wildcard_redirect_uris_invalid(oauth2_settings, application, uris):
+    oauth2_settings.ALLOW_URI_WILDCARDS = True
+    application.redirect_uris = uris
+    with pytest.raises(ValidationError):
+        application.clean()
+
+
+@pytest.mark.django_db(databases=retrieve_current_databases())
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_application_clean_wildcard_redirect_uris_valid_3ld(oauth2_settings, application):
+    _test_wildcard_redirect_uris_valid(oauth2_settings, application, "https://*.example.com/path")
+
+
+@pytest.mark.django_db(databases=retrieve_current_databases())
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_application_clean_wildcard_redirect_uris_valid_partial_3ld(oauth2_settings, application):
+    _test_wildcard_redirect_uris_valid(oauth2_settings, application, "https://*-partial.example.com/path")
+
+
+@pytest.mark.django_db(databases=retrieve_current_databases())
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_application_clean_wildcard_redirect_uris_invalid_3ld_not_starting_with_wildcard(
+    oauth2_settings, application
+):
+    _test_wildcard_redirect_uris_invalid(oauth2_settings, application, "https://invalid-*.example.com/path")
+
+
+@pytest.mark.django_db(databases=retrieve_current_databases())
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_application_clean_wildcard_redirect_uris_invalid_2ld(oauth2_settings, application):
+    _test_wildcard_redirect_uris_invalid(oauth2_settings, application, "https://*.com/path")
+
+
+@pytest.mark.django_db(databases=retrieve_current_databases())
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_application_clean_wildcard_redirect_uris_invalid_partial_2ld(oauth2_settings, application):
+    _test_wildcard_redirect_uris_invalid(oauth2_settings, application, "https://*-partial.com/path")
+
+
+@pytest.mark.django_db(databases=retrieve_current_databases())
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_application_clean_wildcard_redirect_uris_invalid_2ld_not_starting_with_wildcard(
+    oauth2_settings, application
+):
+    _test_wildcard_redirect_uris_invalid(oauth2_settings, application, "https://invalid-*.com/path")
+
+
+@pytest.mark.django_db(databases=retrieve_current_databases())
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_application_clean_wildcard_redirect_uris_invalid_tld(oauth2_settings, application):
+    _test_wildcard_redirect_uris_invalid(oauth2_settings, application, "https://*/path")
+
+
+@pytest.mark.django_db(databases=retrieve_current_databases())
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_application_clean_wildcard_redirect_uris_invalid_tld_partial(oauth2_settings, application):
+    _test_wildcard_redirect_uris_invalid(oauth2_settings, application, "https://*-partial/path")
+
+
+@pytest.mark.django_db(databases=retrieve_current_databases())
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RW)
+def test_application_clean_wildcard_redirect_uris_invalid_tld_not_starting_with_wildcard(
+    oauth2_settings, application
+):
+    _test_wildcard_redirect_uris_invalid(oauth2_settings, application, "https://invalid-*/path")
+
+
 @pytest.mark.django_db(databases=retrieve_current_databases())
 @pytest.mark.oauth2_settings(presets.ALLOWED_SCHEMES_DEFAULT)
 def test_application_origin_allowed_default_https(oauth2_settings, cors_application):
@@ -636,3 +710,35 @@ def test_application_origin_allowed_http(oauth2_settings, cors_application):
     """Test that http schemes are allowed because http was added to ALLOWED_SCHEMES"""
     assert cors_application.origin_allowed("https://example.com")
     assert cors_application.origin_allowed("http://example.com")
+
+
+def test_redirect_to_uri_allowed_expects_allowed_uri_list():
+    with pytest.raises(ValueError):
+        redirect_to_uri_allowed("https://example.com", "https://example.com")
+    assert redirect_to_uri_allowed("https://example.com", ["https://example.com"])
+
+
+valid_wildcard_redirect_to_params = [
+    ("https://valid.example.com", ["https://*.example.com"]),
+    ("https://valid.valid.example.com", ["https://*.example.com"]),
+    ("https://valid-partial.example.com", ["https://*-partial.example.com"]),
+    ("https://valid.valid-partial.example.com", ["https://*-partial.example.com"]),
+]
+
+
+@pytest.mark.parametrize("uri, allowed_uri", valid_wildcard_redirect_to_params)
+def test_wildcard_redirect_to_uri_allowed_valid(uri, allowed_uri, oauth2_settings):
+    oauth2_settings.ALLOW_URI_WILDCARDS = True
+    assert redirect_to_uri_allowed(uri, allowed_uri)
+
+
+invalid_wildcard_redirect_to_params = [
+    ("https://invalid.com", ["https://*.example.com"]),
+    ("https://invalid.example.com", ["https://*-partial.example.com"]),
+]
+
+
+@pytest.mark.parametrize("uri, allowed_uri", invalid_wildcard_redirect_to_params)
+def test_wildcard_redirect_to_uri_allowed_invalid(uri, allowed_uri, oauth2_settings):
+    oauth2_settings.ALLOW_URI_WILDCARDS = True
+    assert not redirect_to_uri_allowed(uri, allowed_uri)

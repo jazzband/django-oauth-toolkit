@@ -71,6 +71,7 @@ DEFAULTS = {
     "REQUEST_APPROVAL_PROMPT": "force",
     "ALLOWED_REDIRECT_URI_SCHEMES": ["http", "https"],
     "ALLOWED_SCHEMES": ["https"],
+    "ALLOW_URI_WILDCARDS": False,
     "OIDC_ENABLED": False,
     "OIDC_ISS_ENDPOINT": "",
     "OIDC_USERINFO_ENDPOINT": "",

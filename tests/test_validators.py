@@ -171,3 +171,27 @@ class TestAllowedURIValidator(TestCase):
         for uri in bad_uris:
             with self.assertRaises(ValidationError):
                 validator(uri)
+
+    def test_allow_hostname_wildcard(self):
+        validator = AllowedURIValidator(["https"], "test", allow_hostname_wildcard=True)
+        good_uris = [
+            "https://*.example.com",
+            "https://*-partial.example.com",
+            "https://*.partial.example.com",
+            "https://*-partial.valid.example.com",
+        ]
+        for uri in good_uris:
+            # Check ValidationError not thrown
+            validator(uri)
+
+        bad_uris = [
+            "https://*/",
+            "https://*-partial",
+            "https://*.com",
+            "https://*-partial.com",
+            "https://*.*.example.com",
+            "https://invalid.*.example.com",
+        ]
+        for uri in bad_uris:
+            with self.assertRaises(ValidationError):
+                validator(uri)
