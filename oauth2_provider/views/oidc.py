@@ -367,17 +367,66 @@ class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
         return application, id_token.user if id_token else None
 
     def must_prompt(self, token_user):
-        """Indicate whether the logout has to be confirmed by the user. This happens if the
-        specifications force a confirmation, or it is enabled by `OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT`.
-
-        A logout without user interaction (i.e. no prompt) is only allowed
-        if an ID Token is provided that matches the current user.
         """
-        return (
-            oauth2_settings.OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT
-            or token_user is None
-            or token_user != self.request.user
-        )
+        per: https://openid.net/specs/openid-connect-rpinitiated-1_0.html
+
+        > At the Logout Endpoint, the OP SHOULD ask the End-User whether to log
+        > out of the OP as well. Furthermore, the OP MUST ask the End-User this
+        > question if an id_token_hint was not provided or if the supplied ID
+        > Token does not belong to the current OP session with the RP and/or
+        > currently logged in End-User.
+
+        """
+
+        if not self.request.user.is_authenticated:
+            """
+            > the OP MUST ask ask the End-User whether to log out of the OP as
+
+            If the user does not have an active session with the OP, they cannot
+            end their OP session, so there is nothing to prompt for. This occurs
+            in cases where the user has logged out of the OP via another channel
+            such as the OP's own logout page, session timeout or another RP's
+            logout page.
+            """
+            return False
+
+        if oauth2_settings.OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT:
+            """
+            > At the Logout Endpoint, the OP SHOULD ask the End-User whether to
+            > log out of the OP as well
+
+            The admin has configured the OP to always prompt the userfor logout
+            per the SHOULD recommendation.
+            """
+            return True
+
+        if token_user is None:
+            """
+            > the OP MUST ask ask the End-User whether to log out of the OP as
+            > well if the supplied ID Token does not belong to the current OP
+            > session with the RP.
+
+            token_user will only be populated if an ID token was found for the
+            RP (Application) that is requesting the logout. If token_user is not
+            then we must prompt the user.
+            """
+            return True
+
+        if token_user != self.request.user:
+            """
+            > the OP MUST ask ask the End-User whether to log out of the OP as
+            > well if the supplied ID Token does not belong to the logged in
+            > End-User.
+
+            is_authenticated indicates that there is a logged in user and was
+            tested in the first condition.
+            token_user != self.request.user indicates that the token does not
+            belong to the logged in user, Therefore we need to prompt the user.
+            """
+            return True
+
+        """ We didn't find a reason to prompt the user """
+        return False
 
     def do_logout(self, application=None, post_logout_redirect_uri=None, state=None, token_user=None):
         user = token_user or self.request.user
