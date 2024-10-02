@@ -63,6 +63,37 @@ assigned ports.
 Note that you may override ``Application.get_allowed_schemes()`` to set this on
 a per-application basis.
 
+ALLOW_URI_WILDCARDS
+~~~~~~~~~~~~~~~~~~~
+
+Default: ``False``
+
+SECURITY WARNING: Enabling this setting can introduce security vulnerabilities. Only enable
+this setting if you understand the risks. https://datatracker.ietf.org/doc/html/rfc6749#section-3.1.2
+states "The redirection endpoint URI MUST be an absolute URI as defined by [RFC3986] Section 4.3." The
+intent of the URI restrictions is to prevent open redirects and phishing attacks. If you do enable this
+ensure that the wildcards restrict URIs to resources under your control. You are strongly encouragd not
+to use this feature in production.
+
+When set to ``True``, the server will allow wildcard characters in the domains for allowed_origins and
+redirect_uris.
+
+``*`` is the only wildcard character allowed.
+
+``*`` can only be used as a prefix to a domain, must be the first character in
+the domain, and cannot be in the top or second level domain.  Matching is done using an
+endsWith check.
+
+For example,
+``https://*.example.com`` is allowed,
+``https://*-myproject.example.com`` is allowed,
+``https://*.sub.example.com`` is not allowed,
+``https://*.com`` is not allowed, and
+``https://example.*.com`` is not allowed.
+
+This feature is useful for working with CI service such as cloudflare, netlify, and vercel that offer branch
+deployments for development previews and user acceptance testing.
+
 ALLOWED_SCHEMES
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

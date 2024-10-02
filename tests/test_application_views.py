@@ -63,6 +63,156 @@ class TestApplicationRegistrationView(BaseTest):
         self.assertEqual(app.algorithm, form_data["algorithm"])
 
 
+@pytest.mark.usefixtures("oauth2_settings")
+@pytest.mark.oauth2_settings({"ALLOW_URI_WILDCARDS": True})
+class TestApplicationRegistrationViewRedirectURIWithWildcard(BaseTest):
+    def _test_valid(self, redirect_uri):
+        self.client.login(username="foo_user", password="123456")
+
+        form_data = {
+            "name": "Foo app",
+            "client_id": "client_id",
+            "client_secret": "client_secret",
+            "client_type": Application.CLIENT_CONFIDENTIAL,
+            "redirect_uris": redirect_uri,
+            "post_logout_redirect_uris": "http://example.com",
+            "authorization_grant_type": Application.GRANT_AUTHORIZATION_CODE,
+            "algorithm": "",
+        }
+
+        response = self.client.post(reverse("oauth2_provider:register"), form_data)
+        self.assertEqual(response.status_code, 302)
+
+        app = get_application_model().objects.get(name="Foo app")
+        self.assertEqual(app.user.username, "foo_user")
+        app = Application.objects.get()
+        self.assertEqual(app.name, form_data["name"])
+        self.assertEqual(app.client_id, form_data["client_id"])
+        self.assertEqual(app.redirect_uris, form_data["redirect_uris"])
+        self.assertEqual(app.post_logout_redirect_uris, form_data["post_logout_redirect_uris"])
+        self.assertEqual(app.client_type, form_data["client_type"])
+        self.assertEqual(app.authorization_grant_type, form_data["authorization_grant_type"])
+        self.assertEqual(app.algorithm, form_data["algorithm"])
+
+    def _test_invalid(self, uri, error_message):
+        self.client.login(username="foo_user", password="123456")
+
+        form_data = {
+            "name": "Foo app",
+            "client_id": "client_id",
+            "client_secret": "client_secret",
+            "client_type": Application.CLIENT_CONFIDENTIAL,
+            "redirect_uris": uri,
+            "post_logout_redirect_uris": "http://example.com",
+            "authorization_grant_type": Application.GRANT_AUTHORIZATION_CODE,
+            "algorithm": "",
+        }
+
+        response = self.client.post(reverse("oauth2_provider:register"), form_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, error_message)
+
+    def test_application_registration_valid_3ld_wildcard(self):
+        self._test_valid("https://*.example.com")
+
+    def test_application_registration_valid_3ld_partial_wildcard(self):
+        self._test_valid("https://*-partial.example.com")
+
+    def test_application_registration_invalid_star(self):
+        self._test_invalid("*", "invalid_scheme: *")
+
+    def test_application_registration_invalid_tld_wildcard(self):
+        self._test_invalid("https://*", "wildcards cannot be in the top level or second level domain")
+
+    def test_application_registration_invalid_tld_partial_wildcard(self):
+        self._test_invalid("https://*-partial", "wildcards cannot be in the top level or second level domain")
+
+    def test_application_registration_invalid_tld_not_startswith_wildcard_tld(self):
+        self._test_invalid("https://example.*", "wildcards must be at the beginning of the hostname")
+
+    def test_application_registration_invalid_2ld_wildcard(self):
+        self._test_invalid("https://*.com", "wildcards cannot be in the top level or second level domain")
+
+    def test_application_registration_invalid_2ld_partial_wildcard(self):
+        self._test_invalid(
+            "https://*-partial.com", "wildcards cannot be in the top level or second level domain"
+        )
+
+    def test_application_registration_invalid_2ld_not_startswith_wildcard_tld(self):
+        self._test_invalid("https://example.*.com", "wildcards must be at the beginning of the hostname")
+
+    def test_application_registration_invalid_3ld_partial_not_startswith_wildcard_2ld(self):
+        self._test_invalid(
+            "https://invalid-*.example.com", "wildcards must be at the beginning of the hostname"
+        )
+
+    def test_application_registration_invalid_4ld_not_startswith_wildcard_3ld(self):
+        self._test_invalid(
+            "https://invalid.*.invalid.example.com",
+            "wildcards must be at the beginning of the hostname",
+        )
+
+    def test_application_registration_invalid_4ld_partial_not_startswith_wildcard_2ld(self):
+        self._test_invalid(
+            "https://invalid-*.invalid.example.com",
+            "wildcards must be at the beginning of the hostname",
+        )
+
+
+@pytest.mark.usefixtures("oauth2_settings")
+@pytest.mark.oauth2_settings({"ALLOW_URI_WILDCARDS": True})
+class TestApplicationRegistrationViewAllowedOriginWithWildcard(
+    TestApplicationRegistrationViewRedirectURIWithWildcard
+):
+    def _test_valid(self, uris):
+        self.client.login(username="foo_user", password="123456")
+
+        form_data = {
+            "name": "Foo app",
+            "client_id": "client_id",
+            "client_secret": "client_secret",
+            "client_type": Application.CLIENT_CONFIDENTIAL,
+            "allowed_origins": uris,
+            "redirect_uris": "https://example.com",
+            "post_logout_redirect_uris": "http://example.com",
+            "authorization_grant_type": Application.GRANT_AUTHORIZATION_CODE,
+            "algorithm": "",
+        }
+
+        response = self.client.post(reverse("oauth2_provider:register"), form_data)
+        self.assertEqual(response.status_code, 302)
+
+        app = get_application_model().objects.get(name="Foo app")
+        self.assertEqual(app.user.username, "foo_user")
+        app = Application.objects.get()
+        self.assertEqual(app.name, form_data["name"])
+        self.assertEqual(app.client_id, form_data["client_id"])
+        self.assertEqual(app.redirect_uris, form_data["redirect_uris"])
+        self.assertEqual(app.post_logout_redirect_uris, form_data["post_logout_redirect_uris"])
+        self.assertEqual(app.client_type, form_data["client_type"])
+        self.assertEqual(app.authorization_grant_type, form_data["authorization_grant_type"])
+        self.assertEqual(app.algorithm, form_data["algorithm"])
+
+    def _test_invalid(self, uri, error_message):
+        self.client.login(username="foo_user", password="123456")
+
+        form_data = {
+            "name": "Foo app",
+            "client_id": "client_id",
+            "client_secret": "client_secret",
+            "client_type": Application.CLIENT_CONFIDENTIAL,
+            "allowed_origins": uri,
+            "redirect_uris": "http://example.com",
+            "post_logout_redirect_uris": "http://example.com",
+            "authorization_grant_type": Application.GRANT_AUTHORIZATION_CODE,
+            "algorithm": "",
+        }
+
+        response = self.client.post(reverse("oauth2_provider:register"), form_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, error_message)
+
+
 class TestApplicationViews(BaseTest):
     @classmethod
     def _create_application(cls, name, user):
