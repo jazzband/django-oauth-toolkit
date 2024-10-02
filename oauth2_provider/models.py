@@ -213,7 +213,11 @@ class AbstractApplication(models.Model):
 
         if redirect_uris:
             validator = AllowedURIValidator(
-                allowed_schemes, name="redirect uri", allow_path=True, allow_query=True
+                allowed_schemes,
+                name="redirect uri",
+                allow_path=True,
+                allow_query=True,
+                allow_hostname_wildcard=oauth2_settings.ALLOW_URI_WILDCARDS,
             )
             for uri in redirect_uris:
                 validator(uri)
@@ -227,7 +231,11 @@ class AbstractApplication(models.Model):
         allowed_origins = self.allowed_origins.strip().split()
         if allowed_origins:
             # oauthlib allows only https scheme for CORS
-            validator = AllowedURIValidator(oauth2_settings.ALLOWED_SCHEMES, "allowed origin")
+            validator = AllowedURIValidator(
+                oauth2_settings.ALLOWED_SCHEMES,
+                "allowed origin",
+                allow_hostname_wildcard=oauth2_settings.ALLOW_URI_WILDCARDS,
+            )
             for uri in allowed_origins:
                 validator(uri)
 
@@ -777,12 +785,28 @@ def redirect_to_uri_allowed(uri, allowed_uris):
     :param allowed_uris: A list of URIs that are allowed
     """
 
+    if not isinstance(allowed_uris, list):
+        raise ValueError("allowed_uris must be a list")
+
     parsed_uri = urlparse(uri)
     uqs_set = set(parse_qsl(parsed_uri.query))
     for allowed_uri in allowed_uris:
         parsed_allowed_uri = urlparse(allowed_uri)
 
+        if parsed_allowed_uri.scheme != parsed_uri.scheme:
+            # match failed, continue
+            continue
+
+        """ check hostname """
+        if oauth2_settings.ALLOW_URI_WILDCARDS and parsed_allowed_uri.hostname.startswith("*"):
+            """ wildcard hostname """
+            if not parsed_uri.hostname.endswith(parsed_allowed_uri.hostname[1:]):
+                continue
+        elif parsed_allowed_uri.hostname != parsed_uri.hostname:
+            continue
+
         # From RFC 8252 (Section 7.3)
+        # https://datatracker.ietf.org/doc/html/rfc8252#section-7.3
         #
         # Loopback redirect URIs use the "http" scheme
         # [...]
@@ -790,26 +814,26 @@ def redirect_to_uri_allowed(uri, allowed_uris):
         # time of the request for loopback IP redirect URIs, to accommodate
         # clients that obtain an available ephemeral port from the operating
         # system at the time of the request.
+        allowed_uri_is_loopback = parsed_allowed_uri.scheme == "http" and parsed_allowed_uri.hostname in [
+            "127.0.0.1",
+            "::1",
+        ]
+        """ check port """
+        if not allowed_uri_is_loopback and parsed_allowed_uri.port != parsed_uri.port:
+            continue
 
-        allowed_uri_is_loopback = (
-            parsed_allowed_uri.scheme == "http"
-            and parsed_allowed_uri.hostname in ["127.0.0.1", "::1"]
-            and parsed_allowed_uri.port is None
-        )
-        if (
-            allowed_uri_is_loopback
-            and parsed_allowed_uri.scheme == parsed_uri.scheme
-            and parsed_allowed_uri.hostname == parsed_uri.hostname
-            and parsed_allowed_uri.path == parsed_uri.path
-        ) or (
-            parsed_allowed_uri.scheme == parsed_uri.scheme
-            and parsed_allowed_uri.netloc == parsed_uri.netloc
-            and parsed_allowed_uri.path == parsed_uri.path
-        ):
-            aqs_set = set(parse_qsl(parsed_allowed_uri.query))
-            if aqs_set.issubset(uqs_set):
-                return True
+        """ check path """
+        if parsed_allowed_uri.path != parsed_uri.path:
+            continue
 
+        """ check querystring """
+        aqs_set = set(parse_qsl(parsed_allowed_uri.query))
+        if not aqs_set.issubset(uqs_set):
+            continue  # circuit break
+
+        return True
+
+    # if uris matched then it's not allowed
     return False
 
 
@@ -833,4 +857,5 @@ def is_origin_allowed(origin, allowed_origins):
             and parsed_allowed_origin.netloc == parsed_origin.netloc
         ):
             return True
+
     return False
