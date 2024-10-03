@@ -292,7 +292,7 @@ class TokenView(OAuthLibMixin, View):
     * Client credentials
     """
 
-    @method_decorator(sensitive_post_parameters("password"))
+    @method_decorator(sensitive_post_parameters("password", "client_secret"))
     def post(self, request, *args, **kwargs):
         url, headers, body, status = self.create_token_response(request)
         if status == 200:
