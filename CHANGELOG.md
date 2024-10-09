@@ -7,12 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 ### Added
-* Support for Wildcard Origin and Redirect URIs, https://github.com/jazzband/django-oauth-toolkit/issues/1506
+* #1506 Support for Wildcard Origin and Redirect URIs
 <!--
 ### Changed
 ### Deprecated
 ### Removed
+-->
 ### Fixed
+* #1517 OP prompts for logout when no OP session
+* #1512 client_secret not marked sensitive
+<!--
 ### Security
 -->
 

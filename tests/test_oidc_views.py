@@ -311,6 +311,10 @@ def test_must_prompt(oidc_tokens, other_user, rp_settings, ALWAYS_PROMPT):
         == ALWAYS_PROMPT
     )
     assert RPInitiatedLogoutView(request=mock_request_for(other_user)).must_prompt(oidc_tokens.user) is True
+    assert (
+        RPInitiatedLogoutView(request=mock_request_for(AnonymousUser())).must_prompt(oidc_tokens.user)
+        is False
+    )
 
 
 def test__load_id_token():
@@ -577,13 +581,14 @@ def test_token_deletion_on_logout(oidc_tokens, logged_in_client, rp_settings):
 
 
 @pytest.mark.django_db(databases=retrieve_current_databases())
-def test_token_deletion_on_logout_expired_session(oidc_tokens, client, rp_settings):
+def test_token_deletion_on_logout_without_op_session_get(oidc_tokens, client, rp_settings):
     AccessToken = get_access_token_model()
     IDToken = get_id_token_model()
     RefreshToken = get_refresh_token_model()
     assert AccessToken.objects.count() == 1
     assert IDToken.objects.count() == 1
     assert RefreshToken.objects.count() == 1
+
     rsp = client.get(
         reverse("oauth2_provider:rp-initiated-logout"),
         data={
@@ -591,15 +596,31 @@ def test_token_deletion_on_logout_expired_session(oidc_tokens, client, rp_settin
             "client_id": oidc_tokens.application.client_id,
         },
     )
-    assert rsp.status_code == 200
+    assert rsp.status_code == 302
     assert not is_logged_in(client)
     # Check that all tokens are active.
-    access_token = AccessToken.objects.get()
-    assert not access_token.is_expired()
-    id_token = IDToken.objects.get()
-    assert not id_token.is_expired()
+    assert AccessToken.objects.count() == 0
+    assert IDToken.objects.count() == 0
+    assert RefreshToken.objects.count() == 1
+
+    with pytest.raises(AccessToken.DoesNotExist):
+        AccessToken.objects.get()
+
+    with pytest.raises(IDToken.DoesNotExist):
+        IDToken.objects.get()
+
     refresh_token = RefreshToken.objects.get()
-    assert refresh_token.revoked is None
+    assert refresh_token.revoked is not None
+
+
+@pytest.mark.django_db(databases=retrieve_current_databases())
+def test_token_deletion_on_logout_without_op_session_post(oidc_tokens, client, rp_settings):
+    AccessToken = get_access_token_model()
+    IDToken = get_id_token_model()
+    RefreshToken = get_refresh_token_model()
+    assert AccessToken.objects.count() == 1
+    assert IDToken.objects.count() == 1
+    assert RefreshToken.objects.count() == 1
 
     rsp = client.post(
         reverse("oauth2_provider:rp-initiated-logout"),
