@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -->
 
 
+## [unreleased]
+### Fixed
+* #1496 Fix error when Bearer token string is empty but preceded by `Bearer` keyword.
+
 ## [3.0.1] - 2024-09-07
 ### Fixed
 * #1491 Fix migration error when there are pre-existing Access Tokens.
