@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 * #1517 OP prompts for logout when no OP session
 * #1512 client_secret not marked sensitive
+* #1521 Fix 0012 migration loading access token table into memory
 <!--
 ### Security
 -->
