@@ -9,7 +9,7 @@ def forwards_func(apps, schema_editor):
     Forward migration touches every "old" accesstoken.token which will cause the checksum to be computed.
     """
     AccessToken = apps.get_model(oauth2_settings.ACCESS_TOKEN_MODEL)
-    accesstokens = AccessToken._default_manager.all()
+    accesstokens = AccessToken._default_manager.iterator()
     for accesstoken in accesstokens:
         accesstoken.save(update_fields=['token_checksum'])
 
