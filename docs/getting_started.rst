@@ -243,7 +243,7 @@ Start the development server::
 
     python manage.py runserver
 
-Point your browser to http://127.0.0.1:8000/o/applications/register/ lets create an application.
+Point your browser to http://127.0.0.1:8000/o/applications/register/ and let's create an application.
 
 Fill the form as shown in the screenshot below and before save take note of ``Client id`` and ``Client secret``, we will use it in a minute.
 
