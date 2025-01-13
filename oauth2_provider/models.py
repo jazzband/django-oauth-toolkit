@@ -715,7 +715,7 @@ def clear_expired():
             flat_queryset = queryset.values_list("id", flat=True)[:CLEAR_EXPIRED_TOKENS_BATCH_SIZE]
             batch_length = flat_queryset.count()
             queryset.model.objects.filter(id__in=list(flat_queryset)).delete()
-            logger.debug(f"{batch_length} tokens deleted, {current_no-batch_length} left")
+            logger.debug(f"{batch_length} tokens deleted, {current_no - batch_length} left")
             queryset = queryset.model.objects.filter(query)
             time.sleep(CLEAR_EXPIRED_TOKENS_BATCH_INTERVAL)
             current_no = queryset.count()
