@@ -433,25 +433,25 @@ class TestClearExpired(BaseTestModels):
         initial_at_count = AccessToken.objects.count()
         assert initial_at_count == 2 * self.num_tokens, f"{2 * self.num_tokens} access tokens should exist."
         initial_expired_at_count = AccessToken.objects.filter(expires__lte=self.now).count()
-        assert (
-            initial_expired_at_count == self.num_tokens
-        ), f"{self.num_tokens} expired access tokens should exist."
+        assert initial_expired_at_count == self.num_tokens, (
+            f"{self.num_tokens} expired access tokens should exist."
+        )
         initial_current_at_count = AccessToken.objects.filter(expires__gt=self.now).count()
-        assert (
-            initial_current_at_count == self.num_tokens
-        ), f"{self.num_tokens} current access tokens should exist."
+        assert initial_current_at_count == self.num_tokens, (
+            f"{self.num_tokens} current access tokens should exist."
+        )
         initial_rt_count = RefreshToken.objects.count()
-        assert (
-            initial_rt_count == self.num_tokens // 2
-        ), f"{self.num_tokens // 2} refresh tokens should exist."
+        assert initial_rt_count == self.num_tokens // 2, (
+            f"{self.num_tokens // 2} refresh tokens should exist."
+        )
         initial_rt_expired_at_count = RefreshToken.objects.filter(access_token__expires__lte=self.now).count()
-        assert (
-            initial_rt_expired_at_count == initial_rt_count / 2
-        ), "half the refresh tokens should be for expired access tokens."
+        assert initial_rt_expired_at_count == initial_rt_count / 2, (
+            "half the refresh tokens should be for expired access tokens."
+        )
         initial_rt_current_at_count = RefreshToken.objects.filter(access_token__expires__gt=self.now).count()
-        assert (
-            initial_rt_current_at_count == initial_rt_count / 2
-        ), "half the refresh tokens should be for current access tokens."
+        assert initial_rt_current_at_count == initial_rt_count / 2, (
+            "half the refresh tokens should be for current access tokens."
+        )
         initial_gt_count = Grant.objects.count()
         assert initial_gt_count == self.num_tokens * 2, f"{self.num_tokens * 2} grants should exist."
 
@@ -459,15 +459,15 @@ class TestClearExpired(BaseTestModels):
 
         # after clear_expired():
         remaining_at_count = AccessToken.objects.count()
-        assert (
-            remaining_at_count == initial_at_count // 2
-        ), "half the initial access tokens should still exist."
+        assert remaining_at_count == initial_at_count // 2, (
+            "half the initial access tokens should still exist."
+        )
         remaining_expired_at_count = AccessToken.objects.filter(expires__lte=self.now).count()
         assert remaining_expired_at_count == 0, "no remaining expired access tokens should still exist."
         remaining_current_at_count = AccessToken.objects.filter(expires__gt=self.now).count()
-        assert (
-            remaining_current_at_count == initial_current_at_count
-        ), "all current access tokens should still exist."
+        assert remaining_current_at_count == initial_current_at_count, (
+            "all current access tokens should still exist."
+        )
         remaining_rt_count = RefreshToken.objects.count()
         assert remaining_rt_count == initial_rt_count // 2, "half the refresh tokens should still exist."
         remaining_rt_expired_at_count = RefreshToken.objects.filter(
@@ -477,9 +477,9 @@ class TestClearExpired(BaseTestModels):
         remaining_rt_current_at_count = RefreshToken.objects.filter(
             access_token__expires__gt=self.now
         ).count()
-        assert (
-            remaining_rt_current_at_count == initial_rt_current_at_count
-        ), "all the refresh tokens for current access tokens should still exist."
+        assert remaining_rt_current_at_count == initial_rt_current_at_count, (
+            "all the refresh tokens for current access tokens should still exist."
+        )
         remaining_gt_count = Grant.objects.count()
         assert remaining_gt_count == initial_gt_count // 2, "half the remaining grants should still exist."
 
