@@ -56,6 +56,7 @@ GRANT_TYPE_MAPPING = {
         AbstractApplication.GRANT_CLIENT_CREDENTIALS,
         AbstractApplication.GRANT_OPENID_HYBRID,
     ),
+    "urn:ietf:params:oauth:grant-type:device_code": (AbstractApplication.GRANT_DEVICE_CODE,),
 }
 
 Application = get_application_model()
@@ -166,6 +167,11 @@ class OAuth2Validator(RequestValidator):
         elif request.client.client_id != client_id:
             log.debug("Failed basic auth: wrong client id %s" % client_id)
             return False
+        elif (
+            request.client.client_type == "public"
+            and request.grant_type == "urn:ietf:params:oauth:grant-type:device_code"
+        ):
+            return True
         elif not self._check_secret(client_secret, request.client.client_secret):
             log.debug("Failed basic auth: wrong client secret %s" % client_secret)
             return False
@@ -191,6 +197,11 @@ class OAuth2Validator(RequestValidator):
         if self._load_application(client_id, request) is None:
             log.debug("Failed body auth: Application %s does not exists" % client_id)
             return False
+        elif (
+            request.client.client_type == "public"
+            and request.grant_type == "urn:ietf:params:oauth:grant-type:device_code"
+        ):
+            return True
         elif not self._check_secret(client_secret, request.client.client_secret):
             log.debug("Failed body auth: wrong client secret %s" % client_secret)
             return False
