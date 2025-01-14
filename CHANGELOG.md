@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #1506 Support for Wildcard Origin and Redirect URIs
 <!--
 ### Changed
+* #1428 Admin: changed `search_fields` to lookup usernames instead of user emails.
 ### Deprecated
 ### Removed
 -->
