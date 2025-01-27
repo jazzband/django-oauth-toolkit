@@ -411,7 +411,7 @@ This is a major release with **BREAKING** changes. Please make sure to review th
 * **New feature**: The new setting `ERROR_RESPONSE_WITH_SCOPES` can now be set to True to include required
   scopes when DRF authorization fails due to improper scopes.
 * **New feature**: The new setting `REFRESH_TOKEN_GRACE_PERIOD_SECONDS` controls a grace period during which
-  refresh tokens may be re-used.
+  refresh tokens may be reused.
 * An `app_authorized` signal is fired when a token is generated.
 
 ## 1.0.0 [2017-06-07]

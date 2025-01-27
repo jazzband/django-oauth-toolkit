@@ -989,7 +989,7 @@ class TestAuthorizationCodeTokenView(BaseAuthorizationCodeTokenView):
     def test_refresh_repeating_requests_revokes_old_token(self):
         """
         If a refresh token is reused, the server should invalidate *all* access tokens that have a relation
-        to the re-used token. This forces a malicious actor to be logged out.
+        to the reused token. This forces a malicious actor to be logged out.
         The server can't determine whether the first or the second client was legitimate, so it needs to
         revoke both.
         See https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics-29#name-recommendations
