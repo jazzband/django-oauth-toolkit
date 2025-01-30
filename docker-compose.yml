@@ -1,28 +1,50 @@
-volumes:
-  idp-data:
-
+x-idp-network: &idp-network
+  networks:
+    - idp-net
 
 x-idp: &idp
+  <<: *idp-network
   image: django-oauth-toolkit/idp
+  build: .
+  stdin_open: true
+  tty: true
   volumes:
+    - ./:/code
     - idp-data:/data
+    - static-data:/var/oauth/static
+  command: uv run django-admin runserver 0.0.0.0:80
+
+  environment: &fediverser-service-environment
+    DJANGO_SETTINGS_MODULE: idp.settings
+    STATIC_ROOT: /var/oauth/static
+    ALLOWED_HOSTS: "*"
+    TEMPLATES_DIRS: /code/tests/app/idp/templates
+    DATABASE_URL: sqlite:////data/db.sqlite3
+
+  env_file:
+    - .env
 
 services:
+  idp-collectstatic:
+    <<: *idp
+    command: uv run django-admin collectstatic --noinput
+    restart: on-failure
+
   idp-migrate:
     <<: *idp
-    build: .
-    command: python manage.py migrate
+    command: uv run django-admin migrate
+    depends_on:
+      - idp-collectstatic
 
   idp-loaddata:
     <<: *idp
-    command: python manage.py loaddata fixtures/seed.json
+    command: uv run django-admin loaddata fixtures/seed.json
     depends_on:
       idp-migrate:
         condition: service_completed_successfully
 
   idp:
     <<: *idp
-    command: gunicorn idp.wsgi:application -w 4 -b 0.0.0.0:80 --chdir=/code --timeout 120  --error-logfile '-' --log-level debug --access-logfile '-'
     ports:
       # map to dev port.
       - "8000:80"
@@ -38,3 +60,10 @@ services:
       - "5173:3000"
     depends_on:
       - idp
+
+networks:
+  idp-net:
+
+volumes:
+  idp-data:
+  static-data:

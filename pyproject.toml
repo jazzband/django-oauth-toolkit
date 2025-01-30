@@ -45,7 +45,9 @@ dev = [
 	"pytest",
 	"pytest-cov",
 	"m2r",
-	"sphinx-rtd-theme",
+    "sphinx-rtd-theme",
+    "django-cors-headers",
+    "django-environ",
 ]
 
 [project.urls]

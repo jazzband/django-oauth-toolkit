@@ -57,3 +57,6 @@ db.sqlite3
 venv/
 
 /tests/app/idp/static
+
+# files with environment variables
+.env

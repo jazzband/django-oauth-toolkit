@@ -12,10 +12,30 @@ This is a `Jazzband <https://jazzband.co>`_ project. By contributing you agree t
 Setup
 =====
 
-Fork ``django-oauth-toolkit`` repository on `GitHub <https://github.com/jazzband/django-oauth-toolkit>`_ and follow these steps:
 
- * Create a virtualenv and activate it
- * Clone your repository locally
+Fork ``django-oauth-toolkit`` repository on `GitHub
+<https://github.com/jazzband/django-oauth-toolkit>`_ and clone to your
+development machine. The recommended method to manage your development
+environment is to use `uv <https://docs.astral.sh/uv/>`_, but you can
+also use pip directly to manage the virtual environment.
+
+
+Running the test IDP and RP applications (Docker)
+=================================================
+
+During development, it might be helpful to run an application that
+actually exercises the many authentication flows. We provide a django
+project that can be set up to run as the Identity Provider (IDP) and a
+separate Javascript application that works as the Relying Party (RP).
+If you have docker and docker-compose configured, you can get them
+both the services running with a few simple steps:
+
+ - make a copy of the ``.env.sample.docker`` to ``.env`` and make changes as desired
+ - Run ``docker-compose up -d --build``
+
+The IDP service will be available on `http://localhost:8000` and the
+RP service will be available on `http://localhost:5173`
+
 
 Issues
 ======
