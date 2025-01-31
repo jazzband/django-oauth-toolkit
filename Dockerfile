@@ -57,7 +57,10 @@ ENV DATABASE_URL="sqlite:////data/db.sqlite3"
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 COPY --from=builder /code /code
-RUN mkdir -p /code/tests/app/idp/static /code/tests/app/idp/templates
+RUN mkdir -p /data/static /data/templates
+COPY --from=builder /code/tests/app/idp/static /data/static
+COPY --from=builder /code/tests/app/idp/templates /data/templates
+
 WORKDIR /code/tests/app/idp
 RUN apt-get update && apt-get install -y \
     libpq5 \

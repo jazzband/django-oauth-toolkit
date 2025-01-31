@@ -325,6 +325,28 @@ Reviewing and Merging PRs
 
 PRs that are incorrectly merged may (reluctantly) be reverted by the Project Leads.
 
+End to End Testing
+------------------
+
+There is a demonstration Identity Provider (IDP) and Relying Party (RP) to allow for
+end to end testing. They can be launched directly by following the instructions in
+/test/apps/README.md or via docker compose. To launch via docker compose
+
+.. code-block:: bash
+
+    # build the images with the current code
+    docker compose build
+    # wipe any existing services and volumes
+    docker compose rm -v
+    # start the services
+    docker compose up -d
+
+Please verify the RP behaves as expected by logging in, reloading, and logging out.
+
+open http://localhost:5173 in your browser and login with the following credentials:
+
+username: superuser
+password: password
 
 Publishing a Release
 --------------------
