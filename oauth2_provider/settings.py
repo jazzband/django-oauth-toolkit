@@ -73,7 +73,11 @@ DEFAULTS = {
     "ALLOWED_SCHEMES": ["https"],
     "ALLOW_URI_WILDCARDS": False,
     "OIDC_ENABLED": False,
+    "OIDC_SESSION_MANAGEMENT_ENABLED": False,
+    "OIDC_SESSION_MANAGEMENT_COOKIE_NAME": "oidc_ua_agent_state",
+    "OIDC_SESSION_MANAGEMENT_DEFAULT_SESSION_KEY": None,
     "OIDC_ISS_ENDPOINT": "",
+    "OIDC_SESSION_IFRAME_ENDPOINT": "",
     "OIDC_USERINFO_ENDPOINT": "",
     "OIDC_RSA_PRIVATE_KEY": "",
     "OIDC_RSA_PRIVATE_KEYS_INACTIVE": [],
@@ -169,7 +173,12 @@ def import_from_string(val, setting_name):
     try:
         return import_string(val)
     except ImportError as e:
-        msg = "Could not import %r for setting %r. %s: %s." % (val, setting_name, e.__class__.__name__, e)
+        msg = "Could not import %r for setting %r. %s: %s." % (
+            val,
+            setting_name,
+            e.__class__.__name__,
+            e,
+        )
         raise ImportError(msg)
 
 

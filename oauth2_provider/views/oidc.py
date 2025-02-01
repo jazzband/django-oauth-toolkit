@@ -7,7 +7,7 @@ from django.http import HttpResponse, JsonResponse
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import FormView, View
+from django.views.generic import FormView, TemplateView, View
 from jwcrypto import jwt
 from jwcrypto.common import JWException
 from jwcrypto.jws import InvalidJWSObject
@@ -57,6 +57,10 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
             userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or request.build_absolute_uri(
                 reverse("oauth2_provider:user-info")
             )
+            session_iframe_endpoint = (
+                oauth2_settings.OIDC_SESSION_IFRAME_ENDPOINT
+                or request.build_absolute_uri(reverse("oauth2_provider:session-iframe"))
+            )
             jwks_uri = request.build_absolute_uri(reverse("oauth2_provider:jwks-info"))
             if oauth2_settings.OIDC_RP_INITIATED_LOGOUT_ENABLED:
                 end_session_endpoint = request.build_absolute_uri(
@@ -70,13 +74,19 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
             userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or "{}{}".format(
                 host, reverse("oauth2_provider:user-info")
             )
+            session_iframe_endpoint = oauth2_settings.OIDC_SESSION_IFRAME_ENDPOINT or "{}{}".format(
+                host, reverse("oauth2_provider:session-iframe")
+            )
             jwks_uri = "{}{}".format(host, reverse("oauth2_provider:jwks-info"))
             if oauth2_settings.OIDC_RP_INITIATED_LOGOUT_ENABLED:
                 end_session_endpoint = "{}{}".format(host, reverse("oauth2_provider:rp-initiated-logout"))
 
         signing_algorithms = [Application.HS256_ALGORITHM]
         if oauth2_settings.OIDC_RSA_PRIVATE_KEY:
-            signing_algorithms = [Application.RS256_ALGORITHM, Application.HS256_ALGORITHM]
+            signing_algorithms = [
+                Application.RS256_ALGORITHM,
+                Application.HS256_ALGORITHM,
+            ]
 
         validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
         validator = validator_class()
@@ -103,6 +113,10 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
         }
         if oauth2_settings.OIDC_RP_INITIATED_LOGOUT_ENABLED:
             data["end_session_endpoint"] = end_session_endpoint
+
+        if oauth2_settings.OIDC_SESSION_MANAGEMENT_ENABLED:
+            data["check_session_iframe"] = session_iframe_endpoint
+
         response = JsonResponse(data)
         response["Access-Control-Allow-Origin"] = "*"
         return response
@@ -134,6 +148,22 @@ class JwksInfoView(OIDCOnlyMixin, View):
             + f"stale-if-error={oauth2_settings.OIDC_JWKS_MAX_AGE_SECONDS}"
         )
         return response
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+@method_decorator(login_not_required, name="dispatch")
+class SessionIFrameView(OIDCOnlyMixin, OAuthLibMixin, TemplateView):
+    """
+    Render OP Session IFrame:
+    https://openid.net/specs/openid-connect-session-1_0.html#rfc.section.3.2
+    """
+
+    template_name = "oauth2_provider/check_session_iframe.html"
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context.update({"cookie_name": oauth2_settings.OIDC_SESSION_MANAGEMENT_COOKIE_NAME})
+        return context
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -428,7 +458,13 @@ class RPInitiatedLogoutView(OIDCLogoutOnlyMixin, FormView):
         """ We didn't find a reason to prompt the user """
         return False
 
-    def do_logout(self, application=None, post_logout_redirect_uri=None, state=None, token_user=None):
+    def do_logout(
+        self,
+        application=None,
+        post_logout_redirect_uri=None,
+        state=None,
+        token_user=None,
+    ):
         user = token_user or self.request.user
         # Delete Access Tokens if a user was found
         if oauth2_settings.OIDC_RP_INITIATED_LOGOUT_DELETE_TOKENS and not isinstance(user, AnonymousUser):
