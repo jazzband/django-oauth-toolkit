@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('oauth2_provider', '0012_add_token_checksum'),
-        migrations.swappable_dependency(oauth2_settings.REFRESH_TOKEN_MODEL)       
+        migrations.swappable_dependency(oauth2_settings.REFRESH_TOKEN_MODEL)
     ]
 
     operations = [
@@ -16,4 +16,4 @@ class Migration(migrations.Migration):
             name='token',
             field=models.TextField(),
         ),
-    ] 
+    ]
