@@ -278,7 +278,7 @@ class TestTokenIntrospectionViews(TestCase):
                 "active": False,
             },
         )
-    
+
     def test_view_post_no_token(self):
         """
         Test that when you pass an empty token as form parameter,
@@ -287,9 +287,7 @@ class TestTokenIntrospectionViews(TestCase):
         auth_headers = {
             "HTTP_AUTHORIZATION": "Bearer " + self.resource_server_token.token,
         }
-        response = self.client.post(
-            reverse("oauth2_provider:introspect"), **auth_headers
-        )
+        response = self.client.post(reverse("oauth2_provider:introspect"), **auth_headers)
 
         self.assertEqual(response.status_code, 200)
         content = response.json()
