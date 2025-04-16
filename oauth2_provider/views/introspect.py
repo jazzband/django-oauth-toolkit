@@ -33,7 +33,7 @@ class IntrospectTokenView(ClientProtectedScopedResourceView):
                 .objects.select_related("user", "application")
                 .get(token_checksum=token_checksum)
             )
-        except ObjectDoesNotExist:
+        except (AttributeError, ObjectDoesNotExist):
             return JsonResponse({"active": False}, status=200)
         else:
             if token.is_valid():
