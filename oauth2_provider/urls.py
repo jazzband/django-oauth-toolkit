@@ -17,7 +17,11 @@ base_urlpatterns = [
 management_urlpatterns = [
     # Application management views
     path("applications/", views.ApplicationList.as_view(), name="list"),
-    path("applications/register/", views.ApplicationRegistration.as_view(), name="register"),
+    path(
+        "applications/register/",
+        views.ApplicationRegistration.as_view(),
+        name="register",
+    ),
     path("applications/<slug:pk>/", views.ApplicationDetail.as_view(), name="detail"),
     path("applications/<slug:pk>/delete/", views.ApplicationDelete.as_view(), name="delete"),
     path("applications/<slug:pk>/update/", views.ApplicationUpdate.as_view(), name="update"),
@@ -42,6 +46,7 @@ oidc_urlpatterns = [
     ),
     path(".well-known/jwks.json", views.JwksInfoView.as_view(), name="jwks-info"),
     path("userinfo/", views.UserInfoView.as_view(), name="user-info"),
+    path("session-iframe/", views.SessionIFrameView.as_view(), name="session-iframe"),
     path("logout/", views.RPInitiatedLogoutView.as_view(), name="rp-initiated-logout"),
 ]
 
