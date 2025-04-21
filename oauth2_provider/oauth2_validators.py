@@ -322,9 +322,7 @@ class OAuth2Validator(RequestValidator):
 
         :raises: InvalidGrantError if the grant does not exist.
         """
-        deleted_grant_count = Grant.objects.filter(
-            code=code, application=request.client
-        ).delete()
+        deleted_grant_count = Grant.objects.filter(code=code, application=request.client).delete()
         if not deleted_grant_count:
             raise errors.InvalidGrantError(request=request)
 
