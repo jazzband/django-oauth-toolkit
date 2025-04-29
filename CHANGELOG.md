@@ -6,9 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ## [unreleased]
+
 ### Added
 * #1506 Support for Wildcard Origin and Redirect URIs
 * #1586 Turkish language support added
+* #1545 Support for OIDC Back-Channel Logout
 
 <!--
 ### Changed
