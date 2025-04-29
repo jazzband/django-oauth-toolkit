@@ -30,6 +30,7 @@ USER_SETTINGS = getattr(settings, "OAUTH2_PROVIDER", None)
 APPLICATION_MODEL = getattr(settings, "OAUTH2_PROVIDER_APPLICATION_MODEL", "oauth2_provider.Application")
 ACCESS_TOKEN_MODEL = getattr(settings, "OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL", "oauth2_provider.AccessToken")
 ID_TOKEN_MODEL = getattr(settings, "OAUTH2_PROVIDER_ID_TOKEN_MODEL", "oauth2_provider.IDToken")
+LOGOUT_TOKEN_MODEL = getattr(settings, "OAUTH2_PROVIDER_LOGOUT_TOKEN_MODEL", "oauth2_provider.LogoutToken")
 GRANT_MODEL = getattr(settings, "OAUTH2_PROVIDER_GRANT_MODEL", "oauth2_provider.Grant")
 REFRESH_TOKEN_MODEL = getattr(settings, "OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL", "oauth2_provider.RefreshToken")
 
@@ -61,12 +62,14 @@ DEFAULTS = {
     "APPLICATION_MODEL": APPLICATION_MODEL,
     "ACCESS_TOKEN_MODEL": ACCESS_TOKEN_MODEL,
     "ID_TOKEN_MODEL": ID_TOKEN_MODEL,
+    "LOGOUT_TOKEN_MODEL": LOGOUT_TOKEN_MODEL,
     "GRANT_MODEL": GRANT_MODEL,
     "REFRESH_TOKEN_MODEL": REFRESH_TOKEN_MODEL,
     "APPLICATION_ADMIN_CLASS": "oauth2_provider.admin.ApplicationAdmin",
     "ACCESS_TOKEN_ADMIN_CLASS": "oauth2_provider.admin.AccessTokenAdmin",
     "GRANT_ADMIN_CLASS": "oauth2_provider.admin.GrantAdmin",
     "ID_TOKEN_ADMIN_CLASS": "oauth2_provider.admin.IDTokenAdmin",
+    "LOGOUT_TOKEN_ADMIN_CLASS": "oauth2_provider.admin.LogoutTokenAdmin",
     "REFRESH_TOKEN_ADMIN_CLASS": "oauth2_provider.admin.RefreshTokenAdmin",
     "REQUEST_APPROVAL_PROMPT": "force",
     "ALLOWED_REDIRECT_URI_SCHEMES": ["http", "https"],
@@ -92,6 +95,8 @@ DEFAULTS = {
         "client_secret_post",
         "client_secret_basic",
     ],
+    "OIDC_BACKCHANNEL_LOGOUT_ENABLED": False,
+    "OIDC_BACKCHANNEL_LOGOUT_HANDLER": "oauth2_provider.models.send_backchannel_logout_requests",
     "OIDC_RP_INITIATED_LOGOUT_ENABLED": False,
     "OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT": True,
     "OIDC_RP_INITIATED_LOGOUT_STRICT_REDIRECT_URIS": False,
@@ -144,7 +149,9 @@ IMPORT_STRINGS = (
     "ACCESS_TOKEN_ADMIN_CLASS",
     "GRANT_ADMIN_CLASS",
     "ID_TOKEN_ADMIN_CLASS",
+    "LOGOUT_TOKEN_ADMIN_CLASS",
     "REFRESH_TOKEN_ADMIN_CLASS",
+    "OIDC_BACKCHANNEL_LOGOUT_HANDLER",
 )
 
 

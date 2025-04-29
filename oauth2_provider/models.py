@@ -1,4 +1,5 @@
 import hashlib
+import json
 import logging
 import time
 import uuid
@@ -6,18 +7,20 @@ from contextlib import suppress
 from datetime import timedelta
 from urllib.parse import parse_qsl, urlparse
 
+import requests
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.hashers import identify_hasher, make_password
 from django.core.exceptions import ImproperlyConfigured
-from django.db import models, router, transaction
+from django.db import IntegrityError, models, router, transaction
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from jwcrypto import jwk
+from jwcrypto import jwk, jwt
 from jwcrypto.common import base64url_encode
 from oauthlib.oauth2.rfc6749 import errors
 
+from .exceptions import BackchannelLogoutRequestError
 from .generators import generate_client_id, generate_client_secret
 from .scopes import get_scopes_backend
 from .settings import oauth2_settings
@@ -76,6 +79,7 @@ class AbstractApplication(models.Model):
     * :attr:`client_secret` Confidential secret issued to the client during
                             the registration process as described in :rfc:`2.2`
     * :attr:`name` Friendly name for the Application
+    * :attr:`backchannel_logout_uri` Backchannel Logout URI (OIDC-only)
     """
 
     CLIENT_CONFIDENTIAL = "confidential"
@@ -146,6 +150,9 @@ class AbstractApplication(models.Model):
         blank=True,
         help_text=_("Allowed origins list to enable CORS, space separated"),
         default="",
+    )
+    backchannel_logout_uri = models.URLField(
+        blank=True, null=True, help_text="Backchannel Logout URI where logout tokens will be sent"
     )
 
     class Meta:
@@ -650,6 +657,71 @@ class IDToken(AbstractIDToken):
         swappable = "OAUTH2_PROVIDER_ID_TOKEN_MODEL"
 
 
+class AbstractLogoutToken(models.Model):
+    TTL = timedelta(minutes=10)
+
+    id = models.BigAutoField(primary_key=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="%(app_label)s_%(class)s"
+    )
+    application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE)
+    id_token = models.OneToOneField(oauth2_settings.ID_TOKEN_MODEL, null=True, on_delete=models.SET_NULL)
+    created = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def expires(self):
+        return self.created + self.TTL
+
+    @property
+    def jwt_claim_dictionary(self):
+        claims = {
+            "iss": oauth2_settings.OIDC_ISS_ENDPOINT,
+            "sub": str(self.user.id),
+            "aud": str(self.application.client_id),
+            "iat": int(self.created.timestamp()),
+            "exp": int(self.expires.timestamp()),
+            "events": {"http://schemas.openid.net/event/backchannel-logout": {}},
+        }
+
+        if self.id_token and self.id_token.jti:
+            claims["jti"] = str(self.id_token.jti)
+
+        return claims
+
+    def get_serialized_jwt(self):
+        # Standard JWT header
+        header = {"typ": "logout+jwt", "alg": self.application.algorithm}
+        # RS256 consumers expect a kid in the header for verifying the token
+        if self.application.algorithm == AbstractApplication.RS256_ALGORITHM:
+            header["kid"] = self.application.jwk_key.thumbprint()
+
+        token = jwt.JWT(
+            header=json.dumps(header, default=str),
+            claims=json.dumps(self.jwt_claim_dictionary, default=str),
+        )
+        token.make_signed_token(self.application.jwk_key)
+        return token.serialize()
+
+    def send_backchannel_logout_request(self):
+        if not oauth2_settings.OIDC_BACKCHANNEL_LOGOUT_ENABLED:
+            return
+        try:
+            headers = {"Content-Type": "application/x-www-form-urlencoded"}
+            data = {"logout_token": self.get_serialized_jwt()}
+            response = requests.post(self.application.backchannel_logout_uri, headers=headers, data=data)
+            response.raise_for_status()
+        except (AssertionError, requests.RequestException) as exc:
+            raise BackchannelLogoutRequestError(str(exc))
+
+    class Meta:
+        abstract = True
+
+
+class LogoutToken(AbstractLogoutToken):
+    class Meta(AbstractLogoutToken.Meta):
+        swappable = "OAUTH2_PROVIDER_LOGOUT_TOKEN_MODEL"
+
+
 def get_application_model():
     """Return the Application model that is active in this project."""
     return apps.get_model(oauth2_settings.APPLICATION_MODEL)
@@ -668,6 +740,11 @@ def get_access_token_model():
 def get_id_token_model():
     """Return the IDToken model that is active in this project."""
     return apps.get_model(oauth2_settings.ID_TOKEN_MODEL)
+
+
+def get_logout_token_model():
+    """Return the IDToken model that is active in this project."""
+    return apps.get_model(oauth2_settings.LOGOUT_TOKEN_MODEL)
 
 
 def get_refresh_token_model():
@@ -697,6 +774,12 @@ def get_id_token_admin_class():
     """Return the IDToken admin class that is active in this project."""
     id_token_admin_class = oauth2_settings.ID_TOKEN_ADMIN_CLASS
     return id_token_admin_class
+
+
+def get_logout_token_admin_class():
+    """Return the LogoutToken admin class that is active in this project."""
+    logout_token_admin_class = oauth2_settings.LOGOUT_TOKEN_ADMIN_CLASS
+    return logout_token_admin_class
 
 
 def get_refresh_token_admin_class():
@@ -729,6 +812,7 @@ def clear_expired():
     access_token_model = get_access_token_model()
     refresh_token_model = get_refresh_token_model()
     id_token_model = get_id_token_model()
+    logout_token_model = get_logout_token_model()
     grant_model = get_grant_model()
     REFRESH_TOKEN_EXPIRE_SECONDS = oauth2_settings.REFRESH_TOKEN_EXPIRE_SECONDS
 
@@ -755,6 +839,11 @@ def clear_expired():
         logger.info("%s Expired refresh tokens deleted", expired_deleted_no)
     else:
         logger.info("refresh_expire_at is %s. No refresh tokens deleted.", refresh_expire_at)
+
+    logout_token_query = models.Q(created__lt=now - logout_token_model.TTL)
+    logout_tokens = logout_token_model.objects.filter(logout_token_query)
+    logout_tokens_delete_no = batch_delete(logout_tokens, logout_token_query)
+    logger.info("%s Expired logout tokens deleted", logout_tokens_delete_no)
 
     access_token_query = models.Q(refresh_token__isnull=True, expires__lt=now)
     access_tokens = access_token_model.objects.filter(access_token_query)
@@ -859,3 +948,20 @@ def is_origin_allowed(origin, allowed_origins):
             return True
 
     return False
+
+
+def send_backchannel_logout_requests(user):
+    """
+    Creates logout tokens for all id tokens associated with the user
+    """
+    id_tokens = IDToken.objects.filter(application__backchannel_logout_uri__isnull=False, user=user)
+    for id_token in id_tokens:
+        try:
+            logout_token = LogoutToken.objects.create(
+                user=user, application=id_token.application, id_token=id_token
+            )
+            logout_token.send_backchannel_logout_request()
+        except BackchannelLogoutRequestError as exc:
+            logger.warn(str(exc))
+        except IntegrityError:
+            logger.warn(f"Logout for {id_token} already exists")
