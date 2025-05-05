@@ -1,10 +1,8 @@
 Settings
 ========
 
-Our configurations are all namespaced under the ``OAUTH2_PROVIDER`` settings with the exception of
-``OAUTH2_PROVIDER_APPLICATION_MODEL``, ``OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL``, ``OAUTH2_PROVIDER_GRANT_MODEL``,
-``OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL``: this is because of the way Django currently implements
-swappable models. See `issue #90 <https://github.com/jazzband/django-oauth-toolkit/issues/90>`_ for details.
+Our configurations are all namespaced under the ``OAUTH2_PROVIDER`` settings, with the exception
+of the `List of non-namespaced settings`_.
 
 For example:
 
@@ -24,23 +22,16 @@ For example:
 A big *thank you* to the guys from Django REST Framework for inspiring this.
 
 
-List of available settings
---------------------------
+List of available settings within OAUTH2_PROVIDER
+-------------------------------------------------
 
 ACCESS_TOKEN_EXPIRE_SECONDS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 Default: ``36000``
 
 The number of seconds an access token remains valid. Requesting a protected
 resource after this duration will fail. Keep this value high enough so clients
 can cache the token for a reasonable amount of time.
-
-ACCESS_TOKEN_MODEL
-~~~~~~~~~~~~~~~~~~
-The import string of the class (model) representing your access tokens. Overwrite
-this value if you wrote your own implementation (subclass of
-``oauth2_provider.models.AccessToken``).
 
 ACCESS_TOKEN_GENERATOR
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -49,7 +40,6 @@ Import path of a callable used to generate access tokens.
 
 ALLOWED_REDIRECT_URI_SCHEMES
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 Default: ``["http", "https"]``
 
 A list of schemes that the ``redirect_uri`` field will be validated against.
@@ -65,7 +55,6 @@ a per-application basis.
 
 ALLOW_URI_WILDCARDS
 ~~~~~~~~~~~~~~~~~~~
-
 Default: ``False``
 
 SECURITY WARNING: Enabling this setting can introduce security vulnerabilities. Only enable
@@ -96,7 +85,6 @@ deployments for development previews and user acceptance testing.
 
 ALLOWED_SCHEMES
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 Default: ``["https"]``
 
 A list of schemes that the ``allowed_origins`` field will be validated against.
@@ -104,13 +92,6 @@ Setting this to ``["https"]`` only in production is strongly recommended.
 Adding ``"http"`` to the list is considered to be safe only for local development and testing.
 Note that `OAUTHLIB_INSECURE_TRANSPORT <https://oauthlib.readthedocs.io/en/latest/oauth2/security.html#envvar-OAUTHLIB_INSECURE_TRANSPORT>`_
 environment variable should be also set to allow HTTP origins.
-
-
-APPLICATION_MODEL
-~~~~~~~~~~~~~~~~~
-The import string of the class (model) representing your applications. Overwrite
-this value if you wrote your own implementation (subclass of
-``oauth2_provider.models.Application``).
 
 AUTHORIZATION_CODE_EXPIRE_SECONDS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -214,12 +195,6 @@ period the application, the app then has only a consumed refresh token and the
 only recourse is to have the user re-authenticate. A suggested value, if this
 is enabled, is 2 minutes.
 
-REFRESH_TOKEN_MODEL
-~~~~~~~~~~~~~~~~~~~
-The import string of the class (model) representing your refresh tokens. Overwrite
-this value if you wrote your own implementation (subclass of
-``oauth2_provider.models.RefreshToken``).
-
 REFRESH_TOKEN_REUSE_PROTECTION
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 When this is set to ``True`` (default ``False``), and ``ROTATE_REFRESH_TOKEN`` is used, the server will check
@@ -257,7 +232,7 @@ Defaults to ``oauth2_provider.scopes.SettingsScopes``, which reads scopes throug
 
 SCOPES
 ~~~~~~
-.. note:: (0.12.0+) Only used if ``ACCESS_TOKEN_GENERATOR`` is set to the SettingsScopes default.
+.. note:: (0.12.0+) Only used if ``SCOPES_BACKEND_CLASS`` is set to the SettingsScopes default.
 
 A dictionary mapping each scope name to its human description.
 
@@ -265,7 +240,7 @@ A dictionary mapping each scope name to its human description.
 
 DEFAULT_SCOPES
 ~~~~~~~~~~~~~~
-.. note:: (0.12.0+) Only used if ``ACCESS_TOKEN_GENERATOR`` is set to the SettingsScopes default.
+.. note:: (0.12.0+) Only used if ``SCOPES_BACKEND_CLASS`` is set to the SettingsScopes default.
 
 A list of scopes that should be returned by default.
 This is a subset of the keys of the ``SCOPES`` setting.
@@ -277,13 +252,13 @@ By default this is set to ``'__all__'`` meaning that the whole set of ``SCOPES``
 
 READ_SCOPE
 ~~~~~~~~~~
-.. note:: (0.12.0+) Only used if ``ACCESS_TOKEN_GENERATOR`` is set to the SettingsScopes default.
+.. note:: (0.12.0+) Only used if ``SCOPES_BACKEND_CLASS`` is set to the SettingsScopes default.
 
 The name of the *read* scope.
 
 WRITE_SCOPE
 ~~~~~~~~~~~
-.. note:: (0.12.0+) Only used if ``ACCESS_TOKEN_GENERATOR`` is set to the SettingsScopes default.
+.. note:: (0.12.0+) Only used if ``SCOPES_BACKEND_CLASS`` is set to the SettingsScopes default.
 
 The name of the *write* scope.
 
@@ -339,7 +314,6 @@ OIDC_ENABLED
 Default: ``False``
 
 Whether or not :doc:`oidc` support is enabled.
-
 
 OIDC_RSA_PRIVATE_KEY
 ~~~~~~~~~~~~~~~~~~~~
@@ -470,11 +444,47 @@ Time of sleep in seconds used by ``cleartokens`` management command between batc
 Set this to a non-zero value (e.g. ``0.1``) to add a pause between batch sizes to reduce system
 load when clearing large batches of expired tokens.
 
+List of non-namespaced settings
+-------------------------------
+.. note::
+   These settings must be set as top-level Django settings (outside of ``OAUTH2_PROVIDER``),
+   because of the way Django currently implements swappable models.
+   See `issue #90 <https://github.com/jazzband/django-oauth-toolkit/issues/90>`_ for details.
+
+
+OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The import string of the class (model) representing your access tokens.
+Overwrite this value if you wrote your own implementation (subclass of
+``oauth2_provider.models.AccessToken``).
+
+OAUTH2_PROVIDER_APPLICATION_MODEL
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The import string of the class (model) representing your applications.
+Overwrite this value if you wrote your own implementation (subclass of
+``oauth2_provider.models.Application``).
+
+OAUTH2_PROVIDER_ID_TOKEN_MODEL
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The import string of the class (model) representing your OpenID Connect ID Token.
+Overwrite this value if you wrote your own implementation (subclass of
+``oauth2_provider.models.IDToken``).
+
+OAUTH2_PROVIDER_GRANT_MODEL
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The import string of the class (model) representing your OAuth2 grants.
+Overwrite this value if you wrote your own implementation (subclass of
+``oauth2_provider.models.Grant``).
+
+OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The import string of the class (model) representing your refresh tokens.
+Overwrite this value if you wrote your own implementation (subclass of
+``oauth2_provider.models.RefreshToken``).
 
 Settings imported from Django project
 -------------------------------------
 
 USE_TZ
 ~~~~~~
-
 Used to determine whether or not to make token expire dates timezone aware.
