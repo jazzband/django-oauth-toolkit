@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [unreleased]
 ### Added
 * #1506 Support for Wildcard Origin and Redirect URIs
+* Support for OIDC Session Management (https://openid.net/specs/openid-connect-session-1_0.html)
 <!--
 ### Changed
 ### Deprecated
