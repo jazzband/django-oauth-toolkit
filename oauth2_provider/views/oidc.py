@@ -101,8 +101,16 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
             "code_challenge_methods_supported": [key for key, _ in AbstractGrant.CODE_CHALLENGE_METHODS],
             "claims_supported": oidc_claims,
         }
+
+        if oauth2_settings.OIDC_BACKCHANNEL_LOGOUT_ENABLED:
+            data["backchannel_logout_supported"] = True
+
+        if oauth2_settings.OIDC_BACKCHANNEL_LOGOUT_SESSION_ENABLED:
+            data["backchannel_logout_session_supported"] = True
+
         if oauth2_settings.OIDC_RP_INITIATED_LOGOUT_ENABLED:
             data["end_session_endpoint"] = end_session_endpoint
+
         response = JsonResponse(data)
         response["Access-Control-Allow-Origin"] = "*"
         return response
