@@ -5,6 +5,8 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 
 from ..models import get_application_model
 
+from oauth2_provider.settings import oauth2_settings
+
 
 class ApplicationOwnerIsUserMixin(LoginRequiredMixin):
     """
@@ -17,32 +19,39 @@ class ApplicationOwnerIsUserMixin(LoginRequiredMixin):
         return get_application_model().objects.filter(user=self.request.user)
 
 
-class ApplicationRegistration(LoginRequiredMixin, CreateView):
+class ApplicationEditorMixin(LoginRequiredMixin):
+    def get_form_class(self):
+        """
+        Returns the form class for the application model
+        """
+        base_fields = [
+            "name",
+            "client_id",
+            "client_secret",
+            "hash_client_secret",
+            "client_type",
+            "authorization_grant_type",
+            "redirect_uris",
+            "post_logout_redirect_uris",
+            "allowed_origins",
+            "algorithm",
+        ]
+
+        if oauth2_settings.OIDC_BACKCHANNEL_LOGOUT_ENABLED:
+            base_fields.append("backchannel_logout_uri")
+
+        if oauth2_settings.OIDC_BACKCHANNEL_LOGOUT_SESSION_ENABLED:
+            base_fields.append("backchannel_logout_session_required")
+
+        return modelform_factory(get_application_model(), fields=base_fields)
+
+
+class ApplicationRegistration(ApplicationEditorMixin, CreateView):
     """
     View used to register a new Application for the request.user
     """
 
     template_name = "oauth2_provider/application_registration_form.html"
-
-    def get_form_class(self):
-        """
-        Returns the form class for the application model
-        """
-        return modelform_factory(
-            get_application_model(),
-            fields=(
-                "name",
-                "client_id",
-                "client_secret",
-                "hash_client_secret",
-                "client_type",
-                "authorization_grant_type",
-                "redirect_uris",
-                "post_logout_redirect_uris",
-                "allowed_origins",
-                "algorithm",
-            ),
-        )
 
     def form_valid(self, form):
         form.instance.user = self.request.user
@@ -77,30 +86,10 @@ class ApplicationDelete(ApplicationOwnerIsUserMixin, DeleteView):
     template_name = "oauth2_provider/application_confirm_delete.html"
 
 
-class ApplicationUpdate(ApplicationOwnerIsUserMixin, UpdateView):
+class ApplicationUpdate(ApplicationOwnerIsUserMixin, ApplicationEditorMixin, UpdateView):
     """
     View used to update an application owned by the request.user
     """
 
     context_object_name = "application"
     template_name = "oauth2_provider/application_form.html"
-
-    def get_form_class(self):
-        """
-        Returns the form class for the application model
-        """
-        return modelform_factory(
-            get_application_model(),
-            fields=(
-                "name",
-                "client_id",
-                "client_secret",
-                "hash_client_secret",
-                "client_type",
-                "authorization_grant_type",
-                "redirect_uris",
-                "post_logout_redirect_uris",
-                "allowed_origins",
-                "algorithm",
-            ),
-        )
