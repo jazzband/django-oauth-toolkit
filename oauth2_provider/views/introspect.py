@@ -2,7 +2,7 @@ import calendar
 import hashlib
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseBadRequest
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
@@ -33,8 +33,12 @@ class IntrospectTokenView(ClientProtectedScopedResourceView):
                 .objects.select_related("user", "application")
                 .get(token_checksum=token_checksum)
             )
-        except (AttributeError, ObjectDoesNotExist):
+        except ObjectDoesNotExist:
             return JsonResponse({"active": False}, status=200)
+        except AttributeError:
+            return HttpResponseBadRequest(
+                {"error": "invalid_request", "error_description": "Token parameter is missing."}
+            )
         else:
             if token.is_valid():
                 data = {
