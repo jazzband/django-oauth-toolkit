@@ -35,6 +35,11 @@ class IntrospectTokenView(ClientProtectedScopedResourceView):
             )
         except ObjectDoesNotExist:
             return JsonResponse({"active": False}, status=200)
+        except AttributeError:
+            return JsonResponse(
+                {"error": "invalid_request", "error_description": "Token parameter is missing."},
+                status=400,
+            )
         else:
             if token.is_valid():
                 data = {
