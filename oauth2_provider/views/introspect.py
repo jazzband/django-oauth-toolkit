@@ -2,7 +2,7 @@ import calendar
 import hashlib
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponseBadRequest, JsonResponse
+from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
