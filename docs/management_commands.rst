@@ -5,8 +5,6 @@ Django OAuth Toolkit exposes some useful management commands that can be run via
 or :doc:`Celery <tutorial/tutorial_05>`.
 
 .. _cleartokens:
-.. _createapplication:
-
 
 cleartokens
 ~~~~~~~~~~~
@@ -27,7 +25,7 @@ The ``cleartokens`` management command will also delete expired access and ID to
 Note: Refresh tokens need to expire before AccessTokens can be removed from the
 database. Using ``cleartokens`` without ``REFRESH_TOKEN_EXPIRE_SECONDS`` has limited effect.
 
-
+.. _createapplication:
 
 createapplication
 ~~~~~~~~~~~~~~~~~
