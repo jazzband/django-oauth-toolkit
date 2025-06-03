@@ -22,10 +22,12 @@ class OAuthLibCore:
         """
         :params server: An instance of oauthlib.oauth2.Server class
         """
-        validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
-        validator = validator_class()
-        server_kwargs = oauth2_settings.server_kwargs
-        self.server = server or oauth2_settings.OAUTH2_SERVER_CLASS(validator, **server_kwargs)
+        if not server:
+            validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
+            validator = validator_class()
+            server_kwargs = oauth2_settings.server_kwargs
+            server = oauth2_settings.OAUTH2_SERVER_CLASS(validator, **server_kwargs)
+        self.server = server
 
     def _get_escaped_full_path(self, request):
         """
