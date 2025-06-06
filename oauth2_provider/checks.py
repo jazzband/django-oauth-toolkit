@@ -13,7 +13,6 @@ def validate_token_configuration(app_configs, **kwargs):
             oauth2_settings.ACCESS_TOKEN_MODEL,
             oauth2_settings.ID_TOKEN_MODEL,
             oauth2_settings.REFRESH_TOKEN_MODEL,
-            oauth2_settings.LOGOUT_TOKEN_MODEL,
         )
     )
 
