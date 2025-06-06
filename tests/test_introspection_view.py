@@ -279,6 +279,20 @@ class TestTokenIntrospectionViews(TestCase):
             },
         )
 
+    def test_view_post_no_token(self):
+        """
+        Test that when you pass no token HTTP 400 is returned
+        """
+        auth_headers = {
+            "HTTP_AUTHORIZATION": "Bearer " + self.resource_server_token.token,
+        }
+        response = self.client.post(reverse("oauth2_provider:introspect"), **auth_headers)
+
+        self.assertEqual(response.status_code, 400)
+        content = response.json()
+        self.assertIsInstance(content, dict)
+        self.assertEqual(content["error"], "invalid_request")
+
     def test_view_post_valid_client_creds_basic_auth(self):
         """Test HTTP basic auth working"""
         auth_headers = get_basic_auth_header(self.application.client_id, CLEARTEXT_SECRET)
