@@ -11,6 +11,9 @@ base_urlpatterns = [
     path("token/", views.TokenView.as_view(), name="token"),
     path("revoke_token/", views.RevokeTokenView.as_view(), name="revoke-token"),
     path("introspect/", views.IntrospectTokenView.as_view(), name="introspect"),
+    path("device-authorization/", views.DeviceAuthorizationView.as_view(), name="device-authorization"),
+    path("device/", views.device_user_code_view, name="device"),
+    path("device-confirm/<str:client_id>/<str:user_code>", views.device_confirm_view, name="device-confirm"),
 ]
 
 
