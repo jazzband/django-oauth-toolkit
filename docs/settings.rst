@@ -361,6 +361,7 @@ When is set to ``False`` (default) the `OpenID Connect RP-Initiated Logout <http
 endpoint is not enabled. OpenID Connect RP-Initiated Logout enables an :term:`Client` (Relying Party)
 to request that a :term:`Resource Owner` (End User) is logged out at the :term:`Authorization Server` (OpenID Provider).
 
+
 OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Default: ``True``
@@ -399,6 +400,15 @@ discovery metadata from ``OIDC_ISS_ENDPOINT`` +
 
 If unset, the default location is used, eg if ``django-oauth-toolkit`` is
 mounted at ``/o``, it will be ``<server-address>/o``.
+
+OIDC_BACKCHANNEL_LOGOUT_ENABLED
+~~~~~~~~~~~~~~~~~~~~~~~~
+Default: ``False``
+
+When is set to ``False`` (default) the `OpenID Connect Backchannel Logout <https://openid.net/specs/openid-connect-backchannel-1_0.html>`_
+extension is not enabled. OpenID Connect Backchannel Logout enables the :term:`Authorization Server` (OpenID Provider) to submit a JWT token to an endpoint controlled by the :term:`Client` (Relying Party)
+indicating that a session from the :term:`Resource Owner` (End User) has ended.
+
 
 OIDC_RESPONSE_TYPES_SUPPORTED
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
