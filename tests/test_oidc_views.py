@@ -1,3 +1,6 @@
+from unittest.mock import patch
+from urllib.parse import parse_qs, urlparse
+
 import pytest
 from django.contrib.auth import get_user
 from django.contrib.auth.models import AnonymousUser
@@ -12,7 +15,12 @@ from oauth2_provider.exceptions import (
     InvalidOIDCClientError,
     InvalidOIDCRedirectURIError,
 )
-from oauth2_provider.models import get_access_token_model, get_id_token_model, get_refresh_token_model
+from oauth2_provider.models import (
+    get_access_token_model,
+    get_application_model,
+    get_id_token_model,
+    get_refresh_token_model,
+)
 from oauth2_provider.oauth2_validators import OAuth2Validator
 from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views.oidc import RPInitiatedLogoutView, _load_id_token, _validate_claims
@@ -47,6 +55,7 @@ class TestConnectDiscoveryInfoView(TestCase):
             "token_endpoint_auth_methods_supported": ["client_secret_post", "client_secret_basic"],
             "code_challenge_methods_supported": ["plain", "S256"],
             "claims_supported": ["sub"],
+            "prompt_values_supported": ["none", "login"],
         }
         response = self.client.get("/o/.well-known/openid-configuration")
         self.assertEqual(response.status_code, 200)
@@ -74,6 +83,7 @@ class TestConnectDiscoveryInfoView(TestCase):
             "token_endpoint_auth_methods_supported": ["client_secret_post", "client_secret_basic"],
             "code_challenge_methods_supported": ["plain", "S256"],
             "claims_supported": ["sub"],
+            "prompt_values_supported": ["none", "login"],
         }
         response = self.client.get("/o/.well-known/openid-configuration/")
         self.assertEqual(response.status_code, 200)
@@ -101,6 +111,7 @@ class TestConnectDiscoveryInfoView(TestCase):
             "token_endpoint_auth_methods_supported": ["client_secret_post", "client_secret_basic"],
             "code_challenge_methods_supported": ["plain", "S256"],
             "claims_supported": ["sub"],
+            "prompt_values_supported": ["none", "login"],
             "end_session_endpoint": f"{base}/logout/",
         }
         response = self.client.get(reverse("oauth2_provider:oidc-connect-discovery-info"))
@@ -135,6 +146,7 @@ class TestConnectDiscoveryInfoView(TestCase):
             "token_endpoint_auth_methods_supported": ["client_secret_post", "client_secret_basic"],
             "code_challenge_methods_supported": ["plain", "S256"],
             "claims_supported": ["sub"],
+            "prompt_values_supported": ["none", "login"],
         }
         response = self.client.get(reverse("oauth2_provider:oidc-connect-discovery-info"))
         self.assertEqual(response.status_code, 200)
@@ -204,6 +216,79 @@ class TestJwksInfoView(TestCase):
         response = self.client.get(reverse("oauth2_provider:jwks-info"))
         self.assertEqual(response.status_code, 200)
         assert response.json() == expected_response
+
+
+@pytest.mark.usefixtures("oauth2_settings")
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_RP_REGISTRATION)
+class TestRPInitiatedRegistration(TestCase):
+    def test_connect_discovery_info_has_create(self):
+        expected_response = {
+            "issuer": "http://localhost/o",
+            "authorization_endpoint": "http://localhost/o/authorize/",
+            "token_endpoint": "http://localhost/o/token/",
+            "userinfo_endpoint": "http://localhost/o/userinfo/",
+            "jwks_uri": "http://localhost/o/.well-known/jwks.json",
+            "scopes_supported": ["read", "write", "openid"],
+            "response_types_supported": [
+                "code",
+                "token",
+                "id_token",
+                "id_token token",
+                "code token",
+                "code id_token",
+                "code id_token token",
+            ],
+            "subject_types_supported": ["public"],
+            "id_token_signing_alg_values_supported": ["RS256", "HS256"],
+            "token_endpoint_auth_methods_supported": ["client_secret_post", "client_secret_basic"],
+            "code_challenge_methods_supported": ["plain", "S256"],
+            "claims_supported": ["sub"],
+            "prompt_values_supported": ["none", "login", "create"],
+        }
+        response = self.client.get("/o/.well-known/openid-configuration")
+        self.assertEqual(response.status_code, 200)
+        assert response.json() == expected_response
+
+    def test_prompt_create_redirects_to_registration_view(self):
+        Application = get_application_model()
+        application = Application.objects.create(
+            name="Test Application",
+            redirect_uris="http://localhost http://example.com",
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+        )
+
+        auth_url = reverse("oauth2_provider:authorize")
+        query_params = {
+            "response_type": "code",
+            "client_id": application.client_id,
+            "redirect_uri": "http://localhost",
+            "scope": "openid",
+            "prompt": "create",
+        }
+
+        with patch("oauth2_provider.views.base.reverse") as patched_reverse:
+            patched_reverse.return_value = "/register-test/"
+            response = self.client.get(f"{auth_url}?{'&'.join(f'{k}={v}' for k, v in query_params.items())}")
+
+        self.assertEqual(response.status_code, 302)
+        redirect_url = response.url
+        parsed_url = urlparse(redirect_url)
+
+        # Verify it's the registration URL
+        self.assertEqual(parsed_url.path, "/register-test/")
+
+        # Verify the query parameters
+        query = parse_qs(parsed_url.query)
+        self.assertIn("next", query)
+
+        # Verify the next parameter doesn't contain prompt=create
+        next_url = query["next"][0]
+        self.assertNotIn("prompt=create", next_url)
+
+        # But it should contain the other original parameters
+        self.assertIn("response_type=code", next_url)
+        self.assertIn(f"client_id={application.client_id}", next_url)
 
 
 def mock_request():
