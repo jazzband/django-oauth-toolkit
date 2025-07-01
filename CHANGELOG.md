@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 * #1506 Support for Wildcard Origin and Redirect URIs
 * #1586 Turkish language support added
+
 <!--
 ### Changed
 ### Deprecated
@@ -20,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #1521 Fix 0012 migration loading access token table into memory
 * #1584 Fix IDP container in docker compose environment could not find templates and static files.
 * #1562 Fix: Handle AttributeError in IntrospectTokenView
+* #1583 Fix: Missing pt_BR translations
 <!--
 ### Security
 -->
