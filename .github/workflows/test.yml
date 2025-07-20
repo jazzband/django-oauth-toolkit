@@ -6,6 +6,8 @@ jobs:
   test-package:
     name: Test Package (Python ${{ matrix.python-version }}, Django ${{ matrix.django-version }})
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write # Required for Codecov OIDC token
     strategy:
       fail-fast: false
       matrix:
@@ -60,9 +62,10 @@ jobs:
         DJANGO: ${{ matrix.django-version }}
 
     - name: Upload coverage
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v5
       with:
         name: Python ${{ matrix.python-version }}
+        use_oidc: true
 
   test-demo-rp:
     name: Test Demo Relying Party
