@@ -1867,7 +1867,7 @@ class TestOIDCAuthorizationCodeHSAlgorithm(BaseAuthorizationCodeTokenView):
 
         # Check decoding JWT using HS256
         key = self.application.jwk_key
-        assert key.key_type == "oct"
+        assert key.kty == "oct"
         jwt_token = jwt.JWT(key=key, jwt=content["id_token"])
         claims = json.loads(jwt_token.claims)
         assert claims["sub"] == "1"
