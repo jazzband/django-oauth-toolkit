@@ -26,6 +26,11 @@ class IntrospectTokenView(ClientProtectedScopedResourceView):
 
     @staticmethod
     def get_token_response(token_value=None):
+        if token_value is None:
+            return JsonResponse(
+                {"error": "invalid_request", "error_description": "Token parameter is missing."},
+                status=400,
+            )
         try:
             token_checksum = hashlib.sha256(token_value.encode("utf-8")).hexdigest()
             token = (
