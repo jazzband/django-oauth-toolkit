@@ -9,10 +9,10 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-30 09:50-0300\n"
-"PO-Revision-Date: 2021-12-30 09:50-0300\n"
-"Last-Translator: Eduardo Oliveira <eduardo_y05@outlook.com>\n"
+"PO-Revision-Date: 2025-07-01 12:35-0300\n"
+"Last-Translator: Thales Barbosa Bento <dev.tbarbosa.bento@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -101,7 +101,7 @@ msgstr "Tem certeza que deseja remover a aplicação?"
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: templates/oauth2_provider/application_confirm_delete.html:13
+#: templates/oauth2_provider/application_confirm_delete.html:13F
 #: templates/oauth2_provider/application_detail.html:38
 #: templates/oauth2_provider/authorized-token-delete.html:7
 msgid "Delete"
@@ -113,7 +113,7 @@ msgstr "ID do Cliente"
 
 #: templates/oauth2_provider/application_detail.html:15
 msgid "Client secret"
-msgstr "Palavra-Chave Secreta do Cliente"
+msgstr "Chave Secreta do Cliente"
 
 #: templates/oauth2_provider/application_detail.html:20
 msgid "Client type"
@@ -200,3 +200,258 @@ msgstr "Revogar"
 #: templates/oauth2_provider/authorized-tokens.html:19
 msgid "There are no authorized tokens yet."
 msgstr "Não existem tokens autorizados ainda."
+
+msgid "Allowed origins list to enable CORS, space separated"
+msgstr "Lista de origens permitidas para habilitar CORS, separadas por espaços"
+
+msgid "Access tokens"
+msgstr "Tokens de acesso"
+
+msgid "Applications"
+msgstr "Aplicações"
+
+msgid "Grants"
+msgstr "Concessões"
+
+msgid "Id tokens"
+msgstr "Tokens de ID"
+
+msgid "Refresh tokens"
+msgstr "Tokens de atualização"
+
+msgid "Access token"
+msgstr "Token de acesso"
+
+msgid "Application"
+msgstr "Aplicação"
+
+msgid "Grant"
+msgstr "Concessão"
+
+msgid "Id token"
+msgstr "Token de ID"
+
+msgid "Refresh token"
+msgstr "Token de atualização"
+
+msgid "Skip authorization"
+msgstr "Pular autorização"
+
+msgid "Algorithm"
+msgstr "Algoritmo"
+
+msgid "Created"
+msgstr "Criado"
+
+msgid "Updated"
+msgstr "Atualizado"
+
+msgid "Scope"
+msgstr "Escopo"
+
+msgid "Scopes"
+msgstr "Escopos"
+
+msgid "Expires"
+msgstr "Expira"
+
+msgid "Token"
+msgstr "Token"
+
+msgid "User"
+msgstr "Usuário"
+
+msgid "Code"
+msgstr "Código"
+
+msgid "Redirect URI"
+msgstr "URI de Redirecionamento"
+
+msgid "State"
+msgstr "Estado"
+
+msgid "Nonce"
+msgstr "Nonce (Number Used Once)"
+
+msgid "Code Challenge"
+msgstr "Desafio do Código"
+
+msgid "Code Challenge Method"
+msgstr "Método do Desafio do Código"
+
+msgid "PKCE required"
+msgstr "PKCE obrigatório"
+
+msgid "Post logout redirect URI"
+msgstr "URI de redirecionamento pós-logout"
+
+msgid "Hash client secret"
+msgstr "Hash da chave secreta do cliente"
+
+msgid "The client secret will be hashed"
+msgstr "A chave secreta do cliente será transformada em hash"
+
+msgid "Skip authorization completely"
+msgstr "Pular autorização completamente"
+
+msgid "Post logout redirect URIs"
+msgstr "URIs de redirecionamento pós-logout"
+
+msgid "Allowed Post Logout Redirect URIs list, space separated"
+msgstr "Lista de URIs de redirecionamento pós-logout permitidas, separadas por espaços"
+
+msgid "Authorization Grant"
+msgstr "Concessão de Autorização"
+
+msgid "Authorization Grants"
+msgstr "Concessões de Autorização"
+
+msgid "Invalid client or client credentials"
+msgstr "Cliente inválido ou credenciais do cliente inválidas"
+
+msgid "Invalid authorization code"
+msgstr "Código de autorização inválido"
+
+msgid "Invalid redirect URI"
+msgstr "URI de redirecionamento inválida"
+
+msgid "Invalid grant type"
+msgstr "Tipo de concessão inválido"
+
+msgid "Invalid scope"
+msgstr "Escopo inválido"
+
+msgid "Invalid request"
+msgstr "Solicitação inválida"
+
+msgid "Unsupported grant type"
+msgstr "Tipo de concessão não suportado"
+
+msgid "Unsupported response type"
+msgstr "Tipo de resposta não suportado"
+
+msgid "Authorization server error"
+msgstr "Erro do servidor de autorização"
+
+msgid "Temporarily unavailable"
+msgstr "Temporariamente indisponível"
+
+msgid "Access denied"
+msgstr "Acesso negado"
+
+msgid "Invalid client"
+msgstr "Cliente inválido"
+
+msgid "The client identifier provided is invalid"
+msgstr "O identificador do cliente fornecido é inválido"
+
+msgid "The client authentication failed"
+msgstr "A autenticação do cliente falhou"
+
+msgid "The authorization grant is invalid, expired, or revoked"
+msgstr "A concessão de autorização é inválida, expirada ou revogada"
+
+msgid "The authenticated client is not authorized to use this authorization grant type"
+msgstr "O cliente autenticado não está autorizado a usar este tipo de concessão de autorização"
+
+msgid "The request is missing a required parameter"
+msgstr "A solicitação está perdendo um parâmetro obrigatório"
+
+msgid "The authorization server encountered an unexpected condition"
+msgstr "O servidor de autorização encontrou uma condição inesperada"
+
+msgid "The authorization server is currently unable to handle the request"
+msgstr "O servidor de autorização atualmente não consegue processar a solicitação"
+
+msgid "The resource owner or authorization server denied the request"
+msgstr "O proprietário do recurso ou servidor de autorização negou a solicitação"
+
+msgid "The authorization server does not support obtaining authorization codes"
+msgstr "O servidor de autorização não suporta obter códigos de autorização"
+
+msgid "The authorization server does not support the revocation of access tokens"
+msgstr "O servidor de autorização não suporta a revogação de tokens de acesso"
+
+msgid "The authorization server does not support the revocation of refresh tokens"
+msgstr "O servidor de autorização não suporta a revogação de tokens de atualização"
+
+msgid "The authorization server does not support the use of the transformation parameter"
+msgstr "O servidor de autorização não suporta o uso do parâmetro de transformação"
+
+msgid "The target resource is invalid, missing, malformed, or not supported"
+msgstr "O recurso de destino é inválido, ausente, malformado ou não suportado"
+
+msgid "Rotate refresh token"
+msgstr "Rotacionar token de atualização"
+
+msgid "Reuse refresh token"
+msgstr "Reutilizar token de atualização"
+
+msgid "Application name"
+msgstr "Nome da aplicação"
+
+msgid "Application description"
+msgstr "Descrição da aplicação"
+
+msgid "Application logo"
+msgstr "Logo da aplicação"
+
+msgid "Application website"
+msgstr "Website da aplicação"
+
+msgid "Terms of service"
+msgstr "Termos de serviço"
+
+msgid "Privacy policy"
+msgstr "Política de privacidade"
+
+msgid "Support email"
+msgstr "Email de suporte"
+
+msgid "Support URL"
+msgstr "URL de suporte"
+
+msgid "Redirect URIs"
+msgstr "URIs de Redirecionamento"
+
+msgid "Source refresh token"
+msgstr "Token de atualização de origem"
+
+msgid "Token checksum"
+msgstr "Checksum do token"
+
+msgid "Token family"
+msgstr "Família do token"
+
+msgid "Code challenge"
+msgstr "Desafio do código"
+
+msgid "Code challenge method"
+msgstr "Método do desafio do código"
+
+msgid "Claims"
+msgstr "Reivindicações"
+
+msgid "JWT Token ID"
+msgstr "ID do Token JWT"
+
+msgid "Allowed origins"
+msgstr "Origens permitidas"
+
+msgid "Client ID"
+msgstr "ID do Cliente"
+
+msgid "Revoked"
+msgstr "Revogado"
+
+msgid "Authorization grant type"
+msgstr "Tipo de concessão de autorização"
+
+msgid "Hashed on Save. Copy it now if this is a new secret."
+msgstr "Hashed em Salvar. Copie agora se este for um novo segredo."
+
+msgid "allowed origin URI Validation error"
+msgstr "erro de validação de URI de origem permitido. invalid_scheme"
+
+msgid "Date"
+msgstr "Data"
