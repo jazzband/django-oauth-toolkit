@@ -563,7 +563,7 @@ def test_clear_expired_id_tokens(oauth2_settings, oidc_tokens, rf):
 def test_application_key(oauth2_settings, application):
     # RS256 key
     key = application.jwk_key
-    assert key.key_type == "RSA"
+    assert key.kty == "RSA"
 
     # RS256 key, but not configured
     oauth2_settings.OIDC_RSA_PRIVATE_KEY = None
@@ -574,7 +574,7 @@ def test_application_key(oauth2_settings, application):
     # HS256 key
     application.algorithm = Application.HS256_ALGORITHM
     key = application.jwk_key
-    assert key.key_type == "oct"
+    assert key.kty == "oct"
 
     # No algorithm
     application.algorithm = Application.NO_ALGORITHM
