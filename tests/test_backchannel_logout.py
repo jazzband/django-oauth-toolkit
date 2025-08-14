@@ -8,7 +8,11 @@ from django.test import RequestFactory
 from django.urls import reverse
 
 from oauth2_provider.exceptions import BackchannelLogoutRequestError
-from oauth2_provider.models import get_application_model, get_id_token_model, send_backchannel_logout_requests
+from oauth2_provider.models import get_application_model, get_id_token_model
+from oauth2_provider.handlers import (
+    on_user_logged_out_maybe_send_backchannel_logout,
+    send_backchannel_logout_request,
+)
 from oauth2_provider.views import ApplicationRegistration
 
 from . import presets
@@ -42,12 +46,12 @@ class TestBackchannelLogout(TestCase):
         )
 
     def test_on_logout_handler_is_called_for_user(self):
-        with patch("oauth2_provider.models.send_backchannel_logout_requests") as backchannel_handler:
+        with patch("oauth2_provider.handlers.send_backchannel_logout_request") as backchannel_handler:
             self.client.login(username="app_user", password="654321")
             self.client.logout()
             backchannel_handler.assert_called_once()
-            args, kwargs = backchannel_handler.call_args
-            self.assertEqual(kwargs.get("user"), self.user)
+            _, kwargs = backchannel_handler.call_args
+            self.assertEqual(kwargs["id_token"], self.id_token)
 
     def test_logout_token_is_signed_for_user(self):
         with patch("requests.post") as mocked_post:
@@ -59,7 +63,7 @@ class TestBackchannelLogout(TestCase):
         self.application.algorithm = Application.NO_ALGORITHM
         self.application.save()
         with self.assertRaises(BackchannelLogoutRequestError):
-            self.id_token.send_backchannel_logout_request()
+            send_backchannel_logout_request(self.id_token)
 
     def test_new_application_form_has_backchannel_logout_field(self):
         factory = RequestFactory()
@@ -71,6 +75,6 @@ class TestBackchannelLogout(TestCase):
         self.assertTrue("backchannel_logout_uri" in form.fields.keys())
 
     def test_logout_sender_does_not_crash_on_backchannel_error(self):
-        with patch.object(self.id_token, "send_backchannel_logout_request") as mock_func:
+        with patch("oauth2_provider.handlers.send_backchannel_logout_request") as mock_func:
             mock_func.side_effect = BackchannelLogoutRequestError("Bad Gateway")
-            send_backchannel_logout_requests(self.user)
+            on_user_logged_out_maybe_send_backchannel_logout(sender=User, user=self.user)

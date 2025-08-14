@@ -93,7 +93,7 @@ DEFAULTS = {
         "client_secret_basic",
     ],
     "OIDC_BACKCHANNEL_LOGOUT_ENABLED": False,
-    "OIDC_BACKCHANNEL_LOGOUT_HANDLER": "oauth2_provider.models.send_backchannel_logout_requests",
+    "OIDC_BACKCHANNEL_LOGOUT_HANDLER": "oauth2_provider.handlers.send_backchannel_logout_request",
     "OIDC_RP_INITIATED_LOGOUT_ENABLED": False,
     "OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT": True,
     "OIDC_RP_INITIATED_LOGOUT_STRICT_REDIRECT_URIS": False,

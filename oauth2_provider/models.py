@@ -1,5 +1,4 @@
 import hashlib
-import json
 import logging
 import time
 import uuid
@@ -7,7 +6,6 @@ from contextlib import suppress
 from datetime import timedelta
 from urllib.parse import parse_qsl, urlparse
 
-import requests
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.hashers import identify_hasher, make_password
@@ -16,11 +14,10 @@ from django.db import models, router, transaction
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from jwcrypto import jwk, jwt
+from jwcrypto import jwk
 from jwcrypto.common import base64url_encode
 from oauthlib.oauth2.rfc6749 import errors
 
-from .exceptions import BackchannelLogoutRequestError
 from .generators import generate_client_id, generate_client_secret
 from .scopes import get_scopes_backend
 from .settings import oauth2_settings
@@ -636,53 +633,6 @@ class AbstractIDToken(models.Model):
         """
         self.delete()
 
-    def send_backchannel_logout_request(self, ttl=timedelta(minutes=10)):
-        """
-        Send a logout token to the applications backchannel logout uri
-        """
-        try:
-            assert oauth2_settings.OIDC_BACKCHANNEL_LOGOUT_ENABLED, "Backchannel logout not enabled"
-            assert self.application.algorithm != AbstractApplication.NO_ALGORITHM, (
-                "Application must provide signing algorithm"
-            )
-            assert self.application.backchannel_logout_uri is not None, (
-                "URL for backchannel logout not provided by client"
-            )
-
-            issued_at = timezone.now()
-            expiration_date = issued_at + ttl
-
-            claims = {
-                "iss": oauth2_settings.OIDC_ISS_ENDPOINT,
-                "sub": str(self.user.id),
-                "aud": str(self.application.client_id),
-                "iat": int(issued_at.timestamp()),
-                "exp": int(expiration_date.timestamp()),
-                "jti": self.jti,
-                "events": {"http://schemas.openid.net/event/backchannel-logout": {}},
-            }
-
-            # Standard JWT header
-            header = {"typ": "logout+jwt", "alg": self.application.algorithm}
-
-            # RS256 consumers expect a kid in the header for verifying the token
-            if self.application.algorithm == AbstractApplication.RS256_ALGORITHM:
-                header["kid"] = self.application.jwk_key.thumbprint()
-
-            token = jwt.JWT(
-                header=json.dumps(header, default=str),
-                claims=json.dumps(claims, default=str),
-            )
-
-            token.make_signed_token(self.application.jwk_key)
-
-            headers = {"Content-Type": "application/x-www-form-urlencoded"}
-            data = {"logout_token": token.serialize()}
-            response = requests.post(self.application.backchannel_logout_uri, headers=headers, data=data)
-            response.raise_for_status()
-        except (AssertionError, requests.RequestException) as exc:
-            raise BackchannelLogoutRequestError(str(exc))
-
     @property
     def scopes(self):
         """
@@ -913,15 +863,3 @@ def is_origin_allowed(origin, allowed_origins):
             return True
 
     return False
-
-
-def send_backchannel_logout_requests(user):
-    """
-    Creates logout tokens for all id tokens associated with the user
-    """
-    id_tokens = IDToken.objects.filter(application__backchannel_logout_uri__isnull=False, user=user)
-    for id_token in id_tokens:
-        try:
-            id_token.send_backchannel_logout_request()
-        except BackchannelLogoutRequestError as exc:
-            logger.warn(str(exc))
