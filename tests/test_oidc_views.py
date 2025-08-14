@@ -1,5 +1,5 @@
 import pytest
-from django.contrib.auth import get_user
+from django.contrib.auth import get_user, get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.test import RequestFactory
 from django.urls import reverse
@@ -12,7 +12,12 @@ from oauth2_provider.exceptions import (
     InvalidOIDCClientError,
     InvalidOIDCRedirectURIError,
 )
-from oauth2_provider.models import get_access_token_model, get_id_token_model, get_refresh_token_model
+from oauth2_provider.models import (
+    get_access_token_model,
+    get_application_model,
+    get_id_token_model,
+    get_refresh_token_model,
+)
 from oauth2_provider.oauth2_validators import OAuth2Validator
 from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.views.oidc import RPInitiatedLogoutView, _load_id_token, _validate_claims
@@ -132,7 +137,10 @@ class TestConnectDiscoveryInfoView(TestCase):
             ],
             "subject_types_supported": ["public"],
             "id_token_signing_alg_values_supported": ["RS256", "HS256"],
-            "token_endpoint_auth_methods_supported": ["client_secret_post", "client_secret_basic"],
+            "token_endpoint_auth_methods_supported": [
+                "client_secret_post",
+                "client_secret_basic",
+            ],
             "code_challenge_methods_supported": ["plain", "S256"],
             "claims_supported": ["sub"],
         }
@@ -204,6 +212,42 @@ class TestJwksInfoView(TestCase):
         response = self.client.get(reverse("oauth2_provider:jwks-info"))
         self.assertEqual(response.status_code, 200)
         assert response.json() == expected_response
+
+
+@pytest.mark.usefixtures("oauth2_settings")
+@pytest.mark.oauth2_settings(presets.OIDC_SETTINGS_SESSION_MANAGEMENT)
+class TestAuthorizationView(TestCase):
+    def test_session_state_is_present_in_url(self):
+        User = get_user_model()
+        Application = get_application_model()
+
+        User.objects.create_user("test_user", "test@example.com", "123456")
+        dev_user = User.objects.create_user("dev_user", "dev@example.com", "123456")
+
+        application = Application.objects.create(
+            name="Test Application",
+            redirect_uris=(
+                "http://localhost http://example.com http://example.org custom-scheme://example.com"
+            ),
+            user=dev_user,
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+            client_secret="1234567890qwertyuiop",
+        )
+        self.client.login(username="test_user", password="123456")
+        response = self.client.post(
+            reverse("oauth2_provider:authorize"),
+            {
+                "client_id": application.client_id,
+                "response_type": "code",
+                "state": "random_state_string",
+                "scope": "read write",
+                "redirect_uri": "http://example.org",
+                "allow": True,
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue("session_state" in response["Location"])
 
 
 def mock_request():
