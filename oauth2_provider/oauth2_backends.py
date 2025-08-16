@@ -1,5 +1,5 @@
 import json
-from urllib.parse import urlparse, urlunparse
+from urllib.parse import unquote, urlparse, urlunparse
 
 from oauthlib import oauth2
 from oauthlib.common import Request as OauthlibRequest
@@ -236,6 +236,22 @@ class JSONOAuthLibCore(OAuthLibCore):
             body = ""
 
         return body
+
+
+class JSONAndFormUrlencodedOAuthLibCore(JSONOAuthLibCore):
+    def extract_body(self, request):
+        # fixes base64 encoded form-submission. you can't control what all oauth clients use.
+        if request.content_type in ["application/x-www-form-urlencoded"]:
+            try:
+                query_string = request.body.decode("utf-8")
+                query_params = {p.split("=")[0]: unquote(p.split("=")[1]) for p in query_string.split("&")}
+                res = query_params.items()
+
+                return res
+            except:
+                pass
+
+        return super(JSONAndFormUrlencodedOAuthLibCore, self).extract_body(request)
 
 
 def get_oauthlib_core():
