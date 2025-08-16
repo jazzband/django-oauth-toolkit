@@ -15,7 +15,7 @@ from oauth2_provider.models import (
 )
 
 
-has_email = hasattr(get_user_model(), "email")
+username_field = get_user_model().USERNAME_FIELD
 
 
 class ApplicationAdmin(admin.ModelAdmin):
@@ -25,7 +25,7 @@ class ApplicationAdmin(admin.ModelAdmin):
         "client_type": admin.HORIZONTAL,
         "authorization_grant_type": admin.VERTICAL,
     }
-    search_fields = ("name",) + (("user__email",) if has_email else ())
+    search_fields = ("name", f"user__{username_field}")
     raw_id_fields = ("user",)
 
 
@@ -33,20 +33,20 @@ class AccessTokenAdmin(admin.ModelAdmin):
     list_display = ("token", "user", "application", "expires")
     list_select_related = ("application", "user")
     raw_id_fields = ("user", "source_refresh_token")
-    search_fields = ("token",) + (("user__email",) if has_email else ())
+    search_fields = ("token", f"user__{username_field}")
     list_filter = ("application",)
 
 
 class GrantAdmin(admin.ModelAdmin):
     list_display = ("code", "application", "user", "expires")
     raw_id_fields = ("user",)
-    search_fields = ("code",) + (("user__email",) if has_email else ())
+    search_fields = ("code", f"user__{username_field}")
 
 
 class IDTokenAdmin(admin.ModelAdmin):
     list_display = ("jti", "user", "application", "expires")
     raw_id_fields = ("user",)
-    search_fields = ("user__email",) if has_email else ()
+    search_fields = (f"user__{username_field}",)
     list_filter = ("application",)
     list_select_related = ("application", "user")
 
@@ -54,7 +54,7 @@ class IDTokenAdmin(admin.ModelAdmin):
 class RefreshTokenAdmin(admin.ModelAdmin):
     list_display = ("token", "user", "application")
     raw_id_fields = ("user", "access_token")
-    search_fields = ("token",) + (("user__email",) if has_email else ())
+    search_fields = ("token", f"user__{username_field}")
     list_filter = ("application",)
 
 
